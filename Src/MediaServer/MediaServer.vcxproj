@@ -1,0 +1,349 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Channel\Notifier.hpp" />
+    <ClInclude Include="Channel\Request.hpp" />
+    <ClInclude Include="Channel\UnixStreamSocket.hpp" />
+    <ClInclude Include="common.hpp" />
+    <ClInclude Include="DepLibSRTP.hpp" />
+    <ClInclude Include="DepLibUV.hpp" />
+    <ClInclude Include="DepOpenSSL.hpp" />
+    <ClInclude Include="handles\SignalsHandler.hpp" />
+    <ClInclude Include="handles\TcpConnection.hpp" />
+    <ClInclude Include="handles\TcpServer.hpp" />
+    <ClInclude Include="handles\Timer.hpp" />
+    <ClInclude Include="handles\UdpSocket.hpp" />
+    <ClInclude Include="handles\UnixStreamSocket.hpp" />
+    <ClInclude Include="Logger.hpp" />
+    <ClInclude Include="LogLevel.hpp" />
+    <ClInclude Include="MediaSoupError.hpp" />
+    <ClInclude Include="RTC\Codecs\Codecs.hpp" />
+    <ClInclude Include="RTC\Codecs\PayloadDescriptorHandler.hpp" />
+    <ClInclude Include="RTC\Codecs\VP8.hpp" />
+    <ClInclude Include="RTC\Consumer.hpp" />
+    <ClInclude Include="RTC\ConsumerListener.hpp" />
+    <ClInclude Include="RTC\DtlsTransport.hpp" />
+    <ClInclude Include="RTC\IceCandidate.hpp" />
+    <ClInclude Include="RTC\IceServer.hpp" />
+    <ClInclude Include="RTC\NackGenerator.hpp" />
+    <ClInclude Include="RTC\Parameters.hpp" />
+    <ClInclude Include="RTC\PlainRtpTransport.hpp" />
+    <ClInclude Include="RTC\Producer.hpp" />
+    <ClInclude Include="RTC\ProducerListener.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\AimdRateControl.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\BandwidthUsage.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\InterArrival.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\OveruseDetector.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\OveruseEstimator.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\RateControlInput.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\RateControlRegion.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimator.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimatorAbsSendTime.hpp" />
+    <ClInclude Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimatorSingleStream.hpp" />
+    <ClInclude Include="RTC\Router.hpp" />
+    <ClInclude Include="RTC\RTCP\Bye.hpp" />
+    <ClInclude Include="RTC\RTCP\CompoundPacket.hpp" />
+    <ClInclude Include="RTC\RTCP\Feedback.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackItem.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPs.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsAfb.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsFir.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsLei.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsPli.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsRemb.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsRpsi.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsSli.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsTst.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackPsVbcm.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackRtp.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackRtpEcn.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackRtpNack.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackRtpSrReq.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackRtpTllei.hpp" />
+    <ClInclude Include="RTC\RTCP\FeedbackRtpTmmb.hpp" />
+    <ClInclude Include="RTC\RTCP\Packet.hpp" />
+    <ClInclude Include="RTC\RTCP\ReceiverReport.hpp" />
+    <ClInclude Include="RTC\RTCP\Sdes.hpp" />
+    <ClInclude Include="RTC\RTCP\SenderReport.hpp" />
+    <ClInclude Include="RTC\RtpDataCounter.hpp" />
+    <ClInclude Include="RTC\RtpDictionaries.hpp" />
+    <ClInclude Include="RTC\RtpListener.hpp" />
+    <ClInclude Include="RTC\RtpMonitor.hpp" />
+    <ClInclude Include="RTC\RtpPacket.hpp" />
+    <ClInclude Include="RTC\RtpStream.hpp" />
+    <ClInclude Include="RTC\RtpStreamRecv.hpp" />
+    <ClInclude Include="RTC\RtpStreamSend.hpp" />
+    <ClInclude Include="RTC\SeqManager.hpp" />
+    <ClInclude Include="RTC\SrtpSession.hpp" />
+    <ClInclude Include="RTC\StunMessage.hpp" />
+    <ClInclude Include="RTC\TcpConnection.hpp" />
+    <ClInclude Include="RTC\TcpServer.hpp" />
+    <ClInclude Include="RTC\Transport.hpp" />
+    <ClInclude Include="RTC\TransportTuple.hpp" />
+    <ClInclude Include="RTC\UdpSocket.hpp" />
+    <ClInclude Include="RTC\WebRtcTransport.hpp" />
+    <ClInclude Include="Settings.hpp" />
+    <ClInclude Include="Utils.hpp" />
+    <ClInclude Include="Worker.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Channel\Notifier.cpp" />
+    <ClCompile Include="Channel\Request.cpp" />
+    <ClCompile Include="Channel\UnixStreamSocket.cpp" />
+    <ClCompile Include="DepLibSRTP.cpp" />
+    <ClCompile Include="DepLibUV.cpp" />
+    <ClCompile Include="DepOpenSSL.cpp" />
+    <ClCompile Include="handles\SignalsHandler.cpp" />
+    <ClCompile Include="handles\TcpConnection.cpp" />
+    <ClCompile Include="handles\TcpServer.cpp" />
+    <ClCompile Include="handles\Timer.cpp" />
+    <ClCompile Include="handles\UdpSocket.cpp" />
+    <ClCompile Include="handles\UnixStreamSocket.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="RTC\Codecs\Codecs.cpp" />
+    <ClCompile Include="RTC\Codecs\VP8.cpp" />
+    <ClCompile Include="RTC\Consumer.cpp" />
+    <ClCompile Include="RTC\DtlsTransport.cpp" />
+    <ClCompile Include="RTC\IceCandidate.cpp" />
+    <ClCompile Include="RTC\IceServer.cpp" />
+    <ClCompile Include="RTC\NackGenerator.cpp" />
+    <ClCompile Include="RTC\PlainRtpTransport.cpp" />
+    <ClCompile Include="RTC\Producer.cpp" />
+    <ClCompile Include="RTC\RemoteBitrateEstimator\AimdRateControl.cpp" />
+    <ClCompile Include="RTC\RemoteBitrateEstimator\InterArrival.cpp" />
+    <ClCompile Include="RTC\RemoteBitrateEstimator\OveruseDetector.cpp" />
+    <ClCompile Include="RTC\RemoteBitrateEstimator\OveruseEstimator.cpp" />
+    <ClCompile Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimatorAbsSendTime.cpp" />
+    <ClCompile Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimatorSingleStream.cpp" />
+    <ClCompile Include="RTC\Router.cpp" />
+    <ClCompile Include="RTC\RTCP\Bye.cpp" />
+    <ClCompile Include="RTC\RTCP\CompoundPacket.cpp" />
+    <ClCompile Include="RTC\RTCP\Feedback.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPs.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsAfb.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsFir.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsLei.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsPli.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsRemb.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsRpsi.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsSli.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsTst.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackPsVbcm.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackRtp.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackRtpEcn.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackRtpNack.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackRtpSrReq.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackRtpTllei.cpp" />
+    <ClCompile Include="RTC\RTCP\FeedbackRtpTmmb.cpp" />
+    <ClCompile Include="RTC\RTCP\Packet.cpp" />
+    <ClCompile Include="RTC\RTCP\ReceiverReport.cpp" />
+    <ClCompile Include="RTC\RTCP\Sdes.cpp" />
+    <ClCompile Include="RTC\RTCP\SenderReport.cpp" />
+    <ClCompile Include="RTC\RtpDataCounter.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\Media.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\Parameters.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtcpFeedback.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtcpParameters.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtpCodecMimeType.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtpCodecParameters.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtpEncodingParameters.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtpFecParameters.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtpHeaderExtensionParameters.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtpHeaderExtensionUri.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtpParameters.cpp" />
+    <ClCompile Include="RTC\RtpDictionaries\RtpRtxParameters.cpp" />
+    <ClCompile Include="RTC\RtpListener.cpp" />
+    <ClCompile Include="RTC\RtpMonitor.cpp" />
+    <ClCompile Include="RTC\RtpPacket.cpp" />
+    <ClCompile Include="RTC\RtpStream.cpp" />
+    <ClCompile Include="RTC\RtpStreamRecv.cpp" />
+    <ClCompile Include="RTC\RtpStreamSend.cpp" />
+    <ClCompile Include="RTC\SeqManager.cpp" />
+    <ClCompile Include="RTC\SrtpSession.cpp" />
+    <ClCompile Include="RTC\StunMessage.cpp" />
+    <ClCompile Include="RTC\TcpConnection.cpp" />
+    <ClCompile Include="RTC\TcpServer.cpp" />
+    <ClCompile Include="RTC\Transport.cpp" />
+    <ClCompile Include="RTC\TransportTuple.cpp" />
+    <ClCompile Include="RTC\UdpSocket.cpp" />
+    <ClCompile Include="RTC\WebRtcTransport.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Utils\Crypto.cpp" />
+    <ClCompile Include="Utils\File.cpp" />
+    <ClCompile Include="Utils\IP.cpp" />
+    <ClCompile Include="Worker.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Utils\grammar.rl" />
+    <None Include="Utils\IP.rl" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CA98FF2F-75D0-43B3-92A7-586520E95346}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>mediasoup</RootNamespace>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libeay32.lib;ssleay32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libeay32.lib;ssleay32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libeay32.lib;ssleay32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libeay32.lib;ssleay32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

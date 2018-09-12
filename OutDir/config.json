@@ -1,0 +1,43 @@
+{
+	"domain" : "127.0.0.1",
+	"tls"    :
+	{
+		"cert" : "../../certs/rainstream.localhost.cert.pem",
+		"key"  : "../../certs/rainstream.localhost.key.pem"
+	},
+	"rainstream"    :
+	{
+		"logLevel" : "debug",
+		"logTags"  : [ "info", "rtp", "rtcp", "rtx" ],
+		"rtcIPv4"  : true,
+		"rtcIPv6"  : false,
+		"rtcAnnouncedIPv4" : "192.168.10.126",
+		"rtcMaxPort" : 49999,
+		"rtcMinPort" : 40000,
+		"numWorkers" : 1,
+		
+		"mediaCodecs"      :
+		[
+			{
+				"kind"       : "audio",
+				"name"       : "opus",
+				"clockRate"  : 48000,
+				"channels"   : 2,
+				"parameters" :
+				{
+					"useinbandfec" : 1
+				}
+			},
+			{
+				"kind"       : "video",
+				"name"       : "H264",
+				"clockRate"  : 90000,
+				"parameters" :
+				{
+					"packetization-mode" : 1
+				}
+			}
+		],
+		"maxBitrate" : 500000
+	}
+}

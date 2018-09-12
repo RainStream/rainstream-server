@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="include\RainStream\Channel.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\Consumer.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\EnhancedEventEmitter.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\errors.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\Logger.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\ortc.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\Peer.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\PlainRtpTransport.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\Producer.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\RainStream.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\RainStreamInc.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\Room.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\Server.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\StringUtils.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\supportedRtpCapabilities.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\utils.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\WebRtcTransport.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\Worker.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+    <ClInclude Include="src\process\PipeStreamSocket.hpp">
+      <Filter>src\process</Filter>
+    </ClInclude>
+    <ClInclude Include="src\process\Socket.hpp">
+      <Filter>src\process</Filter>
+    </ClInclude>
+    <ClInclude Include="src\process\SubProcess.hpp">
+      <Filter>src\process</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RainStream\Request.hpp">
+      <Filter>include\RainStream</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Channel.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Consumer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EnhancedEventEmitter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Logger.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ortc.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Peer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlainRtpTransport.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Producer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RainStream.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Room.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Server.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StringUtils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WebRtcTransport.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Worker.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\process\PipeStreamSocket.cpp">
+      <Filter>src\process</Filter>
+    </ClCompile>
+    <ClCompile Include="src\process\Socket.cpp">
+      <Filter>src\process</Filter>
+    </ClCompile>
+    <ClCompile Include="src\process\SubProcess.cpp">
+      <Filter>src\process</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Request.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{486eaa17-9599-4b71-966c-da2d1eeaf540}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{c3853e64-9a95-43bc-bfa1-66e3e025d7d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\RainStream">
+      <UniqueIdentifier>{a9bcc2b6-38f9-4f4a-a7a8-73076d12a077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\process">
+      <UniqueIdentifier>{761448c5-23ee-4d24-8f89-7108b8e90535}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

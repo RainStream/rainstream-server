@@ -1,0 +1,78 @@
+#ifndef MS_RTC_RTP_STREAM_SEND_HPP
+#define MS_RTC_RTP_STREAM_SEND_HPP
+
+#include "RTC/RTCP/ReceiverReport.hpp"
+#include "RTC/RTCP/SenderReport.hpp"
+#include "RTC/RtpStream.hpp"
+#include <list>
+#include <vector>
+
+namespace RTC
+{
+	class RtpStreamSend : public RtpStream
+	{
+	private:
+		struct StorageItem
+		{
+			uint8_t store[RTC::MtuSize];
+		};
+
+	private:
+		struct BufferItem
+		{
+			uint16_t seq{ 0 }; // RTP seq.
+			uint64_t resentAtTime{ 0 };
+			RTC::RtpPacket* packet{ nullptr };
+		};
+
+	public:
+		RtpStreamSend(RTC::RtpStream::Params& params, size_t bufferSize);
+		~RtpStreamSend() override;
+
+		Json::Value GetStats() override;
+		bool ReceivePacket(RTC::RtpPacket* packet) override;
+		void ReceiveRtcpReceiverReport(RTC::RTCP::ReceiverReport* report);
+		void RequestRtpRetransmission(
+		  uint16_t seq, uint16_t bitmask, std::vector<RTC::RtpPacket*>& container);
+		RTC::RTCP::SenderReport* GetRtcpSenderReport(uint64_t now);
+		void SetRtx(uint8_t payloadType, uint32_t ssrc);
+		bool HasRtx() const;
+		void RtxEncode(RtpPacket* packet);
+		void ClearRetransmissionBuffer();
+		bool IsHealthy() const;
+
+	private:
+		void StorePacket(RTC::RtpPacket* packet);
+
+		/* Pure virtual methods inherited from RtpStream. */
+	protected:
+		void CheckStatus() override;
+
+	private:
+		// Passed by argument.
+		std::vector<StorageItem> storage;
+		using Buffer = std::list<BufferItem>;
+		Buffer buffer;
+		// Stats.
+		float rtt{ 0 };
+
+	private:
+		// Retransmittion related.
+		bool hasRtx{ false };
+		uint8_t rtxPayloadType{ 0 };
+		uint32_t rtxSsrc{ 0 };
+		uint16_t rtxSeq{ 0 };
+	};
+
+	inline bool RtpStreamSend::HasRtx() const
+	{
+		return this->hasRtx;
+	}
+
+	inline void RtpStreamSend::CheckStatus()
+	{
+		return;
+	}
+} // namespace RTC
+
+#endif
