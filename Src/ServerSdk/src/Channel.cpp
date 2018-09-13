@@ -1,6 +1,5 @@
 #include "RainStream.hpp"
 #include "Channel.hpp"
-#include "Request.hpp"
 #include "process/Socket.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Logger.hpp"
@@ -17,6 +16,8 @@ namespace rs
 		: logger(new Logger("Channel"))
 		, workerLogger(new Logger("rainstream-worker"))
 	{
+		int err;
+
 		logger->debug("constructor()");
 
 		// Unix Socket instance.
@@ -81,9 +82,9 @@ namespace rs
 		logger->debug("close()");
 
 		// Close every pending sent.
-		for (auto request : this->_pendingRequest)
+		for (auto sent : this->_pendingSent)
 		{
-			//request.second->clear();
+			sent.second.clear();
 		}
 
 		// Remove event listeners but leave a fake "error" hander
@@ -106,59 +107,36 @@ namespace rs
 	// 	}, 250);
 	}
 
-	void Channel::request(Request* request)
+	Defer Channel::request(std::string method, const Json& internal, const Json& data)
 	{
-		logger->debug("request() [method:%s, id:%d]", request->method.c_str(), request->id);
+		uint32_t id = utils::randomNumber();
 
-		Json data = request->toJson();
+		logger->debug("request() [method:%s, id:%d]", method.c_str(), id);
 
-		std::string nsPayload = _makePayload(data);
+		Json request = {
+			{ "id",id },
+			{ "method", method },
+			{ "internal", internal },
+			{ "data", data }
+		};
+
+		std::string nsPayload = _makePayload(request);
 
 		if (nsPayload.length() > NS_MAX_SIZE)
-			throw Error("request too big");
+			return promise::reject(Error("request too big"));
 
 		// This may raise if closed or remote side ended.
 		try
 		{
-			this->_pendingRequest.insert(std::make_pair(request->id, request));
 			this->_socket->Write(nsPayload);
 		}
 		catch (std::exception error)
 		{
-			throw Error(error.what());
+			return promise::reject(Error(error.what()));
 		}
-	}
 
-	Defer Channel::request(std::string method, const Json& internal, const Json& data)
-	{
-// 		uint32_t id = utils::randomNumber();
-// 
-// 		logger->debug("request() [method:%s, id:%d]", method.c_str(), id);
-// 
-// 		Json request = {
-// 			{ "id",id },
-// 			{ "method", method },
-// 			{ "internal", internal },
-// 			{ "data", data }
-// 		};
-// 
-// 		std::string nsPayload = _makePayload(request);
-// 
-// 		if (nsPayload.length() > NS_MAX_SIZE)
-// 			return promise::reject(Error("request too big"));
-// 
-// 		// This may raise if closed or remote side ended.
-// 		try
-// 		{
-// 			this->_socket->Write(nsPayload);
-// 		}
-// 		catch (std::exception error)
-// 		{
-// 			return promise::reject(Error(error.what()));
-// 		}
-// 
 		return newPromise([=](Defer d) {
-			//this->_pendingSent.insert(std::make_pair(id, d));
+			this->_pendingSent.insert(std::make_pair(id, d));
 		});
 	}
 
@@ -179,30 +157,24 @@ namespace rs
 		{
 			uint32_t id = msg["id"].get<uint32_t>();
 
-			if (!this->_pendingRequest.count(id))
+			if (msg.count("accepted") && msg["accepted"].get<bool>())
+				logger->debug("request succeeded [id:%d]", id);
+			else
+				logger->error("request failed [id:%d, reason:\"%s\"]", id, msg["reason"].get<std::string>().c_str());
+
+			if (!this->_pendingSent.count(id))
 			{
 				logger->error("received Response does not match any sent Request");
 
 				return;
 			}
 
-			Request* request = this->_pendingRequest[id];
+			auto sent = this->_pendingSent[id];
 
-			if (msg.value("accepted", false))
-			{
-				Json data = msg["data"];
-				request->Accept(data);
-
-				logger->debug("request succeeded [id:%d]", id);
-			}
-			else if (msg.value("rejected", false))
-			{
-				std::string reason = msg.value("reason", std::string());
-				request->Reject(reason);
-
-				logger->error("request failed [id:%d, reason:\"%s\"]", id, reason.c_str());
-			}
-				
+			if (msg.count("accepted") && msg["accepted"].get<bool>())
+				sent.resolve(msg["data"]);
+			else if (msg.count("rejected") && msg["rejected"].get<bool>())
+				sent.reject(Error(msg["reason"].get<std::string>()));
 		}
 		// If a Notification emit it to the corresponding entity.
 		else if (msg.count("targetId") && msg.count("event"))

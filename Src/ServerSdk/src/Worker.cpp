@@ -1,7 +1,6 @@
 #include "RainStream.hpp"
 #include "Worker.hpp"
 #include "Channel.hpp"
-#include "Request.hpp"
 #include "Logger.hpp"
 #include "process/SubProcess.hpp"
 
@@ -57,18 +56,40 @@ namespace rs
 		}
 	}
 
-	void Worker::dump()
+	Defer Worker::dump()
 	{
 		logger->debug("dump()");
 
-		this->_channel->request(new Request("worker.dump"));
+		return this->_channel->request("worker.dump")
+			.then([=](const Json& data)
+		{
+			logger->debug("\"worker.dump\" request succeeded");
+
+			return data;
+		})
+			.fail([=](Error error)
+		{
+			logger->error("\"worker.dump\" request failed: %s", error.ToString().c_str());
+
+			throw error;
+		});
 	}
 
-	void Worker::updateSettings(Json& spawnOptions)
+	Defer Worker::updateSettings(Json& spawnOptions)
 	{
 		logger->debug("updateSettings() [spawnOptions:%s]", spawnOptions.dump().c_str());
 
-		this->_channel->request(new Request("worker.updateSettings", Json::object(), spawnOptions));
+		return this->_channel->request("worker.updateSettings", nullptr, spawnOptions)
+			.then([=]()
+		{
+			logger->debug("\"worker.updateSettings\" request succeeded");
+		})
+			.fail([=](Error error)
+		{
+			logger->error("\"worker.updateSettings\" request failed: %s", error.ToString().c_str());
+
+			throw error;
+		});
 	}
 
 	/**
@@ -92,8 +113,6 @@ namespace rs
 			this->_rooms.erase(room);
 		});
 
-		this->_channel->request(new Request("worker.createRouter", internal));
-
 		this->_channel->request("worker.createRouter", internal)
 			.then([=]()
 		{
@@ -107,45 +126,5 @@ namespace rs
 		});
 
 		return room;
-	}
-
-	void Worker::OnChannelRequest(bool result, Request* request, Json& data)
-	{
-		switch (request->methodId)
-		{
-		case Request::MethodId::WORKER_DUMP:
-		{
-			if (result)
-			{
-				logger->debug("\"worker.dump\" request succeeded");
-			}
-			else
-			{
-				logger->error("\"worker.dump\" request failed: %s", 
-					data.value("reason",std::string()).c_str());
-
-				//throw error;
-			}
-		}
-			break;
-		case Request::MethodId::WORKER_CREATE_ROUTER:
-			break;
-		case Request::MethodId::WORKER_UPDATE_SETTINGS:
-		{
-			if (result)
-			{
-				logger->debug("\"worker.updateSettings\" request succeeded");
-			}
-			else
-			{
-				logger->error("\"worker.updateSettings\" request failed: %s",
-					data.value("reason", std::string()).c_str());
-
-				//throw error;
-			}
-		}
-			break;
-
-		}
 	}
 }

@@ -185,7 +185,6 @@
     <ClInclude Include="include\RainStream\Producer.hpp" />
     <ClInclude Include="include\RainStream\RainStream.hpp" />
     <ClInclude Include="include\RainStream\RainStreamInc.hpp" />
-    <ClInclude Include="include\RainStream\Request.hpp" />
     <ClInclude Include="include\RainStream\Room.hpp" />
     <ClInclude Include="include\RainStream\Server.hpp" />
     <ClInclude Include="include\RainStream\StringUtils.hpp" />
@@ -210,7 +209,6 @@
     <ClCompile Include="src\process\SubProcess.cpp" />
     <ClCompile Include="src\Producer.cpp" />
     <ClCompile Include="src\RainStream.cpp" />
-    <ClCompile Include="src\Request.cpp" />
     <ClCompile Include="src\Room.cpp" />
     <ClCompile Include="src\Server.cpp" />
     <ClCompile Include="src\StringUtils.cpp" />

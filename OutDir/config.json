@@ -11,7 +11,7 @@
 		"logTags"  : [ "info", "rtp", "rtcp", "rtx" ],
 		"rtcIPv4"  : true,
 		"rtcIPv6"  : false,
-		"rtcAnnouncedIPv4" : "192.168.10.126",
+		"rtcAnnouncedIPv4" : "172.20.55.60",
 		"rtcMaxPort" : 49999,
 		"rtcMinPort" : 40000,
 		"numWorkers" : 1,

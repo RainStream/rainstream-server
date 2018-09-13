@@ -18,9 +18,9 @@ namespace rs
 
 		void close();
 
-		void dump();
+		Defer dump();
 
-		void updateSettings(Json& options);
+		Defer updateSettings(Json& options);
 
 		/**
 		 * Create a Room instance.
@@ -29,8 +29,6 @@ namespace rs
 		 */
 		Room* CreateRoom(const Json& data);
 
-	protected:
-		void OnChannelRequest(bool result, Request* request, Json& data);
 
 	private:
 		std::string _id;

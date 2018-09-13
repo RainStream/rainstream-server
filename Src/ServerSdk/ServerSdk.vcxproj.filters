@@ -64,9 +64,6 @@
     <ClInclude Include="src\process\SubProcess.hpp">
       <Filter>src\process</Filter>
     </ClInclude>
-    <ClInclude Include="include\RainStream\Request.hpp">
-      <Filter>include\RainStream</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Channel.cpp">
@@ -122,9 +119,6 @@
     </ClCompile>
     <ClCompile Include="src\process\SubProcess.cpp">
       <Filter>src\process</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Request.cpp">
-      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
