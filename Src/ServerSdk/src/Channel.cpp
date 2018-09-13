@@ -140,7 +140,7 @@ namespace rs
 		});
 	}
 
-	void Channel::addEventListener(uint32_t id, EventListener* listener)
+	void Channel::addEventListener(uint32_t id, ChannelListener* listener)
 	{
 		_eventListeners.insert(std::make_pair(id, listener));
 	}

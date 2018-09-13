@@ -12,7 +12,7 @@ namespace rs
 	class Producer;
 	class WebRtcTransport;
 
-	class Consumer : public EnhancedEventEmitter, public EventListener
+	class Consumer : public ChannelListener , public EventBus
 	{
 	public:
 		Consumer(Peer* peer, Producer* source, const Json& internal, const Json& data, Channel* channel);
@@ -212,7 +212,7 @@ namespace rs
 		void _handleWorkerNotifications();
 
 	protected:
-		/* Methods inherited from Channel EventListener. */
+		/* Methods inherited from Channel ChannelListener. */
 		void onEvent(std::string event, Json data) override;
 
 	private:

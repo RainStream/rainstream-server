@@ -9,7 +9,7 @@ namespace rs
 {
 	class Logger;
 	class Socket;
-	class EventListener;
+	class ChannelListener;
 
 	class Channel
 	{
@@ -20,7 +20,7 @@ namespace rs
 
 		Defer request(std::string method, const Json& internal = Json::object(), const Json& data = Json::object());
 
-		void addEventListener(uint32_t id, EventListener* listener);
+		void addEventListener(uint32_t id, ChannelListener* listener);
 		void off(uint32_t id);
 
 	protected:
@@ -30,7 +30,7 @@ namespace rs
 
 	private:
 		std::unordered_map<uint32_t, Defer> _pendingSent;
-		std::unordered_map<uint32_t, EventListener*> _eventListeners;
+		std::unordered_map<uint32_t, ChannelListener*> _eventListeners;
 
 		Socket* _socket{ nullptr };
 

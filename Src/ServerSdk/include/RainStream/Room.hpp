@@ -18,7 +18,7 @@ namespace rs
 
 	typedef std::set<Room*> Rooms;
 
-	class Room : public EnhancedEventEmitter, public EventListener
+	class Room : public EnhancedEventEmitter, public ChannelListener
 	{
 	public:
 		Room(const Json& internal, const Json& data, Channel* channel);
@@ -77,7 +77,7 @@ namespace rs
 		void _handleWorkerNotifications();
 
 	protected:
-		/* Methods inherited from Channel EventListener. */
+		/* Methods inherited from Channel ChannelListener. */
 		void onEvent(std::string event, Json data) override;
 
 	private:

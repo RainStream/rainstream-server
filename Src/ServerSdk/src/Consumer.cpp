@@ -13,8 +13,7 @@ namespace rs
 	const std::set<std::string> PROFILES = { "default", "low", "medium", "high" };
 
 	Consumer::Consumer(Peer* peer, Producer* source, const Json& internal, const Json& data, Channel* channel)
-		: EnhancedEventEmitter()
-		, logger(new Logger("Consumer"))
+		: logger(new Logger("Consumer"))
 	{
 		logger->debug("constructor()");
 
@@ -209,11 +208,11 @@ namespace rs
 
 			// Don"t notify "consumerClosed" if the Peer is already closed.
 			if (!this->peer()->closed())
-				this->emit("@notify", "consumerClosed", data);
+				this->doNotify("consumerClosed", data);
 		}
 
-		this->emit("@close");
-		this->safeEmit("close");
+		this->doEvent("@close");
+		this->doEvent("close");
 
 		// Remove notification subscriptions.
 		uint32_t consumerId = this->_internal["consumerId"].get<uint32_t>();
@@ -337,7 +336,7 @@ namespace rs
 			this->_transport = transport;
 			this->_data = data;
 
-			transport->on("@close", [=]()
+			transport->addEventListener("@close", [=](Json data)
 			{
 				this->_internal["transportId"] = undefined;
 				this->_transport = undefined;
@@ -389,7 +388,7 @@ namespace rs
 					{ "appData", appData}
 				};
 
-				this->emit("@notify", "consumerPaused", data);
+				this->doNotify("consumerPaused", data);
 			}
 		}
 
@@ -403,7 +402,7 @@ namespace rs
 			logger->error("\"consumer.pause\" request failed: %s", error.ToString().c_str());
 		});
 
-		this->safeEmit("pause", "local", appData);
+		this->doEvent("pause", { { "local", "local" }, { "appData" , appData } });
 
 		// Return true if really paused.
 		return this->paused();
@@ -436,7 +435,7 @@ namespace rs
 			logger->error("\"consumer.pause\" request failed: %s", error.ToString().c_str());
 		});
 
-		this->safeEmit("pause", "remote", appData);
+		this->doEvent("pause", { { "local", "remote" }, { "appData" , appData } });
 	}
 
 	/**
@@ -475,7 +474,7 @@ namespace rs
 					{ "appData", appData }
 				};
 
-				this->emit("@notify", "consumerResumed", data);
+				this->doNotify("consumerResumed", data);
 			}
 		}
 
@@ -492,7 +491,7 @@ namespace rs
 			});
 		}
 
-		this->safeEmit("resume", "local", appData);
+		this->doEvent("resume", { { "local", "local" }, { "appData" , appData } });
 
 		// Return true if not paused.
 		return !this->paused();
@@ -528,7 +527,7 @@ namespace rs
 			});
 		}
 
-		this->safeEmit("resume", "remote", appData);
+		this->doEvent("resume", { { "local", "remote" }, { "appData" , appData } });
 	}
 
 	/**
@@ -577,7 +576,7 @@ namespace rs
 					{ "profile" , profile}
 				};
 
-				this->emit("@notify", "consumerPreferredProfileSet", data);
+				this->doNotify("consumerPreferredProfileSet", data);
 			}
 		})
 			.fail([=](Error error)
@@ -742,7 +741,7 @@ namespace rs
 					{ stats }
 				};
 
-				this->emit("@notify", "consumerStats", data);
+				this->doNotify("consumerStats", data);
 			})
 				.fail([=](Error error)
 			{
@@ -769,7 +768,7 @@ namespace rs
 				{ stats }
 				};
 
-				this->emit("@notify", "consumerStats", data);
+				this->doNotify("consumerStats", data);
 			})
 				.fail([=](Error error)
 			{
@@ -832,11 +831,11 @@ namespace rs
 						{ "peerName" , this->peer()->name()}
 					};
 
-					this->emit("@notify", "consumerPaused", data2);
+					this->doNotify("consumerPaused", data2);
 				}
 			}
 
-			this->safeEmit("pause", "source");
+			this->doEvent("pause", data);
 		}
 		else if (event == "sourceresumed")
 		{
@@ -856,11 +855,11 @@ namespace rs
 						{ "peerName" , this->peer()->name() }
 					};
 
-					this->emit("@notify", "consumerResumed", data2);
+					this->doNotify("consumerResumed", data2);
 				}
 			}
 
-			this->safeEmit("resume", "source");
+			this->doEvent("resume", data);
 		}
 		else if (event == "effectiveprofilechange")
 		{
@@ -887,7 +886,7 @@ namespace rs
 				}
 			}
 
-			this->safeEmit("effectiveprofilechange", this->_effectiveProfile);
+			this->doEvent("effectiveprofilechange", data);
 		}
 		else
 		{

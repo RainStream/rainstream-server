@@ -9,7 +9,6 @@ namespace rs
 	class Server;
 	class Room;
 	class Logger;
-	class Transport;
 }
 
 namespace protoo

@@ -344,7 +344,7 @@ namespace rs
 
 		// Store the Peer and remove it when closed. Also notify allthe other Peers.
 		this->_peers[peer->name()] = peer;
-		peer->on("@close", [=](Json appData2)
+		peer->addEventListener("@close", [=](Json appData2)
 		{
 			this->_peers.erase(peer->name());
 
@@ -373,9 +373,13 @@ namespace rs
 		}
 
 		// Listen for new Producers so we can create new Consumers for other Peers.
-		peer->on("@newproducer", [=](Producer* producer)
+		peer->addEventListener("@newproducer", [=](Json data)
 		{
-			this->_handleProducer(producer);
+			Producer* producer = peer->getProducerById(data.get<uint32_t>());
+			if (producer)
+			{
+				this->_handleProducer(producer);
+			}		
 		});
 
 		// Tell all the Peers (but us) about the new Peer.
@@ -397,7 +401,7 @@ namespace rs
 	{
 		// Store the Producer and remove it when closed.
 		this->_producers[producer->id()] = producer;
-		producer->on("@close", [=]()
+		producer->addEventListener("@close", [=](Json data)
 		{
 			this->_producers.erase(producer->id());
 		});

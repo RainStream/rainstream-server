@@ -166,7 +166,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ClusterServer.cpp" />
-    <ClCompile Include="handles\Transport.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Peer.cpp" />
     <ClCompile Include="Room.cpp" />
@@ -174,7 +173,6 @@
     <ClCompile Include="common.cpp" />
     <ClCompile Include="DepLibUV.cpp" />
     <ClCompile Include="handles\SignalsHandler.cpp" />
-    <ClCompile Include="handles\PipeStreamSocket.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Loop.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -186,13 +184,11 @@
   <ItemGroup>
     <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="common.hpp" />
-    <ClInclude Include="handles\Transport.hpp" />
     <ClInclude Include="Message.hpp" />
     <ClInclude Include="Peer.hpp" />
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="DepLibUV.hpp" />
     <ClInclude Include="handles\SignalsHandler.hpp" />
-    <ClInclude Include="handles\PipeStreamSocket.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="LogLevel.hpp" />
     <ClInclude Include="Loop.hpp" />

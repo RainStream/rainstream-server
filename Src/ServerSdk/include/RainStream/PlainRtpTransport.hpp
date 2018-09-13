@@ -8,7 +8,7 @@ namespace rs
 
 	class Channel;
 
-	class PlainRtpTransport : public EnhancedEventEmitter, public EventListener
+	class PlainRtpTransport : public EnhancedEventEmitter, public ChannelListener
 	{
 	public:
 		PlainRtpTransport(const Json& internal, const Json& data, Channel* channel);
@@ -54,7 +54,7 @@ namespace rs
 		void _handleWorkerNotifications();
 
 	protected:
-		/* Methods inherited from Channel EventListener. */
+		/* Methods inherited from Channel ChannelListener. */
 		void onEvent(std::string event, Json data) override;
 
 	private:

@@ -15,13 +15,7 @@
     </ClCompile>
     <ClCompile Include="DepLibUV.cpp" />
     <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="handles\PipeStreamSocket.cpp">
-      <Filter>handles</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="handles\Transport.cpp">
-      <Filter>handles</Filter>
-    </ClCompile>
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="ClusterServer.cpp" />
     <ClCompile Include="WebSocketClient.cpp" />
@@ -40,12 +34,6 @@
     </ClInclude>
     <ClInclude Include="DepLibUV.hpp" />
     <ClInclude Include="Settings.hpp" />
-    <ClInclude Include="handles\PipeStreamSocket.hpp">
-      <Filter>handles</Filter>
-    </ClInclude>
-    <ClInclude Include="handles\Transport.hpp">
-      <Filter>handles</Filter>
-    </ClInclude>
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="RainStreamError.hpp" />
     <ClInclude Include="ClusterServer.hpp" />

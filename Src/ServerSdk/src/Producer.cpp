@@ -10,8 +10,7 @@ namespace rs
 	const std::set<std::string> PROFILES = { "default", "low", "medium", "high" };
 
 	Producer::Producer(Peer* peer, WebRtcTransport*transport, const Json& internal, const Json& data, Channel* channel, const Json& options)
-		: EnhancedEventEmitter()
-		, logger(new Logger("Producer"))
+		: logger(new Logger("Producer"))
 	{
 
 		logger->debug("constructor()");
@@ -186,11 +185,11 @@ namespace rs
 				{ "appData", appData }
 			};
 
-			this->emit("@notify", "producerClosed", data);
+			this->doNotify("producerClosed", data);
 		}
 
-		this->emit("@close");
-		this->safeEmit("close", "local", appData);
+		this->doEvent("@close");
+		this->doEvent("close", { { "local", "local" }, { "appData" , appData } });
 
 		this->_destroy(notifyChannel);
 	}
@@ -213,8 +212,8 @@ namespace rs
 
 		this->_closed = true;
 
-		this->emit("@close");
-		this->safeEmit("close", "remote", appData);
+		this->doEvent("@close");
+		this->doEvent("close", { { "local", "remote" }, { "appData" , appData } });
 
 		this->_destroy(notifyChannel);
 	}
@@ -299,7 +298,7 @@ namespace rs
 			{ "appData", appData }
 		};
 
-		this->emit("@notify", "producerPaused", data);
+		this->doNotify("producerPaused", data);
 
 		this->_channel->request("producer.pause", this->_internal)
 			.then([=]()
@@ -311,7 +310,7 @@ namespace rs
 			logger->error("\"producer.pause\" request failed: %s", error.ToString().c_str());
 		});
 
-		this->safeEmit("pause", "local", appData);
+		this->doEvent("pause", { { "local", "local" }, { "appData" , appData } });
 
 		// Return true if really paused.
 		return this->paused();
@@ -344,7 +343,7 @@ namespace rs
 			logger->error("\"producer.pause\" request failed: %s", error.ToString().c_str());
 		});
 
-		this->safeEmit("pause", "remote", appData);
+		this->doEvent("pause", { { "local", "remote" }, { "appData" , appData } });
 	}
 
 	/**
@@ -378,7 +377,7 @@ namespace rs
 			{ "appData", appData }
 		};
 
-		this->emit("@notify", "producerResumed", data);
+		this->doNotify("producerResumed", data);
 
 		if (!this->_remotelyPaused)
 		{
@@ -393,7 +392,7 @@ namespace rs
 			});
 		}
 
-		this->safeEmit("resume", "local", appData);
+		this->doEvent("resume", { { "local", "local" }, { "appData" , appData } });
 
 		// Return true if not paused.
 		return !this->paused();
@@ -429,7 +428,7 @@ namespace rs
 			});
 		}
 
-		this->safeEmit("resume", "remote", appData);
+		this->doEvent("resume", { { "local", "remote" }, { "appData" , appData } });
 	}
 
 	/**
@@ -561,7 +560,7 @@ namespace rs
 			this->getStats()
 				.then([=](Json stats)
 			{
-				this->emit("@notify", "producerStats", Json{ {"id" , this->id() }, stats });
+				this->doNotify("producerStats", Json{ {"id" , this->id() }, stats });
 			})
 				.fail([=](Error error)
 			{
@@ -581,7 +580,7 @@ namespace rs
 			this->getStats()
 				.then([=](Json stats)
 			{
-				this->emit("@notify", "producerStats", Json{ { "id", this->id() }, stats });
+				this->doNotify("producerStats", Json{ { "id", this->id() }, { "stats" , stats } });
 			})
 				.fail([=](Error error)
 			{
@@ -617,7 +616,7 @@ namespace rs
 	{
 		// On closure, the worker Transport closes all its Producers and the client
 		// side gets producer.on("unhandled").
-		this->transport()->on("@close", [=]()
+		this->transport()->addEventListener("@close", [=](Json data)
 		{
 			if (!this->_closed)
 				this->close(undefined, false);

@@ -11,7 +11,8 @@
 namespace rs
 {
 	class Logger;
-	class Peer : public EnhancedEventEmitter
+
+	class Peer : public EventBus
 	{
 	public:
 		Peer(const Json& internal, const Json& data, Channel* channel, SandBox sandbox);

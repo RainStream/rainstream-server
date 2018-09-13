@@ -219,14 +219,16 @@ void Room::_handleMediaRoom()
 
 void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 {
-	mediaPeer->on("notify", [=](Json notification)
+	mediaPeer->addEventListener("notify", [=](Json notification)
 	{
 		protooPeer->send("mediasoup-notification", notification)
 			.fail([]() {});
 	});
 
-	mediaPeer->on("newtransport", [=](rs::WebRtcTransport* transport)
+	mediaPeer->addEventListener("newtransport", [=](Json data)
 	{
+		rs::WebRtcTransport* transport = mediaPeer->getTransportById(data.get<uint32_t>());
+
 		logger->info(
 			"mediaPeer 'newtransport' event [id:%d, direction:%s]",
 			transport->id(), transport->direction().c_str());
@@ -236,7 +238,7 @@ void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 		{
 			this->_updateMaxBitrate();
 
-			transport->on("close", [=]()
+			transport->addEventListener("close", [=](Json data)
 			{
 				this->_updateMaxBitrate();
 			});
@@ -245,15 +247,17 @@ void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 		this->_handleMediaTransport(transport);
 	});
 
-	mediaPeer->on("newproducer", [=](rs::Producer* producer)
+	mediaPeer->addEventListener("newproducer", [=](Json data)
 	{
+		rs::Producer* producer = mediaPeer->getProducerById(data.get<uint32_t>());
 		logger->info("mediaPeer 'newproducer' event [id:%d]", producer->id());
 
 		this->_handleMediaProducer(producer);
 	});
 
-	mediaPeer->on("newconsumer", [=](rs::Consumer* consumer)
+	mediaPeer->addEventListener("newconsumer", [=](Json data)
 	{
+		rs::Consumer* consumer = mediaPeer->getConsumerById(data);
 		logger->info("mediaPeer 'newconsumer' event [id:%d]", consumer->id());
 
 		this->_handleMediaConsumer(consumer);
@@ -283,7 +287,7 @@ void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 
 void Room::_handleMediaTransport(rs::WebRtcTransport* transport)
 {
-	transport->on("close", [=](Json originator)
+	transport->addEventListener("close", [=](Json originator)
 	{
 		logger->info(
 			"Transport 'close' event [originator:%s]", originator.dump().c_str());
@@ -292,19 +296,19 @@ void Room::_handleMediaTransport(rs::WebRtcTransport* transport)
 
 void Room::_handleMediaProducer(rs::Producer* producer)
 {
-	producer->on("close", [=](Json originator)
+	producer->addEventListener("close", [=](Json originator)
 	{
 		logger->info(
 			"Producer 'close' event [originator:%s]", originator.dump().c_str());
 	});
 
-	producer->on("pause", [=](Json originator)
+	producer->addEventListener("pause", [=](Json originator)
 	{
 		logger->info(
 			"Producer 'pause' event [originator:%s]", originator.dump().c_str());
 	});
 
-	producer->on("resume", [=](Json originator)
+	producer->addEventListener("resume", [=](Json originator)
 	{
 		logger->info(
 			"Producer 'resume' event [originator:%s]", originator.dump().c_str());
@@ -313,28 +317,28 @@ void Room::_handleMediaProducer(rs::Producer* producer)
 
 void Room::_handleMediaConsumer(rs::Consumer* consumer)
 {
-	consumer->on("close", [=](Json originator)
+	consumer->addEventListener("close", [=](Json originator)
 	{
 		logger->info(
 			"Consumer 'close' event [originator:%s]", originator.dump().c_str());
 	});
 
-	consumer->on("pause", [=](Json originator)
+	consumer->addEventListener("pause", [=](Json originator)
 	{
 		logger->info(
 			"Consumer 'pause' event [originator:%s]", originator.dump().c_str());
 	});
 
-	consumer->on("resume", [=](Json originator)
+	consumer->addEventListener("resume", [=](Json originator)
 	{
 		logger->info(
 			"Consumer 'resume' event [originator:%s]", originator.dump().c_str());
 	});
 
-	consumer->on("effectiveprofilechange", [=](std::string profile)
+	consumer->addEventListener("effectiveprofilechange", [=](Json profile)
 	{
 		logger->info(
-			"Consumer 'effectiveprofilechange' event [profile:%s]", profile.c_str());
+			"Consumer 'effectiveprofilechange' event [profile:%s]", profile.dump().c_str());
 	});
 
 	// If video, initially make it "low" profile unless this is for the current

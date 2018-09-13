@@ -9,8 +9,7 @@ namespace rs
 	const std::set<std::string> KINDS = { "audio", "video", "depth" };
 
 	Peer::Peer(const Json& internal, const Json& data, Channel* channel, SandBox sandbox)
-		: EnhancedEventEmitter()
-		, logger(new Logger("Peer"))
+		: logger(new Logger("Peer"))
 	{
 		logger->debug("constructor() [internal:%s]", internal.dump().c_str());
 
@@ -128,8 +127,8 @@ namespace rs
 
 		this->_closed = true;
 
-		this->emit("@close", appData);
-		this->safeEmit("close", "local", appData);
+		this->doEvent("@close", appData);
+		this->doEvent("close", appData);
 
 		// Close all the Producers.
 		for (auto it : this->_producers)
@@ -167,8 +166,8 @@ namespace rs
 
 		this->_closed = true;
 
-		this->emit("@close", appData);
-		this->safeEmit("close", "remote", appData);
+		this->doEvent("@close", appData);
+		this->doEvent("close", appData);
 
 		// Close all the Producers.
 		for (auto it : this->_producers)
@@ -732,12 +731,12 @@ namespace rs
 
 		// Store the Consumer and remove it when closed.
 		this->_consumers[consumer->id()] = consumer;
-		consumer->on("@close", [=]()
+		consumer->addEventListener("@close", [=](Json data)
 		{
 			this->_consumers.erase(consumer->id());
 		});
 
-		consumer->on("@notify", [=](std::string method, Json data2)
+		consumer->addNotifyListener([=](std::string method, Json data2)
 		{
 			this->_sendNotification(method, data2);
 		});
@@ -747,18 +746,18 @@ namespace rs
 				{ "kind", consumer->kind() }
 			}
 		)
-			.then([=]()
+		.then([=]()
 		{
 			logger->debug("\"router.createConsumer\" request succeeded");
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			logger->error("\"router.createConsumer\" request failed: %s", error.ToString().c_str());
 
 			throw error;
 		});
 
-		this->safeEmit("newconsumer", consumer);
+		this->doEvent("newconsumer", consumer->id());
 
 		if (notifyClient)
 			this->_sendNotification("newConsumer", consumer->toJson());
@@ -781,7 +780,7 @@ namespace rs
 
 		logger->debug("_sendNotification() [method:%s]", method.c_str());
 
-		this->safeEmit("notify", notification);
+		this->doEvent("notify", notification);
 	}
 
 	Defer Peer::_createWebRtcTransport(uint32_t id, std::string direction, Json options, Json appData)
@@ -808,14 +807,14 @@ namespace rs
 
 			// Store the WebRtcTransport and remove it when closed.
 			this->_transports[transport->id()] = transport;
-			transport->on("@close", [=]() {this->_transports.erase(transport->id()); });
+			transport->addEventListener("@close", [=](Json data) {this->_transports.erase(transport->id()); });
 
-			transport->on("@notify", [=](std::string method, Json data2)
+			transport->addNotifyListener([=](std::string method, Json data2)
 			{
 				this->_sendNotification(method, data2);
 			});
 
-			this->safeEmit("newtransport", transport);
+			this->doEvent("newtransport", transport->id());
 
 			return transport;
 		})
@@ -904,15 +903,15 @@ namespace rs
 
 			// Store the Producer and remove it when closed.
 			this->_producers[producer->id()] = producer;
-			producer->on("@close", [=]() { this->_producers.erase(producer->id()); });
+			producer->addEventListener("@close", [=](Json data) { this->_producers.erase(producer->id()); });
 
-			producer->on("@notify", [=](std::string method, Json data2)
+			producer->addNotifyListener([=](std::string method, Json data2)
 			{
 				this->_sendNotification(method, data2);
 			});
 
-			this->emit("@newproducer", producer);
-			this->safeEmit("newproducer", producer);
+			this->doEvent("@newproducer", producer->id());
+			this->doEvent("newproducer", producer->id());
 
 			// Ensure we return nothing.
 			return Json::object();

@@ -7,8 +7,7 @@ namespace rs
 {
 
 	WebRtcTransport::WebRtcTransport(const Json& internal, const Json& data, Channel* channel)
-		: EnhancedEventEmitter()
-		, logger(new Logger("WebRtcTransport"))
+		: logger(new Logger("WebRtcTransport"))
 	{
 		logger->debug("constructor()");
 
@@ -160,10 +159,10 @@ namespace rs
 			clearInterval(this->_statsInterval);
 		}
 
-		this->emit("@notify", "transportClosed", Json{ { "id" , this->id() }, appData });
+		this->doNotify("transportClosed", { { "id" , this->id() }, {"appData",appData} });
 
-		this->emit("@close");
-		this->safeEmit("close", "local", appData);
+		this->doEvent("@close");
+		this->doEvent("close", { { "local", "local" }, { "appData" , appData } });
 
 		this->_destroy(notifyChannel);
 	}
@@ -186,8 +185,8 @@ namespace rs
 
 		this->_closed = true;
 
-		this->emit("@close");
-		this->safeEmit("close", "remote", appData);
+		this->doEvent("@close");
+		this->doEvent("close", { { "local", "remote" }, { "appData" , appData } });
 
 		this->_destroy(notifyChannel);
 	}
@@ -402,7 +401,7 @@ namespace rs
 		this->getStats()
 			.then([=](Json stats)
 		{
-			this->emit("@notify", "transportStats", Json{ {"id" , this->id() }, stats });
+			this->doNotify("transportStats", Json{ {"id" , this->id() }, stats });
 		})
 			.fail([=](Error error)
 		{
@@ -418,7 +417,7 @@ namespace rs
 			this->getStats()
 				.then([=](Json stats)
 			{
-				this->emit("@notify", "transportStats", Json{ { "id", this->id() }, stats });
+				this->doNotify("transportStats", Json{ { "id", this->id() }, stats });
 			})
 				.fail([=](Error error)
 			{
@@ -522,14 +521,14 @@ namespace rs
 			this->_data["iceSelectedTuple"] = data["iceSelectedTuple"];
 
 			// Emit it to the app.
-			this->safeEmit("iceselectedtuplechange", data["iceSelectedTuple"]);
+			this->doEvent("iceselectedtuplechange", data["iceSelectedTuple"]);
 		}
 		else if (event == "icestatechange")
 		{
 			this->_data["iceState"] = data["iceState"];
 
 			// Emit it to the app.
-			this->safeEmit("icestatechange", data["iceState"]);
+			this->doEvent("icestatechange", data["iceState"]);
 		}
 		else if (event == "dtlsstatechange")
 		{
@@ -539,7 +538,7 @@ namespace rs
 				this->_data["dtlsRemoteCert"] = data["dtlsRemoteCert"];
 
 			// Emit it to the app.
-			this->safeEmit("dtlsstatechange", data["dtlsState"]);
+			this->doEvent("dtlsstatechange", data["dtlsState"]);
 		}
 		else
 		{

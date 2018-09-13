@@ -10,7 +10,7 @@ namespace rs
 	class Channel;
 	class WebRtcTransport;
 
-	class Producer : public EnhancedEventEmitter, public EventListener
+	class Producer : public ChannelListener, public EventBus
 	{
 	public:
 		Producer(Peer* peer, WebRtcTransport*transport, const Json& internal, const Json& data, Channel* channel, const Json& options);
@@ -173,7 +173,7 @@ namespace rs
 		void _handleWorkerNotifications();
 
 	protected:
-		/* Methods inherited from Channel EventListener. */
+		/* Methods inherited from Channel ChannelListener. */
 		void onEvent(std::string event, Json data) override;
 
 	private:
