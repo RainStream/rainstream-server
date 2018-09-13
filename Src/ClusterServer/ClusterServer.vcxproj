@@ -184,7 +184,6 @@
     <ClCompile Include="WebSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Include\protocol.hpp" />
     <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="handles\Transport.hpp" />

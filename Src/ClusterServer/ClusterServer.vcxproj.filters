@@ -43,9 +43,6 @@
     <ClInclude Include="handles\PipeStreamSocket.hpp">
       <Filter>handles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Include\protocol.hpp">
-      <Filter>Protocol</Filter>
-    </ClInclude>
     <ClInclude Include="handles\Transport.hpp">
       <Filter>handles</Filter>
     </ClInclude>
@@ -63,9 +60,6 @@
     </Filter>
     <Filter Include="Utils">
       <UniqueIdentifier>{62189913-8d87-43c5-a6a3-91a40fb3797d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Protocol">
-      <UniqueIdentifier>{ab9d778c-5878-4de5-ab3a-73134c536793}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
