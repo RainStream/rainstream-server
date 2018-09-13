@@ -8,9 +8,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "protoo/Server.hpp"
-#include "protoo/WebSocketServer.hpp"
-#include "protoo/WebSocketTransport.hpp"
+#include "WebSocketServer.hpp"
+#include "WebSocketClient.hpp"
 
 
 /* Instance methods. */
@@ -80,8 +79,10 @@ void ClusterServer::OnRoomClose(std::string roomId)
 	rooms_.erase(roomId);
 }
 
-void ClusterServer::connectionrequest(std::string url, protoo::WebSocketTransport* transport)
+void ClusterServer::OnConnectRequest(protoo::WebSocketClient* transport)
 {
+	std::string url = transport->url();
+
 	std::string roomId = Utils::Url::Request(url, "roomId");
 	std::string peerName = Utils::Url::Request(url, "peerName");
 
@@ -122,5 +123,10 @@ void ClusterServer::connectionrequest(std::string url, protoo::WebSocketTranspor
 	}
 
 	room->handleConnection(peerName, transport);
+}
+
+void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
+{
+
 }
 

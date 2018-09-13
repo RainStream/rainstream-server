@@ -3,14 +3,14 @@
 #include "protoo/Peer.hpp"
 #include "protoo/Request.hpp"
 #include "protoo/Message.hpp"
-#include "protoo/WebSocketTransport.hpp"
+#include "WebSocketClient.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
 #include "RainStreamError.hpp"
 
 namespace protoo
 {
-	Peer::Peer(std::string peerName, protoo::WebSocketTransport* transport, Listener* listener)
+	Peer::Peer(std::string peerName, protoo::WebSocketClient* transport, Listener* listener)
 		: _peerName(peerName)
 		, _transport(transport)
 		, listener(listener)
@@ -147,7 +147,7 @@ namespace protoo
 		}
 	}
 
-	void Peer::onDisconnection(int code, const std::string& message)
+	void Peer::onClosed(int code, const std::string& message)
 	{
 		this->close();
 	}

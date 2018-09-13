@@ -17,7 +17,7 @@ namespace protoo
 	class Room;
 	class Peer;
 	class Request;
-	class WebSocketTransport;
+	class WebSocketClient;
 }
 
 class Room : public protoo::Peer::Listener
@@ -36,7 +36,7 @@ public:
 	std::string id();
 	void close();
 
-	void handleConnection(std::string peerName, protoo::WebSocketTransport* transport);
+	void handleConnection(std::string peerName, protoo::WebSocketClient* transport);
 
 	/* Methods inherited from protoo::Peer::Listener. */
 public:

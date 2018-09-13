@@ -7,7 +7,7 @@
 namespace protoo
 {
 	class Peer;
-	class WebSocketTransport;
+	class WebSocketClient;
 
 	class Room
 	{
@@ -21,7 +21,7 @@ namespace protoo
 
 		bool hasPeer(std::string peerName);
 		Peer* getPeer(std::string peerName);
-		Peer* createPeer(std::string peerName, WebSocketTransport* transport, Peer::Listener* listener);
+		Peer* createPeer(std::string peerName, WebSocketClient* transport, Peer::Listener* listener);
 		void spread(std::string method, Json data, std::set<std::string> excluded = std::set<std::string>());
 
 	protected:

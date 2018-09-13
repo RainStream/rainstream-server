@@ -19,7 +19,6 @@
       <Filter>handles</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ClusterServer.cpp" />
     <ClCompile Include="handles\Transport.cpp">
       <Filter>handles</Filter>
     </ClCompile>
@@ -30,28 +29,21 @@
       <Filter>protoo</Filter>
     </ClCompile>
     <ClCompile Include="Room.cpp" />
-    <ClCompile Include="protoo\Server.cpp">
-      <Filter>protoo</Filter>
-    </ClCompile>
-    <ClCompile Include="protoo\WebSocketServer.cpp">
-      <Filter>protoo</Filter>
-    </ClCompile>
-    <ClCompile Include="protoo\WebSocketTransport.cpp">
-      <Filter>protoo</Filter>
-    </ClCompile>
     <ClCompile Include="protoo\Message.cpp">
       <Filter>protoo</Filter>
     </ClCompile>
     <ClCompile Include="protoo\Request.cpp">
       <Filter>protoo</Filter>
     </ClCompile>
+    <ClCompile Include="ClusterServer.cpp" />
+    <ClCompile Include="WebSocketClient.cpp" />
+    <ClCompile Include="WebSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="LogLevel.hpp" />
     <ClInclude Include="Loop.hpp" />
-    <ClInclude Include="unistd.h" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="handles\SignalsHandler.hpp">
       <Filter>handles</Filter>
@@ -61,7 +53,6 @@
     <ClInclude Include="handles\PipeStreamSocket.hpp">
       <Filter>handles</Filter>
     </ClInclude>
-    <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="..\..\Include\protocol.hpp">
       <Filter>Protocol</Filter>
     </ClInclude>
@@ -75,15 +66,6 @@
       <Filter>protoo</Filter>
     </ClInclude>
     <ClInclude Include="Room.hpp" />
-    <ClInclude Include="protoo\Server.hpp">
-      <Filter>protoo</Filter>
-    </ClInclude>
-    <ClInclude Include="protoo\WebSocketServer.hpp">
-      <Filter>protoo</Filter>
-    </ClInclude>
-    <ClInclude Include="protoo\WebSocketTransport.hpp">
-      <Filter>protoo</Filter>
-    </ClInclude>
     <ClInclude Include="protoo\Message.hpp">
       <Filter>protoo</Filter>
     </ClInclude>
@@ -91,6 +73,9 @@
     <ClInclude Include="protoo\Request.hpp">
       <Filter>protoo</Filter>
     </ClInclude>
+    <ClInclude Include="ClusterServer.hpp" />
+    <ClInclude Include="WebSocketClient.hpp" />
+    <ClInclude Include="WebSocketServer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">

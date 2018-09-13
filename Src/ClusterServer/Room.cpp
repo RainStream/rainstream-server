@@ -8,7 +8,7 @@
 #include "protoo/Room.hpp"
 #include "protoo/Peer.hpp"
 #include "protoo/Request.hpp"
-#include "protoo/WebSocketTransport.hpp"
+#include "WebSocketClient.hpp"
 
 const uint32_t MAX_BITRATE = 3000000;
 const uint32_t MIN_BITRATE = 50000;
@@ -58,7 +58,7 @@ void Room::close()
 	this->listener->OnRoomClose(_roomId);
 }
 
-void Room::handleConnection(std::string peerName, protoo::WebSocketTransport* transport)
+void Room::handleConnection(std::string peerName, protoo::WebSocketClient* transport)
 {
 	logger->info("handleConnection() [peerName:'%s']", peerName.c_str());
 

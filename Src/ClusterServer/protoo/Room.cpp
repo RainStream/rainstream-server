@@ -44,7 +44,7 @@ namespace protoo
 		}
 	}
 
-	Peer* Room::createPeer(std::string peerName, WebSocketTransport* transport, Peer::Listener* listener)
+	Peer* Room::createPeer(std::string peerName, WebSocketClient* transport, Peer::Listener* listener)
 	{
 		Peer* peer = new Peer(peerName, transport, listener);
 

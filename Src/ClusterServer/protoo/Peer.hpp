@@ -2,14 +2,14 @@
 #define PROTOO_PEER_HPP
 
 #include "common.hpp"
-#include "protoo/WebSocketTransport.hpp"
+#include "WebSocketClient.hpp"
 
 namespace protoo
 {
 	class Request;
-	class WebSocketTransport;
+	class WebSocketClient;
 
-	class Peer : public WebSocketTransport::Listener
+	class Peer : public WebSocketClient::Listener
 	{
 	public:
 		class Listener
@@ -20,7 +20,7 @@ namespace protoo
 			virtual void OnNotification(Peer* peer, Json notification) = 0;
 		};
 	public:
-		explicit Peer(std::string peerName, protoo::WebSocketTransport* transport, Listener* listener);
+		explicit Peer(std::string peerName, protoo::WebSocketClient* transport, Listener* listener);
 		virtual ~Peer();
 
 	public:
@@ -34,7 +34,7 @@ namespace protoo
 
 	protected:
 		virtual void onMessage(const std::string& message);
-		virtual void onDisconnection(int code, const std::string& message);
+		virtual void onClosed(int code, const std::string& message);
 
 	protected:
 		void _handleTransport();
@@ -46,7 +46,7 @@ namespace protoo
 		std::string _peerName;
 		rs::Peer* _peer{ nullptr };
 		Listener* listener{ nullptr };
-		WebSocketTransport* _transport{ nullptr };
+		WebSocketClient* _transport{ nullptr };
 
 		// Closed flag.
 		bool _closed = false;
