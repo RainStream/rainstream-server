@@ -3,10 +3,8 @@
 #include "Room.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
-#include <math.h>
-
-#include "protoo/Request.hpp"
 #include "WebSocketClient.hpp"
+#include <math.h>
 
 const uint32_t MAX_BITRATE = 3000000;
 const uint32_t MIN_BITRATE = 50000;
@@ -98,34 +96,34 @@ void Room::OnPeerClose(protoo::Peer* peer)
 // 				}, 5000);
 }
 
-void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
+void Room::OnPeerRequest(protoo::Peer* peer, Json& request)
 {
-	std::string method = request->method;
+	uint32_t id = request.value("id", 0);
+	std::string method = request["method"].get<std::string>();
 
 	logger->debug("protoo 'request' event [method:%s, peer:'%s']",
 		method.c_str(), peer->id().c_str());
 
 	if (method == "mediasoup-request")
 	{
-		Json mediasoupRequest = request->data;
+		Json mediasoupRequest = request["data"];
 
-		this->_handleMediasoupClientRequest(
-			peer, mediasoupRequest, request->accept, request->reject);
+		this->_handleMediasoupClientRequest(peer, id, mediasoupRequest);
 	}
 	else if (method == "mediasoup-notification")
 	{
-		request->Accept(Json::object());
+		peer->Accept(id, Json::object());
 
-		Json mediasoupNotification = request->data;
+		Json mediasoupNotification = request["data"];
 
 		this->_handleMediasoupClientNotification(
 			peer, mediasoupNotification);
 	}
 	else if (method == "change-display-name")
 	{
-		request->Accept(Json::object());
+		peer->Accept(id, Json::object());
 
-		std::string displayName = request->data["displayName"].get<std::string>();;
+		std::string displayName = request["displayName"].get<std::string>();;
 		rs::Peer* mediaPeer = peer->mediaPeer();
 		std::string oldDisplayName = mediaPeer->appData()["displayName"].get<std::string>();
 
@@ -145,11 +143,11 @@ void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
 	{
 		logger->error("unknown request.method '%s'", method.c_str());
 
-		request->Reject(400, "unknown request.method " + method);
+		peer->Reject(id, 400, "unknown request.method " + method);
 	}
 }
 
-void Room::OnPeerNotify(protoo::Peer* peer, Json notification)
+void Room::OnPeerNotify(protoo::Peer* peer, Json& notification)
 {
 
 }
@@ -345,7 +343,7 @@ void Room::_handleMediaConsumer(rs::Consumer* consumer)
 // 		consumer->setPreferredProfile("low");
 }
 
-void Room::_handleMediasoupClientRequest(protoo::Peer* protooPeer, Json request, AcceptFunc accept, RejectFunc reject)
+void Room::_handleMediasoupClientRequest(protoo::Peer* protooPeer, uint32_t id, Json request)
 {
 	std::string method = request["method"].get<std::string>();
 
@@ -358,11 +356,11 @@ void Room::_handleMediasoupClientRequest(protoo::Peer* protooPeer, Json request,
 		this->_mediaRoom->receiveRequest(request)
 		.then([=](Json response)
 		{
-			accept(response);
+			protooPeer->Accept(id, response);
 		})
 		.fail([=](rs::Error error)
 		{
-			reject(500, error.ToString().c_str());
+			protooPeer->Reject(id, 500, error.ToString());
 		});
 	}
 	else if (method == "join")
@@ -372,17 +370,17 @@ void Room::_handleMediasoupClientRequest(protoo::Peer* protooPeer, Json request,
 
 		if (peerName != protooPeer->id())
 		{
-			reject(403, "that is not your corresponding mediasoup Peer name");
+			protooPeer->Reject(id, 403, "that is not your corresponding mediasoup Peer name");
 		}
 		else if (protooPeer->mediaPeer())
 		{
-			reject(500, "already have a mediasoup Peer");
+			protooPeer->Reject(id, 500, "already have a mediasoup Peer");
 		}
 
 		this->_mediaRoom->receiveRequest(request)
 		.then([=](Json response)
 		{
-			accept(response);
+			protooPeer->Accept(id, response);
 
 			// Get the newly created mediasoup Peer.
 			rs::Peer* mediaPeer = this->_mediaRoom->getPeerByName(peerName);
@@ -393,7 +391,7 @@ void Room::_handleMediasoupClientRequest(protoo::Peer* protooPeer, Json request,
 		})
 		.fail([=](rs::Error error)
 		{
-			reject(500, error.ToString().c_str());
+			protooPeer->Reject(id, 500, error.ToString());
 		});
 	}
 	else
@@ -406,17 +404,17 @@ void Room::_handleMediasoupClientRequest(protoo::Peer* protooPeer, Json request,
 				"cannot handle mediasoup request, no mediasoup Peer [method:'%s']",
 				method.c_str());
 
-			reject(400, "no mediasoup Peer");
+			protooPeer->Reject(id, 400, "no mediasoup Peer");
 		}
 
 		mediaPeer->receiveRequest(request)
 		.then([=](Json response)
 		{
-			accept(response);
+			protooPeer->Accept(id, response);
 		})
 		.fail([=](rs::Error error)
 		{
-			reject(500, error.ToString().c_str());
+			protooPeer->Reject(id, 500, error.ToString().c_str());
 		});
 	}
 }

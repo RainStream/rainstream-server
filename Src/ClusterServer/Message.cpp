@@ -1,6 +1,6 @@
-#define MS_CLASS "protoo/Message"
+#define MS_CLASS "Message"
 
-#include "protoo/Message.hpp"
+#include "Message.hpp"
 
 namespace protoo
 {

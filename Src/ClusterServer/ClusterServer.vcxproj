@@ -167,9 +167,8 @@
   <ItemGroup>
     <ClCompile Include="ClusterServer.cpp" />
     <ClCompile Include="handles\Transport.cpp" />
+    <ClCompile Include="Message.cpp" />
     <ClCompile Include="Peer.cpp" />
-    <ClCompile Include="protoo\Message.cpp" />
-    <ClCompile Include="protoo\Request.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="common.cpp" />
@@ -189,9 +188,8 @@
     <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="handles\Transport.hpp" />
+    <ClInclude Include="Message.hpp" />
     <ClInclude Include="Peer.hpp" />
-    <ClInclude Include="protoo\Message.hpp" />
-    <ClInclude Include="protoo\Request.hpp" />
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="DepLibUV.hpp" />
     <ClInclude Include="handles\SignalsHandler.hpp" />

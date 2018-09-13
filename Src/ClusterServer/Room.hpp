@@ -40,8 +40,8 @@ public:
 	/* Methods inherited from protoo::Peer::Listener. */
 public:
 	void OnPeerClose(protoo::Peer* peer) override;
-	void OnPeerRequest(protoo::Peer* peer, protoo::Request* request) override;
-	void OnPeerNotify(protoo::Peer* peer, Json notification) override;
+	void OnPeerRequest(protoo::Peer* peer, Json& request) override;
+	void OnPeerNotify(protoo::Peer* peer, Json& notification) override;
 	
 protected:
 	void _handleMediaRoom();
@@ -49,7 +49,7 @@ protected:
 	void _handleMediaTransport(rs::WebRtcTransport* transport);
 	void _handleMediaProducer(rs::Producer* producer);
 	void _handleMediaConsumer(rs::Consumer* consumer);
-	void _handleMediasoupClientRequest(protoo::Peer* protooPeer, Json request, AcceptFunc accept, RejectFunc reject);
+	void _handleMediasoupClientRequest(protoo::Peer* protooPeer, uint32_t id, Json request);
 	void _handleMediasoupClientNotification(protoo::Peer* protooPeer, Json notification);
 	void _updateMaxBitrate();
 
