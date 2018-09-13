@@ -2,7 +2,7 @@
 #define MEDIA_ROOM_HPP
 
 #include "common.hpp"
-#include "protoo/Peer.hpp"
+#include "Peer.hpp"
 
 namespace rs
 {
@@ -14,7 +14,6 @@ namespace rs
 
 namespace protoo
 {
-	class Room;
 	class Peer;
 	class Request;
 	class WebSocketClient;
@@ -42,7 +41,7 @@ public:
 public:
 	void OnPeerClose(protoo::Peer* peer) override;
 	void OnPeerRequest(protoo::Peer* peer, protoo::Request* request) override;
-	void OnNotification(protoo::Peer* peer, Json notification) override;
+	void OnPeerNotify(protoo::Peer* peer, Json notification) override;
 	
 protected:
 	void _handleMediaRoom();
@@ -54,16 +53,19 @@ protected:
 	void _handleMediasoupClientNotification(protoo::Peer* protooPeer, Json notification);
 	void _updateMaxBitrate();
 
+	void spread(std::string method, Json data, std::set<std::string> excluded = std::set<std::string>());
 
 private:
 	std::string _roomId;
 	rs::Server* _mediaServer{ nullptr };
 	rs::Room* _mediaRoom{ nullptr };
-	protoo::Room* _protooRoom{ nullptr };
+
 	rs::Peer* _currentActiveSpeaker{ nullptr };
 	Listener* listener{ nullptr };
 
 	std::unique_ptr<rs::Logger> logger;
+
+	std::map<std::string, protoo::Peer*> _peers;
 
 	// Closed flag.
 	bool _closed = false;

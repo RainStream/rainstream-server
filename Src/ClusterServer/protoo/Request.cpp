@@ -2,7 +2,7 @@
 // #define MS_LOG_DEV
 
 #include "protoo/Request.hpp"
-#include "protoo/Peer.hpp"
+#include "Peer.hpp"
 #include "Logger.hpp"
 #include "RainStreamError.hpp"
 

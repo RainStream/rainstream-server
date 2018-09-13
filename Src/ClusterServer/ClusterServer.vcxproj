@@ -167,6 +167,7 @@
   <ItemGroup>
     <ClCompile Include="ClusterServer.cpp" />
     <ClCompile Include="handles\Transport.cpp" />
+    <ClCompile Include="Peer.cpp" />
     <ClCompile Include="protoo\Message.cpp" />
     <ClCompile Include="protoo\Request.cpp" />
     <ClCompile Include="Room.cpp" />
@@ -177,8 +178,6 @@
     <ClCompile Include="handles\PipeStreamSocket.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Loop.cpp" />
-    <ClCompile Include="protoo\Peer.cpp" />
-    <ClCompile Include="protoo\Room.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Utils\File.cpp" />
     <ClCompile Include="Utils\IP.cpp" />
@@ -190,6 +189,7 @@
     <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="handles\Transport.hpp" />
+    <ClInclude Include="Peer.hpp" />
     <ClInclude Include="protoo\Message.hpp" />
     <ClInclude Include="protoo\Request.hpp" />
     <ClInclude Include="Room.hpp" />
@@ -200,8 +200,6 @@
     <ClInclude Include="LogLevel.hpp" />
     <ClInclude Include="Loop.hpp" />
     <ClInclude Include="RainStreamError.hpp" />
-    <ClInclude Include="protoo\Peer.hpp" />
-    <ClInclude Include="protoo\Room.hpp" />
     <ClInclude Include="Settings.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="WebSocketClient.hpp" />

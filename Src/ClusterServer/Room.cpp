@@ -5,8 +5,6 @@
 #include "Utils.hpp"
 #include <math.h>
 
-#include "protoo/Room.hpp"
-#include "protoo/Peer.hpp"
 #include "protoo/Request.hpp"
 #include "WebSocketClient.hpp"
 
@@ -20,8 +18,6 @@ Room::Room(std::string roomId, Json mediaCodecs, rs::Server* mediaServer, Listen
 	, listener(listener)
 	, logger(new rs::Logger("Room"))
 {
-
-	this->_protooRoom = new protoo::Room();
 	// mediasoup Room instance.
 	this->_mediaRoom = mediaServer->Room(mediaCodecs);
 
@@ -46,10 +42,6 @@ void Room::close()
 
 	this->_closed = true;
 
-	// Close the protoo Room.
-	if (this->_protooRoom)
-		this->_protooRoom->close();
-
 	// Close the mediasoup Room.
 	if (this->_mediaRoom)
 		this->_mediaRoom->close();
@@ -62,19 +54,21 @@ void Room::handleConnection(std::string peerName, protoo::WebSocketClient* trans
 {
 	logger->info("handleConnection() [peerName:'%s']", peerName.c_str());
 
-	if (this->_protooRoom->hasPeer(peerName))
+	if (this->_peers.count(peerName))
 	{
 		logger->warn(
 			"handleConnection() | there is already a peer with same peerName, \
 			closing the previous one [peerName:'%s']",
 			peerName.c_str());
 
-		auto protooPeer = this->_protooRoom->getPeer(peerName);
+		auto protooPeer = this->_peers[peerName];
 
 		protooPeer->close();
 	}
 
-	protoo::Peer* protooPeer = this->_protooRoom->createPeer(peerName, transport, this);
+	protoo::Peer* protooPeer = new protoo::Peer(peerName, transport, this);
+
+	this->_peers[peerName] = protooPeer;
 }
 
 void Room::OnPeerClose(protoo::Peer* peer)
@@ -138,7 +132,7 @@ void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
 		mediaPeer->appData()["displayName"] = displayName;
 
 		// Spread to others via protoo.
-		this->_protooRoom->spread("display-name-changed",
+		spread("display-name-changed",
 			{
 				{ "peerName" , peer->id() },
 				{ "displayName" , displayName },
@@ -155,7 +149,7 @@ void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
 	}
 }
 
-void Room::OnNotification(protoo::Peer* peer, Json notification)
+void Room::OnPeerNotify(protoo::Peer* peer, Json notification)
 {
 
 }
@@ -215,7 +209,7 @@ void Room::_handleMediaRoom()
 		}
 
 		// Spread to others via protoo.
-		this->_protooRoom->spread(
+		spread(
 			"active-speaker",
 			{
 			peerName: activePeer ? activePeer.name : null
@@ -496,4 +490,16 @@ void Room::_updateMaxBitrate()
 		numPeers,
 		std::round(previousMaxBitrate / 1000),
 		std::round(newMaxBitrate / 1000));
+}
+
+void Room::Room::spread(std::string method, Json data, std::set<std::string> excluded)
+{
+	for (auto it : this->_peers)
+	{
+		if (excluded.count(it.first))
+			continue;
+
+		it.second->notify(method, data)
+			.fail([]() {});
+	}
 }

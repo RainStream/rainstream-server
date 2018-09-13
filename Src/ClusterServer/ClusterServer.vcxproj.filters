@@ -22,12 +22,6 @@
     <ClCompile Include="handles\Transport.cpp">
       <Filter>handles</Filter>
     </ClCompile>
-    <ClCompile Include="protoo\Room.cpp">
-      <Filter>protoo</Filter>
-    </ClCompile>
-    <ClCompile Include="protoo\Peer.cpp">
-      <Filter>protoo</Filter>
-    </ClCompile>
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="protoo\Message.cpp">
       <Filter>protoo</Filter>
@@ -38,6 +32,7 @@
     <ClCompile Include="ClusterServer.cpp" />
     <ClCompile Include="WebSocketClient.cpp" />
     <ClCompile Include="WebSocketServer.cpp" />
+    <ClCompile Include="Peer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.hpp" />
@@ -59,12 +54,6 @@
     <ClInclude Include="handles\Transport.hpp">
       <Filter>handles</Filter>
     </ClInclude>
-    <ClInclude Include="protoo\Room.hpp">
-      <Filter>protoo</Filter>
-    </ClInclude>
-    <ClInclude Include="protoo\Peer.hpp">
-      <Filter>protoo</Filter>
-    </ClInclude>
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="protoo\Message.hpp">
       <Filter>protoo</Filter>
@@ -76,6 +65,7 @@
     <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="WebSocketClient.hpp" />
     <ClInclude Include="WebSocketServer.hpp" />
+    <ClInclude Include="Peer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">
