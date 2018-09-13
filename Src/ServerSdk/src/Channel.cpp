@@ -171,9 +171,9 @@ namespace rs
 
 			auto sent = this->_pendingSent[id];
 
-			if (msg.count("accepted") && msg["accepted"].get<bool>())
+			if (msg.value("accepted", false))
 				sent.resolve(msg["data"]);
-			else if (msg.count("rejected") && msg["rejected"].get<bool>())
+			else if (msg.value("rejected", false))
 				sent.reject(Error(msg["reason"].get<std::string>()));
 		}
 		// If a Notification emit it to the corresponding entity.

@@ -180,21 +180,21 @@ namespace rs
 
 		std::vector<Defer> promises;
 
-// 		for (auto worker : this->_workers)
-// 		{
-// 			promises.push_back(worker->dump());
-// 		}
-// 
-// 		return promise::all(promises)
-// 			.then([=](Json datas)
-// 		{
-// 			Json json =
-// 			{
-// 				"workers", datas
-// 			};
-// 
-// 			return json;
-// 		});
+		for (auto worker : this->_workers)
+		{
+			promises.push_back(worker->dump());
+		}
+
+		return promise::all(promises)
+		.then([=](Json datas)
+		{
+			Json json =
+			{
+				"workers", datas
+			};
+
+			return json;
+		});
 	}
 
 	/**
@@ -213,10 +213,10 @@ namespace rs
 
 		std::vector<Defer> promises;
 
-// 		for (auto worker : this->_workers)
-// 		{
-// 			promises.push_back(worker->updateSettings(options));
-// 		}
+ 		for (auto worker : this->_workers)
+ 		{
+ 			promises.push_back(worker->updateSettings(options));
+ 		}
 
 		return promise::all(promises);
 	}
