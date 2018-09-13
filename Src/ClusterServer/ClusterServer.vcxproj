@@ -98,7 +98,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;uWS.lib;libeay32.lib;ssleay32.lib;getopt.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -109,14 +109,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\ServerSDK\include;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\ServerSDK\include;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x64-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;uWS.lib;libeay32.lib;ssleay32.lib;getopt.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -151,7 +151,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\ServerSDK\include;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\ServerSDK\include;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
@@ -159,8 +159,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;uWS.lib;libeay32.lib;ssleay32.lib;getopt.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>

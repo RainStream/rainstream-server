@@ -131,19 +131,22 @@ namespace rs
 		this->doEvent("close", appData);
 
 		// Close all the Producers.
-		for (auto it : this->_producers)
+		auto producers = this->_producers;
+		for (auto it : producers)
 		{
 			it.second->close(undefined, notifyChannel);
 		}
 
 		// Close all the Consumers.
-		for (auto it : this->_consumers)
+		auto consumers = this->_consumers;
+		for (auto it : consumers)
 		{
 			it.second->close(notifyChannel);
 		}
 
 		// Close all the WebRtcTransports.
-		for (auto it : this->_transports)
+		auto transports = this->_transports;
+		for (auto it : transports)
 		{
 			it.second->close(undefined, notifyChannel);
 		}

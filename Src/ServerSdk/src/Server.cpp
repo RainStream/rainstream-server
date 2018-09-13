@@ -285,6 +285,7 @@ namespace rs
 		else
 		{
 			logger->error("_getRandomWorker() failed: workers.size() == 0");
+			return nullptr;
 		}
 	}
 

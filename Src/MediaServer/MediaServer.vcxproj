@@ -275,9 +275,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;getopt.lib;libuv.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>libeay32.lib;ssleay32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -287,16 +286,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>libeay32.lib;ssleay32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;getopt.lib;libuv.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x64-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -315,9 +312,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;getopt.lib;libuv.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>libeay32.lib;ssleay32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -329,7 +325,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
@@ -337,13 +333,10 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>libeay32.lib;ssleay32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;getopt.lib;libuv.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>
