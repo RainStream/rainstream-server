@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EnhancedEventEmitter.hpp"
+#include "EventEmitter.hpp"
 #include "errors.hpp"
 
 namespace rs
@@ -9,7 +9,7 @@ namespace rs
 	class Channel;
 	class WebRtcTransport;
 
-	class Producer : public ChannelListener, public EventBus
+	class Producer : public ChannelListener, public EventEmitter
 	{
 	public:
 		Producer(Peer* peer, WebRtcTransport*transport, const Json& internal, const Json& data, Channel* channel, const Json& options);

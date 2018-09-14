@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EnhancedEventEmitter.hpp"
+#include "EventEmitter.hpp"
 #include "errors.hpp"
 
 namespace rs
@@ -8,7 +8,7 @@ namespace rs
 
 	class Channel;
 
-	class PlainRtpTransport : public EnhancedEventEmitter, public ChannelListener
+	class PlainRtpTransport : public ChannelListener, public EventEmitter
 	{
 	public:
 		PlainRtpTransport(const Json& internal, const Json& data, Channel* channel);

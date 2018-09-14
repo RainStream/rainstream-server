@@ -6,8 +6,6 @@ using Json = nlohmann::json;
 #include <promise.hpp>
 using namespace promise;
 
-#include "EventEmitter.h"
-
 #include <uv.h>
 
 #define undefined nullptr

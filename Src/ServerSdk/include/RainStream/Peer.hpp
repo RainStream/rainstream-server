@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EnhancedEventEmitter.hpp"
+#include "EventEmitter.hpp"
 #include "utils.hpp"
 #include "errors.hpp"
 #include "ortc.hpp"
@@ -11,7 +11,7 @@
 namespace rs
 {
 
-	class Peer : public EventBus
+	class Peer : public EventEmitter
 	{
 	public:
 		Peer(const Json& internal, const Json& data, Channel* channel, SandBox sandbox);

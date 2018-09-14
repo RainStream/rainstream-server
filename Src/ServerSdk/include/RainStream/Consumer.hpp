@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EnhancedEventEmitter.hpp"
+#include "EventEmitter.hpp"
 #include "errors.hpp"
 #include "PlainRtpTransport.hpp"
 
@@ -11,7 +11,7 @@ namespace rs
 	class Producer;
 	class WebRtcTransport;
 
-	class Consumer : public ChannelListener , public EventBus
+	class Consumer : public ChannelListener , public EventEmitter
 	{
 	public:
 		Consumer(Peer* peer, Producer* source, const Json& internal, const Json& data, Channel* channel);

@@ -8,7 +8,6 @@ namespace rs
 {
 
 	Room::Room(const Json& internal, const Json& data, Channel* channel)
-		: EnhancedEventEmitter()
 	{
 		LOG(INFO) << "constructor()";
 
@@ -64,8 +63,8 @@ namespace rs
 
 		this->_closed = true;
 
-		this->emit("@close");
-		this->safeEmit("close", appData);
+		this->doEvent("@close");
+		this->doEvent("close", appData);
 
 		// Remove notification subscriptions.
 		uint32_t routerId = this->_internal["routerId"].get<uint32_t>();
@@ -392,7 +391,7 @@ namespace rs
 			otherPeer->handleNewPeer(peer);
 		}
 
-		this->safeEmit("newpeer", peer);
+		this->doEvent("newpeer", peer->name());
 
 		return peer;
 	}
@@ -452,8 +451,9 @@ namespace rs
 		this->_channel->addEventListener(routerId, this);
 
 		// Subscribe to new events.
-		this->on("newListener", [=](std::string event)
+		this->addEventListener("newListener", [=](Json data)
 		{
+			std::string event = data.get<std::string>();
 			if (event == "audiolevels")
 			{
 				// Ignore if there are listeners already.
@@ -475,8 +475,9 @@ namespace rs
 		});
 
 		// Subscribe to events removal.
-		this->on("removeListener", [=](std::string event)
+		this->addEventListener("removeListener", [=](Json data)
 		{
+			std::string event = data.get<std::string>();
 			if (event == "audiolevels")
 			{
 				// Ignore if there are other remaining listeners.

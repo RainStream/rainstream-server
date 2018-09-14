@@ -1,13 +1,13 @@
 #pragma once
 
-#include "EnhancedEventEmitter.hpp"
+#include "EventEmitter.hpp"
 #include "errors.hpp"
 
 namespace rs
 {
 	class Channel;
 
-	class WebRtcTransport : public ChannelListener, public EventBus
+	class WebRtcTransport : public ChannelListener, public EventEmitter
 	{
 	public:
 		WebRtcTransport(const Json& internal, const Json& data, Channel* channel);

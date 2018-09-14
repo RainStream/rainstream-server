@@ -2,6 +2,7 @@
 #define MS_CHANNEL_UNIX_STREAM_SOCKET_HPP
 
 #include "PipeStreamSocket.hpp"
+#include <EventEmitter.hpp>
 
 namespace rs
 {

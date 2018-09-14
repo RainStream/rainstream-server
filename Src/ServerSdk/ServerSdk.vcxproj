@@ -96,7 +96,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;CORESERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;src;include;include\RainStream;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\nlohmann\json;$(SolutionDir)Deps\cxx-eventemitter;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src;include;include\RainStream;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -115,7 +115,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;CORESERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;src;include;include\RainStream;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src;include;include\RainStream;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -135,7 +135,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;CORESERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;src;include;include\RainStream;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\nlohmann\json;$(SolutionDir)Deps\cxx-eventemitter;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src;include;include\RainStream;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -158,7 +158,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;CORESERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;src;include;include\RainStream;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;src;include;include\RainStream;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -176,7 +176,7 @@
   <ItemGroup>
     <ClInclude Include="include\RainStream\Channel.hpp" />
     <ClInclude Include="include\RainStream\Consumer.hpp" />
-    <ClInclude Include="include\RainStream\EnhancedEventEmitter.hpp" />
+    <ClInclude Include="include\RainStream\EventEmitter.hpp" />
     <ClInclude Include="include\RainStream\errors.hpp" />
     <ClInclude Include="include\RainStream\Logger.hpp" />
     <ClInclude Include="include\RainStream\ortc.hpp" />
@@ -199,7 +199,7 @@
   <ItemGroup>
     <ClCompile Include="src\Channel.cpp" />
     <ClCompile Include="src\Consumer.cpp" />
-    <ClCompile Include="src\EnhancedEventEmitter.cpp" />
+    <ClCompile Include="src\EventEmitter.cpp" />
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\ortc.cpp" />
     <ClCompile Include="src\Peer.cpp" />

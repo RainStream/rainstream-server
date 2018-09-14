@@ -7,7 +7,6 @@ namespace rs
 {
 
 	PlainRtpTransport::PlainRtpTransport(const Json& internal, const Json& data, Channel* channel)
-		: EnhancedEventEmitter()
 	{
 		LOG(INFO) << "constructor()";
 
@@ -66,7 +65,7 @@ namespace rs
 
 		this->_closed = true;
 
-		this->emit("@close");
+		this->doEvent("@close");
 
 		// Remove notification subscriptions.
 		uint32_t transportId = this->_internal["transportId"].get<uint32_t>();

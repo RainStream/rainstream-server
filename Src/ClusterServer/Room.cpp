@@ -226,8 +226,8 @@ void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 		rs::WebRtcTransport* transport = mediaPeer->getTransportById(data.get<uint32_t>());
 
 		LOG(INFO) << 
-			"mediaPeer 'newtransport' event [id:%d, direction:%s]",
-			transport->id(), transport->direction();
+			"mediaPeer 'newtransport' event [id:"<< transport->id()<< "direction:"
+			<< transport->direction() << "]";
 
 		// Update peers max sending  bitrate.
 		if (transport->direction() == "send")
@@ -246,7 +246,7 @@ void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 	mediaPeer->addEventListener("newproducer", [=](Json data)
 	{
 		rs::Producer* producer = mediaPeer->getProducerById(data.get<uint32_t>());
-		LOG(INFO) << "mediaPeer 'newproducer' event [id:%d]", producer->id();
+		LOG(INFO) << "mediaPeer 'newproducer' event [id:" << producer->id() << "]";
 
 		this->_handleMediaProducer(producer);
 	});
@@ -254,7 +254,7 @@ void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 	mediaPeer->addEventListener("newconsumer", [=](Json data)
 	{
 		rs::Consumer* consumer = mediaPeer->getConsumerById(data);
-		LOG(INFO) << "mediaPeer 'newconsumer' event [id:%d]", consumer->id();
+		LOG(INFO) << "mediaPeer 'newconsumer' event [id:" << consumer->id() << "]";
 
 		this->_handleMediaConsumer(consumer);
 	});
@@ -264,7 +264,7 @@ void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 	{
 		auto consumer = itConsumer.second;
 
-		LOG(INFO) << "mediaPeer existing 'consumer' [id:%d]", consumer->id();
+		LOG(INFO) << "mediaPeer existing 'consumer' [id:" << consumer->id() << "]";
 
 		this->_handleMediaConsumer(consumer);
 	}
@@ -286,7 +286,7 @@ void Room::_handleMediaTransport(rs::WebRtcTransport* transport)
 	transport->addEventListener("close", [=](Json originator)
 	{
 		LOG(INFO) << 
-			"Transport 'close' event [originator:%s]", originator.dump();
+			"Transport 'close' event [originator:" << originator.dump() << "]";
 	});
 }
 
@@ -295,19 +295,19 @@ void Room::_handleMediaProducer(rs::Producer* producer)
 	producer->addEventListener("close", [=](Json originator)
 	{
 		LOG(INFO) << 
-			"Producer 'close' event [originator:%s]", originator.dump();
+			"Producer 'close' event [originator:" << originator.dump() << "]";
 	});
 
 	producer->addEventListener("pause", [=](Json originator)
 	{
 		LOG(INFO) << 
-			"Producer 'pause' event [originator:%s]", originator.dump();
+			"Producer 'pause' event [originator:" << originator.dump() << "]";
 	});
 
 	producer->addEventListener("resume", [=](Json originator)
 	{
 		LOG(INFO) << 
-			"Producer 'resume' event [originator:%s]", originator.dump();
+			"Producer 'resume' event [originator:" << originator.dump() << "]";
 	});
 }
 
@@ -316,25 +316,25 @@ void Room::_handleMediaConsumer(rs::Consumer* consumer)
 	consumer->addEventListener("close", [=](Json originator)
 	{
 		LOG(INFO) << 
-			"Consumer 'close' event [originator:%s]", originator.dump();
+			"Consumer 'close' event [originator:" << originator.dump() << "]";
 	});
 
 	consumer->addEventListener("pause", [=](Json originator)
 	{
 		LOG(INFO) << 
-			"Consumer 'pause' event [originator:%s]", originator.dump();
+			"Consumer 'pause' event [originator:" << originator.dump() << "]";
 	});
 
 	consumer->addEventListener("resume", [=](Json originator)
 	{
 		LOG(INFO) << 
-			"Consumer 'resume' event [originator:%s]", originator.dump();
+			"Consumer 'resume' event [originator:" << originator.dump() << "]";
 	});
 
 	consumer->addEventListener("effectiveprofilechange", [=](Json profile)
 	{
 		LOG(INFO) << 
-			"Consumer 'effectiveprofilechange' event [profile:%s]", profile.dump();
+			"Consumer 'effectiveprofilechange' event [profile:" << profile.dump() << "]";
 	});
 
 	// If video, initially make it "low" profile unless this is for the current
@@ -347,9 +347,8 @@ void Room::_handleMediasoupClientRequest(protoo::Peer* protooPeer, uint32_t id, 
 {
 	std::string method = request["method"].get<std::string>();
 
-	LOG(INFO) << 
-		"mediasoup-client request [method:%s, peer:'%s']",
-		method, protooPeer->id();
+	LOG(INFO) <<
+		"mediasoup-client request [method:" << method << ", peer:'" << protooPeer->id() << "']";
 
 	if (method == "queryRoom")
 	{
@@ -400,8 +399,8 @@ void Room::_handleMediasoupClientRequest(protoo::Peer* protooPeer, uint32_t id, 
 
 		if (!mediaPeer)
 		{
-			LOG(ERROR) << "cannot handle mediasoup request, no mediasoup Peer [method:'%s']",
-				method.c_str();
+			LOG(ERROR) << "cannot handle mediasoup request, no mediasoup Peer [method:"
+				<< method << "]";
 
 			protooPeer->Reject(id, 400, "no mediasoup Peer");
 		}
@@ -422,9 +421,8 @@ void Room::_handleMediasoupClientNotification(protoo::Peer* protooPeer, Json not
 {
 	std::string method = notification["method"].get<std::string>();
 
-	LOG(INFO) << 
-		"mediasoup-client notification [method:%s, peer:'%s']",
-		method.c_str(), protooPeer->id();
+	LOG(INFO) <<
+		"mediasoup-client notification [method:" << method << ", peer:" << protooPeer->id() << "]";
 
 	// NOTE: mediasoup-client just sends notifications with target "peer",
 	// so first of all, get the mediasoup Peer.
@@ -432,10 +430,8 @@ void Room::_handleMediasoupClientNotification(protoo::Peer* protooPeer, Json not
 
 	if (!mediaPeer)
 	{
-		LOG(ERROR)<< 
-			"cannot handle mediasoup notification, no mediasoup Peer [method:'%s']",
-			method.c_str();
-
+		LOG(ERROR) <<
+			"cannot handle mediasoup notification, no mediasoup Peer [method:" << method << "]";
 		return;
 	}
 
@@ -476,17 +472,16 @@ void Room::_updateMaxBitrate()
 				transport->setMaxBitrate(newMaxBitrate)
 					.fail([=](std::string error)
 				{
-					LOG(ERROR) << "transport.setMaxBitrate() failed: %s", error.c_str();
+					LOG(ERROR) << "transport.setMaxBitrate() failed:" << error.c_str();
 				});
 			}
 		}
 	}
 
 	LOG(INFO) <<
-		"_updateMaxBitrate() [num peers:%d, before:%fkbps, now:%fkbps]",
-		numPeers,
-		std::round(previousMaxBitrate / 1000),
-		std::round(newMaxBitrate / 1000);
+		"_updateMaxBitrate() [num peers:" << numPeers
+		<< ", before:" << std::round(previousMaxBitrate / 1000)
+		<< "kbps, now:" << std::round(newMaxBitrate / 1000) << "kbps]";
 }
 
 void Room::Room::spread(std::string method, Json data, std::set<std::string> excluded)

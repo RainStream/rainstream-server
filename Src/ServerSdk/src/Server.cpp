@@ -157,7 +157,8 @@ namespace rs
 		this->listener->OnServerClose();
 
 		// Close every Worker.
-		for (auto worker : this->_workers)
+		auto workers = this->_workers;
+		for (auto worker : workers)
 		{
 			worker->close();
 		}
@@ -253,7 +254,7 @@ namespace rs
 		// Store the Worker instance and remove it when closed.
 		// Also, if it is the latest Worker then close the Server.
 		this->_workers.push_back(worker);
-		worker->on("@close", [=]()
+		worker->addEventListener("@close", [=](Json)
 		{
 			for (auto it = this->_workers.begin(); it != this->_workers.end(); ++it)
 			{

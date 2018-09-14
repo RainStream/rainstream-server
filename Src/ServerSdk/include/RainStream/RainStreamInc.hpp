@@ -1,7 +1,7 @@
 #pragma once
 
 #include <RainStream/RainStream.hpp>
-#include <RainStream/EnhancedEventEmitter.hpp>
+#include <RainStream/EventEmitter.hpp>
 #include <RainStream/Channel.hpp>
 #include <RainStream/Server.hpp>
 #include <RainStream/Worker.hpp>

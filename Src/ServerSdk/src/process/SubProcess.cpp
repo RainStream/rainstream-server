@@ -100,7 +100,7 @@ namespace rs
 		if (this->socket != nullptr)
 			this->socket->Destroy();
 
-		this->emit("close", error);
+		this->doEvent("close", error);
 	}
 
 

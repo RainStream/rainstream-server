@@ -31,7 +31,7 @@ namespace rs
 	{
 		LOG(INFO) << "close()";
 
-		this->emit("@close");
+		this->doEvent("@close");
 
 		// 	// Kill rainstream-worker process.
 		// 	if (this->_child)
@@ -49,7 +49,8 @@ namespace rs
 		this->_channel->close();
 
 		// Close every Room.
-		for (auto &room : this->_rooms)
+		auto rooms = _rooms;
+		for (auto &room : rooms)
 		{
 			room->close(undefined, false);
 		}
@@ -107,7 +108,7 @@ namespace rs
 
 		// Store the Room instance and remove it when closed.
 		this->_rooms.insert(room);
-		room->on("@close", [=]()
+		room->addEventListener("@close", [=](Json)
 		{
 			this->_rooms.erase(room);
 		});

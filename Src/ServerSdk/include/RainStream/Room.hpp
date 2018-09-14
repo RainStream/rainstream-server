@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EnhancedEventEmitter.hpp"
+#include "EventEmitter.hpp"
 #include "utils.hpp"
 #include "errors.hpp"
 #include "ortc.hpp"
@@ -17,7 +17,7 @@ namespace rs
 
 	typedef std::set<Room*> Rooms;
 
-	class Room : public EnhancedEventEmitter, public ChannelListener
+	class Room : public ChannelListener , public EventEmitter
 	{
 	public:
 		Room(const Json& internal, const Json& data, Channel* channel);

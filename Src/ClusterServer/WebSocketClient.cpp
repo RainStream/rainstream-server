@@ -42,7 +42,7 @@ namespace protoo
 
 		std::string message = data.dump();
 
-		LOG(INFO) << "send Message to 0x%02x says : %s\n", userData, message.c_str();
+		LOG(INFO) << "send Message to " << userData << " says :" << message;
 
 		try
 		{
@@ -79,7 +79,7 @@ namespace protoo
 
 	void WebSocketClient::onMessage(const std::string& message)
 	{
-		LOG(INFO) << "recv Message from 0x%02x says : %s\n", userData, message.c_str();
+		LOG(INFO) << "recv Message from " << userData << " says :" << message;
 
 		if (_listener)
 		{

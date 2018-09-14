@@ -1,7 +1,7 @@
 #include "RainStream.hpp"
 #include "Channel.hpp"
 #include "process/Socket.hpp"
-#include "EnhancedEventEmitter.hpp"
+#include "EventEmitter.hpp"
 #include "Logger.hpp"
 
 namespace rs
@@ -22,8 +22,9 @@ namespace rs
 		this->_socket = socket;
 
 		// Read Channel responses/notifications from the worker.
-		this->_socket->on("data", [=](std::string nsPayload)
+		this->_socket->addEventListener("data", [=](Json data)
 		{
+			std::string nsPayload = data.get<std::string>();
 			try
 			{
 				// We can receive JSON messages (Channel messages) or log strings.
@@ -61,14 +62,14 @@ namespace rs
 
 		});
 
-		this->_socket->on("end", [=]()
+		this->_socket->addEventListener("end", [=](Json data)
 		{
 			LOG(INFO) << "channel ended by the other side";
 		});
 
-		this->_socket->on("error", [=](std::string error)
+		this->_socket->addEventListener("error", [=](Json data)
 		{
-			LOG(ERROR) << "channel error:" << error;
+			LOG(ERROR) << "channel error:" << data.dump();
 		});
 
 		_socket->Start();
@@ -87,9 +88,9 @@ namespace rs
 
 		// Remove event listeners but leave a fake "error" hander
 		// to avoid propagation.
-		this->_socket->off("end");
-		this->_socket->off("error");
-		this->_socket->on("error", []() {});
+// 		this->_socket->off("end");
+// 		this->_socket->off("error");
+		this->_socket->addEventListener("error", [](Json) {});
 
 		// Destroy the socket after a while to allow pending incoming
 		// messages.

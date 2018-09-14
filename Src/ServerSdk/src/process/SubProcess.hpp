@@ -1,6 +1,7 @@
 #pragma once
 
 #include "StringUtils.hpp"
+#include "EventEmitter.hpp"
 
 namespace rs
 {
