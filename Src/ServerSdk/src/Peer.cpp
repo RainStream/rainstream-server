@@ -9,9 +9,8 @@ namespace rs
 	const std::set<std::string> KINDS = { "audio", "video", "depth" };
 
 	Peer::Peer(const Json& internal, const Json& data, Channel* channel, SandBox sandbox)
-		: logger(new Logger("Peer"))
 	{
-		logger->debug("constructor() [internal:%s]", internal.dump().c_str());
+		LOG(INFO) << "constructor() [internal:%s]" << internal.dump();
 
 		// Closed flag.
 		this->_closed = false;
@@ -117,7 +116,7 @@ namespace rs
 	*/
 	void Peer::close(Json appData, bool notifyChannel/* = true*/)
 	{
-		logger->debug("close()");
+		LOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -150,6 +149,8 @@ namespace rs
 		{
 			it.second->close(undefined, notifyChannel);
 		}
+
+		delete this;
 	}
 
 	/**
@@ -162,7 +163,7 @@ namespace rs
 	*/
 	void Peer::remoteClose(Json appData)
 	{
-		logger->debug("remoteClose()");
+		LOG(INFO) << "remoteClose()";
 
 		if (this->closed())
 			return;
@@ -248,7 +249,7 @@ namespace rs
 	*/
 	Defer Peer::dump()
 	{
-		logger->debug("dump()");
+		LOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Peer closed"));
@@ -301,13 +302,13 @@ namespace rs
 		return promise::all(promises)
 			.then([=]()
 		{
-			logger->debug("dump() | succeeded");
+			LOG(INFO) << "dump() | succeeded";
 
 			return peerData;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("dump() | failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "dump() | failed: " << error.ToString();
 
 			throw error;
 		});
@@ -334,7 +335,7 @@ namespace rs
 
 		std::string method = request["method"].get<std::string>();
 
-		logger->debug("receiveRequest() [method:%s]", method.c_str());
+		LOG(INFO) << "receiveRequest() [method:" << method << "]";
 
 		return promise::resolve()
 		.then([=]()
@@ -451,7 +452,7 @@ namespace rs
 		})
 		.fail([=](Error error)
 		{
-			logger->error("receiveRequest() failed [method:%s]: %s", method.c_str(), error.ToString().c_str());
+			LOG(ERROR) << "receiveRequest() failed [method:" << method << "]:" << error.ToString();
 
 			throw error;
 		});
@@ -470,7 +471,7 @@ namespace rs
 
 		std::string method = notification["method"].get<std::string>();
 
-		logger->debug("receiveNotification() [method:%s]", method.c_str());
+		LOG(INFO) << "receiveNotification() [method:" << method << "]";
 
 		return promise::resolve()
 			.then([=]()
@@ -673,8 +674,8 @@ namespace rs
 		})
 			.fail([=](Error error)
 		{
-			logger->error(
-				"receiveNotification() failed [method:%s]: %s", method.c_str(), error.ToString().c_str());
+			LOG(ERROR) << 
+				"receiveNotification() failed [method:" << method << "]:" << error.ToString();
 		});
 	}
 
@@ -751,11 +752,11 @@ namespace rs
 		)
 		.then([=]()
 		{
-			logger->debug("\"router.createConsumer\" request succeeded");
+			LOG(INFO) << "\"router.createConsumer\" request succeeded";
 		})
 		.fail([=](Error error)
 		{
-			logger->error("\"router.createConsumer\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"router.createConsumer\" request failed: "<< error.ToString();
 
 			throw error;
 		});
@@ -781,14 +782,14 @@ namespace rs
 
 		notification = Object::assign(notification, data);
 
-		logger->debug("_sendNotification() [method:%s]", method.c_str());
+		LOG(INFO) << "_sendNotification() [method:%s]", method.c_str();
 
 		this->doEvent("notify", notification);
 	}
 
 	Defer Peer::_createWebRtcTransport(uint32_t id, std::string direction, Json options, Json appData)
 	{
-		logger->debug("_createWebRtcTransport() [id:%d, direction:%s]", id, direction.c_str());
+		LOG(INFO) << "_createWebRtcTransport() [id:" << id << "direction:" << direction << "]";
 
 		Json internal =
 		{
@@ -799,7 +800,7 @@ namespace rs
 		return this->_channel->request("router.createWebRtcTransport", internal, options)
 		.then([=](Json data)
 		{
-			logger->debug("\"router.createWebRtcTransport\" request succeeded");
+			LOG(INFO) << "\"router.createWebRtcTransport\" request succeeded";
 
 			data = Object::assign(data, { {"direction",direction } });
 
@@ -823,8 +824,8 @@ namespace rs
 		})
 		.fail([=](Error error)
 		{
-			logger->error(
-				"\"router.createWebRtcTransport\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << 
+				"\"router.createWebRtcTransport\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -832,7 +833,7 @@ namespace rs
 
 	Defer Peer::_createProducer(uint32_t id, std::string kind, uint32_t transportId, Json rtpParameters, bool remotelyPaused, Json appData)
 	{
-		logger->debug("_createProducer() [id:%d, kind:%s]", id, kind.c_str());
+		LOG(INFO) << "_createProducer() [id:" << id << ",kind:" << kind << "]";
 
 		if (this->rtpCapabilities().is_null())
 			return promise::reject(errors::InvalidStateError("RTP capabilities unset"));
@@ -898,7 +899,7 @@ namespace rs
 			})
 		.then([=]()
 		{
-			logger->debug("\"router.createProducer\" request succeeded");
+			LOG(INFO) << "\"router.createProducer\" request succeeded";
 
 			Producer* producer = new Producer(this, transport, internal, data, this->_channel, options);
 
@@ -921,7 +922,7 @@ namespace rs
 		})
 		.fail([=](Error error)
 		{
-			logger->error("\"router.createProducer\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"router.createProducer\" request failed:" << error.ToString();
 
 			throw error;
 		});

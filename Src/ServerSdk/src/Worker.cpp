@@ -13,11 +13,10 @@ namespace rs
 
 	Worker::Worker(std::string id, AStringVector parameters)
 		: _id(id)
-		, logger(new Logger("Worker"))
 	{
 		//this->setMaxListeners(Infinity);
 
-		logger->debug("constructor() [id:%s, parameters:\"%s\"]", id.c_str(), join(parameters, " ").c_str());
+		LOG(INFO) << "constructor() [id:" << id << "parameters:" << join(parameters, " ") << "]";
 
 		parameters.insert(parameters.begin(), id);
 
@@ -30,7 +29,7 @@ namespace rs
 
 	void Worker::close()
 	{
-		logger->debug("close()");
+		LOG(INFO) << "close()";
 
 		this->emit("@close");
 
@@ -58,18 +57,18 @@ namespace rs
 
 	Defer Worker::dump()
 	{
-		logger->debug("dump()");
+		LOG(INFO) << "dump()";
 
 		return this->_channel->request("worker.dump")
 			.then([=](const Json& data)
 		{
-			logger->debug("\"worker.dump\" request succeeded");
+			LOG(INFO) << "\"worker.dump\" request succeeded";
 
 			return data;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"worker.dump\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"worker.dump\" request failed:"<< error.ToString();
 
 			throw error;
 		});
@@ -77,16 +76,16 @@ namespace rs
 
 	Defer Worker::updateSettings(Json& spawnOptions)
 	{
-		logger->debug("updateSettings() [spawnOptions:%s]", spawnOptions.dump().c_str());
+		LOG(INFO) << "updateSettings() [spawnOptions:" << spawnOptions.dump() << "]";
 
 		return this->_channel->request("worker.updateSettings", nullptr, spawnOptions)
 			.then([=]()
 		{
-			logger->debug("\"worker.updateSettings\" request succeeded");
+			LOG(INFO) << "\"worker.updateSettings\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"worker.updateSettings\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"worker.updateSettings\" request failed:"<< error.ToString();
 
 			throw error;
 		});
@@ -99,7 +98,7 @@ namespace rs
 	*/
 	Room* Worker::CreateRoom(const Json& data)
 	{
-		logger->debug("Room()");
+		LOG(INFO) << "Room()";
 
 		Json internal;
 		internal["routerId"] = utils::randomNumber();
@@ -116,11 +115,11 @@ namespace rs
 		this->_channel->request("worker.createRouter", internal)
 			.then([=]()
 		{
-			logger->debug("\"worker.createRouter\" request succeeded");
+			LOG(INFO) << "\"worker.createRouter\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"worker.createRouter\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"worker.createRouter\" request failed: " << error.ToString();
 
 			room->close(undefined, false);
 		});

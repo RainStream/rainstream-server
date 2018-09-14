@@ -3,7 +3,6 @@
 
 namespace rs
 {
-	class Logger;
 	class Room;
 	class Worker;
 
@@ -89,8 +88,6 @@ namespace rs
 
 		// Set of Worker instances.
 		std::vector<Worker*> _workers;
-
-		std::unique_ptr<Logger> logger;
 	};
 
 }

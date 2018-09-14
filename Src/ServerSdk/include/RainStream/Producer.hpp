@@ -6,7 +6,6 @@
 namespace rs
 {
 	class Peer;
-	class Logger;
 	class Channel;
 	class WebRtcTransport;
 
@@ -14,6 +13,7 @@ namespace rs
 	{
 	public:
 		Producer(Peer* peer, WebRtcTransport*transport, const Json& internal, const Json& data, Channel* channel, const Json& options);
+		~Producer();
 
 		uint32_t id();
 
@@ -223,8 +223,6 @@ namespace rs
 		// Preferred profile.
 		// @type {String}
 		std::string _preferredProfile = "default";
-
-		std::unique_ptr<Logger> logger;
 	};
 
 

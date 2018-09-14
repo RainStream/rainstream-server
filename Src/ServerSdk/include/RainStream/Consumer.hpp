@@ -7,7 +7,6 @@
 namespace rs
 {
 	class Peer;
-	class Logger;
 	class Channel;
 	class Producer;
 	class WebRtcTransport;
@@ -273,8 +272,6 @@ namespace rs
 		// Effective profile.
 		// @type {String}
 		std::string _effectiveProfile;
-
-		std::unique_ptr<Logger> logger;
 	};
 
 	typedef std::map<uint32_t, Consumer*> Consumers;

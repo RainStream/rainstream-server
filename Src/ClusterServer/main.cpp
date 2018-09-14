@@ -2,7 +2,6 @@
 
 #include "common.hpp"
 #include "DepLibUV.hpp"
-#include "Logger.hpp"
 #include "Loop.hpp"
 #include "RainStreamError.hpp"
 #include "Settings.hpp"
@@ -31,7 +30,9 @@ int main(int argc, char* argv[])
 	DepLibUV::ClassInit();
 
 	// Initialize the Logger.
-	//Logger::Init(id, channel);
+	google::InitGoogleLogging(argv[0]);    // 初始化
+	google::SetLogDestination(google::GLOG_INFO, "log/prefix_");
+	google::SetStderrLogging(google::GLOG_INFO);
 
 	// Setup the configuration.
 	try
@@ -40,7 +41,7 @@ int main(int argc, char* argv[])
 	}
 	catch (const RainStreamError& error)
 	{
-		MS_ERROR("configuration error: %s", error.what());
+		LOG(ERROR) << "configuration error: %s", error.what();
 
 		exitWithError();
 	}
@@ -51,17 +52,17 @@ int main(int argc, char* argv[])
 	//	MS_DEBUG_TAG(info, "starting mediasoup-worker [pid:%ld]", (long)getpid());
 
 #if defined(MS_LITTLE_ENDIAN)
-	MS_DEBUG_TAG(info, "Little-Endian CPU detected");
+	LOG(INFO) << "Little-Endian CPU detected";
 #elif defined(MS_BIG_ENDIAN)
-	MS_DEBUG_TAG(info, "Big-Endian CPU detected");
+	LOG(INFO) << "Big-Endian CPU detected";
 #endif
 
 #if defined(INTPTR_MAX) && defined(INT32_MAX) && (INTPTR_MAX == INT32_MAX)
 	MS_DEBUG_TAG(info, "32 bits architecture detected");
 #elif defined(INTPTR_MAX) && defined(INT64_MAX) && (INTPTR_MAX == INT64_MAX)
-	MS_DEBUG_TAG(info, "64 bits architecture detected");
+	LOG(INFO) << "64 bits architecture detected";
 #else
-	MS_WARN_TAG(info, "can not determine whether the architecture is 32 or 64 bits");
+	LOG(INFO) << "can not determine whether the architecture is 32 or 64 bits";
 #endif
 
 	try
@@ -82,18 +83,18 @@ int main(int argc, char* argv[])
 	}
 	catch (const RainStreamError& error)
 	{
-		MS_ERROR_STD("failure exit: %s", error.what());
+		LOG(INFO) << "failure exit: %s", error.what();
 
 		destroy();
 		exitWithError();
 	}
+
+	google::ShutdownGoogleLogging();
 }
 
 
 void init()
 {
-	MS_TRACE();
-
 	ignoreSignals();
 	DepLibUV::PrintVersion();
 
@@ -139,8 +140,6 @@ void ignoreSignals()
 
 void destroy()
 {
-	MS_TRACE();
-
 	// Free static stuff.
 	DepLibUV::ClassDestroy();
 }

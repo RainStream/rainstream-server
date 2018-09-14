@@ -1,28 +1,12 @@
 #pragma once
 
+#define GLOG_NO_ABBREVIATED_SEVERITIES 1
+
+#include "glog/logging.h"
+
 namespace rs
 {
 #define APP_NAME = "rainstream";
-
-	class Logger
-	{
-	public:
-		Logger(std::string prefix);
-
-		void debug(const char* format, ...);
-
-		void info(const char* format, ...);
-
-		void warn(const char* format, ...);
-
-		void error(const char* format, ...);
-
-		void abort(const char* format, ...);
-
-	private:
-		std::string prefix;
-
-	};
 
 #define RS_ABORT(desc, ...) \
 	do \
@@ -32,5 +16,4 @@ namespace rs
 		std::abort(); \
 	} \
 	while (false)
-
 }

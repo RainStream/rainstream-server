@@ -55,7 +55,6 @@ namespace rs
 
 	PipeStreamSocket::PipeStreamSocket(size_t bufferSize)
 		: bufferSize(bufferSize)
-		, logger(new Logger("PipeStreamSocket"))
 	{
 
 		int err;
@@ -69,7 +68,7 @@ namespace rs
 			delete this->uvHandle;
 			this->uvHandle = nullptr;
 
-			logger->error("uv_pipe_init() failed: %s", uv_strerror(err));
+			LOG(ERROR) << "uv_pipe_init() failed: " << uv_strerror(err);
 		}
 	}
 
@@ -96,7 +95,7 @@ namespace rs
 		{
 			uv_close(reinterpret_cast<uv_handle_t*>(this->uvHandle), static_cast<uv_close_cb>(onErrorClose));
 
-			logger->error("uv_read_start() failed: %s", uv_strerror(err));
+			LOG(ERROR) << "uv_read_start() failed: " << uv_strerror(err);
 		}
 	}
 
@@ -164,7 +163,7 @@ namespace rs
 		// Error. Should not happen.
 		else if (written < 0)
 		{
-			logger->error("uv_try_write() failed, closing the socket: %s", uv_strerror(written));
+			LOG(ERROR) << "uv_try_write() failed, closing the socket: " << uv_strerror(written);
 
 			Destroy();
 
@@ -209,7 +208,7 @@ namespace rs
 		{
 			buf->len = 0;
 
-			logger->error("no available space in the buffer");
+			LOG(ERROR) << "no available space in the buffer";
 		}
 	}
 
@@ -238,7 +237,7 @@ namespace rs
 		// Some error.
 		else
 		{
-			logger->error("read error, closing the pipe: %s", uv_strerror(nread));
+			LOG(ERROR) << "read error, closing the pipe: %s" << uv_strerror(nread);
 
 			this->hasError = true;
 
@@ -255,7 +254,7 @@ namespace rs
 		if (error != UV_EPIPE && error != UV_ENOTCONN)
 			this->hasError = true;
 
-		logger->error("write error, closing the pipe: %s", uv_strerror(error));
+		LOG(ERROR) << "write error, closing the pipe: " << uv_strerror(error);
 
 		Destroy();
 	}
@@ -267,7 +266,7 @@ namespace rs
 
 		if (status != 0)
 		{
-			logger->error("shutdown error: %s", uv_strerror(status));
+			LOG(ERROR) << "shutdown error: " << uv_strerror(status);
 		}
 
 		// Now do close the handle.

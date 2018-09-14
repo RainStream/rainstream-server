@@ -5,7 +5,6 @@
 namespace rs
 {
 	class Socket;
-	class Logger;
 
 	class SubProcess : public EventEmitter
 	{
@@ -31,8 +30,6 @@ namespace rs
 		bool closed{ false };
 
 		Socket* socket{ nullptr };
-
-		std::unique_ptr<Logger> logger;
 	};
 
 	inline Socket* SubProcess::getSocket()

@@ -5,7 +5,6 @@
 
 namespace rs
 {
-	class Logger;
 	class Channel;
 
 	class WebRtcTransport : public ChannelListener, public EventBus
@@ -195,8 +194,6 @@ namespace rs
 		// Periodic stats interval identifier.
 		// @type {bool}
 		bool _statsInterval = NULL;
-
-		std::unique_ptr<Logger> logger;
 	};
 
 	typedef std::map<uint32_t, WebRtcTransport*> WebRtcTransports;

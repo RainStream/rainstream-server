@@ -6,7 +6,6 @@
 
 namespace rs
 {
-	class Logger;
 	class Channel;
 	class Request;
 	class SubProcess;
@@ -38,8 +37,6 @@ namespace rs
 		Rooms _rooms;
 
 		SubProcess* _child{ nullptr };
-
-		std::unique_ptr<Logger> logger;
 	};
 
 }

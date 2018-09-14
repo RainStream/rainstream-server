@@ -13,12 +13,10 @@ namespace rs
 	static uint8_t WriteBuffer[NS_MAX_SIZE];
 
 	Channel::Channel(Socket* socket)
-		: logger(new Logger("Channel"))
-		, workerLogger(new Logger("rainstream-worker"))
 	{
 		int err;
 
-		logger->debug("constructor()");
+		LOG(INFO) << "constructor()";
 
 		// Unix Socket instance.
 		this->_socket = socket;
@@ -38,39 +36,39 @@ namespace rs
 
 					// 68 = "D" (a debug log).
 				case 68:
-					workerLogger->debug(nsPayload.substr(1).c_str());
+					LOG(INFO) << nsPayload.substr(1);
 					break;
 
 					// 87 = "W" (a warning log).
 				case 87:
-					workerLogger->warn(nsPayload.substr(1).c_str());
+					LOG(WARNING) << nsPayload.substr(1);
 					break;
 
 					// 69 = "E" (an error log).
 				case 69:
-					workerLogger->error(nsPayload.substr(1).c_str());
+					LOG(ERROR) << nsPayload.substr(1);
 					break;
 
 				default:
-					workerLogger->error(
-						"unexpected data: %s", nsPayload.c_str());
+					LOG(ERROR) << 
+						"unexpected data: %s", nsPayload;
 				}
 			}
 			catch (std::exception error)
 			{
-				logger->error("received invalid message: %s", error.what());
+				LOG(ERROR) << "received invalid message:" << error.what();
 			}
 
 		});
 
 		this->_socket->on("end", [=]()
 		{
-			logger->debug("channel ended by the other side");
+			LOG(INFO) << "channel ended by the other side";
 		});
 
 		this->_socket->on("error", [=](std::string error)
 		{
-			logger->error("channel error: %s", error.c_str());
+			LOG(ERROR) << "channel error:" << error;
 		});
 
 		_socket->Start();
@@ -79,7 +77,7 @@ namespace rs
 
 	void Channel::close()
 	{
-		logger->debug("close()");
+		LOG(INFO) << "close()";
 
 		// Close every pending sent.
 		for (auto sent : this->_pendingSent)
@@ -111,7 +109,7 @@ namespace rs
 	{
 		uint32_t id = utils::randomNumber();
 
-		logger->debug("request() [method:%s, id:%d]", method.c_str(), id);
+		LOG(INFO) << "request() [method"<< method << ", id:" << id << "]";
 
 		Json request = {
 			{ "id",id },
@@ -158,13 +156,14 @@ namespace rs
 			uint32_t id = msg["id"].get<uint32_t>();
 
 			if (msg.count("accepted") && msg["accepted"].get<bool>())
-				logger->debug("request succeeded [id:%d]", id);
+				LOG(INFO) << "request succeeded [id:" << id << "]";
 			else
-				logger->error("request failed [id:%d, reason:\"%s\"]", id, msg["reason"].get<std::string>().c_str());
+				LOG(ERROR) << "request failed [id:" << id <<
+				" reason:"<< msg["reason"].get<std::string>() << "]";
 
 			if (!this->_pendingSent.count(id))
 			{
-				logger->error("received Response does not match any sent Request");
+				LOG(ERROR) << "received Response does not match any sent Request";
 
 				return;
 			}
@@ -190,7 +189,7 @@ namespace rs
 		// Otherwise unexpected message.
 		else
 		{
-			logger->error("received message is not a Response nor a Notification");
+			LOG(ERROR) << "received message is not a Response nor a Notification";
 		}
 	}
 

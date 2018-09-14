@@ -6,7 +6,7 @@
 
 namespace rs
 {
-	class Logger;
+
 	class PipeStreamSocket
 	{
 	public:
@@ -62,8 +62,6 @@ namespace rs
 		uint8_t* buffer{ nullptr };
 		// Others.
 		size_t bufferDataLen{ 0 };
-
-		std::unique_ptr<Logger> logger;
 	};
 
 	/* Inline methods. */

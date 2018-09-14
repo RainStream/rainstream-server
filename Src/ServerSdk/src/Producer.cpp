@@ -10,10 +10,9 @@ namespace rs
 	const std::set<std::string> PROFILES = { "default", "low", "medium", "high" };
 
 	Producer::Producer(Peer* peer, WebRtcTransport*transport, const Json& internal, const Json& data, Channel* channel, const Json& options)
-		: logger(new Logger("Producer"))
 	{
 
-		logger->debug("constructor()");
+		LOG(INFO) << "constructor()";
 
 		// Closed flag.
 		this->_closed = false;
@@ -65,6 +64,11 @@ namespace rs
 		this->_handleTransportEvents();
 
 		this->_handleWorkerNotifications();
+	}
+
+	Producer::~Producer()
+	{
+
 	}
 
 	uint32_t Producer::id()
@@ -160,7 +164,7 @@ namespace rs
 	*/
 	void Producer::close(Json appData, bool notifyChannel/* = true*/)
 	{
-		logger->debug("close()");
+		LOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -205,7 +209,7 @@ namespace rs
 	*/
 	void Producer::remoteClose(Json appData /*= Json::object()*/, bool notifyChannel/* = true*/)
 	{
-		logger->debug("remoteClose()");
+		LOG(INFO) << "remoteClose()";
 
 		if (this->closed())
 			return;
@@ -229,13 +233,15 @@ namespace rs
 			this->_channel->request("producer.close", this->_internal)
 				.then([=]()
 			{
-				logger->debug("\"producer.close\" request succeeded");
+				LOG(INFO) << "\"producer.close\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"producer.close\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"producer.close\" request failed:"<< error.ToString();
 			});
 		}
+
+		delete this;
 	}
 
 	/**
@@ -247,7 +253,7 @@ namespace rs
 	*/
 	Defer Producer::dump()
 	{
-		logger->debug("dump()");
+		LOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Producer closed"));
@@ -255,13 +261,13 @@ namespace rs
 		return this->_channel->request("producer.dump", this->_internal)
 			.then([=](Json data)
 		{
-			logger->debug("\"producer.dump\" request succeeded");
+			LOG(INFO) << "\"producer.dump\" request succeeded";
 
 			return data;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"producer.dump\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"producer.dump\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -276,11 +282,11 @@ namespace rs
 	*/
 	bool Producer::pause(Json appData)
 	{
-		logger->debug("pause()");
+		LOG(INFO) << "pause()";
 
 		if (this->_closed)
 		{
-			logger->error("pause() | Producer closed");
+			LOG(ERROR) << "pause() | Producer closed";
 
 			return false;
 		}
@@ -303,11 +309,11 @@ namespace rs
 		this->_channel->request("producer.pause", this->_internal)
 			.then([=]()
 		{
-			logger->debug("\"producer.pause\" request succeeded");
+			LOG(INFO) << "\"producer.pause\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"producer.pause\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"producer.pause\" request failed:" << error.ToString();
 		});
 
 		this->doEvent("pause", { { "local", "local" }, { "appData" , appData } });
@@ -326,7 +332,7 @@ namespace rs
 	*/
 	void Producer::remotePause(Json appData)
 	{
-		logger->debug("remotePause()");
+		LOG(INFO) << "remotePause()";
 
 		if (this->_closed || this->_remotelyPaused)
 			return;
@@ -336,11 +342,11 @@ namespace rs
 		this->_channel->request("producer.pause", this->_internal)
 			.then([=]()
 		{
-			logger->debug("\"producer.pause\" request succeeded");
+			LOG(INFO) << "\"producer.pause\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"producer.pause\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"producer.pause\" request failed: %s", error.ToString();
 		});
 
 		this->doEvent("pause", { { "local", "remote" }, { "appData" , appData } });
@@ -355,11 +361,11 @@ namespace rs
 	*/
 	bool Producer::resume(Json appData)
 	{
-		logger->debug("resume()");
+		LOG(INFO) << "resume()";
 
 		if (this->_closed)
 		{
-			logger->error("resume() | Producer closed");
+			LOG(ERROR) << "resume() | Producer closed";
 
 			return false;
 		}
@@ -384,11 +390,11 @@ namespace rs
 			this->_channel->request("producer.resume", this->_internal)
 				.then([=]()
 			{
-				logger->debug("\"producer.resume\" request succeeded");
+				LOG(INFO) << "\"producer.resume\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"producer.resume\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"producer.resume\" request failed:" << error.ToString();
 			});
 		}
 
@@ -408,7 +414,7 @@ namespace rs
 	*/
 	void Producer::remoteResume(Json appData)
 	{
-		logger->debug("remoteResume()");
+		LOG(INFO) << "remoteResume()";
 
 		if (this->_closed || !this->_remotelyPaused)
 			return;
@@ -420,11 +426,11 @@ namespace rs
 			this->_channel->request("producer.resume", this->_internal)
 				.then([=]()
 			{
-				logger->debug("\"producer.resume\" request succeeded");
+				LOG(INFO) << "\"producer.resume\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"producer.resume\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"producer.resume\" request failed:" << error.ToString();
 			});
 		}
 
@@ -438,11 +444,11 @@ namespace rs
 	*/
 	void Producer::setPreferredProfile(std::string profile)
 	{
-		logger->debug("setPreferredProfile() [profile:%s]", profile);
+		LOG(INFO) << "setPreferredProfile() [profile:"<< profile<<"]";
 
 		if (this->_closed)
 		{
-			logger->error("setPreferredProfile() | Producer closed");
+			LOG(ERROR) << "setPreferredProfile() | Producer closed";
 
 			return;
 		}
@@ -452,7 +458,7 @@ namespace rs
 		}
 		else if (!PROFILES.count(profile))
 		{
-			logger->error("setPreferredProfile() | invalid profile \"%s\"", profile.c_str());
+			LOG(ERROR) << "setPreferredProfile() | invalid profile "<< profile;
 
 			return;
 		}
@@ -463,14 +469,14 @@ namespace rs
 			})
 			.then([=]()
 		{
-			logger->debug("\"producer.setPreferredProfile\" request succeeded");
+			LOG(INFO) << "\"producer.setPreferredProfile\" request succeeded";
 
 			this->_preferredProfile = profile;
 		})
 			.fail([=](Error error)
 		{
-			logger->error(
-				"\"producer.setPreferredProfile\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << 
+				"\"producer.setPreferredProfile\" request failed: "<< error.ToString();
 		});
 	}
 
@@ -485,7 +491,7 @@ namespace rs
 	*/
 	Defer Producer::updateRtpParameters(Json rtpParameters)
 	{
-		logger->debug("updateRtpParameters()");
+		LOG(INFO) << "updateRtpParameters()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Producer closed"));
@@ -496,14 +502,14 @@ namespace rs
 			})
 			.then([=]()
 		{
-			logger->debug("\"producer.updateRtpParameters\" request succeeded");
+			LOG(INFO) << "\"producer.updateRtpParameters\" request succeeded";
 
 			this->_data["rtpParameters"] = rtpParameters;
 		})
 			.fail([=](Error error)
 		{
-			logger->error(
-				"\"producer.updateRtpParameters\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << 
+				"\"producer.updateRtpParameters\" request failed:"<< error.ToString();
 		});
 	}
 
@@ -514,7 +520,7 @@ namespace rs
 	*/
 	Defer Producer::getStats()
 	{
-		logger->debug("getStats()");
+		LOG(INFO) << "getStats()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Producer closed"));
@@ -522,13 +528,13 @@ namespace rs
 		return this->_channel->request("producer.getStats", this->_internal)
 			.then([=](Json data)
 		{
-			logger->debug("\"producer.getStats\" request succeeded");
+			LOG(INFO) << "\"producer.getStats\" request succeeded";
 
 			return data;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"producer.getStats\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"producer.getStats\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -541,11 +547,11 @@ namespace rs
 	*/
 	void Producer::enableStats(int interval /*= DEFAULT_STATS_INTERVAL*/)
 	{
-		logger->debug("enableStats()");
+		LOG(INFO) << "enableStats()";
 
 		if (this->_closed)
 		{
-			logger->error("enableStats() | Producer closed");
+			LOG(ERROR) << "enableStats() | Producer closed";
 
 			return;
 		}
@@ -564,7 +570,7 @@ namespace rs
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"getStats\" failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"getStats\" failed:" << error.ToString();
 			});
 		}
 
@@ -584,7 +590,7 @@ namespace rs
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"getStats\" failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"getStats\" failed:" << error.ToString();
 			});
 		}, interval);
 	}
@@ -596,11 +602,11 @@ namespace rs
 	*/
 	void Producer::disableStats()
 	{
-		logger->debug("disableStats()");
+		LOG(INFO) << "disableStats()";
 
 		if (this->_closed)
 		{
-			logger->error("disableStats() | Producer closed");
+			LOG(ERROR) << "disableStats() | Producer closed";
 
 			return;
 		}
@@ -638,7 +644,7 @@ namespace rs
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			LOG(ERROR) << "ignoring unknown event " << event;
 		}
 	}
 

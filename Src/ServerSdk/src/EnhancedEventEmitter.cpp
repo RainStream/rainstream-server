@@ -47,7 +47,7 @@ namespace rs
 	{
 		//this->setMaxListeners(Infinity);
 
-		this->_logger = new Logger("EnhancedEventEmitter");
+		
 	}
 
 }

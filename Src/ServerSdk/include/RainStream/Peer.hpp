@@ -10,7 +10,6 @@
 
 namespace rs
 {
-	class Logger;
 
 	class Peer : public EventBus
 	{
@@ -171,8 +170,6 @@ namespace rs
 		// Map of Consumers indexed by id.
 		// @type {Map<consumerId, Consumers>}
 		Consumers _consumers;
-
-		std::unique_ptr<Logger> logger;
 	};
 
 	typedef std::map<std::string, Peer*> Peers;

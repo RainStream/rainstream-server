@@ -22,7 +22,6 @@ namespace rs
 
 	Socket::Socket()
 		: PipeStreamSocket(MaxSize)
-		, logger(new Logger("Socket"))
 	{
 
 	}
@@ -70,9 +69,9 @@ namespace rs
 						// The message is too big, so discard it.
 						else
 						{
-							logger->error(
+							LOG(ERROR) << 
 								"no more space in the buffer for the unfinished message being parsed, "
-								"discarding it");
+								"discarding it";
 
 							this->msgStart = 0;
 							this->bufferDataLen = 0;
@@ -84,23 +83,23 @@ namespace rs
 					return;
 
 				case NETSTRING_ERROR_TOO_LONG:
-					logger->error("NETSTRING_ERROR_TOO_LONG");
+					LOG(ERROR) << "NETSTRING_ERROR_TOO_LONG";
 					break;
 
 				case NETSTRING_ERROR_NO_COLON:
-					logger->error("NETSTRING_ERROR_NO_COLON");
+					LOG(ERROR) << "NETSTRING_ERROR_NO_COLON";
 					break;
 
 				case NETSTRING_ERROR_NO_COMMA:
-					logger->error("NETSTRING_ERROR_NO_COMMA");
+					LOG(ERROR) << "NETSTRING_ERROR_NO_COMMA";
 					break;
 
 				case NETSTRING_ERROR_LEADING_ZERO:
-					logger->error("NETSTRING_ERROR_LEADING_ZERO");
+					LOG(ERROR) << "NETSTRING_ERROR_LEADING_ZERO";
 					break;
 
 				case NETSTRING_ERROR_NO_LENGTH:
-					logger->error("NETSTRING_ERROR_NO_LENGTH");
+					LOG(ERROR) << "NETSTRING_ERROR_NO_LENGTH";
 					break;
 				}
 

@@ -7,7 +7,6 @@
 
 namespace rs
 {
-	class Logger;
 	class Socket;
 	class ChannelListener;
 
@@ -33,8 +32,5 @@ namespace rs
 		std::unordered_map<uint32_t, ChannelListener*> _eventListeners;
 
 		Socket* _socket{ nullptr };
-
-		std::unique_ptr<Logger> logger;
-		std::unique_ptr<Logger> workerLogger;
 	};
 }

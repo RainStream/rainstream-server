@@ -63,7 +63,7 @@ namespace rs
 		int err = uv_spawn(uv_default_loop(), &subProcess->req, &subProcess->options);
 		if (err != 0)
 		{
-			//logger->error("uv_spawn() failed: %s", uv_strerror(err));
+			//LOG(ERROR) << "uv_spawn() failed: %s", uv_strerror(err));
 
 			delete subProcess;
 			subProcess = nullptr;
@@ -75,7 +75,6 @@ namespace rs
 	}
 
 	SubProcess::SubProcess()
-		: logger(new Logger("SubProcess"))
 	{
 		socket = new Socket;
 	}
@@ -84,7 +83,7 @@ namespace rs
 	{
 		if (this->closed)
 		{
-			logger->error("already closed");
+			LOG(ERROR) << "already closed";
 
 			return;
 		}
@@ -110,6 +109,6 @@ namespace rs
 		Close();
 
 
-		//logger->error("child process exited [id:%s, code:%s, signal:%s]", _id, exit_status, term_signal);
+		//LOG(ERROR) << "child process exited [id:%s, code:%s, signal:%s]", _id, exit_status, term_signal);
 	}
 }

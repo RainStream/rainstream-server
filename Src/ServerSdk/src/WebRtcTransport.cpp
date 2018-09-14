@@ -7,9 +7,8 @@ namespace rs
 {
 
 	WebRtcTransport::WebRtcTransport(const Json& internal, const Json& data, Channel* channel)
-		: logger(new Logger("WebRtcTransport"))
 	{
-		logger->debug("constructor()");
+		LOG(INFO) << "constructor()";
 
 		// Closed flag.
 		this->_closed = false;
@@ -146,7 +145,7 @@ namespace rs
 	*/
 	void WebRtcTransport::close(Json appData, bool notifyChannel/* = true*/)
 	{
-		logger->debug("close()");
+		LOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -178,7 +177,7 @@ namespace rs
 	*/
 	void WebRtcTransport::remoteClose(Json appData, bool notifyChannel/* = true*/)
 	{
-		logger->debug("remoteClose()");
+		LOG(INFO) << "remoteClose()";
 
 		if (this->_closed)
 			return;
@@ -208,11 +207,11 @@ namespace rs
 			this->_channel->request("transport.close", this->_internal)
 				.then([=]()
 			{
-				logger->debug("\"transport.close\" request succeeded");
+				LOG(INFO) << "\"transport.close\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"transport.close\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"transport.close\" request failed:" << error.ToString();
 			});
 		}
 	}
@@ -226,7 +225,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::dump()
 	{
-		logger->debug("dump()");
+		LOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -234,13 +233,13 @@ namespace rs
 		return this->_channel->request("transport.dump", this->_internal)
 			.then([=](Json data)
 		{
-			logger->debug("\"transport.dump\" request succeeded");
+			LOG(INFO) << "\"transport.dump\" request succeeded";
 
 			return data;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"transport.dump\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"transport.dump\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -257,7 +256,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::setRemoteDtlsParameters(Json parameters)
 	{
-		logger->debug("setRemoteDtlsParameters()");
+		LOG(INFO) << "setRemoteDtlsParameters()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -265,7 +264,7 @@ namespace rs
 		return this->_channel->request("transport.setRemoteDtlsParameters", this->_internal, parameters)
 		.then([=](Json data)
 		{
-			logger->debug("\"transport.setRemoteDtlsParameters\" request succeeded");
+			LOG(INFO) << "\"transport.setRemoteDtlsParameters\" request succeeded";
 
 			// Take the .role field of the response data and append it to our
 			// this->_data.dtlsLocalParameters.
@@ -275,8 +274,8 @@ namespace rs
 		})
 		.fail([=](Error error)
 		{
-			logger->error(
-				"\"transport.setRemoteDtlsParameters\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << 
+				"\"transport.setRemoteDtlsParameters\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -289,7 +288,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::setMaxBitrate(int bitrate)
 	{
-		logger->debug("setMaxBitrate() [bitrate:%d]", bitrate);
+		LOG(INFO) << "setMaxBitrate() [bitrate:" << bitrate << "]";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -298,17 +297,17 @@ namespace rs
 
 		return this->_channel->request("transport.setMaxBitrate", this->_internal,
 			{
-				{ "bitrate",bitrate }
+				{ "bitrate" , bitrate }
 			})
 		.then([=]()
 		{
-			logger->debug("\"transport.setMaxBitrate\" request succeeded");
+			LOG(INFO) << "\"transport.setMaxBitrate\" request succeeded";
 
 			return this;
 		})
 		.fail([=](Error error)
 		{
-			logger->error("\"transport.setMaxBitrate\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"transport.setMaxBitrate\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -323,7 +322,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::changeUfragPwd()
 	{
-		logger->debug("changeUfragPwd()");
+		LOG(INFO) << "changeUfragPwd()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -331,7 +330,7 @@ namespace rs
 		return this->_channel->request("transport.changeUfragPwd", this->_internal)
 			.then([=](Json data)
 		{
-			logger->debug("\"transport.changeUfragPwd\" request succeeded");
+			LOG(INFO) << "\"transport.changeUfragPwd\" request succeeded";
 
 			this->_data["iceLocalParameters"] =
 			{
@@ -344,7 +343,7 @@ namespace rs
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"transport.changeUfragPwd\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"transport.changeUfragPwd\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -357,7 +356,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::getStats()
 	{
-		logger->debug("getStats()");
+		LOG(INFO) << "getStats()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -365,13 +364,13 @@ namespace rs
 		return this->_channel->request("transport.getStats", this->_internal)
 			.then([=](Json data)
 		{
-			logger->debug("\"transport.getStats\" request succeeded");
+			LOG(INFO) << "\"transport.getStats\" request succeeded";
 
 			return data;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"transport.getStats\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"transport.getStats\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -384,11 +383,11 @@ namespace rs
 	*/
 	void WebRtcTransport::enableStats(int interval/* = DEFAULT_STATS_INTERVAL*/)
 	{
-		logger->debug("enableStats()");
+		LOG(INFO) << "enableStats()";
 
 		if (this->_closed)
 		{
-			logger->error("enableStats() | WebRtcTransport closed");
+			LOG(ERROR) << "enableStats() | WebRtcTransport closed";
 
 			return;
 		}
@@ -405,7 +404,7 @@ namespace rs
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"getStats\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"getStats\" request failed:" << error.ToString();
 		});
 
 		// Set minimum interval to DEFAULT_STATS_INTERVAL.
@@ -421,7 +420,7 @@ namespace rs
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"getStats\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"getStats\" request failed:" << error.ToString();
 			});
 		}, interval);
 	}
@@ -433,11 +432,11 @@ namespace rs
 	*/
 	void WebRtcTransport::disableStats()
 	{
-		logger->debug("disableStats()");
+		LOG(INFO) << "disableStats()";
 
 		if (this->_closed)
 		{
-			logger->error("disableStats() | WebRtcTransport closed");
+			LOG(ERROR) << "disableStats() | WebRtcTransport closed";
 
 			return;
 		}
@@ -456,7 +455,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::startMirroring(Json options)
 	{
-		logger->debug("startMirroring()");
+		LOG(INFO) << "startMirroring()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -464,13 +463,13 @@ namespace rs
 		return this->_channel->request("transport.startMirroring", this->_internal, options)
 			.then([=]()
 		{
-			logger->debug("\"transport.startMirroring\" request succeeded");
+			LOG(INFO) << "\"transport.startMirroring\" request succeeded";
 
 			return this;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"transport.startMirroring\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"transport.startMirroring\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -483,7 +482,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::stopMirroring()
 	{
-		logger->debug("stopMirroring()");
+		LOG(INFO) << "stopMirroring()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -491,13 +490,13 @@ namespace rs
 		return this->_channel->request("transport.stopMirroring", this->_internal)
 			.then([=]()
 		{
-			logger->debug("\"transport.stopMirroring\" request succeeded");
+			LOG(INFO) << "\"transport.stopMirroring\" request succeeded";
 
 			return this;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"transport.stopMirroring\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"transport.stopMirroring\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -542,7 +541,7 @@ namespace rs
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			LOG(ERROR) << "ignoring unknown event " << event;
 		}
 	}
 

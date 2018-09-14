@@ -11,7 +11,6 @@
 namespace rs
 {
 	class Room;
-	class Logger;
 	class Channel;
 	class ActiveSpeakerDetector;
 	class RtpStreamer;
@@ -97,7 +96,5 @@ namespace rs
 		// Map of Producer instances indexed by producerId.
 		// @type {Map<producerId, Producer>}
 		Producers _producers;
-
-		std::unique_ptr<Logger> logger;
 	};
 }

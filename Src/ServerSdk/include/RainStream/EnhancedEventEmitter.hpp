@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Logger.hpp"
+
 namespace rs
 {
-	class Logger;
 	class Consumer;
 	class Producer;
 
@@ -61,13 +62,10 @@ namespace rs
 			}
 			catch (std::exception error)
 			{
-				this->_logger->error(
-					"safeEmit() | event listener threw an error [event:%s]:%s",
-					event.c_str(), error.what());
+				LOG(ERROR) << 
+					"safeEmit() | event listener threw an error [event:"
+					<< event << ":" << error.what() << "]";
 			}
 		}
-
-	protected:
-		Logger * _logger = nullptr;
 	};
 }

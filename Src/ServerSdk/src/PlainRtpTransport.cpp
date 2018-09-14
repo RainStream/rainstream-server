@@ -8,9 +8,8 @@ namespace rs
 
 	PlainRtpTransport::PlainRtpTransport(const Json& internal, const Json& data, Channel* channel)
 		: EnhancedEventEmitter()
-		, logger(new Logger("PlainRtpTransport"))
 	{
-		logger->debug("constructor()");
+		LOG(INFO) << "constructor()";
 
 		// Closed flag.
 		this->_closed = false;
@@ -60,7 +59,7 @@ namespace rs
 	*/
 	void PlainRtpTransport::close(bool notifyChannel /*= true*/)
 	{
-		logger->debug("close()");
+		LOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -78,13 +77,15 @@ namespace rs
 			this->_channel->request("transport.close", this->_internal)
 				.then([=]()
 			{
-				logger->debug("\"transport.close\" request succeeded");
+				LOG(INFO) << "\"transport.close\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"transport.close\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"transport.close\" request failed:"<< error.ToString();
 			});
 		}
+
+		delete this;
 	}
 
 	/**
@@ -96,7 +97,7 @@ namespace rs
 	*/
 	Defer PlainRtpTransport::dump()
 	{
-		logger->debug("dump()");
+		LOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("PlainRtpTransport closed"));
@@ -104,13 +105,13 @@ namespace rs
 		return this->_channel->request("transport.dump", this->_internal)
 			.then([=](Json data)
 		{
-			logger->debug("\"transport.dump\" request succeeded");
+			LOG(INFO) << "\"transport.dump\" request succeeded";
 
 			return data;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"transport.dump\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"transport.dump\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -151,7 +152,7 @@ namespace rs
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			LOG(ERROR) << "ignoring unknown event:" << event;
 		}
 	}
 

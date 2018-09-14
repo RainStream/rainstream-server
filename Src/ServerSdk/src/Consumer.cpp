@@ -13,9 +13,8 @@ namespace rs
 	const std::set<std::string> PROFILES = { "default", "low", "medium", "high" };
 
 	Consumer::Consumer(Peer* peer, Producer* source, const Json& internal, const Json& data, Channel* channel)
-		: logger(new Logger("Consumer"))
 	{
-		logger->debug("constructor()");
+		LOG(INFO) << "constructor()";
 
 		// Closed flag.
 		this->_closed = false;
@@ -184,7 +183,7 @@ namespace rs
 	*/
 	void Consumer::close(bool notifyChannel/* = true*/)
 	{
-		logger->debug("close()");
+		LOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -223,13 +222,15 @@ namespace rs
 			this->_channel->request("consumer.close", this->_internal)
 				.then([=]()
 			{
-				logger->debug("\"consumer.close\" request succeeded");
+				LOG(INFO) << "\"consumer.close\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"consumer.close\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"consumer.close\" request failed:" << error.ToString();
 			});
 		}
+
+		delete this;
 	}
 
 	/**
@@ -241,7 +242,7 @@ namespace rs
 	*/
 	Defer Consumer::Consumer::dump()
 	{
-		logger->debug("dump()");
+		LOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Consumer closed"));
@@ -249,13 +250,13 @@ namespace rs
 		return this->_channel->request("consumer.dump", this->_internal)
 			.then([=](Json data)
 		{
-			logger->debug("\"consumer.dump\" request succeeded");
+			LOG(INFO) << "\"consumer.dump\" request succeeded";
 
 			return data;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"consumer.dump\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"consumer.dump\" request failed: " << error.ToString();
 
 			throw error;
 		});
@@ -303,7 +304,7 @@ namespace rs
 	*/
 	Defer Consumer::enable(WebRtcTransport* transport, bool remotelyPaused, std::string preferredProfile)
 	{
-		logger->debug("enable()");
+		LOG(INFO) << "enable()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Consumer closed"));
@@ -330,7 +331,7 @@ namespace rs
 			})
 			.then([=]()
 		{
-			logger->debug("\"consumer.enable\" request succeeded");
+			LOG(INFO) << "\"consumer.enable\" request succeeded";
 
 			this->_internal = internal;
 			this->_transport = transport;
@@ -346,7 +347,7 @@ namespace rs
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"consumer.enable\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"consumer.enable\" request failed: " << error.ToString();
 
 			throw error;
 		});
@@ -361,11 +362,11 @@ namespace rs
 	*/
 	bool Consumer::pause(Json appData)
 	{
-		logger->debug("pause()");
+		LOG(INFO) << "pause()";
 
 		if (this->_closed)
 		{
-			logger->error("pause() | Consumer closed");
+			LOG(ERROR) << "pause() | Consumer closed";
 
 			return false;
 		}
@@ -395,11 +396,11 @@ namespace rs
 		this->_channel->request("consumer.pause", this->_internal)
 			.then([=]()
 		{
-			logger->debug("\"consumer.pause\" request succeeded");
+			LOG(INFO) << "\"consumer.pause\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"consumer.pause\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"consumer.pause\" request failed: " << error.ToString();
 		});
 
 		this->doEvent("pause", { { "local", "local" }, { "appData" , appData } });
@@ -418,7 +419,7 @@ namespace rs
 	*/
 	void Consumer::remotePause(const Json& appData/* = Json::object()*/)
 	{
-		logger->debug("remotePause()");
+		LOG(INFO) << "remotePause()";
 
 		if (this->_closed || this->_remotelyPaused)
 			return;
@@ -428,11 +429,11 @@ namespace rs
 		this->_channel->request("consumer.pause", this->_internal)
 			.then([=]()
 		{
-			logger->debug("\"consumer.pause\" request succeeded");
+			LOG(INFO) << "\"consumer.pause\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"consumer.pause\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"consumer.pause\" request failed: " << error.ToString();
 		});
 
 		this->doEvent("pause", { { "local", "remote" }, { "appData" , appData } });
@@ -447,11 +448,11 @@ namespace rs
 	*/
 	bool Consumer::resume(const Json& appData)
 	{
-		logger->debug("resume()");
+		LOG(INFO) << "resume()";
 
 		if (this->_closed)
 		{
-			logger->error("resume() | Consumer closed");
+			LOG(ERROR) << "resume() | Consumer closed";
 
 			return false;
 		}
@@ -483,11 +484,11 @@ namespace rs
 			this->_channel->request("consumer.resume", this->_internal)
 				.then([=]()
 			{
-				logger->debug("\"consumer.resume\" request succeeded");
+				LOG(INFO) << "\"consumer.resume\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"consumer.resume\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"consumer.resume\" request failed: " << error.ToString();
 			});
 		}
 
@@ -507,7 +508,7 @@ namespace rs
 	*/
 	void Consumer::remoteResume(const Json& appData)
 	{
-		logger->debug("remoteResume()");
+		LOG(INFO) << "remoteResume()";
 
 		if (this->_closed || !this->_remotelyPaused)
 			return;
@@ -519,11 +520,11 @@ namespace rs
 			this->_channel->request("consumer.resume", this->_internal)
 				.then([=]()
 			{
-				logger->debug("\"consumer.resume\" request succeeded");
+				LOG(INFO) << "\"consumer.resume\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"consumer.resume\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"consumer.resume\" request failed: " << error.ToString();
 			});
 		}
 
@@ -537,11 +538,11 @@ namespace rs
 	*/
 	void Consumer::setPreferredProfile(std::string profile)
 	{
-		logger->debug("setPreferredProfile() [profile:%s]", profile.c_str());
+		LOG(INFO) << "setPreferredProfile() [profile:" << profile << "]";
 
 		if (this->_closed)
 		{
-			logger->error("setPreferredProfile() | Consumer closed");
+			LOG(ERROR) << "setPreferredProfile() | Consumer closed";
 
 			return;
 		}
@@ -551,7 +552,7 @@ namespace rs
 		}
 		else if (!PROFILES.count(profile))
 		{
-			logger->error("setPreferredProfile() | invalid profile \"%s\"", profile.c_str());
+			LOG(ERROR) << "setPreferredProfile() | invalid profile " << profile;
 
 			return;
 		}
@@ -562,7 +563,7 @@ namespace rs
 			})
 			.then([=]()
 		{
-			logger->debug("\"consumer.setPreferredProfile\" request succeeded");
+			LOG(INFO) << "\"consumer.setPreferredProfile\" request succeeded";
 
 			this->_preferredProfile = profile;
 
@@ -581,8 +582,8 @@ namespace rs
 		})
 			.fail([=](Error error)
 		{
-			logger->error(
-				"\"consumer.setPreferredProfile\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) <<
+				"\"consumer.setPreferredProfile\" request failed: " << error.ToString();
 		});
 	}
 
@@ -595,7 +596,7 @@ namespace rs
 	*/
 	void Consumer::remoteSetPreferredProfile(std::string profile)
 	{
-		logger->debug("remoteSetPreferredProfile() [profile:%s]", profile.c_str());
+		LOG(INFO) << "remoteSetPreferredProfile() [profile:" << profile << "]";
 
 		if (this->_closed || profile == this->_preferredProfile)
 			return;
@@ -606,14 +607,14 @@ namespace rs
 			})
 			.then([=]()
 		{
-			logger->debug("\"consumer.setPreferredProfile\" request succeeded");
+			LOG(INFO) << "\"consumer.setPreferredProfile\" request succeeded";
 
 			this->_preferredProfile = profile;
 		})
 			.fail([=](Error error)
 		{
-			logger->error(
-				"\"consumer.setPreferredProfile\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << 
+				"\"consumer.setPreferredProfile\" request failed:" << error.ToString();
 		});
 	}
 
@@ -627,11 +628,11 @@ namespace rs
 	*/
 	void Consumer::setEncodingPreferences(std::string preferences)
 	{
-		logger->debug("setEncodingPreferences() [preferences:%s]", preferences.c_str());
+		LOG(INFO) << "setEncodingPreferences() [preferences:" << preferences << "]";
 
 		if (this->_closed)
 		{
-			logger->error("setEncodingPreferences() | Consumer closed");
+			LOG(ERROR) << "setEncodingPreferences() | Consumer closed";
 
 			return;
 		}
@@ -640,12 +641,12 @@ namespace rs
 			"consumer.setEncodingPreferences", this->_internal, preferences)
 			.then([=]()
 		{
-			logger->debug("\"consumer.setEncodingPreferences\" request succeeded");
+			LOG(INFO) << "\"consumer.setEncodingPreferences\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
-			logger->error(
-				"\"consumer.setEncodingPreferences\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << 
+				"\"consumer.setEncodingPreferences\" request failed:" << error.ToString();
 		});
 	}
 
@@ -654,7 +655,7 @@ namespace rs
 	*/
 	void Consumer::requestKeyFrame()
 	{
-		logger->debug("requestKeyFrame()");
+		LOG(INFO) << "requestKeyFrame()";
 
 		if (this->_closed || !this->enabled() || this->paused())
 			return;
@@ -665,11 +666,11 @@ namespace rs
 		this->_channel->request("consumer.requestKeyFrame", this->_internal)
 			.then([=]()
 		{
-			logger->debug("\"consumer.requestKeyFrame\" request succeeded");
+			LOG(INFO) << "\"consumer.requestKeyFrame\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"consumer.requestKeyFrame\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"consumer.requestKeyFrame\" request failed:" << error.ToString();
 		});
 	}
 
@@ -680,7 +681,7 @@ namespace rs
 	*/
 	Defer Consumer::getStats()
 	{
-		logger->debug("getStats()");
+		LOG(INFO) << "getStats()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Consumer closed"));
@@ -688,13 +689,13 @@ namespace rs
 		return this->_channel->request("consumer.getStats", this->_internal)
 			.then([=](Json data)
 		{
-			logger->debug("\"consumer.getStats\" request succeeded");
+			LOG(INFO) << "\"consumer.getStats\" request succeeded";
 
 			return data;
 		})
 			.fail([=](Error error)
 		{
-			logger->error("\"consumer.getStats\" request failed: %s", error.ToString().c_str());
+			LOG(ERROR) << "\"consumer.getStats\" request failed:" << error.ToString();
 
 			throw error;
 		});
@@ -707,19 +708,19 @@ namespace rs
 	*/
 	void Consumer::enableStats(int interval/* = DEFAULT_STATS_INTERVAL*/)
 	{
-		logger->debug("enableStats()");
+		LOG(INFO) << "enableStats()";
 
 		if (this->_closed)
 		{
-			logger->error("enableStats() | Consumer closed");
+			LOG(ERROR) << "enableStats() | Consumer closed";
 
 			return;
 		}
 
 		if (!this->hasPeer())
 		{
-			logger->error(
-				"enableStats() | cannot enable stats on a Consumer without Peer");
+			LOG(ERROR) << 
+				"enableStats() | cannot enable stats on a Consumer without Peer";
 
 			return;
 		}
@@ -745,7 +746,7 @@ namespace rs
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"getStats\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"getStats\" request failed:" << error.ToString();
 			});
 		}
 
@@ -772,7 +773,7 @@ namespace rs
 			})
 				.fail([=](Error error)
 			{
-				logger->error("\"getStats\" request failed: %s", error.ToString().c_str());
+				LOG(ERROR) << "\"getStats\" request failed:" << error.ToString();
 			});
 		}, interval);
 	}
@@ -784,11 +785,11 @@ namespace rs
 	*/
 	void Consumer::disableStats()
 	{
-		logger->debug("disableStats()");
+		LOG(INFO) << "disableStats()";
 
 		if (this->_closed)
 		{
-			logger->error("disableStats() | Consumer closed");
+			LOG(ERROR) << "disableStats() | Consumer closed";
 
 			return;
 		}
@@ -890,7 +891,7 @@ namespace rs
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			LOG(ERROR) << "ignoring unknown event" << event;
 		}
 	}
 

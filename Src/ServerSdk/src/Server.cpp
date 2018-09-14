@@ -28,10 +28,9 @@ namespace rs
 
 
 	Server::Server(Json options, Listener* listener)
-		:logger(new Logger("Server"))
-		, listener(listener)
+		: listener(listener)
 	{
-		logger->debug("constructor() [options:%s]", options.dump().c_str());
+		LOG(INFO) << "constructor() [options:" << options.dump() << "]";
 
 		std::string serverId = utils::randomString();
 		AStringVector parameters;
@@ -84,7 +83,7 @@ namespace rs
 			auto itSub = std::find(VALID_WORKER_PARAMETERS.begin(), VALID_WORKER_PARAMETERS.end(), key);
 			if (itSub == VALID_WORKER_PARAMETERS.end())
 			{
-				logger->warn("ignoring unknown option \"%s\"", key.c_str());
+				LOG(WARNING) << "ignoring unknown option :" << key;
 
 				continue;
 			}
@@ -148,7 +147,7 @@ namespace rs
 	*/
 	void Server::close()
 	{
-		logger->debug("close()");
+		LOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -173,7 +172,7 @@ namespace rs
 	*/
 	Defer Server::dump()
 	{
-		logger->debug("dump()");
+		LOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Server closed"));
@@ -206,7 +205,7 @@ namespace rs
 	*/
 	Defer Server::updateSettings(Json options)
 	{
-		logger->debug("updateSettings() [options:%s]", options.dump().c_str());
+		LOG(INFO) << "updateSettings() [options:%s" << options.dump() << "]";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Server closed"));
@@ -230,7 +229,7 @@ namespace rs
 	*/
 	Room* Server::Room(Json mediaCodecs)
 	{
-		logger->debug("Room()");
+		LOG(INFO) << "Room()";
 
 		if (this->_closed)
 			throw errors::InvalidStateError("Server closed");
@@ -267,7 +266,7 @@ namespace rs
 
 			if (this->_workers.size() == 0 && !this->_closed)
 			{
-				logger->debug("latest Worker closed, closing Server");
+				LOG(INFO) << "latest Worker closed, closing Server";
 
 				this->close();
 			}
@@ -284,7 +283,7 @@ namespace rs
 		}
 		else
 		{
-			logger->error("_getRandomWorker() failed: workers.size() == 0");
+			LOG(ERROR) << "_getRandomWorker() failed: workers.size() == 0";
 			return nullptr;
 		}
 	}

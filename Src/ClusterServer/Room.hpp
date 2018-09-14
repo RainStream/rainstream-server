@@ -62,8 +62,6 @@ private:
 	rs::Peer* _currentActiveSpeaker{ nullptr };
 	Listener* listener{ nullptr };
 
-	std::unique_ptr<rs::Logger> logger;
-
 	std::map<std::string, protoo::Peer*> _peers;
 
 	// Closed flag.

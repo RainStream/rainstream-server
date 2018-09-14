@@ -43,7 +43,7 @@
  *
  * 	 Logs if the current source file defines the MS_LOG_DEV macro.
  * 	 Example:
- * 	   MS_DEBUG_DEV("Room closed [roomId:%" PRIu32 "]", roomId);
+ * 	   MS_DEBUG_DEV("Producer closed [producerId:%" PRIu32 "]", producerId);
  *
  * MS_DUMP(...)
  *
@@ -69,7 +69,6 @@
 #include "common.hpp"
 #include "LogLevel.hpp"
 #include "Settings.hpp"
-//#include "RTC/Channel.hpp"
 #include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
 #include <cstdlib> // std::abort()
 #include <cstring>
@@ -109,12 +108,10 @@
 class Logger
 {
 public:
-	//static void Init(const std::string &id, RTC::Channel* channel);
 	static void Init(const std::string &id);
 
 public:
 	static std::string id;
-	//static RTC::Channel* channel;
 	static const size_t bufferSize {10000};
 	static char buffer[];
 };
@@ -124,12 +121,12 @@ public:
 #define _MS_LOG_SEPARATOR_CHAR_STD "\n"
 
 #ifdef MS_LOG_FILE_LINE
-	#define _MS_LOG_STR "[%s] %s:%d | %s::%s"
+	#define _MS_LOG_STR "[%s] %s:%d | %s::%s()"
 	#define _MS_LOG_STR_DESC _MS_LOG_STR " | "
 	#define _MS_FILE (std::strchr(__FILE__, '/') ? std::strchr(__FILE__, '/') + 1 : __FILE__)
 	#define _MS_LOG_ARG ("id:" + Logger::id).c_str(), _MS_FILE, __LINE__, MS_CLASS, __FUNCTION__
 #else
-	#define _MS_LOG_STR "[%s] %s::%s"
+	#define _MS_LOG_STR "[%s] %s::%s()"
 	#define _MS_LOG_STR_DESC _MS_LOG_STR " | "
 	#define _MS_LOG_ARG ("id:" + Logger::id).c_str(), MS_CLASS, __FUNCTION__
 #endif
@@ -141,7 +138,6 @@ public:
 			if (LogLevel::LOG_DEBUG == Settings::configuration.logLevel) \
 			{ \
 				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "D(trace) " _MS_LOG_STR, _MS_LOG_ARG); \
-				Logger::channel->SendLog(Logger::buffer, loggerWritten); \
 			} \
 		} \
 		while (false)
@@ -258,7 +254,6 @@ public:
 			if (LogLevel::LOG_DEBUG == Settings::configuration.logLevel) \
 			{ \
 				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "D" _MS_LOG_STR_DESC desc, _MS_LOG_ARG, ##__VA_ARGS__); \
-				Logger::channel->SendLog(Logger::buffer, loggerWritten); \
 			} \
 		} \
 		while (false)
@@ -280,7 +275,6 @@ public:
 			if (LogLevel::LOG_WARN <= Settings::configuration.logLevel) \
 			{ \
 				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "W" _MS_LOG_STR_DESC desc, _MS_LOG_ARG, ##__VA_ARGS__); \
-				Logger::channel->SendLog(Logger::buffer, loggerWritten); \
 			} \
 		} \
 		while (false)
@@ -347,7 +341,6 @@ public:
 		MS_ABORT("failed assertion `%s': " desc, #condition, ##__VA_ARGS__); \
 	}
 
-
 #ifdef MS_LOG_STD
 	#undef MS_TRACE
 	#define MS_TRACE MS_TRACE_STD
@@ -370,18 +363,5 @@ public:
 #endif
 
 // clang-format on
-#define GREEN 10
-#define RED 12
-#define YELLOW 14
-#define PINK 13
-
-void cprintf(uint32_t color, char* format, ...);
-
-#define MS_INFO(color, desc, ...) \
-	do \
-	{ \
-		cprintf(color,desc,##__VA_ARGS__); \
-	} \
-	while (false)
 
 #endif

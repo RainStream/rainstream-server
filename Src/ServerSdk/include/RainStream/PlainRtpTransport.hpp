@@ -80,7 +80,5 @@ namespace rs
 
 		// Channel instance.
 		Channel* _channel{ nullptr };
-
-		std::unique_ptr<Logger> logger;
 	};
 }

@@ -5,7 +5,6 @@
 
 namespace rs
 {
-	class Logger;
 	class Socket : public PipeStreamSocket, public EventEmitter
 	{
 	public:
@@ -38,8 +37,6 @@ namespace rs
 		// Others.
 		size_t msgStart{ 0 }; // Where the latest message starts.
 		bool closed{ false };
-
-		std::unique_ptr<Logger> logger;
 	};
 }
 
