@@ -83,11 +83,11 @@ namespace protoo
 
 		if (tls.is_object())
 		{
-			cert = tls.value("cert","");
+			cert = tls.value("cert", "");
 			key = tls.value("key", "");
 		}
 
 		uS::TLS::Context c = uS::TLS::createContext(cert, key);
-		return hub->listen(host, port, c);
+		return hub->listen(port, c, uS::ONLY_IPV4);
 	}
 }
