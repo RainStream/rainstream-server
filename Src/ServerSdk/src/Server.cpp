@@ -51,16 +51,16 @@ namespace rs
 		if (!options["logTags"].is_array())
 			options["logTags"] = Json::array();
 
-		if (options["rtcIPv4"].is_null() || options.count("rtcIPv4") == false)
+		if (!options.count("rtcIPv4") || options["rtcIPv4"].is_null())
 			options.erase("rtcIPv4");
 
-		if (options["rtcIPv6"].is_null() || options.count("rtcIPv6") == false)
+		if (!options.count("rtcIPv6") || options["rtcIPv6"].is_null())
 			options.erase("rtcIPv6");
 
-		if (options["rtcAnnouncedIPv4"].is_null() || options["rtcIPv4"] == false)
+		if (options["rtcAnnouncedIPv4"].is_null() || options.value("rtcIPv4",false) == false)
 			options.erase("rtcAnnouncedIPv4");
 
-		if (options["rtcAnnouncedIPv6"].is_null() || options["rtcIPv6"] == false)
+		if (options["rtcAnnouncedIPv6"].is_null() || options.value("rtcIPv6", false) == false)
 			options.erase("rtcAnnouncedIPv6");
 
 		if (options["rtcMinPort"].is_null() || options["rtcMinPort"].get<uint32_t>() < 1024)
@@ -101,7 +101,8 @@ namespace rs
 			}
 			else
 			{
-				std::string value = options[key].is_boolean() ? "true" : options[key].get<std::string>();
+				std::string value = options[key].is_boolean() ? (options.value(key,false)? "true" : "false") 
+					: options[key].get<std::string>();
 				std::string parameter = utils::Printf("--%s=%s", key.c_str(), value.c_str());
 				parameters.push_back(parameter);
 			}
