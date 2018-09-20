@@ -30,7 +30,7 @@ namespace rs
 	Server::Server(Json options, Listener* listener)
 		: listener(listener)
 	{
-		LOG(INFO) << "constructor() [options:" << options.dump() << "]";
+		DLOG(INFO) << "constructor() [options:" << options.dump() << "]";
 
 		std::string serverId = utils::randomString();
 		AStringVector parameters;
@@ -148,7 +148,7 @@ namespace rs
 	*/
 	void Server::close()
 	{
-		LOG(INFO) << "close()";
+		DLOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -174,7 +174,7 @@ namespace rs
 	*/
 	Defer Server::dump()
 	{
-		LOG(INFO) << "dump()";
+		DLOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Server closed"));
@@ -207,7 +207,7 @@ namespace rs
 	*/
 	Defer Server::updateSettings(Json options)
 	{
-		LOG(INFO) << "updateSettings() [options:%s" << options.dump() << "]";
+		DLOG(INFO) << "updateSettings() [options:%s" << options.dump() << "]";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Server closed"));
@@ -231,7 +231,7 @@ namespace rs
 	*/
 	Room* Server::Room(Json mediaCodecs)
 	{
-		LOG(INFO) << "Room()";
+		DLOG(INFO) << "Room()";
 
 		if (this->_closed)
 			throw errors::InvalidStateError("Server closed");
@@ -268,7 +268,7 @@ namespace rs
 
 			if (this->_workers.size() == 0 && !this->_closed)
 			{
-				LOG(INFO) << "latest Worker closed, closing Server";
+				DLOG(INFO) << "latest Worker closed, closing Server";
 
 				this->close();
 			}

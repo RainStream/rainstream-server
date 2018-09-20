@@ -16,7 +16,7 @@ namespace rs
 	{
 		int err;
 
-		LOG(INFO) << "constructor()";
+		DLOG(INFO) << "constructor()";
 
 		// Unix Socket instance.
 		this->_socket = socket;
@@ -37,7 +37,7 @@ namespace rs
 
 					// 68 = "D" (a debug log).
 				case 68:
-					LOG(INFO) << nsPayload.substr(1);
+					DLOG(INFO) << nsPayload.substr(1);
 					break;
 
 					// 87 = "W" (a warning log).
@@ -64,7 +64,7 @@ namespace rs
 
 		this->_socket->addEventListener("end", [=](Json data)
 		{
-			LOG(INFO) << "channel ended by the other side";
+			DLOG(INFO) << "channel ended by the other side";
 		});
 
 		this->_socket->addEventListener("error", [=](Json data)
@@ -78,7 +78,7 @@ namespace rs
 
 	void Channel::close()
 	{
-		LOG(INFO) << "close()";
+		DLOG(INFO) << "close()";
 
 		// Close every pending sent.
 		for (auto sent : this->_pendingSent)
@@ -110,7 +110,7 @@ namespace rs
 	{
 		uint32_t id = utils::randomNumber();
 
-		LOG(INFO) << "request() [method"<< method << ", id:" << id << "]";
+		DLOG(INFO) << "request() [method"<< method << ", id:" << id << "]";
 
 		Json request = {
 			{ "id",id },
@@ -157,7 +157,7 @@ namespace rs
 			uint32_t id = msg["id"].get<uint32_t>();
 
 			if (msg.count("accepted") && msg["accepted"].get<bool>())
-				LOG(INFO) << "request succeeded [id:" << id << "]";
+				DLOG(INFO) << "request succeeded [id:" << id << "]";
 			else
 				LOG(ERROR) << "request failed [id:" << id <<
 				" reason:"<< msg["reason"].get<std::string>() << "]";

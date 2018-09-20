@@ -16,7 +16,7 @@ namespace rs
 	{
 		//this->setMaxListeners(Infinity);
 
-		LOG(INFO) << "constructor() [id:" << id << "parameters:" << join(parameters, " ") << "]";
+		DLOG(INFO) << "constructor() [id:" << id << "parameters:" << join(parameters, " ") << "]";
 
 		parameters.insert(parameters.begin(), id);
 
@@ -29,7 +29,7 @@ namespace rs
 
 	void Worker::close()
 	{
-		LOG(INFO) << "close()";
+		DLOG(INFO) << "close()";
 
 		this->doEvent("@close");
 
@@ -58,12 +58,12 @@ namespace rs
 
 	Defer Worker::dump()
 	{
-		LOG(INFO) << "dump()";
+		DLOG(INFO) << "dump()";
 
 		return this->_channel->request("worker.dump")
 			.then([=](const Json& data)
 		{
-			LOG(INFO) << "\"worker.dump\" request succeeded";
+			DLOG(INFO) << "\"worker.dump\" request succeeded";
 
 			return data;
 		})
@@ -77,12 +77,12 @@ namespace rs
 
 	Defer Worker::updateSettings(Json& spawnOptions)
 	{
-		LOG(INFO) << "updateSettings() [spawnOptions:" << spawnOptions.dump() << "]";
+		DLOG(INFO) << "updateSettings() [spawnOptions:" << spawnOptions.dump() << "]";
 
 		return this->_channel->request("worker.updateSettings", nullptr, spawnOptions)
 			.then([=]()
 		{
-			LOG(INFO) << "\"worker.updateSettings\" request succeeded";
+			DLOG(INFO) << "\"worker.updateSettings\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
@@ -99,7 +99,7 @@ namespace rs
 	*/
 	Room* Worker::CreateRoom(const Json& data)
 	{
-		LOG(INFO) << "Room()";
+		DLOG(INFO) << "Room()";
 
 		Json internal;
 		internal["routerId"] = utils::randomNumber();
@@ -116,7 +116,7 @@ namespace rs
 		this->_channel->request("worker.createRouter", internal)
 			.then([=]()
 		{
-			LOG(INFO) << "\"worker.createRouter\" request succeeded";
+			DLOG(INFO) << "\"worker.createRouter\" request succeeded";
 		})
 			.fail([=](Error error)
 		{

@@ -21,6 +21,7 @@ namespace protoo
 
 		void setListener(Listener* listener);
 		std::string url() const;
+		std::string addresss() const;
 
 	public:
 		void Close(int code = 1000, std::string message = std::string());
@@ -37,6 +38,7 @@ namespace protoo
 
 		Listener* _listener{nullptr};
 		std::string _url;
+		std::string _address;
 		// Closed flag.
 		bool _closed = false;
 	};

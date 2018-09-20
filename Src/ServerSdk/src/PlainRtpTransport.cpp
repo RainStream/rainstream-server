@@ -8,7 +8,7 @@ namespace rs
 
 	PlainRtpTransport::PlainRtpTransport(const Json& internal, const Json& data, Channel* channel)
 	{
-		LOG(INFO) << "constructor()";
+		DLOG(INFO) << "constructor()";
 
 		// Closed flag.
 		this->_closed = false;
@@ -58,7 +58,7 @@ namespace rs
 	*/
 	void PlainRtpTransport::close(bool notifyChannel /*= true*/)
 	{
-		LOG(INFO) << "close()";
+		DLOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -76,7 +76,7 @@ namespace rs
 			this->_channel->request("transport.close", this->_internal)
 				.then([=]()
 			{
-				LOG(INFO) << "\"transport.close\" request succeeded";
+				DLOG(INFO) << "\"transport.close\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
@@ -96,7 +96,7 @@ namespace rs
 	*/
 	Defer PlainRtpTransport::dump()
 	{
-		LOG(INFO) << "dump()";
+		DLOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("PlainRtpTransport closed"));
@@ -104,7 +104,7 @@ namespace rs
 		return this->_channel->request("transport.dump", this->_internal)
 			.then([=](Json data)
 		{
-			LOG(INFO) << "\"transport.dump\" request succeeded";
+			DLOG(INFO) << "\"transport.dump\" request succeeded";
 
 			return data;
 		})

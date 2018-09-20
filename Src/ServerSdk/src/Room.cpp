@@ -9,7 +9,7 @@ namespace rs
 
 	Room::Room(const Json& internal, const Json& data, Channel* channel)
 	{
-		LOG(INFO) << "constructor()";
+		DLOG(INFO) << "constructor()";
 
 		// Closed flag.
 		this->_closed = false;
@@ -56,7 +56,7 @@ namespace rs
 	*/
 	void Room::close(const Json& appData, bool notifyChannel)
 	{
-		LOG(INFO) << "close()";
+		DLOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -81,7 +81,7 @@ namespace rs
 			this->_channel->request("router.close", this->_internal)
 			.then([=]()
 			{
-				LOG(INFO) << "\"router.close\" request succeeded";
+				DLOG(INFO) << "\"router.close\" request succeeded";
 			})
 			.fail([=](Error error)
 			{
@@ -92,7 +92,7 @@ namespace rs
 
 	Defer Room::dump()
 	{
-		LOG(INFO) << "dump()";
+		DLOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Room closed"));
@@ -102,7 +102,7 @@ namespace rs
 		return this->_channel->request("router.dump", this->_internal)
 			.then([=](Json data)
 		{
-			LOG(INFO) << "\"router.dump\" request succeeded";
+			DLOG(INFO) << "\"router.dump\" request succeeded";
 
 			return data;
 		})
@@ -136,7 +136,7 @@ namespace rs
 
 		std::string method = request["method"].get<std::string>();
 
-		LOG(INFO) << "receiveRequest() [method:" << method << "]";
+		DLOG(INFO) << "receiveRequest() [method:" << method << "]";
 
 		return promise::resolve()
 			.then([=]()
@@ -203,7 +203,7 @@ namespace rs
 
 	ActiveSpeakerDetector* Room::createActiveSpeakerDetector()
 	{
-		LOG(INFO) << "createActiveSpeakerDetector()";
+		DLOG(INFO) << "createActiveSpeakerDetector()";
 
 		// 	ActiveSpeakerDetector* activeSpeakerDetector = new plugins.ActiveSpeakerDetector(this);
 		// 
@@ -214,7 +214,7 @@ namespace rs
 
 	Defer Room::createRtpStreamer(Producer* producer, const Json& options)
 	{
-		LOG(INFO) << "createRtpStreamer()";
+		DLOG(INFO) << "createRtpStreamer()";
 
 		if (!this->_producers.count(producer->id()))
 			return promise::reject(Error("Producer not found"));
@@ -265,7 +265,7 @@ namespace rs
 				})
 				.then([=]()
 			{
-				LOG(INFO) << "\"router.createConsumer\" request succeeded";
+				DLOG(INFO) << "\"router.createConsumer\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
@@ -296,7 +296,7 @@ namespace rs
 
 	Peer* Room::_createPeer(std::string peerName, const Json& rtpCapabilities, const Json& appData)
 	{
-		LOG(INFO) << "_createPeer() [peerName:" << peerName << "]";
+		DLOG(INFO) << "_createPeer() [peerName:" << peerName << "]";
 
 		if (peerName.empty())
 			throw TypeError("peerName must be a string");
@@ -418,7 +418,7 @@ namespace rs
 
 	Defer Room::_createPlainRtpTransport(const Json& options)
 	{
-		LOG(INFO) << "_createPlainRtpTransport()";
+		DLOG(INFO) << "_createPlainRtpTransport()";
 
 		Json internal =
 		{
@@ -429,7 +429,7 @@ namespace rs
 		return this->_channel->request("router.createPlainRtpTransport", internal, options)
 			.then([=](Json data)
 		{
-			LOG(INFO) << "\"router.createPlainRtpTransport\" request succeeded";
+			DLOG(INFO) << "\"router.createPlainRtpTransport\" request succeeded";
 
 			// Create a PlainRtpTransport.
 			PlainRtpTransport* transport = new PlainRtpTransport(internal, data, this->_channel);
@@ -464,7 +464,7 @@ namespace rs
 					"router.setAudioLevelsEvent", this->_internal, Json{ {"enabled", true} })
 					.then([=]()
 				{
-					LOG(INFO) << "\"router.setAudioLevelsEvent\" request succeeded";
+					DLOG(INFO) << "\"router.setAudioLevelsEvent\" request succeeded";
 				})
 					.fail([=](Error error)
 				{
@@ -488,7 +488,7 @@ namespace rs
 					"router.setAudioLevelsEvent", this->_internal, Json{ {"enabled", false} })
 					.then([=]()
 				{
-					LOG(INFO) << "\"router.setAudioLevelsEvent\" request succeeded";
+					DLOG(INFO) << "\"router.setAudioLevelsEvent\" request succeeded";
 				})
 					.fail([=](Error error)
 				{

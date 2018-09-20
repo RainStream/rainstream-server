@@ -42,7 +42,7 @@ namespace protoo
 
 		std::string message = data.dump();
 
-		LOG(INFO) << "send Message to " << userData << " says :" << message;
+		DLOG(INFO) << "send Message to " << userData << " says :" << message;
 
 		try
 		{
@@ -72,14 +72,24 @@ namespace protoo
 		return _url;
 	}
 
+	std::string WebSocketClient::addresss() const
+	{
+		return _address;
+	}
+
 	void WebSocketClient::setUserData(void* userData)
 	{
 		this->userData = userData;
+
+		uWS::WebSocket<uWS::SERVER>* ws = static_cast <uWS::WebSocket<uWS::SERVER>*>(userData);
+		_address = ws->getAddress().address;
+
+		LOG(INFO) << "WebSocketClient connected with [IP:" << _address << "]";
 	}
 
 	void WebSocketClient::onMessage(const std::string& message)
 	{
-		LOG(INFO) << "recv Message from " << userData << " says :" << message;
+		DLOG(INFO) << "recv Message from " << userData << " says :" << message;
 
 		if (_listener)
 		{
@@ -89,6 +99,7 @@ namespace protoo
 
 	void WebSocketClient::onClosed(int code, const std::string& message)
 	{
+		LOG(INFO) << "WebSocketClient disconnected with [IP:" << _address << "]";
 		if (this->_listener)
 		{
 			_listener->onClosed(code, message);

@@ -8,7 +8,7 @@ namespace rs
 
 	WebRtcTransport::WebRtcTransport(const Json& internal, const Json& data, Channel* channel)
 	{
-		LOG(INFO) << "constructor()";
+		DLOG(INFO) << "constructor()";
 
 		// Closed flag.
 		this->_closed = false;
@@ -145,7 +145,7 @@ namespace rs
 	*/
 	void WebRtcTransport::close(Json appData, bool notifyChannel/* = true*/)
 	{
-		LOG(INFO) << "close()";
+		DLOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -177,7 +177,7 @@ namespace rs
 	*/
 	void WebRtcTransport::remoteClose(Json appData, bool notifyChannel/* = true*/)
 	{
-		LOG(INFO) << "remoteClose()";
+		DLOG(INFO) << "remoteClose()";
 
 		if (this->_closed)
 			return;
@@ -207,7 +207,7 @@ namespace rs
 			this->_channel->request("transport.close", this->_internal)
 				.then([=]()
 			{
-				LOG(INFO) << "\"transport.close\" request succeeded";
+				DLOG(INFO) << "\"transport.close\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
@@ -225,7 +225,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::dump()
 	{
-		LOG(INFO) << "dump()";
+		DLOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -233,7 +233,7 @@ namespace rs
 		return this->_channel->request("transport.dump", this->_internal)
 			.then([=](Json data)
 		{
-			LOG(INFO) << "\"transport.dump\" request succeeded";
+			DLOG(INFO) << "\"transport.dump\" request succeeded";
 
 			return data;
 		})
@@ -256,7 +256,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::setRemoteDtlsParameters(Json parameters)
 	{
-		LOG(INFO) << "setRemoteDtlsParameters()";
+		DLOG(INFO) << "setRemoteDtlsParameters()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -264,7 +264,7 @@ namespace rs
 		return this->_channel->request("transport.setRemoteDtlsParameters", this->_internal, parameters)
 		.then([=](Json data)
 		{
-			LOG(INFO) << "\"transport.setRemoteDtlsParameters\" request succeeded";
+			DLOG(INFO) << "\"transport.setRemoteDtlsParameters\" request succeeded";
 
 			// Take the .role field of the response data and append it to our
 			// this->_data.dtlsLocalParameters.
@@ -288,7 +288,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::setMaxBitrate(int bitrate)
 	{
-		LOG(INFO) << "setMaxBitrate() [bitrate:" << bitrate << "]";
+		DLOG(INFO) << "setMaxBitrate() [bitrate:" << bitrate << "]";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -301,7 +301,7 @@ namespace rs
 			})
 		.then([=]()
 		{
-			LOG(INFO) << "\"transport.setMaxBitrate\" request succeeded";
+			DLOG(INFO) << "\"transport.setMaxBitrate\" request succeeded";
 
 			return this;
 		})
@@ -322,7 +322,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::changeUfragPwd()
 	{
-		LOG(INFO) << "changeUfragPwd()";
+		DLOG(INFO) << "changeUfragPwd()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -330,7 +330,7 @@ namespace rs
 		return this->_channel->request("transport.changeUfragPwd", this->_internal)
 			.then([=](Json data)
 		{
-			LOG(INFO) << "\"transport.changeUfragPwd\" request succeeded";
+			DLOG(INFO) << "\"transport.changeUfragPwd\" request succeeded";
 
 			this->_data["iceLocalParameters"] =
 			{
@@ -356,7 +356,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::getStats()
 	{
-		LOG(INFO) << "getStats()";
+		DLOG(INFO) << "getStats()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -364,7 +364,7 @@ namespace rs
 		return this->_channel->request("transport.getStats", this->_internal)
 			.then([=](Json data)
 		{
-			LOG(INFO) << "\"transport.getStats\" request succeeded";
+			DLOG(INFO) << "\"transport.getStats\" request succeeded";
 
 			return data;
 		})
@@ -383,7 +383,7 @@ namespace rs
 	*/
 	void WebRtcTransport::enableStats(int interval/* = DEFAULT_STATS_INTERVAL*/)
 	{
-		LOG(INFO) << "enableStats()";
+		DLOG(INFO) << "enableStats()";
 
 		if (this->_closed)
 		{
@@ -432,7 +432,7 @@ namespace rs
 	*/
 	void WebRtcTransport::disableStats()
 	{
-		LOG(INFO) << "disableStats()";
+		DLOG(INFO) << "disableStats()";
 
 		if (this->_closed)
 		{
@@ -455,7 +455,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::startMirroring(Json options)
 	{
-		LOG(INFO) << "startMirroring()";
+		DLOG(INFO) << "startMirroring()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -463,7 +463,7 @@ namespace rs
 		return this->_channel->request("transport.startMirroring", this->_internal, options)
 			.then([=]()
 		{
-			LOG(INFO) << "\"transport.startMirroring\" request succeeded";
+			DLOG(INFO) << "\"transport.startMirroring\" request succeeded";
 
 			return this;
 		})
@@ -482,7 +482,7 @@ namespace rs
 	*/
 	Defer WebRtcTransport::stopMirroring()
 	{
-		LOG(INFO) << "stopMirroring()";
+		DLOG(INFO) << "stopMirroring()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("WebRtcTransport closed"));
@@ -490,7 +490,7 @@ namespace rs
 		return this->_channel->request("transport.stopMirroring", this->_internal)
 			.then([=]()
 		{
-			LOG(INFO) << "\"transport.stopMirroring\" request succeeded";
+			DLOG(INFO) << "\"transport.stopMirroring\" request succeeded";
 
 			return this;
 		})

@@ -12,7 +12,7 @@ namespace rs
 	Producer::Producer(Peer* peer, WebRtcTransport*transport, const Json& internal, const Json& data, Channel* channel, const Json& options)
 	{
 
-		LOG(INFO) << "constructor()";
+		DLOG(INFO) << "constructor()";
 
 		// Closed flag.
 		this->_closed = false;
@@ -164,7 +164,7 @@ namespace rs
 	*/
 	void Producer::close(Json appData, bool notifyChannel/* = true*/)
 	{
-		LOG(INFO) << "close()";
+		DLOG(INFO) << "close()";
 
 		if (this->_closed)
 			return;
@@ -209,7 +209,7 @@ namespace rs
 	*/
 	void Producer::remoteClose(Json appData /*= Json::object()*/, bool notifyChannel/* = true*/)
 	{
-		LOG(INFO) << "remoteClose()";
+		DLOG(INFO) << "remoteClose()";
 
 		if (this->closed())
 			return;
@@ -233,7 +233,7 @@ namespace rs
 			this->_channel->request("producer.close", this->_internal)
 				.then([=]()
 			{
-				LOG(INFO) << "\"producer.close\" request succeeded";
+				DLOG(INFO) << "\"producer.close\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
@@ -253,7 +253,7 @@ namespace rs
 	*/
 	Defer Producer::dump()
 	{
-		LOG(INFO) << "dump()";
+		DLOG(INFO) << "dump()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Producer closed"));
@@ -261,7 +261,7 @@ namespace rs
 		return this->_channel->request("producer.dump", this->_internal)
 			.then([=](Json data)
 		{
-			LOG(INFO) << "\"producer.dump\" request succeeded";
+			DLOG(INFO) << "\"producer.dump\" request succeeded";
 
 			return data;
 		})
@@ -282,7 +282,7 @@ namespace rs
 	*/
 	bool Producer::pause(Json appData)
 	{
-		LOG(INFO) << "pause()";
+		DLOG(INFO) << "pause()";
 
 		if (this->_closed)
 		{
@@ -309,7 +309,7 @@ namespace rs
 		this->_channel->request("producer.pause", this->_internal)
 			.then([=]()
 		{
-			LOG(INFO) << "\"producer.pause\" request succeeded";
+			DLOG(INFO) << "\"producer.pause\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
@@ -332,7 +332,7 @@ namespace rs
 	*/
 	void Producer::remotePause(Json appData)
 	{
-		LOG(INFO) << "remotePause()";
+		DLOG(INFO) << "remotePause()";
 
 		if (this->_closed || this->_remotelyPaused)
 			return;
@@ -342,7 +342,7 @@ namespace rs
 		this->_channel->request("producer.pause", this->_internal)
 			.then([=]()
 		{
-			LOG(INFO) << "\"producer.pause\" request succeeded";
+			DLOG(INFO) << "\"producer.pause\" request succeeded";
 		})
 			.fail([=](Error error)
 		{
@@ -361,7 +361,7 @@ namespace rs
 	*/
 	bool Producer::resume(Json appData)
 	{
-		LOG(INFO) << "resume()";
+		DLOG(INFO) << "resume()";
 
 		if (this->_closed)
 		{
@@ -390,7 +390,7 @@ namespace rs
 			this->_channel->request("producer.resume", this->_internal)
 				.then([=]()
 			{
-				LOG(INFO) << "\"producer.resume\" request succeeded";
+				DLOG(INFO) << "\"producer.resume\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
@@ -414,7 +414,7 @@ namespace rs
 	*/
 	void Producer::remoteResume(Json appData)
 	{
-		LOG(INFO) << "remoteResume()";
+		DLOG(INFO) << "remoteResume()";
 
 		if (this->_closed || !this->_remotelyPaused)
 			return;
@@ -426,7 +426,7 @@ namespace rs
 			this->_channel->request("producer.resume", this->_internal)
 				.then([=]()
 			{
-				LOG(INFO) << "\"producer.resume\" request succeeded";
+				DLOG(INFO) << "\"producer.resume\" request succeeded";
 			})
 				.fail([=](Error error)
 			{
@@ -444,7 +444,7 @@ namespace rs
 	*/
 	void Producer::setPreferredProfile(std::string profile)
 	{
-		LOG(INFO) << "setPreferredProfile() [profile:"<< profile<<"]";
+		DLOG(INFO) << "setPreferredProfile() [profile:"<< profile<<"]";
 
 		if (this->_closed)
 		{
@@ -469,7 +469,7 @@ namespace rs
 			})
 			.then([=]()
 		{
-			LOG(INFO) << "\"producer.setPreferredProfile\" request succeeded";
+			DLOG(INFO) << "\"producer.setPreferredProfile\" request succeeded";
 
 			this->_preferredProfile = profile;
 		})
@@ -491,7 +491,7 @@ namespace rs
 	*/
 	Defer Producer::updateRtpParameters(Json rtpParameters)
 	{
-		LOG(INFO) << "updateRtpParameters()";
+		DLOG(INFO) << "updateRtpParameters()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Producer closed"));
@@ -502,7 +502,7 @@ namespace rs
 			})
 			.then([=]()
 		{
-			LOG(INFO) << "\"producer.updateRtpParameters\" request succeeded";
+			DLOG(INFO) << "\"producer.updateRtpParameters\" request succeeded";
 
 			this->_data["rtpParameters"] = rtpParameters;
 		})
@@ -520,7 +520,7 @@ namespace rs
 	*/
 	Defer Producer::getStats()
 	{
-		LOG(INFO) << "getStats()";
+		DLOG(INFO) << "getStats()";
 
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Producer closed"));
@@ -528,7 +528,7 @@ namespace rs
 		return this->_channel->request("producer.getStats", this->_internal)
 			.then([=](Json data)
 		{
-			LOG(INFO) << "\"producer.getStats\" request succeeded";
+			DLOG(INFO) << "\"producer.getStats\" request succeeded";
 
 			return data;
 		})
@@ -547,7 +547,7 @@ namespace rs
 	*/
 	void Producer::enableStats(int interval /*= DEFAULT_STATS_INTERVAL*/)
 	{
-		LOG(INFO) << "enableStats()";
+		DLOG(INFO) << "enableStats()";
 
 		if (this->_closed)
 		{
@@ -602,7 +602,7 @@ namespace rs
 	*/
 	void Producer::disableStats()
 	{
-		LOG(INFO) << "disableStats()";
+		DLOG(INFO) << "disableStats()";
 
 		if (this->_closed)
 		{

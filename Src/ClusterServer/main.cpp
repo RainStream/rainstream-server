@@ -52,17 +52,17 @@ int main(int argc, char* argv[])
 	//	MS_DEBUG_TAG(info, "starting mediasoup-worker [pid:%ld]", (long)getpid());
 
 #if defined(MS_LITTLE_ENDIAN)
-	LOG(INFO) << "Little-Endian CPU detected";
+	DLOG(INFO) << "Little-Endian CPU detected";
 #elif defined(MS_BIG_ENDIAN)
-	LOG(INFO) << "Big-Endian CPU detected";
+	DLOG(INFO) << "Big-Endian CPU detected";
 #endif
 
 #if defined(INTPTR_MAX) && defined(INT32_MAX) && (INTPTR_MAX == INT32_MAX)
 	MS_DEBUG_TAG(info, "32 bits architecture detected");
 #elif defined(INTPTR_MAX) && defined(INT64_MAX) && (INTPTR_MAX == INT64_MAX)
-	LOG(INFO) << "64 bits architecture detected";
+	DLOG(INFO) << "64 bits architecture detected";
 #else
-	LOG(INFO) << "can not determine whether the architecture is 32 or 64 bits";
+	DLOG(INFO) << "can not determine whether the architecture is 32 or 64 bits";
 #endif
 
 	try
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 	}
 	catch (const RainStreamError& error)
 	{
-		LOG(INFO) << "failure exit: %s", error.what();
+		DLOG(INFO) << "failure exit: %s", error.what();
 
 		destroy();
 		exitWithError();

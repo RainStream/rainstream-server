@@ -53,10 +53,11 @@ ClusterServer::ClusterServer()
 	if (webSocketServer->Setup(config["domain"].get<std::string>().c_str(),
 		Settings::configuration.serverPort))
 	{
-		LOG(INFO) << "protoo WebSocket server running";
+		LOG(INFO) << "WebSocket server running on port "
+			<< Settings::configuration.serverPort;
 	}
 
-	LOG(INFO) << "ClusterServer StartUp";
+	LOG(INFO) << "ClusterServer Started";
 }
 
 ClusterServer::~ClusterServer()
@@ -76,6 +77,7 @@ void ClusterServer::OnNewRoom(rs::Room* room)
 
 void ClusterServer::OnRoomClose(std::string roomId)
 {
+	LOG(INFO) << "Room has closed [roomId:" << roomId << "]";
 	rooms_.erase(roomId);
 }
 
@@ -88,19 +90,21 @@ void ClusterServer::OnConnectRequest(protoo::WebSocketClient* transport)
 
 	if (roomId.empty() || peerName.empty())
 	{
-		LOG(ERROR) << "connection request without roomId and/or peerName";
+		LOG(ERROR) << "Connection request without roomId and/or peerName";
 
 		transport->Close(400, "Connection request without roomId and/or peerName");
 
 		return;
 	}
 
+	LOG(INFO) << "Peer[peerName:" << peerName << "] request join room [roomId:" << roomId << "]";
+
 	Room* room = nullptr;
 
 	// If an unknown roomId, create a new Room.
 	if (!rooms_.count(roomId))
 	{
-		LOG(INFO) << "creating a new Room [roomId:" << roomId << "]";
+		LOG(INFO) << "Creating a new room [roomId:" << roomId << "]";
 
 		try
 		{
