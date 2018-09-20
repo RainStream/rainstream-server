@@ -40,8 +40,8 @@ namespace rs
 		options = utils::cloneObject(options);
 
 		// Update numWorkers (if given).
-		if (options.count("numWorkers") && options["numWorkers"].is_number_integer() && options["numWorkers"] > 0)
-			numWorkers = options["numWorkers"];
+		if (options.count("numWorkers") && options["numWorkers"].is_number_unsigned())
+			numWorkers = options.value("numWorkers", DEFAULT_NUM_WORKERS);
 
 		// Remove numWorkers.
 		options.erase("numWorkers");
