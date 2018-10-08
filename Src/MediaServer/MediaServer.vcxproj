@@ -269,7 +269,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x86-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
@@ -304,7 +304,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x86-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
