@@ -50,6 +50,7 @@ namespace RTC
 {
 	/* Static. */
 
+	static constexpr int dtlsMtu{ 1350 };
 	static constexpr int SslReadBufferSize{ 65536 };
 	// NOTE: Those values are hardcoded as we just use AES_CM_128_HMAC_SHA1_80 and
 	// AES_CM_128_HMAC_SHA1_32 which share same length values for key and salt.
@@ -313,10 +314,10 @@ namespace RTC
 
 /* Set the global DTLS context. */
 
-// - Both DTLS 1.0 and 1.2 (requires OpenSSL >= 1.1.0).
+// Both DTLS 1.0 and 1.2 (requires OpenSSL >= 1.1.0).
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
 		DtlsTransport::sslCtx = SSL_CTX_new(DTLS_method());
-// - Just DTLS 1.0 (requires OpenSSL >= 1.0.1).
+// Just DTLS 1.0 (requires OpenSSL >= 1.0.1).
 #elif (OPENSSL_VERSION_NUMBER >= 0x10001000L)
 		DtlsTransport::sslCtx = SSL_CTX_new(DTLSv1_method());
 #else
@@ -353,7 +354,8 @@ namespace RTC
 		// Set options.
 		SSL_CTX_set_options(
 		  DtlsTransport::sslCtx,
-		  SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_NO_TICKET | SSL_OP_SINGLE_ECDH_USE);
+		  SSL_OP_CIPHER_SERVER_PREFERENCE | SSL_OP_NO_TICKET | SSL_OP_SINGLE_ECDH_USE |
+		    SSL_OP_NO_QUERY_MTU);
 
 		// Don't use sessions cache.
 		SSL_CTX_set_session_cache_mode(DtlsTransport::sslCtx, SSL_SESS_CACHE_OFF);
@@ -384,11 +386,16 @@ namespace RTC
 // Enable ECDH ciphers.
 // DOC: http://en.wikibooks.org/wiki/OpenSSL/Diffie-Hellman_parameters
 // NOTE: https://code.google.com/p/chromium/issues/detail?id=406458
-// For OpenSSL >= 1.0.2:
-#if (OPENSSL_VERSION_NUMBER >= 0x10002000L)
+// NOTE: https://bugs.ruby-lang.org/issues/12324
+//
+// Nothing to be done in OpenSSL >= 1.1.0.
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+// For OpenSSL >= 1.0.2.
+#elif (OPENSSL_VERSION_NUMBER >= 0x10002000L)
 		SSL_CTX_set_ecdh_auto(DtlsTransport::sslCtx, 1);
+// Older versions.
 #else
-		ecdh                  = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+		ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
 
 		if (!ecdh)
 		{
@@ -543,6 +550,9 @@ namespace RTC
 		}
 
 		SSL_set_bio(this->ssl, this->sslBioFromNetwork, this->sslBioToNetwork);
+		// Set the MTU so that we don't send packets that are too large with no fragmentation.
+		SSL_set_mtu(this->ssl, dtlsMtu);
+		DTLS_set_link_mtu(this->ssl, dtlsMtu);
 
 		/* Set the DTLS timer. */
 
