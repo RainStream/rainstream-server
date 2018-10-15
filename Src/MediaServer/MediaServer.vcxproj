@@ -36,6 +36,7 @@
     <ClInclude Include="LogLevel.hpp" />
     <ClInclude Include="MediaSoupError.hpp" />
     <ClInclude Include="RTC\Codecs\Codecs.hpp" />
+    <ClInclude Include="RTC\Codecs\H264.hpp" />
     <ClInclude Include="RTC\Codecs\PayloadDescriptorHandler.hpp" />
     <ClInclude Include="RTC\Codecs\VP8.hpp" />
     <ClInclude Include="RTC\Consumer.hpp" />
@@ -120,6 +121,7 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RTC\Codecs\Codecs.cpp" />
+    <ClCompile Include="RTC\Codecs\H264.cpp" />
     <ClCompile Include="RTC\Codecs\VP8.cpp" />
     <ClCompile Include="RTC\Consumer.cpp" />
     <ClCompile Include="RTC\DtlsTransport.cpp" />
