@@ -259,6 +259,9 @@
     <ClInclude Include="RTC\RTCP\SenderReport.hpp">
       <Filter>RTC\RTCP</Filter>
     </ClInclude>
+    <ClInclude Include="RTC\Codecs\H264.hpp">
+      <Filter>RTC\Codecs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DepLibSRTP.cpp" />
@@ -504,6 +507,9 @@
     </ClCompile>
     <ClCompile Include="Utils\IP.cpp">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="RTC\Codecs\H264.cpp">
+      <Filter>RTC\Codecs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
