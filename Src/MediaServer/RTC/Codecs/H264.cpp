@@ -19,12 +19,64 @@ namespace RTC
 			if (len < 2)
 				return nullptr;
 
-			uint8_t fragment = *data & 0x1F;
-			uint8_t nal      = *(data + 1) & 0x1F;
-			uint8_t startBit = *(data + 1) & 0x80;
+			uint8_t nal = *data & 0x1F;
 
-			if (fragment == 5 || ((fragment == 28 || fragment == 29) && nal == 5 && startBit == 128))
-				payloadDescriptor->isKeyFrame = true;
+			switch (nal)
+			{
+				// Single NAL unit packet.
+				// IDR (instantaneous decoding picture).
+				case 7:
+				{
+					payloadDescriptor->isKeyFrame = true;
+
+					break;
+				}
+
+				// Aggreation packet.
+				// STAP-A.
+				case 24:
+				{
+					size_t offset = 1;
+					len -= 1;
+
+					// Iterate NAL units.
+					while (len >= 3)
+					{
+						auto naluSize = Utils::Byte::Get2Bytes(data, offset);
+						nal           = *(data + offset + sizeof(naluSize)) & 0x1F;
+
+						if (nal == 7)
+						{
+							payloadDescriptor->isKeyFrame = true;
+
+							break;
+						}
+
+						// Check if there is room for the indicated NAL unit size.
+						if (len < (naluSize + sizeof(naluSize)))
+							break;
+
+						offset += naluSize + sizeof(naluSize);
+						len -= naluSize + sizeof(naluSize);
+					}
+
+					break;
+				}
+
+				// Aggreation packet.
+				// FU-A, FU-B.
+				case 28:
+				case 29:
+				{
+					nal              = *(data + 1) & 0x1F;
+					uint8_t startBit = *(data + 1) & 0x80;
+
+					if (nal == 7 && startBit == 128)
+						payloadDescriptor->isKeyFrame = true;
+
+					break;
+				}
+			}
 
 			return payloadDescriptor.release();
 		}
