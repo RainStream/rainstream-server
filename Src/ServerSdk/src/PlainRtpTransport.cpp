@@ -83,8 +83,6 @@ namespace rs
 				LOG(ERROR) << "\"transport.close\" request failed:"<< error.ToString();
 			});
 		}
-
-		delete this;
 	}
 
 	/**

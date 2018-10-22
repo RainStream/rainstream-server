@@ -216,6 +216,12 @@ namespace rs
 
 		this->_closed = true;
 
+		if (this->_statsEnabled)
+		{
+			this->_statsEnabled = false;
+			clearInterval(this->_statsInterval);
+		}
+
 		this->doEvent("@close");
 		this->doEvent("close", { { "local", "remote" }, { "appData" , appData } });
 
@@ -240,8 +246,6 @@ namespace rs
 				LOG(ERROR) << "\"producer.close\" request failed:"<< error.ToString();
 			});
 		}
-
-		delete this;
 	}
 
 	/**

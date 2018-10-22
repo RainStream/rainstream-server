@@ -86,7 +86,7 @@ namespace rs
 
 	std::string Consumer::kind()
 	{
-		return this->_data["kind"];
+		return this->_data["kind"].get<std::string>();
 	}
 
 	Peer* Consumer::peer()
@@ -201,8 +201,8 @@ namespace rs
 		{
 			Json data =
 			{
-				{"id", this->id() },
-				{"peerName" , this->peer()->name() }
+				{ "id", this->id() },
+				{ "peerName" , this->peer()->name() }
 			};
 
 			// Don"t notify "consumerClosed" if the Peer is already closed.
@@ -220,17 +220,15 @@ namespace rs
 		if (notifyChannel)
 		{
 			this->_channel->request("consumer.close", this->_internal)
-				.then([=]()
+			.then([=]()
 			{
 				DLOG(INFO) << "\"consumer.close\" request succeeded";
 			})
-				.fail([=](Error error)
+			.fail([=](Error error)
 			{
 				LOG(ERROR) << "\"consumer.close\" request failed:" << error.ToString();
 			});
 		}
-
-		delete this;
 	}
 
 	/**
@@ -248,13 +246,13 @@ namespace rs
 			return promise::reject(errors::InvalidStateError("Consumer closed"));
 
 		return this->_channel->request("consumer.dump", this->_internal)
-			.then([=](Json data)
+		.then([=](Json data)
 		{
 			DLOG(INFO) << "\"consumer.dump\" request succeeded";
 
 			return data;
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) << "\"consumer.dump\" request failed: " << error.ToString();
 
@@ -326,10 +324,10 @@ namespace rs
 		Json data = this->_data;
 
 		return this->_channel->request("consumer.enable", internal,
-			Json{
+			{
 				{ "rtpParameters" , this->rtpParameters() }
 			})
-			.then([=]()
+		.then([=]()
 		{
 			DLOG(INFO) << "\"consumer.enable\" request succeeded";
 
@@ -339,13 +337,15 @@ namespace rs
 
 			transport->addEventListener("@close", [=](Json data)
 			{
-				this->_internal["transportId"] = undefined;
+				this->_internal.erase("transportId");
 				this->_transport = undefined;
+
+				this->doEvent("unhandled");
 			});
 
 			return;
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) << "\"consumer.enable\" request failed: " << error.ToString();
 
@@ -394,11 +394,11 @@ namespace rs
 		}
 
 		this->_channel->request("consumer.pause", this->_internal)
-			.then([=]()
+		.then([=]()
 		{
 			DLOG(INFO) << "\"consumer.pause\" request succeeded";
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) << "\"consumer.pause\" request failed: " << error.ToString();
 		});
@@ -427,11 +427,11 @@ namespace rs
 		this->_remotelyPaused = true;
 
 		this->_channel->request("consumer.pause", this->_internal)
-			.then([=]()
+		.then([=]()
 		{
 			DLOG(INFO) << "\"consumer.pause\" request succeeded";
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) << "\"consumer.pause\" request failed: " << error.ToString();
 		});
@@ -482,11 +482,11 @@ namespace rs
 		if (!this->_remotelyPaused)
 		{
 			this->_channel->request("consumer.resume", this->_internal)
-				.then([=]()
+			.then([=]()
 			{
 				DLOG(INFO) << "\"consumer.resume\" request succeeded";
 			})
-				.fail([=](Error error)
+			.fail([=](Error error)
 			{
 				LOG(ERROR) << "\"consumer.resume\" request failed: " << error.ToString();
 			});
@@ -518,11 +518,11 @@ namespace rs
 		if (!this->_locallyPaused)
 		{
 			this->_channel->request("consumer.resume", this->_internal)
-				.then([=]()
+			.then([=]()
 			{
 				DLOG(INFO) << "\"consumer.resume\" request succeeded";
 			})
-				.fail([=](Error error)
+			.fail([=](Error error)
 			{
 				LOG(ERROR) << "\"consumer.resume\" request failed: " << error.ToString();
 			});
@@ -561,7 +561,7 @@ namespace rs
 			{
 				{ "profile" , profile }
 			})
-			.then([=]()
+		.then([=]()
 		{
 			DLOG(INFO) << "\"consumer.setPreferredProfile\" request succeeded";
 
@@ -580,7 +580,7 @@ namespace rs
 				this->doNotify("consumerPreferredProfileSet", data);
 			}
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) <<
 				"\"consumer.setPreferredProfile\" request failed: " << error.ToString();
@@ -605,13 +605,13 @@ namespace rs
 			{
 				{ "profile" , profile }
 			})
-			.then([=]()
+		.then([=]()
 		{
 			DLOG(INFO) << "\"consumer.setPreferredProfile\" request succeeded";
 
 			this->_preferredProfile = profile;
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) << 
 				"\"consumer.setPreferredProfile\" request failed:" << error.ToString();
@@ -638,12 +638,15 @@ namespace rs
 		}
 
 		this->_channel->request(
-			"consumer.setEncodingPreferences", this->_internal, preferences)
-			.then([=]()
+			"consumer.setEncodingPreferences", this->_internal, 
+			{
+				{ "preferences" , preferences }
+			})
+		.then([=]()
 		{
 			DLOG(INFO) << "\"consumer.setEncodingPreferences\" request succeeded";
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) << 
 				"\"consumer.setEncodingPreferences\" request failed:" << error.ToString();
@@ -664,11 +667,11 @@ namespace rs
 			return;
 
 		this->_channel->request("consumer.requestKeyFrame", this->_internal)
-			.then([=]()
+		.then([=]()
 		{
 			DLOG(INFO) << "\"consumer.requestKeyFrame\" request succeeded";
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) << "\"consumer.requestKeyFrame\" request failed:" << error.ToString();
 		});
@@ -878,12 +881,12 @@ namespace rs
 				{
 					Json data2 =
 					{
-					{ "id" , this->id() },
-					{ "peerName" , this->peer()->name() },
-					{ "profile" , this->_effectiveProfile }
+						{ "id" , this->id() },
+						{ "peerName" , this->peer()->name() },
+						{ "profile" , this->_effectiveProfile }
 					};
 
-					//						this->emit("@notify", "consumerEffectiveProfileChanged", data2);
+					this->doNotify("consumerEffectiveProfileChanged", data2);
 				}
 			}
 

@@ -60,6 +60,11 @@ namespace rs
 		return this->_data["rtpCapabilities"];
 	}
 
+	bool Peer::spy()
+	{
+		return this->_data["spy"];
+	}
+
 	/**
 	* Get an array with all the WebRtcTransports.
 	*
@@ -134,6 +139,8 @@ namespace rs
 		for (auto it : producers)
 		{
 			it.second->close(undefined, notifyChannel);
+
+			//delete it.second;
 		}
 
 		// Close all the Consumers.
@@ -141,6 +148,8 @@ namespace rs
 		for (auto it : consumers)
 		{
 			it.second->close(notifyChannel);
+
+			//delete it.second;
 		}
 
 		// Close all the WebRtcTransports.
@@ -148,6 +157,8 @@ namespace rs
 		for (auto it : transports)
 		{
 			it.second->close(undefined, notifyChannel);
+
+			//delete it.second;
 		}
 
 		delete this;
@@ -174,22 +185,33 @@ namespace rs
 		this->doEvent("close", appData);
 
 		// Close all the Producers.
-		for (auto it : this->_producers)
+		auto producers = this->_producers;
+		for (auto it : producers)
 		{
 			it.second->remoteClose();
+
+			delete it.second;
 		}
 
 		// Close all the Consumers.
-		for (auto it : this->_consumers)
+		auto consumers = this->_consumers;
+		for (auto it : consumers)
 		{
 			it.second->close();
+
+			delete it.second;
 		}
 
 		// Close all the WebRtcTransports.
-		for (auto it : this->_transports)
+		auto transports = this->_transports;
+		for (auto it : transports)
 		{
 			it.second->remoteClose();
+
+			delete it.second;
 		}
+
+		delete this;
 	}
 
 	/**
@@ -300,13 +322,13 @@ namespace rs
 		}
 
 		return promise::all(promises)
-			.then([=]()
+		.then([=]()
 		{
 			DLOG(INFO) << "dump() | succeeded";
 
 			return peerData;
 		})
-			.fail([=](Error error)
+		.fail([=](Error error)
 		{
 			LOG(ERROR) << "dump() | failed: " << error.ToString();
 
@@ -327,11 +349,11 @@ namespace rs
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Room closed"));
 		else if (!request.is_object())
-			return promise::reject(new TypeError("wrong request Object"));
+			return promise::reject(TypeError("wrong request Object"));
 		else if (request.count("notification"))
-			return promise::reject(new TypeError("not a request"));
+			return promise::reject(TypeError("not a request"));
 		else if (!request["method"].is_string())
-			return promise::reject(new TypeError("wrong/missing request method"));
+			return promise::reject(TypeError("wrong/missing request method"));
 
 		std::string method = request["method"].get<std::string>();
 
@@ -463,11 +485,11 @@ namespace rs
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Room closed"));
 		else if (!notification.is_object())
-			return promise::reject(new TypeError("wrong notification Object"));
+			return promise::reject(TypeError("wrong notification Object"));
 		else if (notification["notification"].get<bool>() != true)
-			return promise::reject(new TypeError("not a notification"));
+			return promise::reject(TypeError("not a notification"));
 		else if (!notification["method"].is_string())
-			return promise::reject(new TypeError("wrong/missing notification method"));
+			return promise::reject(TypeError("wrong/missing notification method"));
 
 		std::string method = notification["method"].get<std::string>();
 
@@ -493,7 +515,7 @@ namespace rs
 					throw Error("Transport not found");
 
 				return transport->setRemoteDtlsParameters(dtlsParameters)
-					.fail([=](Error error)
+				.fail([=](Error error)
 				{
 					transport->close();
 
@@ -699,7 +721,7 @@ namespace rs
 	*/
 	void Peer::handlePeerClosed(Peer* peer, Json appData)
 	{
-		this->_sendNotification("peerClosed", Json{ { "name" , peer->name() }, {"appData",appData } });
+		this->_sendNotification("peerClosed", { { "name" , peer->name() }, { "appData",appData } });
 	}
 
 	/**
@@ -709,10 +731,10 @@ namespace rs
 	{
 		Json internal =
 		{
-			{	"routerId"    , this->_internal["routerId"] },
-			{	"consumerId"  , utils::randomNumber() },
-			{	"producerId"  , producer->id() },
-			{	"transportId" , undefined }
+			{ "routerId"    , this->_internal["routerId"] },
+			{ "consumerId"  , utils::randomNumber() },
+			{ "producerId"  , producer->id() },
+			{ "transportId" , undefined }
 		};
 
 		Json consumerRtpParameters =
@@ -838,7 +860,9 @@ namespace rs
 		if (this->rtpCapabilities().is_null())
 			return promise::reject(errors::InvalidStateError("RTP capabilities unset"));
 		else if (!KINDS.count(kind))
-			return promise::reject(new TypeError(utils::Printf("unsupported kind: %s", kind.c_str())));
+			return promise::reject(TypeError(utils::Printf("unsupported kind: %s", kind.c_str())));
+		else if (this->spy())
+			return promise::reject(Error("spy peers cannot create producers"));
 
 		Json rtpMappingForWorker;
 		Json consumableRtpParameters;
@@ -867,7 +891,7 @@ namespace rs
 		auto transport = this->getTransportById(transportId);
 
 		if (!transport)
-			return promise::reject(new TypeError("WebRtcTransport not found"));
+			return promise::reject(TypeError("WebRtcTransport not found"));
 
 		Json internal =
 		{

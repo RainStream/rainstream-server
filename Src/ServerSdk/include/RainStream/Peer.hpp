@@ -26,6 +26,8 @@ namespace rs
 
 		Json rtpCapabilities();
 
+		bool spy();
+
 		/**
 		 * Get an array with all the WebRtcTransports.
 		 *
@@ -147,6 +149,7 @@ namespace rs
 
 		// Peer data.
 		// - .rtpCapabilities
+		// - .spy
 		Json _data;
 
 		// Channel instance.

@@ -128,11 +128,11 @@ namespace rs
 		if (this->_closed)
 			return promise::reject(errors::InvalidStateError("Room closed"));
 		else if (!request.is_object())
-			return promise::reject(new TypeError("wrong request Object"));
+			return promise::reject(TypeError("wrong request Object"));
 		else if (request.count("notification"))
-			return promise::reject(new TypeError("not a request"));
+			return promise::reject(TypeError("not a request"));
 		else if (!request["method"].is_string())
-			return promise::reject(new TypeError("wrong/missing request method"));
+			return promise::reject(TypeError("wrong/missing request method"));
 
 		std::string method = request["method"].get<std::string>();
 
@@ -155,9 +155,10 @@ namespace rs
 			{
 				std::string peerName = request["peerName"].get<std::string>();
 				Json rtpCapabilities = request["rtpCapabilities"];
+				bool spy = request.value("spy", false);
 				Json appData = request["appData"];
 
-				Peer* peer = this->_createPeer(peerName, rtpCapabilities, appData);
+				Peer* peer = this->_createPeer(peerName, rtpCapabilities, spy, appData);
 
 				Json response(Json::object());
 
@@ -166,7 +167,7 @@ namespace rs
 				for (auto it : this->peers())
 				{
 					Peer* otherPeer = it.second;
-					if (otherPeer != peer)
+					if (otherPeer != peer && !otherPeer->spy())
 					{
 						Json consumers(Json::array());
 						for (auto itSub : peer->consumers())
@@ -237,10 +238,10 @@ namespace rs
 		{
 			Json internal =
 			{
-				{"routerId", this->_internal["routerId"]},
-				{"consumerId" , utils::randomNumber()},
-				{"producerId", producer->id()},
-				{"transportId" , undefined }
+				{ "routerId", this->_internal["routerId"]},
+				{ "consumerId" , utils::randomNumber()},
+				{ "producerId", producer->id()},
+				{ "transportId" , undefined }
 			};
 
 			// TODO: The app should provide his own RTP capabilities.
@@ -260,7 +261,7 @@ namespace rs
 			Consumer* consumer = new Consumer(nullptr, producer, internal, data, this->_channel);
 
 			return this->_channel->request("router.createConsumer", internal,
-				Json{
+				{
 					{"kind",  consumer->kind()}
 				})
 				.then([=]()
@@ -294,7 +295,7 @@ namespace rs
 		});
 	}
 
-	Peer* Room::_createPeer(std::string peerName, const Json& rtpCapabilities, const Json& appData)
+	Peer* Room::_createPeer(std::string peerName, const Json& rtpCapabilities, bool spy, const Json& appData)
 	{
 		DLOG(INFO) << "_createPeer() [peerName:" << peerName << "]";
 
@@ -315,7 +316,8 @@ namespace rs
 
 		Json data =
 		{
-			{ "rtpCapabilities" , rtpCapabilities }
+			{ "rtpCapabilities" , rtpCapabilities },
+			{ "spy" , spy },
 		};
 
 		SandBox sandbox =
@@ -342,18 +344,22 @@ namespace rs
 		peer->appData(appData);
 
 		// Store the Peer and remove it when closed. Also notify allthe other Peers.
+		// (unless it's a spy peer).
 		this->_peers[peer->name()] = peer;
 		peer->addEventListener("@close", [=](Json appData2)
 		{
 			this->_peers.erase(peer->name());
 
-			for (auto it : this->_peers)
+			if (!spy)
 			{
-				Peer* otherPeer = it.second;
-				if (otherPeer == peer)
-					continue;
+				for (auto it : this->_peers)
+				{
+					Peer* otherPeer = it.second;
+					if (otherPeer == peer)
+						continue;
 
-				otherPeer->handlePeerClosed(peer, appData2);
+					otherPeer->handlePeerClosed(peer, appData2);
+				}
 			}
 		});
 
@@ -378,17 +384,21 @@ namespace rs
 			if (producer)
 			{
 				this->_handleProducer(producer);
-			}		
+			}
 		});
 
-		// Tell all the Peers (but us) about the new Peer.
-		for (auto it : this->_peers)
+		// Tell all the Peers (but us) about the new Peer (unless this is a spy peer).
+		if (!spy)
 		{
-			Peer* otherPeer = it.second;
-			if (otherPeer == peer)
-				continue;
+			// Tell all the Peers (but us) about the new Peer.
+			for (auto it : this->_peers)
+			{
+				Peer* otherPeer = it.second;
+				if (otherPeer == peer)
+					continue;
 
-			otherPeer->handleNewPeer(peer);
+				otherPeer->handleNewPeer(peer);
+			}
 		}
 
 		this->doEvent("newpeer", peer->name());

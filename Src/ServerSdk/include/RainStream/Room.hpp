@@ -67,7 +67,7 @@ namespace rs
 
 		Defer createRtpStreamer(Producer* producer, const Json& options);
 
-		Peer* _createPeer(std::string peerName, const Json& rtpCapabilities, const Json& appData);
+		Peer* _createPeer(std::string peerName, const Json& rtpCapabilities, bool spy, const Json& appData);
 
 		void _handleProducer(Producer* producer);
 
