@@ -226,7 +226,7 @@ void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)
 		rs::WebRtcTransport* transport = mediaPeer->getTransportById(data.get<uint32_t>());
 
 		DLOG(INFO) << 
-			"mediaPeer 'newtransport' event [id:"<< transport->id()<< "direction:"
+			"mediaPeer 'newtransport' event [id:"<< transport->id()<< " direction:"
 			<< transport->direction() << "]";
 
 		// Update peers max sending  bitrate.

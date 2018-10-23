@@ -573,7 +573,7 @@ namespace rs
 			else if (method == "pauseProducer")
 			{
 				uint32_t id = notification["id"].get<uint32_t>();
-				Json appData = notification["appData"];
+				Json appData = notification.value("appData",Json::object());
 
 				Producer* producer = this->_producers[id];
 
@@ -581,11 +581,13 @@ namespace rs
 					throw Error("Producer not found");
 
 				producer->remotePause(appData);
+
+				return promise::resolve();
 			}
 			else if (method == "resumeProducer")
 			{
 				uint32_t id = notification["id"].get<uint32_t>();
-				Json appData = notification["appData"];
+				Json appData = notification.value("appData", Json::object());
 
 				Producer* producer = this->_producers[id];
 
@@ -593,11 +595,13 @@ namespace rs
 					throw Error("Producer not found");
 
 				producer->remoteResume(appData);
+
+				return promise::resolve();
 			}
 			else if (method == "closeProducer")
 			{
 				uint32_t id = notification["id"].get<uint32_t>();
-				Json appData = notification["appData"];
+				Json appData = notification.value("appData", Json::object());
 
 				Producer* producer = this->_producers[id];
 
@@ -606,6 +610,8 @@ namespace rs
 				{
 					producer->remoteClose(appData);
 				}
+
+				return promise::resolve();
 			}
 			else if (method == "enableProducerStats")
 			{
@@ -811,7 +817,7 @@ namespace rs
 
 	Defer Peer::_createWebRtcTransport(uint32_t id, std::string direction, Json options, Json appData)
 	{
-		DLOG(INFO) << "_createWebRtcTransport() [id:" << id << "direction:" << direction << "]";
+		DLOG(INFO) << "_createWebRtcTransport() [id:" << id << " direction:" << direction << "]";
 
 		Json internal =
 		{
