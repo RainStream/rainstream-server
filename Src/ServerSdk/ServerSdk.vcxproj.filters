@@ -64,6 +64,9 @@
     <ClInclude Include="include\RainStream\EventEmitter.hpp">
       <Filter>include\RainStream</Filter>
     </ClInclude>
+    <ClInclude Include="include\RainStream\plugins\ActiveSpeakerDetector.hpp">
+      <Filter>include\RainStream\plugins</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Channel.cpp">
@@ -120,6 +123,9 @@
     <ClCompile Include="src\EventEmitter.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\plugins\ActiveSpeakerDetector.cpp">
+      <Filter>src\plugins</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -133,6 +139,12 @@
     </Filter>
     <Filter Include="src\process">
       <UniqueIdentifier>{761448c5-23ee-4d24-8f89-7108b8e90535}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\RainStream\plugins">
+      <UniqueIdentifier>{a0afa705-126d-4489-aeab-5b8a5a6e0807}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\plugins">
+      <UniqueIdentifier>{d5a9c3d6-6a72-499c-9e0d-979784f5fc62}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

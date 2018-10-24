@@ -182,6 +182,7 @@
     <ClInclude Include="include\RainStream\ortc.hpp" />
     <ClInclude Include="include\RainStream\Peer.hpp" />
     <ClInclude Include="include\RainStream\PlainRtpTransport.hpp" />
+    <ClInclude Include="include\RainStream\plugins\ActiveSpeakerDetector.hpp" />
     <ClInclude Include="include\RainStream\Producer.hpp" />
     <ClInclude Include="include\RainStream\RainStream.hpp" />
     <ClInclude Include="include\RainStream\RainStreamInc.hpp" />
@@ -204,6 +205,7 @@
     <ClCompile Include="src\ortc.cpp" />
     <ClCompile Include="src\Peer.cpp" />
     <ClCompile Include="src\PlainRtpTransport.cpp" />
+    <ClCompile Include="src\plugins\ActiveSpeakerDetector.cpp" />
     <ClCompile Include="src\process\PipeStreamSocket.cpp" />
     <ClCompile Include="src\process\Socket.cpp" />
     <ClCompile Include="src\process\SubProcess.cpp" />

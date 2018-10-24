@@ -20,6 +20,24 @@ namespace rs
 		notifys.push_back(notifyListener);
 	}
 
+	void EventEmitter::removeListener(std::string event, EventListener eventListener)
+	{
+		if (events.count(event))
+		{
+			auto range = events.equal_range(event);
+
+			for (auto it = range.first; it != range.second; ++it)
+			{
+				EventListener listener = it->second;
+				if (listener.target<void(Json)>() == eventListener.target<void(Json)>())
+				{
+					events.erase(range.first);
+					break;
+				}
+			}
+		}
+	}
+
 	uint32_t EventEmitter::listeners(std::string event)
 	{
 		return events.count(event);

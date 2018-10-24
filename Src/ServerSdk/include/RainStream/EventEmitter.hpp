@@ -20,6 +20,8 @@ namespace rs
 		void addEventListener(std::string event, EventListener eventListener);
 		void addNotifyListener(NotifyListener notifyListener);
 
+		void removeListener(std::string event, EventListener eventListener);
+
 		uint32_t listeners(std::string event);
 
 		void doEvent(std::string event, const Json& data = Json::object());
