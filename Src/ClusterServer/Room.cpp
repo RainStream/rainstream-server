@@ -152,65 +152,63 @@ void Room::_handleMediaRoom()
 {
 	DLOG(INFO) << "_handleMediaRoom()";
 
-	/*
+	
 	auto activeSpeakerDetector = this->_mediaRoom->createActiveSpeakerDetector();
 
-	activeSpeakerDetector->on("activespeakerchange", (activePeer) = >
+	activeSpeakerDetector->addEventListener("activespeakerchange", [](Json data)
 	{
-		if (activePeer)
-		{
-			DLOG(INFO) << "new active speaker [peerName:'%s']", activePeer.name);
-
-			this->_currentActiveSpeaker = activePeer;
-
-			const activeVideoProducer = activePeer.producers
-				.find((producer) = > producer->kind == "video");
-
-			for (const peer of this->_mediaRoom->peers)
-			{
-				for (const consumer of peer.consumers)
-				{
-					if (consumer->kind != = "video")
-						continue;
-
-					if (consumer->source == activeVideoProducer)
-					{
-						consumer->setPreferredProfile("high");
-					}
-					else
-					{
-						consumer->setPreferredProfile("low");
-					}
-				}
-			}
-		}
-		else
-		{
-			DLOG(INFO) << "no active speaker");
-
-			this->_currentActiveSpeaker = null;
-
-			for (const peer of this->_mediaRoom->peers)
-			{
-				for (const consumer of peer.consumers)
-				{
-					if (consumer->kind != = "video")
-						continue;
-
-					consumer->setPreferredProfile("low");
-				}
-			}
-		}
-
-		// Spread to others via protoo.
-		spread(
-			"active-speaker",
-			{
-			peerName: activePeer ? activePeer.name : null
-			});
+// 		if (activePeer)
+// 		{
+// 			DLOG(INFO) << "new active speaker [peerName:'%s']", activePeer.name);
+// 
+// 			this->_currentActiveSpeaker = activePeer;
+// 
+// 			const activeVideoProducer = activePeer.producers
+// 				.find((producer) = > producer->kind == "video");
+// 
+// 			for (const peer of this->_mediaRoom->peers)
+// 			{
+// 				for (const consumer of peer.consumers)
+// 				{
+// 					if (consumer->kind != = "video")
+// 						continue;
+// 
+// 					if (consumer->source == activeVideoProducer)
+// 					{
+// 						consumer->setPreferredProfile("high");
+// 					}
+// 					else
+// 					{
+// 						consumer->setPreferredProfile("low");
+// 					}
+// 				}
+// 			}
+// 		}
+// 		else
+// 		{
+// 			DLOG(INFO) << "no active speaker");
+// 
+// 			this->_currentActiveSpeaker = null;
+// 
+// 			for (const peer of this->_mediaRoom->peers)
+// 			{
+// 				for (const consumer of peer.consumers)
+// 				{
+// 					if (consumer->kind != = "video")
+// 						continue;
+// 
+// 					consumer->setPreferredProfile("low");
+// 				}
+// 			}
+// 		}
+// 
+// 		// Spread to others via protoo.
+// 		spread(
+// 			"active-speaker",
+// 			{
+// 			peerName: activePeer ? activePeer.name : null
+// 			});
 	});
-	*/
-
 }
 
 void Room::_handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer)

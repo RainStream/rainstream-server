@@ -1,21 +1,16 @@
 #include "RainStream.hpp"
 #include "plugins/ActiveSpeakerDetector.hpp"
-#include "process/Socket.hpp"
-#include "EventEmitter.hpp"
 #include "Room.hpp"
 #include "Producer.hpp"
 #include "Logger.hpp"
-#include <random>
-#include <iostream>
-#include <memory>
-#include <functional>
 
 namespace rs
 {
 	const int REQUIRED_MIN_AUDIO_LEVEL = -80; // dB.
 	const int REQUIRED_MAX_NUM_REPORTS = 4;
 
-	ActiveSpeakerDetector::ActiveSpeakerDetector()
+	ActiveSpeakerDetector::ActiveSpeakerDetector(Room* room)
+		: _room(room)
 	{
 		DLOG(INFO) << "constructor()";
 
@@ -51,8 +46,7 @@ namespace rs
 		auto room = this->_room;
 
 		room->addEventListener("close", [=](Json data) { this->close(); });
-
-		room->addEventListener("audiolevels", std::bind(&ActiveSpeakerDetector::_onRoomAudioLevels,
+		room->addEventListener("audiolevels", std::bind(&ActiveSpeakerDetector::_onRoomAudioLevels, 
 			this, std::placeholders::_1));
 	}
 

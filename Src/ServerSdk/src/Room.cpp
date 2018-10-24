@@ -3,6 +3,7 @@
 #include "Logger.hpp"
 #include "Consumer.hpp"
 #include "Channel.hpp"
+#include "plugins/ActiveSpeakerDetector.hpp"
 
 namespace rs
 {
@@ -206,11 +207,9 @@ namespace rs
 	{
 		DLOG(INFO) << "createActiveSpeakerDetector()";
 
-		// 	ActiveSpeakerDetector* activeSpeakerDetector = new plugins.ActiveSpeakerDetector(this);
-		// 
-		// 	return activeSpeakerDetector;
+		ActiveSpeakerDetector* activeSpeakerDetector = new ActiveSpeakerDetector(this);
 
-		return nullptr;
+		return activeSpeakerDetector;
 	}
 
 	Defer Room::createRtpStreamer(Producer* producer, const Json& options)
@@ -513,6 +512,8 @@ namespace rs
 	{
 		if (event == "audiolevels")
 		{
+			LOG(INFO) <<
+				"\"Room.onEvent\" data: " << data.dump();
 			// 			const Json& entries = data["entries"];
 			// 			for (auto &levels : entries)
 			// 			{

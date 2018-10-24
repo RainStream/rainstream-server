@@ -10,6 +10,7 @@
 #include <RainStream/Producer.hpp>
 #include <RainStream/Consumer.hpp>
 #include <RainStream/Logger.hpp>
+#include <RainStream/plugins/ActiveSpeakerDetector.hpp>
 
 #pragma comment(lib,"ServerSdk.lib")
 

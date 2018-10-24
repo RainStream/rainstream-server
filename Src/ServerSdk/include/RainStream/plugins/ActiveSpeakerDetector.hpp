@@ -1,19 +1,16 @@
 #pragma once
 
-#include <netstring.h>
-#include <unordered_map>
-#include "utils.hpp"
-#include "errors.hpp"
+#include "EventEmitter.hpp"
 
 namespace rs
 {
 	class Room;
 	class Producer;
 
-	class ActiveSpeakerDetector
+	class ActiveSpeakerDetector : public EventEmitter
 	{
 	public:
-		ActiveSpeakerDetector();
+		ActiveSpeakerDetector(Room* room);
 
 		bool closed();
 

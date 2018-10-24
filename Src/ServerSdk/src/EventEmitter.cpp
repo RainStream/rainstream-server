@@ -12,6 +12,11 @@ namespace rs
 
 	void EventEmitter::addEventListener(std::string event, EventListener eventListener)
 	{
+		if (event != "newListener" && event != "removeListener")
+		{
+			doEvent("newListener", event);
+		}
+
 		events.insert(std::make_pair(event, eventListener));
 	}
 
@@ -35,6 +40,11 @@ namespace rs
 					break;
 				}
 			}
+		}
+
+		if (event != "newListener" && event != "removeListener")
+		{
+			doEvent("removeListener", event);
 		}
 	}
 
