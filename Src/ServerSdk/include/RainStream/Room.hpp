@@ -61,6 +61,8 @@ namespace rs
 		 */
 		Peer* getPeerByName(std::string name);
 
+		Producer* getProducerById(uint32_t id);
+
 		Defer receiveRequest(const Json& request);
 
 		ActiveSpeakerDetector* createActiveSpeakerDetector();

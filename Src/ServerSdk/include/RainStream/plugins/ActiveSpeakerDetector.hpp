@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EventEmitter.hpp"
+#include <queue>
 
 namespace rs
 {
@@ -33,7 +34,7 @@ namespace rs
 
 		// Latest max audio level reports.
 		// @type {Array}
-		std::vector<int> _reports;
+		std::vector<Json> _reports;
 
 		// Current active Producer.
 		// @type {Producer}

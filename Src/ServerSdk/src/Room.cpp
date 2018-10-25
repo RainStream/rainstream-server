@@ -124,6 +124,15 @@ namespace rs
 		return nullptr;
 	}
 
+	Producer* Room::getProducerById(uint32_t id)
+	{
+		if (this->_producers.count(id))
+		{
+			return this->_producers[id];
+		}
+		return nullptr;
+	}
+
 	Defer Room::receiveRequest(const Json& request)
 	{
 		if (this->_closed)
@@ -470,7 +479,7 @@ namespace rs
 					return;
 
 				this->_channel->request(
-					"router.setAudioLevelsEvent", this->_internal, Json{ {"enabled", true} })
+					"router.setAudioLevelsEvent", this->_internal, { { "enabled", true } })
 					.then([=]()
 				{
 					DLOG(INFO) << "\"router.setAudioLevelsEvent\" request succeeded";
@@ -494,7 +503,7 @@ namespace rs
 					return;
 
 				this->_channel->request(
-					"router.setAudioLevelsEvent", this->_internal, Json{ {"enabled", false} })
+					"router.setAudioLevelsEvent", this->_internal, { {"enabled", false } })
 					.then([=]()
 				{
 					DLOG(INFO) << "\"router.setAudioLevelsEvent\" request succeeded";
@@ -512,33 +521,35 @@ namespace rs
 	{
 		if (event == "audiolevels")
 		{
-			LOG(INFO) <<
-				"\"Room.onEvent\" data: " << data.dump();
-			// 			const Json& entries = data["entries"];
-			// 			for (auto &levels : entries)
-			// 			{
-			// 
-			// 			}
-			// 			const levels = entries
-			// 				.map((entry) = >
-			// 			{
-			// 				return {
-			// 				producer: this->_producers.get(entry[0]),
-			// 						  audioLevel : entry[1]
-			// 				};
-			// 			})
-			// 				.filter((entry) = > bool(entry.producer))
-			// 				.sort((a, b) = >
-			// 			{
-			// 				if (a.audioLevel > b.audioLevel)
-			// 					return -1;
-			// 				else if (a.audioLevel < b.audioLevel)
-			// 					return 1;
-			// 				else
-			// 					return 0;
-			// 			});
-			// 
-			// 			this->safeEmit("audiolevels", levels);
+			struct Level
+			{
+				uint32_t producerId = 0;
+				int32_t audioLevel = 0;
+			};
+			const Json& entries = data["entries"];
+			std::vector<Level> levels;
+			for (auto &entry : entries)
+			{
+				Level level;
+				level.producerId = entry[0].get<uint32_t>();
+				level.audioLevel = entry[1].get<int32_t>();
+				levels.push_back(level);
+			}
+
+			std::sort(levels.begin(), levels.end(), [](const Level& a, const Level& b) {
+				return a.audioLevel < b.audioLevel;
+			});
+
+			Json jLevels(Json::array());
+			for(auto &level : levels)
+			{
+				Json jLevel(Json::object());
+				jLevel["producerId"] = level.producerId;
+				jLevel["audioLevel"] = level.audioLevel;
+				jLevels.push_back(jLevel);
+			}
+
+			this->doEvent("audiolevels", jLevels);
 		}
 		else
 		{

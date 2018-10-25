@@ -155,59 +155,79 @@ void Room::_handleMediaRoom()
 	
 	auto activeSpeakerDetector = this->_mediaRoom->createActiveSpeakerDetector();
 
-	activeSpeakerDetector->addEventListener("activespeakerchange", [](Json data)
+	activeSpeakerDetector->addEventListener("activespeakerchange", [=](Json jActivePeerName)
 	{
-// 		if (activePeer)
-// 		{
-// 			DLOG(INFO) << "new active speaker [peerName:'%s']", activePeer.name);
-// 
-// 			this->_currentActiveSpeaker = activePeer;
-// 
-// 			const activeVideoProducer = activePeer.producers
-// 				.find((producer) = > producer->kind == "video");
-// 
-// 			for (const peer of this->_mediaRoom->peers)
-// 			{
-// 				for (const consumer of peer.consumers)
-// 				{
-// 					if (consumer->kind != = "video")
-// 						continue;
-// 
-// 					if (consumer->source == activeVideoProducer)
-// 					{
-// 						consumer->setPreferredProfile("high");
-// 					}
-// 					else
-// 					{
-// 						consumer->setPreferredProfile("low");
-// 					}
-// 				}
-// 			}
-// 		}
-// 		else
-// 		{
-// 			DLOG(INFO) << "no active speaker");
-// 
-// 			this->_currentActiveSpeaker = null;
-// 
-// 			for (const peer of this->_mediaRoom->peers)
-// 			{
-// 				for (const consumer of peer.consumers)
-// 				{
-// 					if (consumer->kind != = "video")
-// 						continue;
-// 
-// 					consumer->setPreferredProfile("low");
-// 				}
-// 			}
-// 		}
-// 
-// 		// Spread to others via protoo.
-// 		spread(
-// 			"active-speaker",
-// 			{
-// 			peerName: activePeer ? activePeer.name : null
-// 			});
+		rs::Peer* activePeer = nullptr;
+		if (!jActivePeerName.is_null())
+		{
+			std::string activePeerName = jActivePeerName.get<std::string>();
+			activePeer = this->_mediaRoom->getPeerByName(activePeerName);
+		}
+
+		if (activePeer)
+		{
+			DLOG(INFO) << "new active speaker [peerName:'" << activePeer->name() << "']";
+
+			this->_currentActiveSpeaker = activePeer;
+
+			rs::Producers producers;
+			for (auto itProducer : activePeer->producers())
+			{
+				auto producer = itProducer.second;
+				if (producer->kind() == "video")
+				{
+					producers.insert(std::make_pair(producer->id(), producer));
+				}
+			}
+
+
+			for (const auto itPeer : this->_mediaRoom->peers())
+			{
+				rs::Peer* peer = itPeer.second;
+				for (const auto itConsumer : peer->consumers())
+				{
+					rs::Consumer* consumer = itConsumer.second;
+
+					if (consumer->kind() != "video")
+						continue;
+
+					if (producers.count(consumer->source()->id()))
+					{
+						consumer->setPreferredProfile("high");
+					}
+					else
+					{
+						consumer->setPreferredProfile("low");
+					}
+				}
+			}
+		}
+		else
+		{
+			DLOG(INFO) << "no active speaker";
+
+			this->_currentActiveSpeaker = nullptr;
+
+			for (const auto itPeer : this->_mediaRoom->peers())
+			{
+				rs::Peer* peer = itPeer.second;
+				for (const auto itConsumer : peer->consumers())
+				{
+					rs::Consumer* consumer = itConsumer.second;
+					if (consumer->kind() != "video")
+						continue;
+
+					consumer->setPreferredProfile("low");
+				}
+			}
+		}
+
+		// Spread to others via protoo.
+		spread(
+			"active-speaker",
+			{
+				{ "peerName" , activePeer ? activePeer->name() : "" }
+			});
 	});
 }
 
