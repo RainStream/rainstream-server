@@ -22,8 +22,8 @@ extern "C" {
  * OpenSSL was configured with the following options:
  */
 
-#ifndef OPENSSL_SYS_WIN64A
-# define OPENSSL_SYS_WIN64A 1
+#ifndef OPENSSL_SYS_WIN32
+# define OPENSSL_SYS_WIN32 1
 #endif
 #ifndef OPENSSL_NO_MD2
 # define OPENSSL_NO_MD2
@@ -102,18 +102,12 @@ extern "C" {
  * still won't see them if the library has been built to disable deprecated
  * functions.
  */
-#ifndef DECLARE_DEPRECATED
-# if defined(OPENSSL_NO_DEPRECATED)
-#  define DECLARE_DEPRECATED(f)
-# else
-#  define DECLARE_DEPRECATED(f)   f;
-#  ifdef __GNUC__
-#   if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 0)
-#    undef DECLARE_DEPRECATED
-#    define DECLARE_DEPRECATED(f)    f __attribute__ ((deprecated));
-#   endif
-#  endif
-# endif
+#if defined(OPENSSL_NO_DEPRECATED)
+# define DECLARE_DEPRECATED(f)
+#elif __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 0)
+# define DECLARE_DEPRECATED(f)    f __attribute__ ((deprecated));
+#else
+# define DECLARE_DEPRECATED(f)   f;
 #endif
 
 #ifndef OPENSSL_FILE
@@ -167,11 +161,11 @@ extern "C" {
  * The following are cipher-specific, but are part of the public API.
  */
 #if !defined(OPENSSL_SYS_UEFI)
-# undef BN_LLONG
+# define BN_LLONG
 /* Only one for the following should be defined */
 # undef SIXTY_FOUR_BIT_LONG
-# define SIXTY_FOUR_BIT
-# undef THIRTY_TWO_BIT
+# undef SIXTY_FOUR_BIT
+# define THIRTY_TWO_BIT
 #endif
 
 #define RC4_INT unsigned int
