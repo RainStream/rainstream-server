@@ -33,3 +33,4 @@
 /.vs
 /IntDir
 /Lib
+/Deps/promise-cpp/build/msvc/.vs

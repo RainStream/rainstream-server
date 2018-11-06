@@ -115,7 +115,7 @@ namespace rs
  			
 			Producer* producer = this->_room->getProducerById(producerId);
  
- 			if (producer->closed() || producer->paused() || audioLevel < REQUIRED_MIN_AUDIO_LEVEL)
+ 			if (!producer || producer->closed() || producer->paused() || audioLevel < REQUIRED_MIN_AUDIO_LEVEL)
  			{
  				currentActiveProducer = nullptr;
  
