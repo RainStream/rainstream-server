@@ -17,9 +17,9 @@ namespace rs
 		static_cast<SubProcess*>(handle->data)->OnUvReqClosed(exit_status, term_signal);
 	}
 
-	SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters)
+	SubProcess* SubProcess::spawn(std::string id, std::string workerPath, AStringVector parameters)
 	{
-		SubProcess *subProcess = new SubProcess;
+		SubProcess *subProcess = new SubProcess(id);
 
 		int argc = parameters.size() + 2;
 		char** spawnArgs = new char*[argc];
@@ -63,7 +63,7 @@ namespace rs
 		int err = uv_spawn(uv_default_loop(), &subProcess->req, &subProcess->options);
 		if (err != 0)
 		{
-			//LOG(ERROR) << "uv_spawn() failed: %s", uv_strerror(err));
+			LOG(ERROR) << "uv_spawn() failed: " << uv_strerror(err);
 
 			delete subProcess;
 			subProcess = nullptr;
@@ -74,7 +74,8 @@ namespace rs
 		return subProcess;
 	}
 
-	SubProcess::SubProcess()
+	SubProcess::SubProcess(std::string id)
+		: _id(id)
 	{
 		socket = new Socket;
 	}
@@ -109,6 +110,9 @@ namespace rs
 		Close();
 
 
-		//LOG(ERROR) << "child process exited [id:%s, code:%s, signal:%s]", _id, exit_status, term_signal);
+		LOG(ERROR) << "child process exited "
+			<<"[id:" << _id 
+			<< "] code:" << exit_status
+			<< " signal:" <<  term_signal;
 	}
 }

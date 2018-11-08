@@ -10,9 +10,9 @@ namespace rs
 	class SubProcess : public EventEmitter
 	{
 	public:
-		static SubProcess* spawn(std::string workerPath, AStringVector parameters);
+		static SubProcess* spawn(std::string id, std::string workerPath, AStringVector parameters);
 
-		SubProcess();
+		SubProcess(std::string id);
 
 		/* Callbacks fired by UV events. */
 	public:
@@ -29,6 +29,8 @@ namespace rs
 
 		// Others.
 		bool closed{ false };
+
+		std::string _id;
 
 		Socket* socket{ nullptr };
 	};

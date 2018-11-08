@@ -20,7 +20,7 @@ namespace rs
 
 		parameters.insert(parameters.begin(), id);
 
-		this->_child = SubProcess::spawn(WORK_PATH, parameters);
+		this->_child = SubProcess::spawn(id, WORK_PATH, parameters);
 
 		// Channel instance.
 		this->_channel = new Channel(_child->getSocket());
