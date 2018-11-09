@@ -11,18 +11,67 @@
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"
 
+const Json DefaultConfig = 
+
+R"(
+{
+	"domain" : "127.0.0.1",
+	"tls" :
+	{
+		"cert" : "../../certs/rainstream.localhost.cert.pem",
+		"key" : "../../certs/rainstream.localhost.key.pem"
+	},
+	"rainstream" :
+	{
+		"logLevel" : "warn",
+		"logTags" : ["info", "rtp", "rtcp", "rtx"],
+		"rtcIPv4" : true,
+		"rtcIPv6" : false,
+		"rtcMaxPort" : 49999,
+		"rtcMinPort" : 40000,
+		"numWorkers" : 1,
+
+	"mediaCodecs" :
+	[
+		{
+			"kind"       : "audio",
+			"name" : "opus",
+			"clockRate" : 48000,
+			"channels" : 2,
+			"parameters" :
+			{
+				"useinbandfec" : 1
+			}
+		},
+		{
+			"kind"       : "video",
+			"name" : "H264",
+			"clockRate" : 90000,
+			"parameters" :
+			{
+				"packetization-mode" : 1
+			}
+		}
+	],
+	"maxBitrate" : 500000
+	}
+})"_json;
+
 
 /* Instance methods. */
 ClusterServer::ClusterServer()
-	: config(Json::object())
+	: config(DefaultConfig)
 {
 	if (!Settings::configuration.configFile.empty())
 	{
 		std::ifstream in(Settings::configuration.configFile.c_str());
 		if (in.is_open())
 		{
-			in >> config;
+			Json newConfig;
+			in >> newConfig;
 			in.close();
+
+			config = Object::assign(config, newConfig);
 		}
 	}
 
