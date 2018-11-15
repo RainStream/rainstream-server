@@ -18,8 +18,8 @@ R"(
 	"domain" : "127.0.0.1",
 	"tls" :
 	{
-		"cert" : "../../certs/rainstream.localhost.cert.pem",
-		"key" : "../../certs/rainstream.localhost.key.pem"
+		"cert" : "certs/rainstream.localhost.cert.pem",
+		"key" : "certs/rainstream.localhost.key.pem"
 	},
 	"rainstream" :
 	{
