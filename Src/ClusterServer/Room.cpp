@@ -193,11 +193,11 @@ void Room::_handleMediaRoom()
 
 					if (producers.count(consumer->source()->id()))
 					{
-						consumer->setPreferredProfile("high");
+						//consumer->setPreferredProfile("high");
 					}
 					else
 					{
-						consumer->setPreferredProfile("low");
+						//consumer->setPreferredProfile("low");
 					}
 				}
 			}
@@ -217,7 +217,7 @@ void Room::_handleMediaRoom()
 					if (consumer->kind() != "video")
 						continue;
 
-					consumer->setPreferredProfile("low");
+					//consumer->setPreferredProfile("low");
 				}
 			}
 		}
