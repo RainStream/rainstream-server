@@ -207,21 +207,21 @@ namespace RTC
 	{
 		MS_TRACE();
 
-		MS_DUMP("<RtpPacket>");
-		MS_DUMP("  padding           : %s", this->header->padding ? "true" : "false");
-		MS_DUMP("  extension header  : %s", HasExtensionHeader() ? "true" : "false");
+		MS_DEBUG_DEV("<RtpPacket>");
+		MS_DEBUG_DEV("  padding           : %s", this->header->padding ? "true" : "false");
+		MS_DEBUG_DEV("  extension header  : %s", HasExtensionHeader() ? "true" : "false");
 		if (HasExtensionHeader())
 		{
-			MS_DUMP("    id      : %" PRIu16, GetExtensionHeaderId());
-			MS_DUMP("    length  : %zu bytes", GetExtensionHeaderLength());
+			MS_DEBUG_DEV("    id      : %" PRIu16, GetExtensionHeaderId());
+			MS_DEBUG_DEV("    length  : %zu bytes", GetExtensionHeaderLength());
 		}
 		if (HasOneByteExtensions())
 		{
-			MS_DUMP("  RFC5285 ext style : One-Byte Header");
+			MS_DEBUG_DEV("  RFC5285 ext style : One-Byte Header");
 		}
 		if (HasTwoBytesExtensions())
 		{
-			MS_DUMP("  RFC5285 ext style : Two-Bytes Header");
+			MS_DEBUG_DEV("  RFC5285 ext style : Two-Bytes Header");
 		}
 		if (HasOneByteExtensions() || HasTwoBytesExtensions())
 		{
@@ -239,25 +239,28 @@ namespace RTC
 					extIds.push_back(std::to_string(pair.first));
 			}
 
-			std::copy(
-			  extIds.begin(), extIds.end() - 1, std::ostream_iterator<std::string>(extIdsStream, ","));
-			extIdsStream << extIds.back();
+			if (!extIds.empty())
+			{
+				std::copy(
+				  extIds.begin(), extIds.end() - 1, std::ostream_iterator<std::string>(extIdsStream, ","));
+				extIdsStream << extIds.back();
 
-			MS_DUMP("  RFC5285 ext ids   : %s", extIdsStream.str().c_str());
+				MS_DEBUG_DEV("  RFC5285 ext ids   : %s", extIdsStream.str().c_str());
+			}
 		}
-		MS_DUMP("  csrc count        : %" PRIu8, this->header->csrcCount);
-		MS_DUMP("  marker            : %s", HasMarker() ? "true" : "false");
-		MS_DUMP("  payload type      : %" PRIu8, GetPayloadType());
-		MS_DUMP("  sequence number   : %" PRIu16, GetSequenceNumber());
-		MS_DUMP("  timestamp         : %" PRIu32, GetTimestamp());
-		MS_DUMP("  ssrc              : %" PRIu32, GetSsrc());
-		MS_DUMP("  payload size      : %zu bytes", GetPayloadLength());
+		MS_DEBUG_DEV("  csrc count        : %" PRIu8, this->header->csrcCount);
+		MS_DEBUG_DEV("  marker            : %s", HasMarker() ? "true" : "false");
+		MS_DEBUG_DEV("  payload type      : %" PRIu8, GetPayloadType());
+		MS_DEBUG_DEV("  sequence number   : %" PRIu16, GetSequenceNumber());
+		MS_DEBUG_DEV("  timestamp         : %" PRIu32, GetTimestamp());
+		MS_DEBUG_DEV("  ssrc              : %" PRIu32, GetSsrc());
+		MS_DEBUG_DEV("  payload size      : %zu bytes", GetPayloadLength());
 		if (this->header->padding != 0u)
 		{
-			MS_DUMP("  padding size      : %" PRIu8 " bytes", this->payloadPadding);
+			MS_DEBUG_DEV("  padding size      : %" PRIu8 " bytes", this->payloadPadding);
 		}
-		MS_DUMP("  packet size       : %zu bytes", GetSize());
-		MS_DUMP("</RtpPacket>");
+		MS_DEBUG_DEV("  packet size       : %zu bytes", GetSize());
+		MS_DEBUG_DEV("</RtpPacket>");
 	}
 
 	void RtpPacket::MangleExtensionHeaderIds(const std::map<uint8_t, uint8_t>& idMapping)
@@ -540,8 +543,9 @@ namespace RTC
 					break;
 				}
 
-				// Store the One-Byte extension element in a map.
-				this->oneByteExtensions[id] = reinterpret_cast<OneByteExtension*>(ptr);
+				// Store the One-Byte extension element in a map. Ignore if 0.
+				if (id != 0u)
+					this->oneByteExtensions[id] = reinterpret_cast<OneByteExtension*>(ptr);
 
 				ptr += 1 + len;
 
@@ -560,7 +564,7 @@ namespace RTC
 			uint8_t* extensionEnd   = extensionStart + GetExtensionHeaderLength();
 			uint8_t* ptr            = extensionStart;
 
-			while (ptr < extensionEnd)
+			while (ptr + 1 < extensionEnd)
 			{
 				uint8_t id = *ptr;
 				size_t len = *(++ptr);
@@ -573,8 +577,9 @@ namespace RTC
 					break;
 				}
 
-				// Store the Two-Bytes extension element in a map.
-				this->twoBytesExtensions[id] = reinterpret_cast<TwoBytesExtension*>(ptr);
+				// Store the Two-Bytes extension element in a map. Ignore if 0.
+				if (id != 0u)
+					this->twoBytesExtensions[id] = reinterpret_cast<TwoBytesExtension*>(ptr);
 
 				ptr += len;
 

@@ -126,7 +126,7 @@ namespace RTC
 			{
 				MS_WARN_TAG(
 				  ice,
-				  "attribute after MESSAGE_INTEGRITY other than FINGERPRINT is not allowed, "
+				  "attribute after MESSAGE-INTEGRITY other than FINGERPRINT is not allowed, "
 				  "message discarded");
 
 				delete msg;
@@ -144,39 +144,99 @@ namespace RTC
 
 					break;
 				}
+
 				case Attribute::PRIORITY:
 				{
+					// Ensure attribute length is 4 bytes.
+					if (attrLength != 4)
+					{
+						MS_WARN_TAG(ice, "attribute PRIORITY must be 4 bytes length, message discarded");
+
+						delete msg;
+						return nullptr;
+					}
+
 					msg->SetPriority(Utils::Byte::Get4Bytes(attrValuePos, 0));
 
 					break;
 				}
+
 				case Attribute::ICE_CONTROLLING:
 				{
+					// Ensure attribute length is 8 bytes.
+					if (attrLength != 8)
+					{
+						MS_WARN_TAG(ice, "attribute ICE-CONTROLLING must be 8 bytes length, message discarded");
+
+						delete msg;
+						return nullptr;
+					}
+
 					msg->SetIceControlling(Utils::Byte::Get8Bytes(attrValuePos, 0));
 
 					break;
 				}
+
 				case Attribute::ICE_CONTROLLED:
 				{
+					// Ensure attribute length is 8 bytes.
+					if (attrLength != 8)
+					{
+						MS_WARN_TAG(ice, "attribute ICE-CONTROLLED must be 8 bytes length, message discarded");
+
+						delete msg;
+						return nullptr;
+					}
+
 					msg->SetIceControlled(Utils::Byte::Get8Bytes(attrValuePos, 0));
 
 					break;
 				}
+
 				case Attribute::USE_CANDIDATE:
 				{
+					// Ensure attribute length is 0 bytes.
+					if (attrLength != 0)
+					{
+						MS_WARN_TAG(ice, "attribute USE-CANDIDATE must be 0 bytes length, message discarded");
+
+						delete msg;
+						return nullptr;
+					}
+
 					msg->SetUseCandidate();
 
 					break;
 				}
+
 				case Attribute::MESSAGE_INTEGRITY:
 				{
+					// Ensure attribute length is 20 bytes.
+					if (attrLength != 20)
+					{
+						MS_WARN_TAG(ice, "attribute MESSAGE-INTEGRITY must be 20 bytes length, message discarded");
+
+						delete msg;
+						return nullptr;
+					}
+
 					hasMessageIntegrity = true;
 					msg->SetMessageIntegrity(attrValuePos);
 
 					break;
 				}
+
 				case Attribute::FINGERPRINT:
 				{
+					// Ensure attribute length is 4 bytes.
+					if (attrLength != 4)
+					{
+						MS_WARN_TAG(ice, "attribute FINGERPRINT must be 4 bytes length, message discarded");
+
+						delete msg;
+						return nullptr;
+					}
+
 					hasFingerprint     = true;
 					fingerprintAttrPos = pos;
 					fingerprint        = Utils::Byte::Get4Bytes(attrValuePos, 0);
@@ -184,8 +244,18 @@ namespace RTC
 
 					break;
 				}
+
 				case Attribute::ERROR_CODE:
 				{
+					// Ensure attribute length >= 4bytes.
+					if (attrLength < 4)
+					{
+						MS_WARN_TAG(ice, "attribute ERROR-CODE must be >= 4bytes length, message discarded");
+
+						delete msg;
+						return nullptr;
+					}
+
 					uint8_t errorClass  = Utils::Byte::Get1Byte(attrValuePos, 2);
 					uint8_t errorNumber = Utils::Byte::Get1Byte(attrValuePos, 3);
 					auto errorCode      = static_cast<uint16_t>(errorClass * 100 + errorNumber);
@@ -194,6 +264,7 @@ namespace RTC
 
 					break;
 				}
+
 				default:;
 			}
 
@@ -253,7 +324,7 @@ namespace RTC
 	{
 		MS_TRACE();
 
-		MS_DUMP("<StunMessage>");
+		MS_DEBUG_DEV("<StunMessage>");
 
 		std::string klass;
 		switch (this->klass)
@@ -273,14 +344,15 @@ namespace RTC
 		}
 		if (this->method == Method::BINDING)
 		{
-			MS_DUMP("  Binding %s", klass.c_str());
+			MS_DEBUG_DEV("  Binding %s", klass.c_str());
 		}
 		else
 		{
 			// This prints the unknown method number. Example: TURN Allocate => 0x003.
-			MS_DUMP("  %s with unknown method %#.3x", klass.c_str(), static_cast<uint16_t>(this->method));
+			MS_DEBUG_DEV(
+			  "  %s with unknown method %#.3x", klass.c_str(), static_cast<uint16_t>(this->method));
 		}
-		MS_DUMP("  size: %zu bytes", this->size);
+		MS_DEBUG_DEV("  size: %zu bytes", this->size);
 
 		static char transactionId[25];
 
@@ -289,19 +361,19 @@ namespace RTC
 			// NOTE: n must be 3 because snprintf adds a \0 after printed chars.
 			std::snprintf(transactionId + (i * 2), 3, "%.2x", this->transactionId[i]);
 		}
-		MS_DUMP("  transactionId: %s", transactionId);
+		MS_DEBUG_DEV("  transactionId: %s", transactionId);
 		if (this->errorCode != 0u)
-			MS_DUMP("  errorCode: %" PRIu16, this->errorCode);
+			MS_DEBUG_DEV("  errorCode: %" PRIu16, this->errorCode);
 		if (!this->username.empty())
-			MS_DUMP("  username: %s", this->username.c_str());
+			MS_DEBUG_DEV("  username: %s", this->username.c_str());
 		if (this->priority != 0u)
-			MS_DUMP("  priority: %" PRIu32, this->priority);
+			MS_DEBUG_DEV("  priority: %" PRIu32, this->priority);
 		if (this->iceControlling != 0u)
-			MS_DUMP("  iceControlling: %" PRIu64, this->iceControlling);
+			MS_DEBUG_DEV("  iceControlling: %" PRIu64, this->iceControlling);
 		if (this->iceControlled != 0u)
-			MS_DUMP("  iceControlled: %" PRIu64, this->iceControlled);
+			MS_DEBUG_DEV("  iceControlled: %" PRIu64, this->iceControlled);
 		if (this->hasUseCandidate)
-			MS_DUMP("  useCandidate");
+			MS_DEBUG_DEV("  useCandidate");
 		if (this->xorMappedAddress != nullptr)
 		{
 			int family;
@@ -310,7 +382,7 @@ namespace RTC
 
 			Utils::IP::GetAddressInfo(this->xorMappedAddress, &family, ip, &port);
 
-			MS_DUMP("  xorMappedAddress: %s : %" PRIu16, ip.c_str(), port);
+			MS_DEBUG_DEV("  xorMappedAddress: %s : %" PRIu16, ip.c_str(), port);
 		}
 		if (this->messageIntegrity != nullptr)
 		{
@@ -321,12 +393,12 @@ namespace RTC
 				std::snprintf(messageIntegrity + (i * 2), 3, "%.2x", this->messageIntegrity[i]);
 			}
 
-			MS_DUMP("  messageIntegrity: %s", messageIntegrity);
+			MS_DEBUG_DEV("  messageIntegrity: %s", messageIntegrity);
 		}
 		if (this->hasFingerprint)
-			MS_DUMP("  fingerprint");
+			MS_DEBUG_DEV("  has fingerprint");
 
-		MS_DUMP("</StunMessage>");
+		MS_DEBUG_DEV("</StunMessage>");
 	}
 
 	StunMessage::Authentication StunMessage::CheckAuthentication(
@@ -340,7 +412,7 @@ namespace RTC
 			case Class::INDICATION:
 			{
 				// Both USERNAME and MESSAGE-INTEGRITY must be present.
-				if ((this->messageIntegrity == nullptr) || this->username.empty())
+				if (this->messageIntegrity == nullptr || this->username.empty())
 					return Authentication::BAD_REQUEST;
 
 				// Check that USERNAME attribute begins with our local username plus ":".
@@ -478,6 +550,7 @@ namespace RTC
 
 					break;
 				}
+
 				case AF_INET6:
 				{
 					xorMappedAddressPaddedLen = 20;
@@ -485,6 +558,7 @@ namespace RTC
 
 					break;
 				}
+
 				default:
 				{
 					MS_ERROR("invalid inet family in XOR-MAPPED-ADDRESS attribute");
@@ -610,6 +684,7 @@ namespace RTC
 
 					break;
 				}
+
 				case AF_INET6:
 				{
 					// Set first byte to 0.

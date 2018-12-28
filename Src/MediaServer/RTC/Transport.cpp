@@ -120,8 +120,6 @@ namespace RTC
 			default:
 			{
 				MS_THROW_ERROR("invalid destination IP '%s'", options.remoteIP.c_str());
-
-				break;
 			}
 		}
 
@@ -160,14 +158,13 @@ namespace RTC
 		// and add them to the Transport.
 
 		if (producer->GetTransportHeaderExtensionIds().absSendTime != 0u)
-		{
 			this->headerExtensionIds.absSendTime = producer->GetTransportHeaderExtensionIds().absSendTime;
-		}
+
+		if (producer->GetTransportHeaderExtensionIds().mid != 0u)
+			this->headerExtensionIds.mid = producer->GetTransportHeaderExtensionIds().mid;
 
 		if (producer->GetTransportHeaderExtensionIds().rid != 0u)
-		{
 			this->headerExtensionIds.rid = producer->GetTransportHeaderExtensionIds().rid;
-		}
 	}
 
 	void Transport::HandleConsumer(RTC::Consumer* consumer)
@@ -273,21 +270,14 @@ namespace RTC
 							auto* remb = dynamic_cast<RTCP::FeedbackPsRembPacket*>(afb);
 
 							this->recvRemb = std::make_tuple(remb->GetBitrate(), remb->GetSsrcs());
+
 							break;
 						}
-					}
-
-					// [[fallthrough]]; (C++17)
-					case RTCP::FeedbackPs::MessageType::SLI:
-					case RTCP::FeedbackPs::MessageType::RPSI:
-					{
-						auto* consumer = GetConsumer(feedback->GetMediaSsrc());
-
-						if (consumer == nullptr)
+						else
 						{
 							MS_WARN_TAG(
 							  rtcp,
-							  "no Consumer found for received %s Feedback packet "
+							  "ignoring unsupported %s Feedback PS AFB packet "
 							  "[sender ssrc:%" PRIu32 ", media ssrc:%" PRIu32 "]",
 							  RTCP::FeedbackPsPacket::MessageType2String(feedback->GetMessageType()).c_str(),
 							  feedback->GetMediaSsrc(),
@@ -295,10 +285,6 @@ namespace RTC
 
 							break;
 						}
-
-						listener->OnTransportReceiveRtcpFeedback(this, consumer, feedback);
-
-						break;
 					}
 
 					default:
@@ -310,8 +296,6 @@ namespace RTC
 						  RTCP::FeedbackPsPacket::MessageType2String(feedback->GetMessageType()).c_str(),
 						  feedback->GetMediaSsrc(),
 						  feedback->GetMediaSsrc());
-
-						break;
 					}
 				}
 
@@ -355,8 +339,6 @@ namespace RTC
 						  RTCP::FeedbackRtpPacket::MessageType2String(feedback->GetMessageType()).c_str(),
 						  feedback->GetMediaSsrc(),
 						  feedback->GetMediaSsrc());
-
-						break;
 					}
 				}
 
@@ -368,7 +350,7 @@ namespace RTC
 				auto* sr = dynamic_cast<RTCP::SenderReportPacket*>(packet);
 				auto it  = sr->Begin();
 
-				// Even if Sender Report packet can only contain one report..
+				// Even if Sender Report packet can only contains one report...
 				for (; it != sr->End(); ++it)
 				{
 					auto& report = (*it);
@@ -409,8 +391,6 @@ namespace RTC
 
 						continue;
 					}
-
-					// TODO: Should we do something with the SDES packet?
 				}
 
 				break;
@@ -523,15 +503,6 @@ namespace RTC
 
 		// Remove it from the RtpListener.
 		this->rtpListener.RemoveProducer(producer);
-	}
-
-	void Transport::OnProducerRtpParametersUpdated(RTC::Producer* producer)
-	{
-		MS_TRACE();
-
-		// Update our RtpListener.
-		// NOTE: This may throw.
-		this->rtpListener.AddProducer(producer);
 	}
 
 	void Transport::OnProducerPaused(RTC::Producer* /*producer*/)

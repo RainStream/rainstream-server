@@ -14,7 +14,6 @@
 #include "handles/Timer.hpp"
 #include <json/json.h>
 #include <map>
-#include <set>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -35,7 +34,18 @@ namespace RTC
 		{
 			uint8_t ssrcAudioLevel{ 0 }; // 0 means no ssrc-audio-level id.
 			uint8_t absSendTime{ 0 };    // 0 means no abs-send-time id.
+			uint8_t mid{ 0 };            // 0 means no MID id.
 			uint8_t rid{ 0 };            // 0 means no RID id.
+		};
+
+	private:
+		struct RtpStreamInfo
+		{
+			RTC::RtpStreamRecv* rtpStream{ nullptr };
+			std::string rid{};
+			RTC::RtpEncodingParameters::Profile profile{ RTC::RtpEncodingParameters::Profile::NONE };
+			uint32_t rtxSsrc{ 0 };
+			bool active{ false };
 		};
 
 	public:
@@ -58,7 +68,6 @@ namespace RTC
 		Json::Value GetStats() const;
 		void AddListener(RTC::ProducerListener* listener);
 		void RemoveListener(RTC::ProducerListener* listener);
-		void UpdateRtpParameters(RTC::RtpParameters& rtpParameters);
 		void Pause();
 		void Resume();
 		void SetPreferredProfile(const RTC::RtpEncodingParameters::Profile profile);
@@ -69,8 +78,6 @@ namespace RTC
 		void ReceiveRtpPacket(RTC::RtpPacket* packet);
 		void ReceiveRtcpSenderReport(RTC::RTCP::SenderReport* report);
 		void GetRtcp(RTC::RTCP::CompoundPacket* packet, uint64_t now);
-		void ReceiveRtcpFeedback(RTC::RTCP::FeedbackPsPacket* packet) const;
-		void ReceiveRtcpFeedback(RTC::RTCP::FeedbackRtpPacket* packet) const;
 		void RequestKeyFrame(bool force = false);
 		const std::map<RTC::RtpEncodingParameters::Profile, const RTC::RtpStream*>& GetActiveProfiles() const;
 
@@ -78,12 +85,10 @@ namespace RTC
 		void FillHeaderExtensionIds();
 		void MayNeedNewStream(RTC::RtpPacket* packet);
 		void CreateRtpStream(RTC::RtpEncodingParameters& encoding, uint32_t ssrc);
-		void ClearRtpStream(RTC::RtpStreamRecv* rtpStream);
-		void ClearRtpStreams();
 		void ApplyRtpMapping(RTC::RtpPacket* packet) const;
-		RTC::RtpEncodingParameters::Profile GetProfile(RTC::RtpStreamRecv* rtpStream, RTC::RtpPacket* packet);
-		void ActivateStreamProfiles(RTC::RtpStreamRecv* rtpStream);
-		void DeactivateStreamProfiles(RTC::RtpStreamRecv* rtpStream);
+		void ActivateStream(RTC::RtpStreamRecv* rtpStream);
+		void DeactivateStream(RTC::RtpStreamRecv* rtpStream);
+		// TODO: Remove?
 		bool IsStreamActive(const RTC::RtpStream* rtpStream) const;
 
 		/* Pure virtual methods inherited from RTC::RtpStreamRecv::Listener. */
@@ -111,9 +116,7 @@ namespace RTC
 		struct RtpMapping rtpMapping;
 		std::unordered_set<RTC::ProducerListener*> listeners;
 		// Allocated by this.
-		std::map<uint32_t, RTC::RtpStreamRecv*> rtpStreams;
-		std::map<uint32_t, RTC::RtpStreamRecv*> mapRtxStreams;
-		std::map<RTC::RtpStreamRecv*, std::set<RTC::RtpEncodingParameters::Profile>> mapRtpStreamProfiles;
+		std::map<uint32_t, RtpStreamInfo> mapSsrcRtpStreamInfo;
 		std::map<RTC::RtpEncodingParameters::Profile, const RTC::RtpStream*> mapActiveProfiles;
 		Timer* keyFrameRequestBlockTimer{ nullptr };
 		// Others.
@@ -168,11 +171,11 @@ namespace RTC
 
 	inline void Producer::ReceiveRtcpSenderReport(RTC::RTCP::SenderReport* report)
 	{
-		auto it = this->rtpStreams.find(report->GetSsrc());
-
-		if (it != this->rtpStreams.end())
+		auto it = this->mapSsrcRtpStreamInfo.find(report->GetSsrc());
+		if (it != this->mapSsrcRtpStreamInfo.end())
 		{
-			auto rtpStream = it->second;
+			auto& info      = it->second;
+			auto* rtpStream = info.rtpStream;
 
 			rtpStream->ReceiveRtcpSenderReport(report);
 		}

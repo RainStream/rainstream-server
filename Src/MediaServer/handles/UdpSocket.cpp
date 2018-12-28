@@ -74,25 +74,38 @@ UdpSocket::UdpSocket(const std::string& ip, uint16_t port)
 	switch (Utils::IP::GetFamily(ip))
 	{
 		case AF_INET:
+		{
 			err = uv_ip4_addr(
 			  ip.c_str(), static_cast<int>(port), reinterpret_cast<struct sockaddr_in*>(&bindAddr));
+
 			if (err != 0)
 				MS_ABORT("uv_ipv4_addr() failed: %s", uv_strerror(err));
+
 			break;
+		}
 
 		case AF_INET6:
+		{
 			err = uv_ip6_addr(
 			  ip.c_str(), static_cast<int>(port), reinterpret_cast<struct sockaddr_in6*>(&bindAddr));
+
 			if (err != 0)
 				MS_ABORT("uv_ipv6_addr() failed: %s", uv_strerror(err));
+
 			// Don't also bind into IPv4 when listening in IPv6.
 			flags |= UV_UDP_IPV6ONLY;
+
 			break;
+		}
 
 		default:
+		{
 			uv_close(reinterpret_cast<uv_handle_t*>(this->uvHandle), static_cast<uv_close_cb>(onErrorClose));
+
 			MS_THROW_ERROR("invalid binding IP '%s'", ip.c_str());
+
 			break;
+		}
 	}
 
 	err = uv_udp_bind(this->uvHandle, reinterpret_cast<const struct sockaddr*>(&bindAddr), flags);
@@ -170,13 +183,13 @@ void UdpSocket::Destroy()
 
 void UdpSocket::Dump() const
 {
-	MS_DUMP("<UdpSocket>");
-	MS_DUMP(
+	MS_DEBUG_DEV("<UdpSocket>");
+	MS_DEBUG_DEV(
 	  "  [UDP, local:%s :%" PRIu16 ", status:%s]",
 	  this->localIP.c_str(),
 	  static_cast<uint16_t>(this->localPort),
 	  (!this->isClosing) ? "open" : "closed");
-	MS_DUMP("</UdpSocket>");
+	MS_DEBUG_DEV("</UdpSocket>");
 }
 
 void UdpSocket::Send(const uint8_t* data, size_t len, const struct sockaddr* addr)
@@ -271,23 +284,33 @@ void UdpSocket::Send(const uint8_t* data, size_t len, const std::string& ip, uin
 	switch (Utils::IP::GetFamily(ip))
 	{
 		case AF_INET:
+		{
 			err = uv_ip4_addr(
 			  ip.c_str(), static_cast<int>(port), reinterpret_cast<struct sockaddr_in*>(&addr));
+
 			if (err != 0)
 				MS_ABORT("uv_ipv4_addr() failed: %s", uv_strerror(err));
+
 			break;
+		}
 
 		case AF_INET6:
+		{
 			err = uv_ip6_addr(
 			  ip.c_str(), static_cast<int>(port), reinterpret_cast<struct sockaddr_in6*>(&addr));
+
 			if (err != 0)
 				MS_ABORT("uv_ipv6_addr() failed: %s", uv_strerror(err));
+
 			break;
+		}
 
 		default:
+		{
 			MS_ERROR("invalid destination IP '%s'", ip.c_str());
 
 			return;
+		}
 	}
 
 	Send(data, len, reinterpret_cast<struct sockaddr*>(&addr));

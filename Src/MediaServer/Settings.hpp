@@ -28,7 +28,7 @@ public:
 	// Struct holding the configuration.
 	struct Configuration
 	{
-		LogLevel logLevel{ LogLevel::LOG_DEBUG };
+		LogLevel logLevel{ LogLevel::LOG_ERROR };
 		struct LogTags logTags;
 		std::string rtcIPv4;
 		std::string rtcIPv6;
@@ -57,7 +57,7 @@ private:
 	static void SetRtcIPv6(const std::string& ip);
 	static void SetRtcPorts();
 	static void SetDtlsCertificateAndPrivateKeyFiles();
-	static void SetLogTags(std::vector<std::string>& tags);
+	static void SetLogTags(const std::vector<std::string>& tags);
 	static void SetLogTags(Json::Value& json);
 
 public:

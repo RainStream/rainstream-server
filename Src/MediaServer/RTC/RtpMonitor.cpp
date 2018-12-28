@@ -76,27 +76,19 @@ namespace RTC
 
 		// No packet was sent. Consider lost and repaired packets though.
 		if (sentPackets == 0)
-		{
 			sentPackets = (currentLoss > repairedPacketCount) ? currentLoss : repairedPacketCount;
-		}
 
 		// Nothing to do.
 		if (sentPackets == 0)
-		{
 			return;
-		}
 
 		// There cannot be more loss than sent packets.
 		if (currentLoss > sentPackets)
-		{
 			currentLoss = sentPackets;
-		}
 
 		// There cannot be more repaired than sent packets.
 		if (repairedPacketCount > sentPackets)
-		{
 			repairedPacketCount = sentPackets;
-		}
 
 		float lossPercentage     = currentLoss * 100 / sentPackets;
 		float repairedPercentage = repairedPacketCount * 100 / sentPackets;
@@ -119,7 +111,7 @@ namespace RTC
 #ifdef MS_LOG_DEV
 		MS_DEBUG_TAG(
 		  rtp,
-		  "sentPackets: %zu, currentLoss: %zu, repairedPacketCount: %zu, lossPercentage: %f, repairedPercentage: %f, score: %f ",
+		  "sentPackets: %zu, currentLoss: %zu, repairedPacketCount: %zu, lossPercentage: %f, repairedPercentage: %f, score: %f",
 		  sentPackets,
 		  currentLoss,
 		  repairedPacketCount,
@@ -147,12 +139,12 @@ namespace RTC
 	{
 		MS_TRACE();
 
-		MS_DUMP("<RtpMonitor>");
-		MS_DUMP("  score                : %" PRIi8, GetScore());
-		MS_DUMP("  totalSourceLoss      : %" PRIi32, this->totalSourceLoss);
-		MS_DUMP("  totalReportedLoss    : %" PRIi32, this->totalReportedLoss);
-		MS_DUMP("  repairedPackets size : %zu", this->repairedPackets.size());
-		MS_DUMP("</RtpMonitor>");
+		MS_DEBUG_DEV("<RtpMonitor>");
+		MS_DEBUG_DEV("  score                : %" PRIi8, GetScore());
+		MS_DEBUG_DEV("  totalSourceLoss      : %" PRIi32, this->totalSourceLoss);
+		MS_DEBUG_DEV("  totalReportedLoss    : %" PRIi32, this->totalReportedLoss);
+		MS_DEBUG_DEV("  repairedPackets size : %zu", this->repairedPackets.size());
+		MS_DEBUG_DEV("</RtpMonitor>");
 	}
 
 	void RtpMonitor::AddScore(uint8_t score)
@@ -160,9 +152,7 @@ namespace RTC
 		MS_TRACE();
 
 		if (this->scores.size() == HistogramLength)
-		{
 			this->scores.erase(this->scores.begin());
-		}
 
 		this->scores.push_back(score);
 

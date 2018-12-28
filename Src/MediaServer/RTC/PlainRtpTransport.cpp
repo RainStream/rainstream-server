@@ -36,7 +36,17 @@ namespace RTC
 				MS_THROW_ERROR("invalid destination IP '%s'", options.remoteIP.c_str());
 
 			// This may throw.
-			SetRemoteParameters(options.remoteIP.c_str(), options.remotePort);
+			try
+			{
+				SetRemoteParameters(options.remoteIP, options.remotePort);
+			}
+			catch (const MediaSoupError& error)
+			{
+				// Destroy UdpSocket since ~PlainRtpTransport() will not be called.
+				this->udpSocket->Destroy();
+
+				throw;
+			}
 		}
 		// No remote IP address is provided.
 		else
@@ -156,8 +166,6 @@ namespace RTC
 			default:
 			{
 				MS_THROW_ERROR("invalid destination IP '%s'", ip.c_str());
-
-				break;
 			}
 		}
 
@@ -213,7 +221,7 @@ namespace RTC
 
 	bool PlainRtpTransport::IsConnected() const
 	{
-		return this->tuple ? true : false;
+		return this->tuple != nullptr;
 	}
 
 	void PlainRtpTransport::SendRtcpCompoundPacket(RTC::RTCP::CompoundPacket* packet)
@@ -272,16 +280,19 @@ namespace RTC
 		}
 
 		// Apply the Transport RTP header extension ids so the RTP listener can use them.
-
-		if (this->headerExtensionIds.rid != 0u)
-		{
-			packet->AddExtensionMapping(
-			  RtpHeaderExtensionUri::Type::RTP_STREAM_ID, this->headerExtensionIds.rid);
-		}
 		if (this->headerExtensionIds.absSendTime != 0u)
 		{
 			packet->AddExtensionMapping(
 			  RtpHeaderExtensionUri::Type::ABS_SEND_TIME, this->headerExtensionIds.absSendTime);
+		}
+		if (this->headerExtensionIds.mid != 0u)
+		{
+			packet->AddExtensionMapping(RtpHeaderExtensionUri::Type::MID, this->headerExtensionIds.mid);
+		}
+		if (this->headerExtensionIds.rid != 0u)
+		{
+			packet->AddExtensionMapping(
+			  RtpHeaderExtensionUri::Type::RTP_STREAM_ID, this->headerExtensionIds.rid);
 		}
 
 		// Get the associated Producer.

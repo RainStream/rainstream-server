@@ -58,13 +58,10 @@ namespace RTC
 		/* Pure virtual methods inherited from RTC::Transport::Listener. */
 	public:
 		void OnTransportClosed(RTC::Transport* transport) override;
-		void OnTransportReceiveRtcpFeedback(
-		  RTC::Transport* transport, RTC::Consumer* consumer, RTC::RTCP::FeedbackPsPacket* packet) override;
 
 		/* Pure virtual methods inherited from RTC::ProducerListener. */
 	public:
 		void OnProducerClosed(RTC::Producer* producer) override;
-		void OnProducerRtpParametersUpdated(RTC::Producer* producer) override;
 		void OnProducerPaused(RTC::Producer* producer) override;
 		void OnProducerResumed(RTC::Producer* producer) override;
 		void OnProducerRtpPacket(

@@ -111,17 +111,27 @@ void Worker::OnSignal(SignalsHandler* /*signalsHandler*/, int signum)
 	switch (signum)
 	{
 		case SIGINT:
+		{
 			MS_DEBUG_DEV("signal INT received, exiting");
+
 			Close();
+
 			break;
+		}
 
 		case SIGTERM:
+		{
 			MS_DEBUG_DEV("signal TERM received, exiting");
+
 			Close();
+
 			break;
+		}
 
 		default:
+		{
 			MS_WARN_DEV("received a signal (with signum %d) for which there is no handling code", signum);
+		}
 	}
 }
 
@@ -255,7 +265,6 @@ void Worker::OnChannelRequest(Channel::UnixStreamSocket* /*channel*/, Channel::R
 		case Channel::Request::MethodId::PRODUCER_CLOSE:
 		case Channel::Request::MethodId::PRODUCER_DUMP:
 		case Channel::Request::MethodId::PRODUCER_GET_STATS:
-		case Channel::Request::MethodId::PRODUCER_UPDATE_RTP_PARAMETERS:
 		case Channel::Request::MethodId::PRODUCER_PAUSE:
 		case Channel::Request::MethodId::PRODUCER_RESUME:
 		case Channel::Request::MethodId::PRODUCER_SET_PREFERRED_PROFILE:

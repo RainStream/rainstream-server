@@ -264,7 +264,27 @@ namespace RTC
 		}
 
 		// Otherwise lookup into the muxId table.
-		// TODO: Do it.
+		{
+			const uint8_t* muxIdPtr;
+			size_t muxIdLen;
+
+			if (packet->ReadMid(&muxIdPtr, &muxIdLen))
+			{
+				auto* charMuxIdPtr = reinterpret_cast<const char*>(muxIdPtr);
+				std::string muxId(charMuxIdPtr, muxIdLen);
+
+				auto it = this->muxIdTable.find(muxId);
+				if (it != this->muxIdTable.end())
+				{
+					auto producer = it->second;
+
+					// Fill the ssrc table.
+					this->ssrcTable[packet->GetSsrc()] = producer;
+
+					return producer;
+				}
+			}
+		}
 
 		// Otherwise lookup into the RID table.
 		{
@@ -273,7 +293,7 @@ namespace RTC
 
 			if (packet->ReadRid(&ridPtr, &ridLen))
 			{
-				auto* charRidPtr = const_cast<char*>(reinterpret_cast<const char*>(ridPtr));
+				auto* charRidPtr = reinterpret_cast<const char*>(ridPtr);
 				std::string rid(charRidPtr, ridLen);
 
 				auto it = this->ridTable.find(rid);
@@ -308,9 +328,9 @@ namespace RTC
 
 	void RtpListener::RollbackProducer(
 	  RTC::Producer* producer,
-	  std::vector<uint32_t>& previousSsrcs,
-	  std::string& previousMuxId,
-	  std::string& previousRid)
+	  const std::vector<uint32_t>& previousSsrcs,
+	  const std::string& previousMuxId,
+	  const std::string& previousRid)
 	{
 		MS_TRACE();
 
