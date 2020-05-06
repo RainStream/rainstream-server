@@ -3,11 +3,13 @@
 
 #include "common.hpp"
 #include "RTC/Parameters.hpp"
-#include <json/json.h>
+#include <json.hpp>
 #include <map>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+using json = nlohmann::json;
 
 namespace RTC
 {
@@ -23,11 +25,12 @@ namespace RTC
 
 	public:
 		static Kind GetKind(std::string& str);
-		static Json::StaticString& GetJsonString(Kind kind);
+		static Kind GetKind(std::string&& str);
+		static const std::string& GetString(Kind kind);
 
 	private:
 		static std::unordered_map<std::string, Kind> string2Kind;
-		static std::map<Kind, Json::StaticString> kind2Json;
+		static std::map<Kind, std::string> kind2String;
 	};
 
 	class RtpCodecMimeType
@@ -76,7 +79,7 @@ namespace RTC
 		static std::map<Subtype, std::string> subtype2String;
 
 	public:
-		RtpCodecMimeType(){};
+		RtpCodecMimeType() = default;
 
 		bool operator==(const RtpCodecMimeType& other) const
 		{
@@ -90,14 +93,11 @@ namespace RTC
 
 		void SetMimeType(const std::string& mimeType);
 
+		void UpdateMimeType();
+
 		const std::string& ToString() const
 		{
 			return this->mimeType;
-		}
-
-		const std::string& GetName() const
-		{
-			return this->name;
 		}
 
 		bool IsMediaCodec() const
@@ -121,7 +121,6 @@ namespace RTC
 
 	private:
 		std::string mimeType;
-		std::string name;
 	};
 
 	class RtpHeaderExtensionUri
@@ -129,13 +128,17 @@ namespace RTC
 	public:
 		enum class Type : uint8_t
 		{
-			UNKNOWN           = 0,
-			SSRC_AUDIO_LEVEL  = 1,
-			TO_OFFSET         = 2,
-			ABS_SEND_TIME     = 3,
-			VIDEO_ORIENTATION = 4,
-			MID               = 5,
-			RTP_STREAM_ID     = 6
+			UNKNOWN                = 0,
+			MID                    = 1,
+			RTP_STREAM_ID          = 2,
+			REPAIRED_RTP_STREAM_ID = 3,
+			ABS_SEND_TIME          = 4,
+			TRANSPORT_WIDE_CC_01   = 5,
+			FRAME_MARKING_07       = 6, // NOTE: Remove once RFC.
+			FRAME_MARKING          = 7,
+			SSRC_AUDIO_LEVEL       = 10,
+			VIDEO_ORIENTATION      = 11,
+			TOFFSET                = 12
 		};
 
 	private:
@@ -148,9 +151,10 @@ namespace RTC
 	class RtcpFeedback
 	{
 	public:
-		explicit RtcpFeedback(Json::Value& data);
+		RtcpFeedback() = default;
+		explicit RtcpFeedback(json& data);
 
-		Json::Value ToJson() const;
+		void FillJson(json& jsonObject) const;
 
 	public:
 		std::string type;
@@ -160,100 +164,71 @@ namespace RTC
 	class RtpCodecParameters
 	{
 	public:
-		RtpCodecParameters(){};
-		explicit RtpCodecParameters(Json::Value& data);
+		RtpCodecParameters() = default;
+		explicit RtpCodecParameters(json& data);
 
-		Json::Value ToJson() const;
+		void FillJson(json& jsonObject) const;
 
 	private:
 		void CheckCodec();
 
 	public:
 		RtpCodecMimeType mimeType;
-		uint8_t payloadType{ 0 };
-		uint32_t clockRate{ 0 };
-		uint32_t maxptime{ 0 };
-		uint32_t ptime{ 0 };
-		uint32_t channels{ 1 };
+		uint8_t payloadType{ 0u };
+		uint32_t clockRate{ 0u };
+		uint8_t channels{ 1u };
 		RTC::Parameters parameters;
 		std::vector<RtcpFeedback> rtcpFeedback;
-	};
-
-	class RtpFecParameters
-	{
-	public:
-		RtpFecParameters(){};
-		explicit RtpFecParameters(Json::Value& data);
-
-		Json::Value ToJson() const;
-
-	public:
-		std::string mechanism;
-		uint32_t ssrc{ 0 };
 	};
 
 	class RtpRtxParameters
 	{
 	public:
-		RtpRtxParameters(){};
-		explicit RtpRtxParameters(Json::Value& data);
+		RtpRtxParameters() = default;
+		explicit RtpRtxParameters(json& data);
 
-		Json::Value ToJson() const;
+		void FillJson(json& jsonObject) const;
 
 	public:
-		uint32_t ssrc{ 0 };
+		uint32_t ssrc{ 0u };
 	};
 
 	class RtpEncodingParameters
 	{
 	public:
-		enum class Profile : uint8_t
-		{
-			NONE = 0,
-			DEFAULT,
-			LOW,
-			MEDIUM,
-			HIGH
-		};
+		RtpEncodingParameters() = default;
+		explicit RtpEncodingParameters(json& data);
+
+		void FillJson(json& jsonObject) const;
 
 	public:
-		static std::map<std::string, Profile> string2Profile;
-		static std::map<Profile, std::string> profile2String;
-
-	public:
-		RtpEncodingParameters(){};
-		explicit RtpEncodingParameters(Json::Value& data);
-
-		Json::Value ToJson() const;
-
-	public:
-		uint32_t ssrc{ 0 };
-		uint8_t codecPayloadType{ 0 };
+		uint32_t ssrc{ 0u };
+		std::string rid;
+		uint8_t codecPayloadType{ 0u };
 		bool hasCodecPayloadType{ false };
-		RtpFecParameters fec;
-		bool hasFec{ false };
 		RtpRtxParameters rtx;
 		bool hasRtx{ false };
-		double resolutionScale{ 1.0 };
-		double framerateScale{ 1.0 };
-		uint32_t maxFramerate{ 0 };
-		bool active{ true };
-		std::string encodingId;
-		std::vector<std::string> dependencyEncodingIds;
-		Profile profile{ Profile::DEFAULT };
+		uint32_t maxBitrate{ 0u };
+		double maxFramerate{ 0 };
+		bool dtx{ false };
+		std::string scalabilityMode;
+		uint8_t spatialLayers{ 1u };
+		uint8_t temporalLayers{ 1u };
+		bool ksvc{ false };
 	};
 
 	class RtpHeaderExtensionParameters
 	{
 	public:
-		explicit RtpHeaderExtensionParameters(Json::Value& data);
+		RtpHeaderExtensionParameters() = default;
+		explicit RtpHeaderExtensionParameters(json& data);
 
-		Json::Value ToJson() const;
+		void FillJson(json& jsonObject) const;
 
 	public:
 		std::string uri;
 		RtpHeaderExtensionUri::Type type;
-		uint8_t id{ 0 };
+		uint8_t id{ 0u };
 		bool encrypt{ false };
 		RTC::Parameters parameters;
 	};
@@ -261,34 +236,54 @@ namespace RTC
 	class RtcpParameters
 	{
 	public:
-		RtcpParameters(){};
-		explicit RtcpParameters(Json::Value& data);
+		RtcpParameters() = default;
+		explicit RtcpParameters(json& data);
 
-		Json::Value ToJson() const;
+		void FillJson(json& jsonObject) const;
 
 	public:
 		std::string cname;
-		uint32_t ssrc{ 0 };
+		uint32_t ssrc{ 0u };
 		bool reducedSize{ true };
 	};
 
 	class RtpParameters
 	{
 	public:
-		RtpParameters(){};
-		explicit RtpParameters(Json::Value& data);
-		explicit RtpParameters(const RtpParameters* rtpParameters);
+		enum class Type : uint8_t
+		{
+			NONE = 0,
+			SIMPLE,
+			SIMULCAST,
+			SVC,
+			PIPE
+		};
 
-		Json::Value ToJson() const;
-		RTC::RtpCodecParameters& GetCodecForEncoding(RtpEncodingParameters& encoding);
-		RTC::RtpCodecParameters& GetRtxCodecForEncoding(RtpEncodingParameters& encoding);
+	public:
+		static Type GetType(const RtpParameters& rtpParameters);
+		static Type GetType(std::string& str);
+		static Type GetType(std::string&& str);
+		static std::string& GetTypeString(Type type);
+
+	private:
+		static std::unordered_map<std::string, Type> string2Type;
+		static std::map<Type, std::string> type2String;
+
+	public:
+		RtpParameters() = default;
+		explicit RtpParameters(json& data);
+
+		void FillJson(json& jsonObject) const;
+		const RTC::RtpCodecParameters* GetCodecForEncoding(RtpEncodingParameters& encoding) const;
+		const RTC::RtpCodecParameters* GetRtxCodecForEncoding(RtpEncodingParameters& encoding) const;
 
 	private:
 		void ValidateCodecs();
 		void ValidateEncodings();
+		void SetType();
 
 	public:
-		std::string muxId;
+		std::string mid;
 		std::vector<RtpCodecParameters> codecs;
 		std::vector<RtpEncodingParameters> encodings;
 		std::vector<RtpHeaderExtensionParameters> headerExtensions;

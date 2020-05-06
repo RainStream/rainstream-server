@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::FeedbackPsRpsi"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/FeedbackPsRpsi.hpp"
 #include "Logger.hpp"
@@ -76,11 +76,11 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<FeedbackPsRpsiItem>");
-			MS_DEBUG_DEV("  padding bits : %" PRIu8, this->header->paddingBits);
-			MS_DEBUG_DEV("  payload type : %" PRIu8, this->GetPayloadType());
-			MS_DEBUG_DEV("  length       : %zu", this->GetLength());
-			MS_DEBUG_DEV("</FeedbackPsRpsiItem>");
+			MS_DUMP("<FeedbackPsRpsiItem>");
+			MS_DUMP("  padding bits : %" PRIu8, this->header->paddingBits);
+			MS_DUMP("  payload type : %" PRIu8, this->GetPayloadType());
+			MS_DUMP("  length       : %zu", this->GetLength());
+			MS_DUMP("</FeedbackPsRpsiItem>");
 		}
 	} // namespace RTCP
 } // namespace RTC

@@ -16,27 +16,17 @@
     <Filter Include="RTC\RtpDictionaries">
       <UniqueIdentifier>{61363a9a-4b6e-4f5a-8728-ec606d5566b4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RTC\RemoteBitrateEstimator">
-      <UniqueIdentifier>{3439a4d5-3158-4460-8a58-7803660797c1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utils">
       <UniqueIdentifier>{325ff242-09ab-49a0-8e34-f4764d65ba52}</UniqueIdentifier>
     </Filter>
     <Filter Include="RTC\Codecs">
       <UniqueIdentifier>{04ca6355-fdab-480c-9eda-18cec718d730}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RTC\SctpDictionaries">
+      <UniqueIdentifier>{487ce191-df43-403c-918f-95af745bf70f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.hpp" />
-    <ClInclude Include="DepLibSRTP.hpp" />
-    <ClInclude Include="DepLibUV.hpp" />
-    <ClInclude Include="DepOpenSSL.hpp" />
-    <ClInclude Include="Logger.hpp" />
-    <ClInclude Include="LogLevel.hpp" />
-    <ClInclude Include="MediaSoupError.hpp" />
-    <ClInclude Include="Settings.hpp" />
-    <ClInclude Include="Utils.hpp" />
-    <ClInclude Include="Worker.hpp" />
     <ClInclude Include="Channel\Notifier.hpp">
       <Filter>Channel</Filter>
     </ClInclude>
@@ -148,44 +138,32 @@
     <ClInclude Include="RTC\WebRtcTransport.hpp">
       <Filter>RTC</Filter>
     </ClInclude>
-    <ClInclude Include="RTC\Codecs\Codecs.hpp">
+    <ClInclude Include="common.hpp" />
+    <ClInclude Include="DepLibSRTP.hpp" />
+    <ClInclude Include="DepLibUV.hpp" />
+    <ClInclude Include="DepLibWebRTC.hpp" />
+    <ClInclude Include="DepOpenSSL.hpp" />
+    <ClInclude Include="DepUsrSCTP.hpp" />
+    <ClInclude Include="Logger.hpp" />
+    <ClInclude Include="LogLevel.hpp" />
+    <ClInclude Include="MediaSoupErrors.hpp" />
+    <ClInclude Include="Settings.hpp" />
+    <ClInclude Include="Utils.hpp" />
+    <ClInclude Include="Worker.hpp" />
+    <ClInclude Include="RTC\Codecs\H264.hpp">
       <Filter>RTC\Codecs</Filter>
     </ClInclude>
     <ClInclude Include="RTC\Codecs\PayloadDescriptorHandler.hpp">
       <Filter>RTC\Codecs</Filter>
     </ClInclude>
+    <ClInclude Include="RTC\Codecs\Tools.hpp">
+      <Filter>RTC\Codecs</Filter>
+    </ClInclude>
     <ClInclude Include="RTC\Codecs\VP8.hpp">
       <Filter>RTC\Codecs</Filter>
     </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\AimdRateControl.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\BandwidthUsage.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\InterArrival.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\OveruseDetector.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\OveruseEstimator.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\RateControlInput.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\RateControlRegion.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimator.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimatorAbsSendTime.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClInclude>
-    <ClInclude Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimatorSingleStream.hpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
+    <ClInclude Include="RTC\Codecs\VP9.hpp">
+      <Filter>RTC\Codecs</Filter>
     </ClInclude>
     <ClInclude Include="RTC\RTCP\Bye.hpp">
       <Filter>RTC\RTCP</Filter>
@@ -247,6 +225,9 @@
     <ClInclude Include="RTC\RTCP\FeedbackRtpTmmb.hpp">
       <Filter>RTC\RTCP</Filter>
     </ClInclude>
+    <ClInclude Include="RTC\RTCP\FeedbackRtpTransport.hpp">
+      <Filter>RTC\RTCP</Filter>
+    </ClInclude>
     <ClInclude Include="RTC\RTCP\Packet.hpp">
       <Filter>RTC\RTCP</Filter>
     </ClInclude>
@@ -259,18 +240,17 @@
     <ClInclude Include="RTC\RTCP\SenderReport.hpp">
       <Filter>RTC\RTCP</Filter>
     </ClInclude>
-    <ClInclude Include="RTC\Codecs\H264.hpp">
-      <Filter>RTC\Codecs</Filter>
+    <ClInclude Include="RTC\RTCP\XR.hpp">
+      <Filter>RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="RTC\RTCP\XrDelaySinceLastRr.hpp">
+      <Filter>RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="RTC\RTCP\XrReceiverReferenceTime.hpp">
+      <Filter>RTC\RTCP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DepLibSRTP.cpp" />
-    <ClCompile Include="DepLibUV.cpp" />
-    <ClCompile Include="DepOpenSSL.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="Worker.cpp" />
     <ClCompile Include="Channel\Notifier.cpp">
       <Filter>Channel</Filter>
     </ClCompile>
@@ -370,29 +350,38 @@
     <ClCompile Include="RTC\WebRtcTransport.cpp">
       <Filter>RTC</Filter>
     </ClCompile>
-    <ClCompile Include="RTC\Codecs\Codecs.cpp">
+    <ClCompile Include="DepLibSRTP.cpp" />
+    <ClCompile Include="DepLibUV.cpp" />
+    <ClCompile Include="DepLibWebRTC.cpp" />
+    <ClCompile Include="DepOpenSSL.cpp" />
+    <ClCompile Include="DepUsrSCTP.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Worker.cpp" />
+    <ClCompile Include="Utils\Crypto.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\File.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\IP.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\String.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="RTC\Codecs\H264.cpp">
       <Filter>RTC\Codecs</Filter>
     </ClCompile>
     <ClCompile Include="RTC\Codecs\VP8.cpp">
       <Filter>RTC\Codecs</Filter>
     </ClCompile>
-    <ClCompile Include="RTC\RemoteBitrateEstimator\AimdRateControl.cpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
+    <ClCompile Include="RTC\Codecs\VP9.cpp">
+      <Filter>RTC\Codecs</Filter>
     </ClCompile>
-    <ClCompile Include="RTC\RemoteBitrateEstimator\InterArrival.cpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClCompile>
-    <ClCompile Include="RTC\RemoteBitrateEstimator\OveruseDetector.cpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClCompile>
-    <ClCompile Include="RTC\RemoteBitrateEstimator\OveruseEstimator.cpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClCompile>
-    <ClCompile Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimatorAbsSendTime.cpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
-    </ClCompile>
-    <ClCompile Include="RTC\RemoteBitrateEstimator\RemoteBitrateEstimatorSingleStream.cpp">
-      <Filter>RTC\RemoteBitrateEstimator</Filter>
+    <ClCompile Include="RTC\SctpDictionaries\SctpStreamParameters.cpp">
+      <Filter>RTC\SctpDictionaries</Filter>
     </ClCompile>
     <ClCompile Include="RTC\RTCP\Bye.cpp">
       <Filter>RTC\RTCP</Filter>
@@ -451,6 +440,9 @@
     <ClCompile Include="RTC\RTCP\FeedbackRtpTmmb.cpp">
       <Filter>RTC\RTCP</Filter>
     </ClCompile>
+    <ClCompile Include="RTC\RTCP\FeedbackRtpTransport.cpp">
+      <Filter>RTC\RTCP</Filter>
+    </ClCompile>
     <ClCompile Include="RTC\RTCP\Packet.cpp">
       <Filter>RTC\RTCP</Filter>
     </ClCompile>
@@ -461,6 +453,15 @@
       <Filter>RTC\RTCP</Filter>
     </ClCompile>
     <ClCompile Include="RTC\RTCP\SenderReport.cpp">
+      <Filter>RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="RTC\RTCP\XR.cpp">
+      <Filter>RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="RTC\RTCP\XrDelaySinceLastRr.cpp">
+      <Filter>RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="RTC\RTCP\XrReceiverReferenceTime.cpp">
       <Filter>RTC\RTCP</Filter>
     </ClCompile>
     <ClCompile Include="RTC\RtpDictionaries\Media.cpp">
@@ -484,9 +485,6 @@
     <ClCompile Include="RTC\RtpDictionaries\RtpEncodingParameters.cpp">
       <Filter>RTC\RtpDictionaries</Filter>
     </ClCompile>
-    <ClCompile Include="RTC\RtpDictionaries\RtpFecParameters.cpp">
-      <Filter>RTC\RtpDictionaries</Filter>
-    </ClCompile>
     <ClCompile Include="RTC\RtpDictionaries\RtpHeaderExtensionParameters.cpp">
       <Filter>RTC\RtpDictionaries</Filter>
     </ClCompile>
@@ -499,25 +497,5 @@
     <ClCompile Include="RTC\RtpDictionaries\RtpRtxParameters.cpp">
       <Filter>RTC\RtpDictionaries</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\Crypto.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\File.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\IP.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="RTC\Codecs\H264.cpp">
-      <Filter>RTC\Codecs</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Utils\grammar.rl">
-      <Filter>Utils</Filter>
-    </None>
-    <None Include="Utils\IP.rl">
-      <Filter>Utils</Filter>
-    </None>
   </ItemGroup>
 </Project>

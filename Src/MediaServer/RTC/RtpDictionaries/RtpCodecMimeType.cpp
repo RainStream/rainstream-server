@@ -1,8 +1,8 @@
 #define MS_CLASS "RTC::RtpCodecMimeType"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "Logger.hpp"
-#include "MediaSoupError.hpp"
+#include "MediaSoupErrors.hpp"
 #include "Utils.hpp"
 #include "RTC/RtpDictionaries.hpp"
 
@@ -85,7 +85,7 @@ namespace RTC
 
 		if (slashPos == std::string::npos || slashPos == 0 || slashPos == mimeType.length() - 1)
 		{
-			MS_THROW_ERROR("wrong codec MIME");
+			MS_THROW_TYPE_ERROR("wrong codec MIME");
 		}
 
 		std::string type    = mimeType.substr(0, slashPos);
@@ -99,24 +99,36 @@ namespace RTC
 		{
 			auto it = RtpCodecMimeType::string2Type.find(type);
 
-			if (it != RtpCodecMimeType::string2Type.end())
-				this->type = it->second;
-			else
-				MS_THROW_ERROR("unknown codec MIME type '%s'", type.c_str());
+			if (it == RtpCodecMimeType::string2Type.end())
+				MS_THROW_TYPE_ERROR("unknown codec MIME type '%s'", type.c_str());
+
+			this->type = it->second;
 		}
 
 		// Set MIME subtype.
 		{
 			auto it = RtpCodecMimeType::string2Subtype.find(subtype);
 
-			if (it != RtpCodecMimeType::string2Subtype.end())
-				this->subtype = it->second;
-			else
-				MS_THROW_ERROR("unknown codec MIME subtype '%s'", subtype.c_str());
+			if (it == RtpCodecMimeType::string2Subtype.end())
+				MS_THROW_TYPE_ERROR("unknown codec MIME subtype '%s'", subtype.c_str());
+
+			this->subtype = it->second;
 		}
 
-		// Set mimeType and name.
-		this->mimeType = type2String[this->type] + "/" + subtype2String[this->subtype];
-		this->name     = subtype;
+		// Set mimeType.
+		this->mimeType = RtpCodecMimeType::type2String[this->type] + "/" +
+		                 RtpCodecMimeType::subtype2String[this->subtype];
+	}
+
+	void RtpCodecMimeType::UpdateMimeType()
+	{
+		MS_TRACE();
+
+		MS_ASSERT(this->type != Type::UNSET, "type unset");
+		MS_ASSERT(this->subtype != Subtype::UNSET, "subtype unset");
+
+		// Set mimeType.
+		this->mimeType = RtpCodecMimeType::type2String[this->type] + "/" +
+		                 RtpCodecMimeType::subtype2String[this->subtype];
 	}
 } // namespace RTC

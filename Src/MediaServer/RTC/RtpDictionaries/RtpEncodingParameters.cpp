@@ -1,198 +1,159 @@
 #define MS_CLASS "RTC::RtpEncodingParameters"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "Logger.hpp"
-#include "MediaSoupError.hpp"
+#include "MediaSoupErrors.hpp"
+#include "Utils.hpp"
 #include "RTC/RtpDictionaries.hpp"
+#include <exception>
+#include <regex>
 
 namespace RTC
 {
-	/* Class static data. */
-
-	// clang-format off
-	std::map<std::string, RTC::RtpEncodingParameters::Profile> RTC::RtpEncodingParameters::string2Profile =
-		{
-			{ "none",    RTC::RtpEncodingParameters::Profile::NONE    },
-			{ "default", RTC::RtpEncodingParameters::Profile::DEFAULT },
-			{ "low",     RTC::RtpEncodingParameters::Profile::LOW     },
-			{ "medium",  RTC::RtpEncodingParameters::Profile::MEDIUM  },
-			{ "high",    RTC::RtpEncodingParameters::Profile::HIGH    }
-		};
-
-	std::map<RTC::RtpEncodingParameters::Profile, std::string> RTC::RtpEncodingParameters::profile2String =
-		{
-			{ RTC::RtpEncodingParameters::Profile::NONE,    "none"    },
-			{ RTC::RtpEncodingParameters::Profile::DEFAULT, "default" },
-			{ RTC::RtpEncodingParameters::Profile::LOW,     "low"     },
-			{ RTC::RtpEncodingParameters::Profile::MEDIUM,  "medium"  },
-			{ RTC::RtpEncodingParameters::Profile::HIGH,    "high"    }
-		};
-	// clang-format on
-
 	/* Instance methods. */
 
-	RtpEncodingParameters::RtpEncodingParameters(Json::Value& data)
+	RtpEncodingParameters::RtpEncodingParameters(json& data)
 	{
 		MS_TRACE();
 
-		static const Json::StaticString JsonStringSsrc{ "ssrc" };
-		static const Json::StaticString JsonStringCodecPayloadType{ "codecPayloadType" };
-		static const Json::StaticString JsonStringFec{ "fec" };
-		static const Json::StaticString JsonStringRtx{ "rtx" };
-		static const Json::StaticString JsonStringResolutionScale{ "resolutionScale" };
-		static const Json::StaticString JsonStringFramerateScale{ "framerateScale" };
-		static const Json::StaticString JsonStringMaxFramerate{ "maxFramerate" };
-		static const Json::StaticString JsonStringActive{ "active" };
-		static const Json::StaticString JsonStringEncodingId{ "encodingId" };
-		static const Json::StaticString JsonStringDependencyEncodingIds{ "dependencyEncodingIds" };
-		static const Json::StaticString JsonStringProfile{ "profile" };
+		if (!data.is_object())
+			MS_THROW_TYPE_ERROR("data is not an object");
 
-		if (!data.isObject())
-			MS_THROW_ERROR("RtpEncodingParameters is not an object");
+		auto jsonSsrcIt             = data.find("ssrc");
+		auto jsonRidIt              = data.find("rid");
+		auto jsonCodecPayloadTypeIt = data.find("codecPayloadType");
+		auto jsonRtxIt              = data.find("rtx");
+		auto jsonMaxBitrateIt       = data.find("maxBitrate");
+		auto jsonMaxFramerateIt     = data.find("maxFramerate");
+		auto jsonDtxIt              = data.find("dtx");
+		auto jsonScalabilityModeIt  = data.find("scalabilityMode");
+
+		// ssrc is optional.
+		// clang-format off
+		if (
+			jsonSsrcIt != data.end() &&
+			Utils::Json::IsPositiveInteger(*jsonSsrcIt)
+		)
+		// clang-format on
+		{
+			this->ssrc = jsonSsrcIt->get<uint32_t>();
+		}
+
+		// rid is optional.
+		if (jsonRidIt != data.end() && jsonRidIt->is_string())
+			this->rid = jsonRidIt->get<std::string>();
 
 		// codecPayloadType is optional.
-		if (data[JsonStringCodecPayloadType].isUInt())
+		// clang-format off
+		if (
+			jsonCodecPayloadTypeIt != data.end() &&
+			Utils::Json::IsPositiveInteger(*jsonCodecPayloadTypeIt)
+		)
+		// clang-format on
 		{
-			this->codecPayloadType    = static_cast<uint8_t>(data[JsonStringCodecPayloadType].asUInt());
+			this->codecPayloadType    = jsonCodecPayloadTypeIt->get<uint8_t>();
 			this->hasCodecPayloadType = true;
 		}
 
-		// ssrc is optional.
-		if (data[JsonStringSsrc].isUInt())
-			this->ssrc = uint32_t{ data[JsonStringSsrc].asUInt() };
-
-		// fec is optional.
-		if (data[JsonStringFec].isObject())
-		{
-			this->fec    = RtpFecParameters(data[JsonStringFec]);
-			this->hasFec = true;
-		}
-
 		// rtx is optional.
-		if (data[JsonStringRtx].isObject())
+		// This may throw.
+		if (jsonRtxIt != data.end() && jsonRtxIt->is_object())
 		{
-			this->rtx    = RtpRtxParameters(data[JsonStringRtx]);
+			this->rtx    = RtpRtxParameters(*jsonRtxIt);
 			this->hasRtx = true;
 		}
 
-		// resolutionScale is optional.
-		if (data[JsonStringResolutionScale].isDouble())
-			this->resolutionScale = data[JsonStringResolutionScale].asDouble();
-
-		// framerateScale is optional.
-		if (data[JsonStringFramerateScale].isDouble())
-			this->framerateScale = data[JsonStringFramerateScale].asDouble();
-
-		// maxFramerate is optional.
-		if (data[JsonStringMaxFramerate].isUInt())
-			this->maxFramerate = uint32_t{ data[JsonStringMaxFramerate].asUInt() };
-
-		// active is optional.
-		if (data[JsonStringActive].isBool())
-			this->active = data[JsonStringActive].asBool();
-
-		// encodingId is optional.
-		if (data[JsonStringEncodingId].isString())
-			this->encodingId = data[JsonStringEncodingId].asString();
-
-		// dependencyEncodingIds is optional.
-		if (data[JsonStringDependencyEncodingIds].isArray())
+		// maxBitrate is optional.
+		// clang-format off
+		if (
+			jsonMaxBitrateIt != data.end() &&
+			Utils::Json::IsPositiveInteger(*jsonMaxBitrateIt)
+		)
+		// clang-format on
 		{
-			auto& jsonArray = data[JsonStringDependencyEncodingIds];
-
-			for (auto& entry : jsonArray)
-			{
-				// Append to the dependencyEncodingIds vector.
-				if (entry.isString())
-					this->dependencyEncodingIds.push_back(entry.asString());
-			}
+			this->maxBitrate = jsonMaxBitrateIt->get<uint32_t>();
 		}
 
-		// profile is optional.
-		if (data[JsonStringProfile].isString())
+		// maxFramerate is optional.
+		if (jsonMaxFramerateIt != data.end() && jsonMaxFramerateIt->is_number())
+			this->maxFramerate = jsonMaxFramerateIt->get<double>();
+
+		// dtx is optional.
+		if (jsonDtxIt != data.end() && jsonDtxIt->is_boolean())
+			this->dtx = jsonDtxIt->get<bool>();
+
+		// scalabilityMode is optional.
+		if (jsonScalabilityModeIt != data.end() && jsonScalabilityModeIt->is_string())
 		{
-			std::string profileStr = data[JsonStringProfile].asString();
+			std::string scalabilityMode = jsonScalabilityModeIt->get<std::string>();
 
-			if (string2Profile.find(profileStr) == string2Profile.end())
-				MS_THROW_ERROR("unknown profile");
+			static const std::regex ScalabilityModeRegex(
+			  "^[LS]([1-9]\\d{0,1})T([1-9]\\d{0,1})(_KEY)?.*", std::regex_constants::ECMAScript);
 
-			this->profile = string2Profile[profileStr];
+			std::smatch match;
 
-			if (
-			  this->profile == RTC::RtpEncodingParameters::Profile::NONE ||
-			  this->profile == RTC::RtpEncodingParameters::Profile::DEFAULT)
+			std::regex_match(scalabilityMode, match, ScalabilityModeRegex);
+
+			if (!match.empty())
 			{
-				MS_THROW_ERROR("invalid profile");
+				this->scalabilityMode = scalabilityMode;
+
+				try
+				{
+					this->spatialLayers  = std::stoul(match[1].str());
+					this->temporalLayers = std::stoul(match[2].str());
+					this->ksvc           = match.size() >= 4 && match[3].str() == "_KEY";
+				}
+				catch (std::exception& e)
+				{
+					MS_THROW_TYPE_ERROR("invalid scalabilityMode: %s", e.what());
+				}
 			}
 		}
 	}
 
-	Json::Value RtpEncodingParameters::ToJson() const
+	void RtpEncodingParameters::FillJson(json& jsonObject) const
 	{
 		MS_TRACE();
 
-		static const Json::StaticString JsonStringSsrc{ "ssrc" };
-		static const Json::StaticString JsonStringCodecPayloadType{ "codecPayloadType" };
-		static const Json::StaticString JsonStringFec{ "fec" };
-		static const Json::StaticString JsonStringRtx{ "rtx" };
-		static const Json::StaticString JsonStringResolutionScale{ "resolutionScale" };
-		static const Json::StaticString JsonStringFramerateScale{ "framerateScale" };
-		static const Json::StaticString JsonStringMaxFramerate{ "maxFramerate" };
-		static const Json::StaticString JsonStringActive{ "active" };
-		static const Json::StaticString JsonStringEncodingId{ "encodingId" };
-		static const Json::StaticString JsonStringDependencyEncodingIds{ "dependencyEncodingIds" };
-		static const Json::StaticString JsonStringProfile{ "profile" };
-
-		Json::Value json(Json::objectValue);
-
-		// Add codecPayloadType.
-		if (this->hasCodecPayloadType)
-			json[JsonStringCodecPayloadType] = Json::UInt{ this->codecPayloadType };
+		// Force it to be an object even if no key/values are added below.
+		jsonObject = json::object();
 
 		// Add ssrc.
 		if (this->ssrc != 0u)
-			json[JsonStringSsrc] = Json::UInt{ this->ssrc };
+			jsonObject["ssrc"] = this->ssrc;
 
-		// Add fec
-		if (this->hasFec)
-			json[JsonStringFec] = this->fec.ToJson();
+		// Add rid.
+		if (!this->rid.empty())
+			jsonObject["rid"] = this->rid;
 
-		// Add rtx
+		// Add codecPayloadType.
+		if (this->hasCodecPayloadType)
+			jsonObject["codecPayloadType"] = this->codecPayloadType;
+
+		// Add rtx.
 		if (this->hasRtx)
-			json[JsonStringRtx] = this->rtx.ToJson();
+			this->rtx.FillJson(jsonObject["rtx"]);
 
-		// Add resolutionScale (if different than the default value).
-		if (this->resolutionScale != 1.0)
-			json[JsonStringResolutionScale] = this->resolutionScale;
-
-		// Add framerateScale (if different than the default value).
-		if (this->framerateScale != 1.0)
-			json[JsonStringFramerateScale] = this->framerateScale;
+		// Add maxBitrate.
+		if (this->maxBitrate != 0u)
+			jsonObject["maxBitrate"] = this->maxBitrate;
 
 		// Add maxFramerate.
-		if (this->maxFramerate != 0u)
-			json[JsonStringMaxFramerate] = Json::UInt{ this->maxFramerate };
+		if (this->maxFramerate > 0)
+			jsonObject["maxFramerate"] = this->maxFramerate;
 
-		// Add active.
-		json[JsonStringActive] = this->active;
+		// Add dtx.
+		if (this->dtx)
+			jsonObject["dtx"] = this->dtx;
 
-		// Add encodingId.
-		if (!this->encodingId.empty())
-			json[JsonStringEncodingId] = this->encodingId;
-
-		// Add `dependencyEncodingIds` (if any).
-		if (!this->dependencyEncodingIds.empty())
+		// Add scalabilityMode.
+		if (!this->scalabilityMode.empty())
 		{
-			json[JsonStringDependencyEncodingIds] = Json::arrayValue;
-
-			for (auto& entry : this->dependencyEncodingIds)
-			{
-				json[JsonStringDependencyEncodingIds].append(entry);
-			}
+			jsonObject["scalabilityMode"] = this->scalabilityMode;
+			jsonObject["spatialLayers"]   = this->spatialLayers;
+			jsonObject["temporalLayers"]  = this->temporalLayers;
+			jsonObject["ksvc"]            = this->ksvc;
 		}
-
-		json[JsonStringProfile] = RtpEncodingParameters::profile2String[this->profile];
-
-		return json;
 	}
 } // namespace RTC

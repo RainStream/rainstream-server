@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::SeqManager"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/SeqManager.hpp"
 #include "Logger.hpp"
@@ -39,15 +39,10 @@ namespace RTC
 	}
 
 	template<typename T>
-	SeqManager<T>::SeqManager()
-	{
-	}
-
-	template<typename T>
 	void SeqManager<T>::Sync(T input)
 	{
 		// Update base.
-		this->base = this->maxOutput - input + 1;
+		this->base = this->maxOutput - input;
 
 		// Update maxInput.
 		this->maxInput = input;
@@ -61,7 +56,9 @@ namespace RTC
 	{
 		// Mark as dropped if 'input' is higher than anyone already processed.
 		if (SeqManager<T>::IsSeqHigherThan(input, this->maxInput))
+		{
 			this->dropped.insert(input);
+		}
 	}
 
 	template<typename T>
@@ -79,15 +76,19 @@ namespace RTC
 		if (!this->dropped.empty())
 		{
 			// Delete dropped inputs older than input - MaxValue/2.
-			auto it = this->dropped.lower_bound(input - MaxValue / 2);
+			size_t droppedSize = this->dropped.size();
+			auto it            = this->dropped.lower_bound(input - MaxValue / 2);
+
 			this->dropped.erase(this->dropped.begin(), it);
+			this->base -= (droppedSize - this->dropped.size());
+			base = this->base;
 
 			// Check whether this input was dropped.
 			it = this->dropped.find(input);
 
 			if (it != this->dropped.end())
 			{
-				MS_WARN_TAG(rtp, "trying to send a dropped input");
+				MS_DEBUG_DEV("trying to send a dropped input");
 
 				return false;
 			}

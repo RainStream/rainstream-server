@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::FeedbackPsPsLei"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/FeedbackPsLei.hpp"
 #include "Logger.hpp"
@@ -33,9 +33,9 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<FeedbackPsLeiItem>");
-			MS_DEBUG_DEV("  ssrc : %" PRIu32, this->GetSsrc());
-			MS_DEBUG_DEV("</FeedbackPsLeiItem>");
+			MS_DUMP("<FeedbackPsLeiItem>");
+			MS_DUMP("  ssrc : %" PRIu32, this->GetSsrc());
+			MS_DUMP("</FeedbackPsLeiItem>");
 		}
 	} // namespace RTCP
 } // namespace RTC

@@ -1,12 +1,11 @@
 #define MS_CLASS "RTC::RtpPacket"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RtpPacket.hpp"
 #include "Logger.hpp"
-#include <cstring>  // std::memcpy(), std::memmove()
+#include <cstring>  // std::memcpy(), std::memmove(), std::memset()
 #include <iterator> // std::ostream_iterator
 #include <sstream>  // std::ostringstream
-#include <vector>
 
 namespace RTC
 {
@@ -28,7 +27,7 @@ namespace RTC
 		ptr += sizeof(Header);
 
 		// Check CSRC list.
-		size_t csrcListSize{ 0 };
+		size_t csrcListSize{ 0u };
 
 		if (header->csrcCount != 0u)
 		{
@@ -45,24 +44,24 @@ namespace RTC
 		}
 
 		// Check header extension.
-		ExtensionHeader* extensionHeader{ nullptr };
-		size_t extensionValueSize{ 0 };
+		HeaderExtension* headerExtension{ nullptr };
+		size_t extensionValueSize{ 0u };
 
-		if (header->extension != 0u)
+		if (header->extension == 1u)
 		{
-			// The extension header is at least 4 bytes.
+			// The header extension is at least 4 bytes.
 			if (len < static_cast<size_t>(ptr - data) + 4)
 			{
-				MS_WARN_TAG(rtp, "not enough space for the announced extension header, packet discarded");
+				MS_WARN_TAG(rtp, "not enough space for the announced header extension, packet discarded");
 
 				return nullptr;
 			}
 
-			extensionHeader = reinterpret_cast<ExtensionHeader*>(ptr);
+			headerExtension = reinterpret_cast<HeaderExtension*>(ptr);
 
 			// The header extension contains a 16-bit length field that counts the number of
-			// 32-bit words in the extension, excluding the four-octet extension header.
-			extensionValueSize = static_cast<size_t>(ntohs(extensionHeader->length) * 4);
+			// 32-bit words in the extension, excluding the four-octet header extension.
+			extensionValueSize = static_cast<size_t>(ntohs(headerExtension->length) * 4);
 
 			// Packet size must be >= header size + CSRC list + header extension size.
 			if (len < (ptr - data) + 4 + extensionValueSize)
@@ -114,68 +113,12 @@ namespace RTC
 		}
 
 		MS_ASSERT(
-		  len == sizeof(Header) + csrcListSize + (extensionHeader ? 4 + extensionValueSize : 0) +
+		  len == sizeof(Header) + csrcListSize + (headerExtension ? 4 + extensionValueSize : 0) +
 		           payloadLength + size_t{ payloadPadding },
 		  "packet's computed size does not match received size");
 
-		auto packet = new RtpPacket(header, extensionHeader, payload, payloadLength, payloadPadding, len);
-
-		// Parse RFC 5285 extension header.
-		packet->ParseExtensions();
-
-		return packet;
-	}
-
-	RtpPacket* RtpPacket::CreateProbationPacket(const uint8_t* buffer, uint8_t payloadPadding)
-	{
-		MS_TRACE();
-
-		MS_ASSERT(buffer != nullptr, "no buffer given");
-		MS_ASSERT(payloadPadding > 0, "padding cannot be 0");
-
-		auto* ptr = const_cast<uint8_t*>(buffer);
-
-		// Set the header.
-		auto* header = reinterpret_cast<Header*>(ptr);
-
-		// Fill some header fields.
-		header->csrcCount      = 0;
-		header->extension      = 0;
-		header->padding        = 1;
-		header->version        = 2;
-		header->payloadType    = 0; // To be set by the caller.
-		header->marker         = 0;
-		header->sequenceNumber = 0; // To be set by the caller.
-		header->timestamp      = 0; // To be set by the caller.
-		header->ssrc           = 0; // To be set by the caller.
-
-		ptr += sizeof(Header);
-
-		// Header extension.
-		ExtensionHeader* extensionHeader{ nullptr };
-
-		// Set payload.
-		uint8_t* payload     = ptr;
-		size_t payloadLength = 0;
-
-		// Add padding bytes.
-		for (uint8_t i = 0; i < payloadPadding - 1; ++i)
-		{
-			Utils::Byte::Set1Byte(ptr++, 0, 0);
-		}
-
-		// Add a final byte with the padding count (including itself).
-		Utils::Byte::Set1Byte(ptr++, 0, payloadPadding);
-
-		// Set the packet size.
-		auto size = static_cast<size_t>(ptr - buffer);
-
-		MS_ASSERT(
-		  size == sizeof(Header) + payloadLength + size_t{ payloadPadding },
-		  "packet's computed size does not match received size");
-
-		auto packet =
-		  new RtpPacket(header, extensionHeader, payload, payloadLength, payloadPadding, size);
+		auto* packet =
+		  new RtpPacket(header, headerExtension, payload, payloadLength, payloadPadding, len);
 
 		return packet;
 	}
@@ -184,18 +127,21 @@ namespace RTC
 
 	RtpPacket::RtpPacket(
 	  Header* header,
-	  ExtensionHeader* extensionHeader,
+	  HeaderExtension* headerExtension,
 	  const uint8_t* payload,
 	  size_t payloadLength,
 	  uint8_t payloadPadding,
 	  size_t size)
-	  : header(header), extensionHeader(extensionHeader), payload(const_cast<uint8_t*>(payload)),
+	  : header(header), headerExtension(headerExtension), payload(const_cast<uint8_t*>(payload)),
 	    payloadLength(payloadLength), payloadPadding(payloadPadding), size(size)
 	{
 		MS_TRACE();
 
 		if (this->header->csrcCount != 0u)
 			this->csrcList = reinterpret_cast<uint8_t*>(header) + sizeof(Header);
+
+		// Parse RFC 5285 header extension.
+		ParseExtensions();
 	}
 
 	RtpPacket::~RtpPacket()
@@ -207,21 +153,22 @@ namespace RTC
 	{
 		MS_TRACE();
 
-		MS_DEBUG_DEV("<RtpPacket>");
-		MS_DEBUG_DEV("  padding           : %s", this->header->padding ? "true" : "false");
-		MS_DEBUG_DEV("  extension header  : %s", HasExtensionHeader() ? "true" : "false");
-		if (HasExtensionHeader())
+		MS_DUMP("<RtpPacket>");
+		MS_DUMP("  padding           : %s", this->header->padding ? "true" : "false");
+		if (HasHeaderExtension())
 		{
-			MS_DEBUG_DEV("    id      : %" PRIu16, GetExtensionHeaderId());
-			MS_DEBUG_DEV("    length  : %zu bytes", GetExtensionHeaderLength());
+			MS_DUMP(
+			  "  header extension  : id:%" PRIu16 ", length:%zu",
+			  GetHeaderExtensionId(),
+			  GetHeaderExtensionLength());
 		}
 		if (HasOneByteExtensions())
 		{
-			MS_DEBUG_DEV("  RFC5285 ext style : One-Byte Header");
+			MS_DUMP("  RFC5285 ext style : One-Byte Header");
 		}
 		if (HasTwoBytesExtensions())
 		{
-			MS_DEBUG_DEV("  RFC5285 ext style : Two-Bytes Header");
+			MS_DUMP("  RFC5285 ext style : Two-Bytes Header");
 		}
 		if (HasOneByteExtensions() || HasTwoBytesExtensions())
 		{
@@ -230,13 +177,21 @@ namespace RTC
 
 			if (HasOneByteExtensions())
 			{
-				for (const auto& pair : this->oneByteExtensions)
-					extIds.push_back(std::to_string(pair.first));
+				extIds.reserve(this->mapOneByteExtensions.size());
+
+				for (auto& kv : this->mapOneByteExtensions)
+				{
+					extIds.push_back(std::to_string(kv.first));
+				}
 			}
 			else
 			{
-				for (const auto& pair : this->twoBytesExtensions)
-					extIds.push_back(std::to_string(pair.first));
+				extIds.reserve(this->mapTwoBytesExtensions.size());
+
+				for (auto& kv : this->mapTwoBytesExtensions)
+				{
+					extIds.push_back(std::to_string(kv.first));
+				}
 			}
 
 			if (!extIds.empty())
@@ -245,60 +200,436 @@ namespace RTC
 				  extIds.begin(), extIds.end() - 1, std::ostream_iterator<std::string>(extIdsStream, ","));
 				extIdsStream << extIds.back();
 
-				MS_DEBUG_DEV("  RFC5285 ext ids   : %s", extIdsStream.str().c_str());
+				MS_DUMP("  RFC5285 ext ids   : %s", extIdsStream.str().c_str());
 			}
 		}
-		MS_DEBUG_DEV("  csrc count        : %" PRIu8, this->header->csrcCount);
-		MS_DEBUG_DEV("  marker            : %s", HasMarker() ? "true" : "false");
-		MS_DEBUG_DEV("  payload type      : %" PRIu8, GetPayloadType());
-		MS_DEBUG_DEV("  sequence number   : %" PRIu16, GetSequenceNumber());
-		MS_DEBUG_DEV("  timestamp         : %" PRIu32, GetTimestamp());
-		MS_DEBUG_DEV("  ssrc              : %" PRIu32, GetSsrc());
-		MS_DEBUG_DEV("  payload size      : %zu bytes", GetPayloadLength());
+		if (this->midExtensionId != 0u)
+		{
+			std::string mid;
+
+			if (ReadMid(mid))
+			{
+				MS_DUMP(
+				  "  mid               : extId:%" PRIu8 ", value:'%s'", this->midExtensionId, mid.c_str());
+			}
+		}
+		if (this->ridExtensionId != 0u)
+		{
+			std::string rid;
+
+			if (ReadRid(rid))
+			{
+				MS_DUMP(
+				  "  rid               : extId:%" PRIu8 ", value:'%s'", this->ridExtensionId, rid.c_str());
+			}
+		}
+		if (this->rridExtensionId != 0u)
+		{
+			std::string rid;
+
+			if (ReadRid(rid))
+			{
+				MS_DUMP(
+				  "  rrid              : extId:%" PRIu8 ", value:'%s'", this->rridExtensionId, rid.c_str());
+			}
+		}
+		if (this->absSendTimeExtensionId != 0u)
+		{
+			MS_DUMP("  absSendTime       : extId:%" PRIu8, this->absSendTimeExtensionId);
+		}
+		if (this->transportWideCc01ExtensionId != 0u)
+		{
+			uint16_t wideSeqNumber;
+
+			if (ReadTransportWideCc01(wideSeqNumber))
+			{
+				MS_DUMP(
+				  "  transportWideCc01 : extId:%" PRIu8 ", value:%" PRIu16,
+				  this->transportWideCc01ExtensionId,
+				  wideSeqNumber);
+			}
+		}
+		// Remove once it becomes RFC.
+		if (this->frameMarking07ExtensionId != 0u)
+		{
+			MS_DUMP("  frameMarking07    : extId:%" PRIu8, this->frameMarking07ExtensionId);
+		}
+		if (this->frameMarkingExtensionId != 0u)
+		{
+			MS_DUMP("  frameMarking      : extId:%" PRIu8, this->frameMarkingExtensionId);
+		}
+		if (this->ssrcAudioLevelExtensionId != 0u)
+		{
+			uint8_t volume;
+			bool voice;
+
+			if (ReadSsrcAudioLevel(volume, voice))
+			{
+				MS_DUMP(
+				  "  ssrcAudioLevel    : extId:%" PRIu8 ", volume:%" PRIu8 ", voice:%s",
+				  this->ssrcAudioLevelExtensionId,
+				  volume,
+				  voice ? "true" : "false");
+			}
+		}
+		if (this->videoOrientationExtensionId != 0u)
+		{
+			bool camera;
+			bool flip;
+			uint16_t rotation;
+
+			if (ReadVideoOrientation(camera, flip, rotation))
+			{
+				MS_DUMP(
+				  "  videoOrientation  : extId:%" PRIu8 ", camera:%s, flip:%s, rotation:%" PRIu16,
+				  this->videoOrientationExtensionId,
+				  camera ? "true" : "false",
+				  flip ? "true" : "false",
+				  rotation);
+			}
+		}
+		MS_DUMP("  csrc count        : %" PRIu8, this->header->csrcCount);
+		MS_DUMP("  marker            : %s", HasMarker() ? "true" : "false");
+		MS_DUMP("  payload type      : %" PRIu8, GetPayloadType());
+		MS_DUMP("  sequence number   : %" PRIu16, GetSequenceNumber());
+		MS_DUMP("  timestamp         : %" PRIu32, GetTimestamp());
+		MS_DUMP("  ssrc              : %" PRIu32, GetSsrc());
+		MS_DUMP("  payload size      : %zu bytes", GetPayloadLength());
 		if (this->header->padding != 0u)
 		{
-			MS_DEBUG_DEV("  padding size      : %" PRIu8 " bytes", this->payloadPadding);
+			MS_DUMP("  padding size      : %" PRIu8 " bytes", this->payloadPadding);
 		}
-		MS_DEBUG_DEV("  packet size       : %zu bytes", GetSize());
-		MS_DEBUG_DEV("</RtpPacket>");
+		MS_DUMP("  packet size       : %zu bytes", GetSize());
+		MS_DUMP("  spatial layer     : %" PRIu8, GetSpatialLayer());
+		MS_DUMP("  temporal layer    : %" PRIu8, GetTemporalLayer());
+		MS_DUMP("</RtpPacket>");
 	}
 
-	void RtpPacket::MangleExtensionHeaderIds(const std::map<uint8_t, uint8_t>& idMapping)
+	void RtpPacket::FillJson(json& jsonObject) const
 	{
 		MS_TRACE();
 
-		if (HasOneByteExtensions())
-		{
-			for (const auto& pair : this->oneByteExtensions)
-			{
-				auto& id               = pair.first;
-				auto& oneByteExtension = pair.second;
+		// Add payloadType.
+		jsonObject["payloadType"] = GetPayloadType();
 
-				if (idMapping.find(id) != idMapping.end())
-				{
-					oneByteExtension->id = idMapping.at(id);
-				}
+		// Add sequenceNumber.
+		jsonObject["sequenceNumber"] = GetSequenceNumber();
+
+		// Add timestamp.
+		jsonObject["timestamp"] = GetTimestamp();
+
+		// Add marker.
+		jsonObject["marker"] = HasMarker() ? "true" : "false";
+
+		// Add ssrc.
+		jsonObject["ssrc"] = GetSsrc();
+
+		// Add isKeyFrame.
+		jsonObject["isKeyFrame"] = IsKeyFrame();
+
+		// Add size.
+		jsonObject["size"] = GetSize();
+
+		// Add payloadSize.
+		jsonObject["payloadSize"] = GetPayloadLength();
+
+		// Add spatialLayer.
+		jsonObject["spatialLayer"] = GetSpatialLayer();
+
+		// Add temporalLayer.
+		jsonObject["temporalLayer"] = GetTemporalLayer();
+
+		// Add mid.
+		std::string mid;
+
+		if (this->midExtensionId != 0u && ReadMid(mid))
+			jsonObject["mid"] = mid;
+
+		// Add rid.
+		std::string rid;
+
+		if (this->ridExtensionId != 0u && ReadRid(rid))
+			jsonObject["rid"] = rid;
+
+		// Add rrid.
+		std::string rrid;
+
+		if (this->rridExtensionId != 0u && ReadRid(rrid))
+			jsonObject["rrid"] = rrid;
+
+		// Add wideSequenceNumber.
+		uint16_t wideSequenceNumber;
+
+		if (this->transportWideCc01ExtensionId != 0u && ReadTransportWideCc01(wideSequenceNumber))
+			jsonObject["wideSequenceNumber"] = wideSequenceNumber;
+	}
+
+	void RtpPacket::SetExtensions(uint8_t type, const std::vector<GenericExtension>& extensions)
+	{
+		MS_ASSERT(type == 1u || type == 2u, "type must be 1 or 2");
+
+		// Reset extension ids.
+		this->midExtensionId               = 0u;
+		this->ridExtensionId               = 0u;
+		this->rridExtensionId              = 0u;
+		this->absSendTimeExtensionId       = 0u;
+		this->transportWideCc01ExtensionId = 0u;
+		this->frameMarking07ExtensionId    = 0u;
+		this->frameMarkingExtensionId      = 0u;
+		this->ssrcAudioLevelExtensionId    = 0u;
+		this->videoOrientationExtensionId  = 0u;
+
+		// Clear the One-Byte and Two-Bytes extension elements maps.
+		this->mapOneByteExtensions.clear();
+		this->mapTwoBytesExtensions.clear();
+
+		// If One-Byte is requested and the packet already has One-Byte extensions,
+		// keep the header extension id.
+		if (type == 1u && HasOneByteExtensions())
+		{
+			// Nothing to do.
+		}
+		// If Two-Bytes is requested and the packet already has Two-Bytes extensions,
+		// keep the header extension id.
+		else if (type == 2u && HasTwoBytesExtensions())
+		{
+			// Nothing to do.
+		}
+		// Otherwise, if there is header extension of non matching type, modify its id.
+		else if (this->headerExtension)
+		{
+			if (type == 1u)
+				this->headerExtension->id = uint16_t{ htons(0xBEDE) };
+			else if (type == 2u)
+				this->headerExtension->id = uint16_t{ htons(0b0001000000000000) };
+		}
+
+		// Calculate total size required for all extensions (with padding if needed).
+		size_t extensionsTotalSize{ 0 };
+
+		for (auto& extension : extensions)
+		{
+			if (type == 1u)
+			{
+				if (extension.id == 0 || extension.id > 14 || extension.len == 0 || extension.len > 16)
+					continue;
+
+				extensionsTotalSize += (1 + extension.len);
 			}
+			else if (type == 2u)
+			{
+				if (extension.id == 0)
+					continue;
+
+				extensionsTotalSize += (2 + extension.len);
+			}
+		}
+
+		auto paddedExtensionsTotalSize =
+		  static_cast<size_t>(Utils::Byte::PadTo4Bytes(static_cast<uint16_t>(extensionsTotalSize)));
+		size_t padding = paddedExtensionsTotalSize - extensionsTotalSize;
+
+		extensionsTotalSize = paddedExtensionsTotalSize;
+
+		// Calculate the number of bytes to shift (may be negative if the packet did
+		// already have header extension).
+		int16_t shift{ 0 };
+
+		if (this->headerExtension)
+		{
+			shift = static_cast<int16_t>(extensionsTotalSize - GetHeaderExtensionLength());
+		}
+		else
+		{
+			shift = 4 + static_cast<int16_t>(extensionsTotalSize);
+		}
+
+		if (this->headerExtension && shift != 0)
+		{
+			// Shift the payload.
+			std::memmove(this->payload + shift, this->payload, this->payloadLength + this->payloadPadding);
+			this->payload += shift;
+
+			// Update packet total size.
+			this->size += shift;
+
+			// Update the header extension length.
+			this->headerExtension->length = htons(extensionsTotalSize / 4);
+		}
+		else if (!this->headerExtension)
+		{
+			// Set the header extension bit.
+			this->header->extension = 1u;
+
+			// Set the header extension pointing to the current payload.
+			this->headerExtension = reinterpret_cast<HeaderExtension*>(this->payload);
+
+			// Shift the payload.
+			std::memmove(this->payload + shift, this->payload, this->payloadLength + this->payloadPadding);
+			this->payload += shift;
+
+			// Update packet total size.
+			this->size += shift;
+
+			// Set the header extension id.
+			if (type == 1u)
+				this->headerExtension->id = uint16_t{ htons(0xBEDE) };
+			else if (type == 2u)
+				this->headerExtension->id = uint16_t{ htons(0b0001000000000000) };
+
+			// Set the header extension length.
+			this->headerExtension->length = htons(extensionsTotalSize / 4);
+		}
+
+		// Write the new extensions into the header extension value.
+		uint8_t* ptr = this->headerExtension->value;
+
+		for (auto& extension : extensions)
+		{
+			if (type == 1u)
+			{
+				if (extension.id == 0 || extension.id > 14 || extension.len == 0 || extension.len > 16)
+					continue;
+
+				// Store the One-Byte extension element in the map.
+				this->mapOneByteExtensions[extension.id] = reinterpret_cast<OneByteExtension*>(ptr);
+
+				*ptr = (extension.id << 4) | ((extension.len - 1) & 0x0F);
+				++ptr;
+				std::memmove(ptr, extension.value, extension.len);
+				ptr += extension.len;
+			}
+			else if (type == 2u)
+			{
+				if (extension.id == 0)
+					continue;
+
+				// Store the Two-Bytes extension element in the map.
+				this->mapTwoBytesExtensions[extension.id] = reinterpret_cast<TwoBytesExtension*>(ptr);
+
+				*ptr = extension.id;
+				++ptr;
+				*ptr = extension.len;
+				++ptr;
+				std::memmove(ptr, extension.value, extension.len);
+				ptr += extension.len;
+			}
+		}
+
+		for (size_t i = 0; i < padding; ++i)
+		{
+			*ptr = 0u;
+			++ptr;
+		}
+
+		MS_ASSERT(ptr == this->payload, "wrong ptr calculation");
+	}
+
+	bool RtpPacket::UpdateMid(const std::string& mid)
+	{
+		MS_TRACE();
+
+		uint8_t extenLen;
+		uint8_t* extenValue = GetExtension(this->midExtensionId, extenLen);
+
+		if (!extenValue)
+			return false;
+
+		// Here we assume that there is MidMaxLength available bytes, even if now
+		// they are padding bytes.
+		if (mid.size() > RTC::MidMaxLength)
+		{
+			MS_ERROR(
+			  "no enough space for MID value [MidMaxLength:%" PRIu8 ", mid:'%s']",
+			  RTC::MidMaxLength,
+			  mid.c_str());
+
+			return false;
+		}
+
+		std::memcpy(extenValue, mid.c_str(), mid.size());
+
+		SetExtensionLength(this->midExtensionId, mid.size());
+
+		return true;
+	}
+
+	/**
+	 * The caller is responsible of not setting a length higher than the
+	 * available one (taking into account existing padding bytes).
+	 */
+	bool RtpPacket::SetExtensionLength(uint8_t id, uint8_t len)
+	{
+		MS_TRACE();
+
+		if (len == 0u)
+		{
+			MS_ERROR("cannot set extension length to 0");
+
+			return false;
+		}
+
+		if (id == 0u)
+		{
+			return false;
+		}
+		else if (HasOneByteExtensions())
+		{
+			auto it = this->mapOneByteExtensions.find(id);
+
+			if (it == this->mapOneByteExtensions.end())
+				return false;
+
+			auto* extension = it->second;
+			auto currentLen = extension->len + 1;
+
+			// Fill with 0's if new length is minor.
+			if (len < currentLen)
+				std::memset(extension->value + len, 0, currentLen - len);
+
+			// In One-Byte extensions value length 0 means 1.
+			extension->len = len - 1;
+
+			return true;
 		}
 		else if (HasTwoBytesExtensions())
 		{
-			for (const auto& pair : this->twoBytesExtensions)
-			{
-				auto& id                = pair.first;
-				auto& twoBytesExtension = pair.second;
+			auto it = this->mapTwoBytesExtensions.find(id);
 
-				if (idMapping.find(id) != idMapping.end())
-				{
-					twoBytesExtension->id = idMapping.at(id);
-				}
-			}
+			if (it == this->mapTwoBytesExtensions.end())
+				return false;
+
+			auto* extension = it->second;
+			auto currentLen = extension->len;
+
+			// Fill with 0's if new length is minor.
+			if (len < currentLen)
+				std::memset(extension->value + len, 0, currentLen - len);
+
+			extension->len = len;
+
+			return true;
 		}
+		else
+		{
+			return false;
+		}
+	}
 
-		// Clear the URI to id map.
-		this->extensionMap.clear();
+	void RtpPacket::SetPayloadLength(size_t length)
+	{
+		MS_TRACE();
 
-		// Parse extensions again.
-		ParseExtensions();
+		// Pad desired length to 4 bytes.
+		length = static_cast<size_t>(Utils::Byte::PadTo4Bytes(static_cast<uint16_t>(length)));
+
+		this->size -= this->payloadLength;
+		this->size -= size_t{ this->payloadPadding };
+		this->payloadLength  = length;
+		this->payloadPadding = 0u;
+		this->size += length;
+
+		SetPayloadPaddingFlag(false);
 	}
 
 	RtpPacket* RtpPacket::Clone(const uint8_t* buffer) const
@@ -309,61 +640,49 @@ namespace RTC
 		size_t numBytes{ 0 };
 
 		// Copy the minimum header.
-
 		numBytes = sizeof(Header);
 		std::memcpy(ptr, GetData(), numBytes);
 
 		// Set header pointer.
 		auto* newHeader = reinterpret_cast<Header*>(ptr);
 
-		// Update pointer.
 		ptr += numBytes;
 
 		// Copy CSRC list.
-
 		if (this->csrcList != nullptr)
 		{
 			numBytes = this->header->csrcCount * sizeof(this->header->ssrc);
 			std::memcpy(ptr, this->csrcList, numBytes);
 
-			// Update pointer.
 			ptr += numBytes;
 		}
 
-		// Copy extension header.
+		// Copy header extension.
+		HeaderExtension* newHeaderExtension{ nullptr };
 
-		ExtensionHeader* newExtensionHeader{ nullptr };
-
-		if (this->extensionHeader != nullptr)
+		if (this->headerExtension != nullptr)
 		{
-			numBytes = 4 + GetExtensionHeaderLength();
-			std::memcpy(ptr, this->extensionHeader, numBytes);
+			numBytes = 4 + GetHeaderExtensionLength();
+			std::memcpy(ptr, this->headerExtension, numBytes);
 
 			// Set the header extension pointer.
-			newExtensionHeader = reinterpret_cast<ExtensionHeader*>(ptr);
+			newHeaderExtension = reinterpret_cast<HeaderExtension*>(ptr);
 
-			// Update pointer.
 			ptr += numBytes;
 		}
 
 		// Copy payload.
+		uint8_t* newPayload{ ptr };
 
-		uint8_t* newPayload{ nullptr };
-
-		if (this->payload != nullptr)
+		if (this->payloadLength != 0u)
 		{
-			numBytes = GetPayloadLength();
+			numBytes = this->payloadLength;
 			std::memcpy(ptr, this->payload, numBytes);
 
-			// Set the payload pointer.
-			newPayload = ptr;
-
-			// Update pointer.
 			ptr += numBytes;
 		}
 
 		// Copy payload padding.
-
 		if (this->payloadPadding != 0u)
 		{
 			*(ptr + static_cast<size_t>(this->payloadPadding) - 1) = this->payloadPadding;
@@ -373,14 +692,19 @@ namespace RTC
 		MS_ASSERT(static_cast<size_t>(ptr - buffer) == this->size, "ptr - buffer == this->size");
 
 		// Create the new RtpPacket instance and return it.
-		auto packet = new RtpPacket(
-		  newHeader, newExtensionHeader, newPayload, this->payloadLength, this->payloadPadding, this->size);
+		auto* packet = new RtpPacket(
+		  newHeader, newHeaderExtension, newPayload, this->payloadLength, this->payloadPadding, this->size);
 
-		// Parse RFC 5285 extension header.
-		packet->ParseExtensions();
-
-		// Clone the extension map.
-		packet->extensionMap = this->extensionMap;
+		// Keep already set extension ids.
+		packet->midExtensionId               = this->midExtensionId;
+		packet->ridExtensionId               = this->ridExtensionId;
+		packet->rridExtensionId              = this->rridExtensionId;
+		packet->absSendTimeExtensionId       = this->absSendTimeExtensionId;
+		packet->transportWideCc01ExtensionId = this->transportWideCc01ExtensionId;
+		packet->frameMarking07ExtensionId    = this->frameMarking07ExtensionId; // Remove once RFC.
+		packet->frameMarkingExtensionId      = this->frameMarkingExtensionId;
+		packet->ssrcAudioLevelExtensionId    = this->ssrcAudioLevelExtensionId;
+		packet->videoOrientationExtensionId  = this->videoOrientationExtensionId;
 
 		return packet;
 	}
@@ -405,10 +729,10 @@ namespace RTC
 		SetSequenceNumber(seq);
 
 		// Fix the payload length.
-		this->payloadLength += 2;
+		this->payloadLength += 2u;
 
 		// Fix the packet size.
-		this->size += 2;
+		this->size += 2u;
 
 		// Remove padding if present.
 		if (this->payloadPadding != 0u)
@@ -426,7 +750,7 @@ namespace RTC
 
 		// Chrome sends some RTX packets with no payload when the stream is started.
 		// Just ignore them.
-		if (this->payloadLength < 2)
+		if (this->payloadLength < 2u)
 			return false;
 
 		// Rewrite the payload type.
@@ -442,10 +766,10 @@ namespace RTC
 		std::memmove(this->payload, this->payload + 2, this->payloadLength - 2);
 
 		// Fix the payload length.
-		this->payloadLength -= 2;
+		this->payloadLength -= 2u;
 
 		// Fix the packet size.
-		this->size -= 2;
+		this->size -= 2u;
 
 		// Remove padding if present.
 		if (this->payloadPadding != 0u)
@@ -459,14 +783,26 @@ namespace RTC
 		return true;
 	}
 
-	bool RtpPacket::EncodePayload(RTC::Codecs::EncodingContext* context)
+	bool RtpPacket::ProcessPayload(RTC::Codecs::EncodingContext* context)
 	{
 		MS_TRACE();
 
 		if (!this->payloadDescriptorHandler)
 			return true;
 
-		return this->payloadDescriptorHandler->Encode(context, this->payload);
+		bool marker{ false };
+
+		if (this->payloadDescriptorHandler->Process(context, this->payload, marker))
+		{
+			if (marker)
+				SetMarker(true);
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	void RtpPacket::RestorePayload()
@@ -489,9 +825,7 @@ namespace RTC
 		MS_ASSERT(payloadOffset < this->payloadLength, "payload offset bigger than payload size");
 
 		if (!expand)
-		{
-			MS_ASSERT(shift <= (this->payloadLength - payloadOffset), "shift to big");
-		}
+			MS_ASSERT(shift <= (this->payloadLength - payloadOffset), "shift too big");
 
 		uint8_t* payloadOffsetPtr = this->payload + payloadOffset;
 		size_t shiftedLen;
@@ -520,72 +854,101 @@ namespace RTC
 	{
 		MS_TRACE();
 
-		// Parse One-Byte extension header.
+		// Parse One-Byte header extension.
 		if (HasOneByteExtensions())
 		{
 			// Clear the One-Byte extension elements map.
-			this->oneByteExtensions.clear();
+			this->mapOneByteExtensions.clear();
 
-			uint8_t* extensionStart = reinterpret_cast<uint8_t*>(this->extensionHeader) + 4;
-			uint8_t* extensionEnd   = extensionStart + GetExtensionHeaderLength();
+			uint8_t* extensionStart = reinterpret_cast<uint8_t*>(this->headerExtension) + 4;
+			uint8_t* extensionEnd   = extensionStart + GetHeaderExtensionLength();
 			uint8_t* ptr            = extensionStart;
 
+			// One-Byte extensions cannot have length 0.
 			while (ptr < extensionEnd)
 			{
 				uint8_t id = (*ptr & 0xF0) >> 4;
 				size_t len = static_cast<size_t>(*ptr & 0x0F) + 1;
 
-				if (ptr + 1 + len > extensionEnd)
-				{
-					MS_WARN_TAG(
-					  rtp, "not enough space for the announced One-Byte header extension element value");
-
+				// id=15 in One-Byte extensions means "stop parsing here".
+				if (id == 15u)
 					break;
-				}
 
-				// Store the One-Byte extension element in a map. Ignore if 0.
+				// Valid extension id.
 				if (id != 0u)
-					this->oneByteExtensions[id] = reinterpret_cast<OneByteExtension*>(ptr);
+				{
+					if (ptr + 1 + len > extensionEnd)
+					{
+						MS_WARN_TAG(
+						  rtp, "not enough space for the announced One-Byte header extension element value");
 
-				ptr += 1 + len;
+						break;
+					}
+
+					// Store the One-Byte extension element in the map.
+					this->mapOneByteExtensions[id] = reinterpret_cast<OneByteExtension*>(ptr);
+
+					ptr += (1 + len);
+				}
+				// id=0 means alignment.
+				else
+				{
+					++ptr;
+				}
 
 				// Counting padding bytes.
 				while ((ptr < extensionEnd) && (*ptr == 0))
+				{
 					++ptr;
+				}
 			}
 		}
-		// Parse Two-Bytes extension header.
+		// Parse Two-Bytes header extension.
 		else if (HasTwoBytesExtensions())
 		{
 			// Clear the Two-Bytes extension elements map.
-			this->twoBytesExtensions.clear();
+			this->mapTwoBytesExtensions.clear();
 
-			uint8_t* extensionStart = reinterpret_cast<uint8_t*>(this->extensionHeader) + 4;
-			uint8_t* extensionEnd   = extensionStart + GetExtensionHeaderLength();
+			uint8_t* extensionStart = reinterpret_cast<uint8_t*>(this->headerExtension) + 4;
+			uint8_t* extensionEnd   = extensionStart + GetHeaderExtensionLength();
 			uint8_t* ptr            = extensionStart;
 
+			// ptr points to the ID field (1 byte).
+			// ptr+1 points to the length field (1 byte, can have value 0).
+
+			// Two-Byte extensions can have length 0.
 			while (ptr + 1 < extensionEnd)
 			{
-				uint8_t id = *ptr;
-				size_t len = *(++ptr);
+				uint8_t id  = *ptr;
+				uint8_t len = *(ptr + 1);
 
-				if (ptr + len > extensionEnd)
-				{
-					MS_WARN_TAG(
-					  rtp, "not enough space for the announced Two-Bytes header extension element value");
-
-					break;
-				}
-
-				// Store the Two-Bytes extension element in a map. Ignore if 0.
+				// Valid extension id.
 				if (id != 0u)
-					this->twoBytesExtensions[id] = reinterpret_cast<TwoBytesExtension*>(ptr);
+				{
+					if (ptr + 2 + len > extensionEnd)
+					{
+						MS_WARN_TAG(
+						  rtp, "not enough space for the announced Two-Bytes header extension element value");
 
-				ptr += len;
+						break;
+					}
+
+					// Store the Two-Bytes extension element in the map.
+					this->mapTwoBytesExtensions[id] = reinterpret_cast<TwoBytesExtension*>(ptr);
+
+					ptr += (2 + len);
+				}
+				// id=0 means alignment.
+				else
+				{
+					++ptr;
+				}
 
 				// Counting padding bytes.
 				while ((ptr < extensionEnd) && (*ptr == 0))
+				{
 					++ptr;
+				}
 			}
 		}
 	}

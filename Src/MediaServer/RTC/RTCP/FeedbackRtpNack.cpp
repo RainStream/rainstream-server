@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::FeedbackRtpNack"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/FeedbackRtpNack.hpp"
 #include "Logger.hpp"
@@ -36,10 +36,10 @@ namespace RTC
 
 			std::bitset<16> nackBitset(this->GetLostPacketBitmask());
 
-			MS_DEBUG_DEV("<FeedbackRtpNackItem>");
-			MS_DEBUG_DEV("  pid : %" PRIu16, this->GetPacketId());
-			MS_DEBUG_DEV("  bpl : %s", nackBitset.to_string().c_str());
-			MS_DEBUG_DEV("</FeedbackRtpNackItem>");
+			MS_DUMP("<FeedbackRtpNackItem>");
+			MS_DUMP("  pid : %" PRIu16, this->GetPacketId());
+			MS_DUMP("  bpl : %s", nackBitset.to_string().c_str());
+			MS_DUMP("</FeedbackRtpNackItem>");
 		}
 	} // namespace RTCP
 } // namespace RTC

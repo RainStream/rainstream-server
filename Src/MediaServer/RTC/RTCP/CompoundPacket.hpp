@@ -5,6 +5,7 @@
 #include "RTC/RTCP/ReceiverReport.hpp"
 #include "RTC/RTCP/Sdes.hpp"
 #include "RTC/RTCP/SenderReport.hpp"
+#include "RTC/RTCP/XrReceiverReferenceTime.hpp"
 #include <vector>
 
 namespace RTC
@@ -17,15 +18,38 @@ namespace RTC
 			CompoundPacket() = default;
 
 		public:
-			const uint8_t* GetData() const;
-			size_t GetSize() const;
-			size_t GetSenderReportCount() const;
-			size_t GetReceiverReportCount() const;
+			const uint8_t* GetData() const
+			{
+				return this->header;
+			}
+			size_t GetSize() const
+			{
+				return this->size;
+			}
+			size_t GetSenderReportCount() const
+			{
+				return this->senderReportPacket.GetCount();
+			}
+			size_t GetReceiverReportCount() const
+			{
+				return this->receiverReportPacket.GetCount();
+			}
 			void Dump();
 			void AddSenderReport(SenderReport* report);
 			void AddReceiverReport(ReceiverReport* report);
 			void AddSdesChunk(SdesChunk* chunk);
-			bool HasSenderReport();
+			void AddReceiverReferenceTime(ReceiverReferenceTime* report);
+			bool HasSenderReport()
+			{
+				return this->senderReportPacket.Begin() != this->senderReportPacket.End();
+			}
+			bool HasReceiverReferenceTime()
+			{
+				return std::any_of(
+				  this->xrPacket.Begin(), this->xrPacket.End(), [](const ExtendedReportBlock* report) {
+					  return report->GetType() == ExtendedReportBlock::Type::RRT;
+				  });
+			}
 			void Serialize(uint8_t* data);
 
 		private:
@@ -34,44 +58,8 @@ namespace RTC
 			SenderReportPacket senderReportPacket;
 			ReceiverReportPacket receiverReportPacket;
 			SdesPacket sdesPacket;
+			ExtendedReportPacket xrPacket;
 		};
-
-		/* Inline methods. */
-
-		inline const uint8_t* CompoundPacket::GetData() const
-		{
-			return this->header;
-		}
-
-		inline size_t CompoundPacket::GetSize() const
-		{
-			return this->size;
-		}
-
-		inline size_t CompoundPacket::GetSenderReportCount() const
-		{
-			return this->senderReportPacket.GetCount();
-		}
-
-		inline size_t CompoundPacket::GetReceiverReportCount() const
-		{
-			return this->receiverReportPacket.GetCount();
-		}
-
-		inline void CompoundPacket::AddReceiverReport(ReceiverReport* report)
-		{
-			this->receiverReportPacket.AddReport(report);
-		}
-
-		inline void CompoundPacket::AddSdesChunk(SdesChunk* chunk)
-		{
-			this->sdesPacket.AddChunk(chunk);
-		}
-
-		inline bool CompoundPacket::HasSenderReport()
-		{
-			return this->senderReportPacket.Begin() != this->senderReportPacket.End();
-		}
 	} // namespace RTCP
 } // namespace RTC
 

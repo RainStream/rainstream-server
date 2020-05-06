@@ -3,7 +3,7 @@
 
 #include "common.hpp"
 #include "Channel/UnixStreamSocket.hpp"
-#include <json/json.h>
+#include <json.hpp>
 #include <string>
 
 namespace Channel
@@ -11,22 +11,13 @@ namespace Channel
 	class Notifier
 	{
 	public:
-		explicit Notifier(Channel::UnixStreamSocket* channel);
-
-		void Emit(uint32_t targetId, const std::string& event);
-		void Emit(uint32_t targetId, const std::string& event, Json::Value& data);
-		void EmitWithBinary(
-		  uint32_t targetId, const std::string& event, const uint8_t* binaryData, size_t binaryLen);
-		void EmitWithBinary(
-		  uint32_t targetId,
-		  const std::string& event,
-		  const uint8_t* binaryData,
-		  size_t binaryLen,
-		  Json::Value& data);
+		static void ClassInit(Channel::UnixStreamSocket* channel);
+		static void Emit(const std::string& targetId, const char* event);
+		static void Emit(const std::string& targetId, const char* event, json& data);
 
 	public:
 		// Passed by argument.
-		Channel::UnixStreamSocket* channel{ nullptr };
+		static Channel::UnixStreamSocket* channel;
 	};
 } // namespace Channel
 

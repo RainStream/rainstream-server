@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::FeedbackPsFir"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/FeedbackPsFir.hpp"
 #include "Logger.hpp"
@@ -41,10 +41,10 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<FeedbackPsFirItem>");
-			MS_DEBUG_DEV("  ssrc            : %" PRIu32, this->GetSsrc());
-			MS_DEBUG_DEV("  sequence number : %" PRIu8, this->GetSequenceNumber());
-			MS_DEBUG_DEV("</FeedbackPsFirItem>");
+			MS_DUMP("<FeedbackPsFirItem>");
+			MS_DUMP("  ssrc            : %" PRIu32, this->GetSsrc());
+			MS_DUMP("  sequence number : %" PRIu8, this->GetSequenceNumber());
+			MS_DUMP("</FeedbackPsFirItem>");
 		}
 	} // namespace RTCP
 } // namespace RTC

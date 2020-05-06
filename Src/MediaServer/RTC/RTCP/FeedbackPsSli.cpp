@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::FeedbackPsSli"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/FeedbackPsSli.hpp"
 #include "Logger.hpp"
@@ -39,11 +39,11 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<FeedbackPsSliItem>");
-			MS_DEBUG_DEV("  first      : %" PRIu16, this->first);
-			MS_DEBUG_DEV("  number     : %" PRIu16, this->number);
-			MS_DEBUG_DEV("  picture id : %" PRIu8, this->pictureId);
-			MS_DEBUG_DEV("</FeedbackPsSliItem>");
+			MS_DUMP("<FeedbackPsSliItem>");
+			MS_DUMP("  first      : %" PRIu16, this->first);
+			MS_DUMP("  number     : %" PRIu16, this->number);
+			MS_DUMP("  picture id : %" PRIu8, this->pictureId);
+			MS_DUMP("</FeedbackPsSliItem>");
 		}
 	} // namespace RTCP
 } // namespace RTC

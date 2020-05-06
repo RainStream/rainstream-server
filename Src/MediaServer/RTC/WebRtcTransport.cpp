@@ -1,32 +1,22 @@
 #define MS_CLASS "RTC::WebRtcTransport"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/WebRtcTransport.hpp"
-#include "DepLibUV.hpp"
 #include "Logger.hpp"
-#include "MediaSoupError.hpp"
-#include "Settings.hpp"
+#include "MediaSoupErrors.hpp"
 #include "Utils.hpp"
-#include "RTC/Consumer.hpp"
-#include "RTC/Producer.hpp"
-#include "RTC/RTCP/FeedbackPsRemb.hpp"
-#include "RTC/RtpDictionaries.hpp"
-#include <cmath>    // std::pow()
-#include <iterator> // std::ostream_iterator
-#include <sstream>  // std::ostringstream
+#include "Channel/Notifier.hpp"
+#include <cmath> // std::pow()
 
 namespace RTC
 {
 	/* Static. */
 
-	static constexpr uint16_t IceCandidateDefaultLocalPriority{ 20000 };
-	static constexpr uint16_t IceCandidateLocalPriorityPreferFamilyIncrement{ 10000 };
-	static constexpr uint16_t IceCandidateLocalPriorityPreferProtocolIncrement{ 5000 };
+	static constexpr uint16_t IceCandidateDefaultLocalPriority{ 10000 };
 	// We just provide "host" candidates so type preference is fixed.
 	static constexpr uint16_t IceTypePreference{ 64 };
 	// We do not support non rtcp-mux so component is always 1.
 	static constexpr uint16_t IceComponent{ 1 };
-	static constexpr uint64_t EffectiveMaxBitrateCheckInterval{ 2000 }; // In ms.
 
 	static inline uint32_t generateIceCandidatePriority(uint16_t localPreference)
 	{
@@ -38,539 +28,695 @@ namespace RTC
 
 	/* Instance methods. */
 
-	WebRtcTransport::WebRtcTransport(
-	  RTC::Transport::Listener* listener,
-	  Channel::Notifier* notifier,
-	  uint32_t transportId,
-	  Options& options)
-	  : RTC::Transport::Transport(listener, notifier, transportId)
+	WebRtcTransport::WebRtcTransport(const std::string& id, RTC::Transport::Listener* listener, json& data)
+	  : RTC::Transport::Transport(id, listener, data)
 	{
 		MS_TRACE();
 
-		bool tryIPv4udp{ options.udp };
-		bool tryIPv6udp{ options.udp };
-		bool tryIPv4tcp{ options.tcp };
-		bool tryIPv6tcp{ options.tcp };
+		bool enableUdp{ true };
+		auto jsonEnableUdpIt = data.find("enableUdp");
 
-		// Create a ICE server.
-		this->iceServer = new RTC::IceServer(
-		  this, Utils::Crypto::GetRandomString(16), Utils::Crypto::GetRandomString(32));
-
-		// Open a IPv4 UDP socket.
-		if (tryIPv4udp && Settings::configuration.hasIPv4)
+		if (jsonEnableUdpIt != data.end())
 		{
-			uint16_t localPreference = IceCandidateDefaultLocalPriority;
+			if (!jsonEnableUdpIt->is_boolean())
+				MS_THROW_TYPE_ERROR("wrong enableUdp (not a boolean)");
 
-			if (options.preferIPv4)
-				localPreference += IceCandidateLocalPriorityPreferFamilyIncrement;
-			if (options.preferUdp)
-				localPreference += IceCandidateLocalPriorityPreferProtocolIncrement;
+			enableUdp = jsonEnableUdpIt->get<bool>();
+		}
 
-			uint32_t priority = generateIceCandidatePriority(localPreference);
+		bool enableTcp{ false };
+		auto jsonEnableTcpIt = data.find("enableTcp");
 
-			try
+		if (jsonEnableTcpIt != data.end())
+		{
+			if (!jsonEnableTcpIt->is_boolean())
+				MS_THROW_TYPE_ERROR("wrong enableTcp (not a boolean)");
+
+			enableTcp = jsonEnableTcpIt->get<bool>();
+		}
+
+		bool preferUdp{ false };
+		auto jsonPreferUdpIt = data.find("preferUdp");
+
+		if (jsonPreferUdpIt != data.end())
+		{
+			if (!jsonPreferUdpIt->is_boolean())
+				MS_THROW_TYPE_ERROR("wrong preferUdp (not a boolean)");
+
+			preferUdp = jsonPreferUdpIt->get<bool>();
+		}
+
+		bool preferTcp{ false };
+		auto jsonPreferTcpIt = data.find("preferTcp");
+
+		if (jsonPreferTcpIt != data.end())
+		{
+			if (!jsonPreferTcpIt->is_boolean())
+				MS_THROW_TYPE_ERROR("wrong preferTcp (not a boolean)");
+
+			preferTcp = jsonPreferTcpIt->get<bool>();
+		}
+
+		auto jsonListenIpsIt = data.find("listenIps");
+
+		if (jsonListenIpsIt == data.end())
+			MS_THROW_TYPE_ERROR("missing listenIps");
+		else if (!jsonListenIpsIt->is_array())
+			MS_THROW_TYPE_ERROR("wrong listenIps (not an array)");
+		else if (jsonListenIpsIt->empty())
+			MS_THROW_TYPE_ERROR("wrong listenIps (empty array)");
+		else if (jsonListenIpsIt->size() > 8)
+			MS_THROW_TYPE_ERROR("wrong listenIps (too many IPs)");
+
+		std::vector<ListenIp> listenIps(jsonListenIpsIt->size());
+
+		for (size_t i{ 0 }; i < jsonListenIpsIt->size(); ++i)
+		{
+			auto& jsonListenIp = (*jsonListenIpsIt)[i];
+			auto& listenIp     = listenIps[i];
+
+			if (!jsonListenIp.is_object())
+				MS_THROW_TYPE_ERROR("wrong listenIp (not an object)");
+
+			auto jsonIpIt = jsonListenIp.find("ip");
+
+			if (jsonIpIt == jsonListenIp.end())
+				MS_THROW_TYPE_ERROR("missing listenIp.ip");
+			else if (!jsonIpIt->is_string())
+				MS_THROW_TYPE_ERROR("wrong listenIp.ip (not an string");
+
+			listenIp.ip.assign(jsonIpIt->get<std::string>());
+
+			// This may throw.
+			Utils::IP::NormalizeIp(listenIp.ip);
+
+			auto jsonAnnouncedIpIt = jsonListenIp.find("announcedIp");
+
+			if (jsonAnnouncedIpIt != jsonListenIp.end())
 			{
-				auto* udpSocket = new RTC::UdpSocket(this, AF_INET);
-				RTC::IceCandidate iceCandidate(udpSocket, priority);
+				if (!jsonAnnouncedIpIt->is_string())
+					MS_THROW_TYPE_ERROR("wrong listenIp.announcedIp (not an string)");
 
-				this->udpSockets.push_back(udpSocket);
-				this->iceLocalCandidates.push_back(iceCandidate);
-			}
-			catch (const MediaSoupError& error)
-			{
-				MS_ERROR("error adding IPv4 UDP socket: %s", error.what());
+				listenIp.announcedIp.assign(jsonAnnouncedIpIt->get<std::string>());
 			}
 		}
 
-		// Open a IPv6 UDP socket.
-		if (tryIPv6udp && Settings::configuration.hasIPv6)
+		try
 		{
-			uint16_t localPreference = IceCandidateDefaultLocalPriority;
+			uint16_t iceLocalPreferenceDecrement{ 0 };
 
-			if (options.preferIPv6)
-				localPreference += IceCandidateLocalPriorityPreferFamilyIncrement;
-			if (options.preferUdp)
-				localPreference += IceCandidateLocalPriorityPreferProtocolIncrement;
+			if (enableUdp && enableTcp)
+				this->iceCandidates.reserve(2 * jsonListenIpsIt->size());
+			else
+				this->iceCandidates.reserve(jsonListenIpsIt->size());
 
-			uint32_t priority = generateIceCandidatePriority(localPreference);
-
-			try
+			for (auto& listenIp : listenIps)
 			{
-				auto* udpSocket = new RTC::UdpSocket(this, AF_INET6);
-				RTC::IceCandidate iceCandidate(udpSocket, priority);
+				if (enableUdp)
+				{
+					uint16_t iceLocalPreference =
+					  IceCandidateDefaultLocalPriority - iceLocalPreferenceDecrement;
 
-				this->udpSockets.push_back(udpSocket);
-				this->iceLocalCandidates.push_back(iceCandidate);
+					if (preferUdp)
+						iceLocalPreference += 1000;
+
+					uint32_t icePriority = generateIceCandidatePriority(iceLocalPreference);
+
+					// This may throw.
+					auto* udpSocket = new RTC::UdpSocket(this, listenIp.ip);
+
+					this->udpSockets[udpSocket] = listenIp.announcedIp;
+
+					if (listenIp.announcedIp.empty())
+						this->iceCandidates.emplace_back(udpSocket, icePriority);
+					else
+						this->iceCandidates.emplace_back(udpSocket, icePriority, listenIp.announcedIp);
+				}
+
+				if (enableTcp)
+				{
+					uint16_t iceLocalPreference =
+					  IceCandidateDefaultLocalPriority - iceLocalPreferenceDecrement;
+
+					if (preferTcp)
+						iceLocalPreference += 1000;
+
+					uint32_t icePriority = generateIceCandidatePriority(iceLocalPreference);
+
+					// This may throw.
+					auto* tcpServer = new RTC::TcpServer(this, this, listenIp.ip);
+
+					this->tcpServers[tcpServer] = listenIp.announcedIp;
+
+					if (listenIp.announcedIp.empty())
+						this->iceCandidates.emplace_back(tcpServer, icePriority);
+					else
+						this->iceCandidates.emplace_back(tcpServer, icePriority, listenIp.announcedIp);
+				}
+
+				// Decrement initial ICE local preference for next IP.
+				iceLocalPreferenceDecrement += 100;
 			}
-			catch (const MediaSoupError& error)
-			{
-				MS_ERROR("error adding IPv6 UDP socket: %s", error.what());
-			}
+
+			// Create a ICE server.
+			this->iceServer = new RTC::IceServer(
+			  this, Utils::Crypto::GetRandomString(16), Utils::Crypto::GetRandomString(32));
+
+			// Create a DTLS transport.
+			this->dtlsTransport = new RTC::DtlsTransport(this);
 		}
-
-		// Open a IPv4 TCP server.
-		if (tryIPv4tcp && Settings::configuration.hasIPv4)
+		catch (const MediaSoupError& error)
 		{
-			uint16_t localPreference = IceCandidateDefaultLocalPriority;
+			// Must delete everything since the destructor won't be called.
 
-			if (options.preferIPv4)
-				localPreference += IceCandidateLocalPriorityPreferFamilyIncrement;
-			if (options.preferTcp)
-				localPreference += IceCandidateLocalPriorityPreferProtocolIncrement;
+			delete this->dtlsTransport;
+			this->dtlsTransport = nullptr;
 
-			uint32_t priority = generateIceCandidatePriority(localPreference);
+			delete this->iceServer;
+			this->iceServer = nullptr;
 
-			try
+			for (auto& kv : this->udpSockets)
 			{
-				auto* tcpServer = new RTC::TcpServer(this, this, AF_INET);
-				RTC::IceCandidate iceCandidate(tcpServer, priority);
+				auto* udpSocket = kv.first;
 
-				this->tcpServers.push_back(tcpServer);
-				this->iceLocalCandidates.push_back(iceCandidate);
+				delete udpSocket;
 			}
-			catch (const MediaSoupError& error)
+			this->udpSockets.clear();
+
+			for (auto& kv : this->tcpServers)
 			{
-				MS_ERROR("error adding IPv4 TCP server: %s", error.what());
+				auto* tcpServer = kv.first;
+
+				delete tcpServer;
 			}
+			this->tcpServers.clear();
+
+			this->iceCandidates.clear();
+
+			throw;
 		}
-
-		// Open a IPv6 TCP server.
-		if (tryIPv6tcp && Settings::configuration.hasIPv6)
-		{
-			uint16_t localPreference = IceCandidateDefaultLocalPriority;
-
-			if (options.preferIPv6)
-				localPreference += IceCandidateLocalPriorityPreferFamilyIncrement;
-			if (options.preferTcp)
-				localPreference += IceCandidateLocalPriorityPreferProtocolIncrement;
-
-			uint32_t priority = generateIceCandidatePriority(localPreference);
-
-			try
-			{
-				auto* tcpServer = new RTC::TcpServer(this, this, AF_INET6);
-				RTC::IceCandidate iceCandidate(tcpServer, priority);
-
-				this->tcpServers.push_back(tcpServer);
-				this->iceLocalCandidates.push_back(iceCandidate);
-			}
-			catch (const MediaSoupError& error)
-			{
-				MS_ERROR("error adding IPv6 TCP server: %s", error.what());
-			}
-		}
-
-		// Ensure there is at least one IP:port binding.
-		if (this->udpSockets.empty() && this->tcpServers.empty())
-		{
-			// NOTE: We must manually delete above allocated objects. We cannot call `delete this`
-			// here since it would call the parent ~Transport destructor, and it would be called
-			// again after throwing the exception here.
-			//
-			// See: https://github.com/versatica/mediasoup/issues/222
-
-			this->iceServer->Destroy();
-
-			for (auto* socket : this->udpSockets)
-			{
-				socket->Destroy();
-			}
-
-			for (auto* server : this->tcpServers)
-			{
-				server->Destroy();
-			}
-
-			MS_THROW_ERROR("could not open any IP:port");
-		}
-
-		// Create a DTLS agent.
-		this->dtlsTransport = new RTC::DtlsTransport(this);
-
-		// Set remote bitrate estimator.
-		this->remoteBitrateEstimator.reset(new RTC::RemoteBitrateEstimatorAbsSendTime(this));
-
-		// Start the RTCP timer.
-		this->rtcpTimer->Start(static_cast<uint64_t>(RTC::RTCP::MaxVideoIntervalMs / 2));
 	}
 
 	WebRtcTransport::~WebRtcTransport()
 	{
 		MS_TRACE();
 
-		if (this->srtpRecvSession != nullptr)
-			this->srtpRecvSession->Destroy();
+		// Must delete the DTLS transport first since it will generate a DTLS alert
+		// to be sent.
+		delete this->dtlsTransport;
+		this->dtlsTransport = nullptr;
 
-		if (this->srtpSendSession != nullptr)
-			this->srtpSendSession->Destroy();
+		delete this->iceServer;
+		this->iceServer = nullptr;
 
-		if (this->dtlsTransport != nullptr)
-			this->dtlsTransport->Destroy();
-
-		if (this->iceServer != nullptr)
-			this->iceServer->Destroy();
-
-		for (auto* socket : this->udpSockets)
+		for (auto& kv : this->udpSockets)
 		{
-			socket->Destroy();
+			auto* udpSocket = kv.first;
+
+			delete udpSocket;
 		}
 		this->udpSockets.clear();
 
-		for (auto* server : this->tcpServers)
+		for (auto& kv : this->tcpServers)
 		{
-			server->Destroy();
+			auto* tcpServer = kv.first;
+
+			delete tcpServer;
 		}
 		this->tcpServers.clear();
 
-		this->selectedTuple = nullptr;
+		this->iceCandidates.clear();
+
+		delete this->srtpSendSession;
+		this->srtpSendSession = nullptr;
+
+		delete this->srtpRecvSession;
+		this->srtpRecvSession = nullptr;
 	}
 
-	Json::Value WebRtcTransport::ToJson() const
+	void WebRtcTransport::FillJson(json& jsonObject) const
 	{
 		MS_TRACE();
 
-		static const Json::StaticString JsonStringTransportId{ "transportId" };
-		static const Json::StaticString JsonStringIceRole{ "iceRole" };
-		static const Json::StaticString JsonStringControlled{ "controlled" };
-		static const Json::StaticString JsonStringIceLocalParameters{ "iceLocalParameters" };
-		static const Json::StaticString JsonStringUsernameFragment{ "usernameFragment" };
-		static const Json::StaticString JsonStringPassword{ "password" };
-		static const Json::StaticString JsonStringIceLite{ "iceLite" };
-		static const Json::StaticString JsonStringIceLocalCandidates{ "iceLocalCandidates" };
-		static const Json::StaticString JsonStringIceSelectedTuple{ "iceSelectedTuple" };
-		static const Json::StaticString JsonStringIceState{ "iceState" };
-		static const Json::StaticString JsonStringNew{ "new" };
-		static const Json::StaticString JsonStringConnected{ "connected" };
-		static const Json::StaticString JsonStringCompleted{ "completed" };
-		static const Json::StaticString JsonStringDisconnected{ "disconnected" };
-		static const Json::StaticString JsonStringDtlsLocalParameters{ "dtlsLocalParameters" };
-		static const Json::StaticString JsonStringFingerprints{ "fingerprints" };
-		static const Json::StaticString JsonStringRole{ "role" };
-		static const Json::StaticString JsonStringAuto{ "auto" };
-		static const Json::StaticString JsonStringClient{ "client" };
-		static const Json::StaticString JsonStringServer{ "server" };
-		static const Json::StaticString JsonStringDtlsState{ "dtlsState" };
-		static const Json::StaticString JsonStringConnecting{ "connecting" };
-		static const Json::StaticString JsonStringClosed{ "closed" };
-		static const Json::StaticString JsonStringFailed{ "failed" };
-		static const Json::StaticString JsonStringHeaderExtensionIds{ "headerExtensionIds" };
-		static const Json::StaticString JsonStringAbsSendTime{ "absSendTime" };
-		static const Json::StaticString JsonStringMid{ "mid" };
-		static const Json::StaticString JsonStringRid{ "rid" };
-		static const Json::StaticString JsonStringRtpListener{ "rtpListener" };
-
-		Json::Value json(Json::objectValue);
-		Json::Value jsonHeaderExtensionIds(Json::objectValue);
-
-		json[JsonStringTransportId] = Json::UInt{ this->transportId };
+		// Call the parent method.
+		RTC::Transport::FillJson(jsonObject);
 
 		// Add iceRole (we are always "controlled").
-		json[JsonStringIceRole] = JsonStringControlled;
+		jsonObject["iceRole"] = "controlled";
 
-		// Add iceLocalParameters.
-		json[JsonStringIceLocalParameters][JsonStringUsernameFragment] =
-		  this->iceServer->GetUsernameFragment();
-		json[JsonStringIceLocalParameters][JsonStringPassword] = this->iceServer->GetPassword();
-		json[JsonStringIceLocalParameters][JsonStringIceLite]  = true;
+		// Add iceParameters.
+		jsonObject["iceParameters"] = json::object();
+		auto jsonIceParametersIt    = jsonObject.find("iceParameters");
 
-		// Add iceLocalCandidates.
-		json[JsonStringIceLocalCandidates] = Json::arrayValue;
-		for (const auto& iceCandidate : this->iceLocalCandidates)
+		(*jsonIceParametersIt)["usernameFragment"] = this->iceServer->GetUsernameFragment();
+		(*jsonIceParametersIt)["password"]         = this->iceServer->GetPassword();
+		(*jsonIceParametersIt)["iceLite"]          = true;
+
+		// Add iceCandidates.
+		jsonObject["iceCandidates"] = json::array();
+		auto jsonIceCandidatesIt    = jsonObject.find("iceCandidates");
+
+		for (size_t i{ 0 }; i < this->iceCandidates.size(); ++i)
 		{
-			json[JsonStringIceLocalCandidates].append(iceCandidate.ToJson());
-		}
+			jsonIceCandidatesIt->emplace_back(json::value_t::object);
 
-		// Add iceSelectedTuple.
-		if (this->selectedTuple != nullptr)
-			json[JsonStringIceSelectedTuple] = this->selectedTuple->ToJson();
+			auto& jsonEntry    = (*jsonIceCandidatesIt)[i];
+			auto& iceCandidate = this->iceCandidates[i];
+
+			iceCandidate.FillJson(jsonEntry);
+		}
 
 		// Add iceState.
 		switch (this->iceServer->GetState())
 		{
 			case RTC::IceServer::IceState::NEW:
-				json[JsonStringIceState] = JsonStringNew;
+				jsonObject["iceState"] = "new";
 				break;
 			case RTC::IceServer::IceState::CONNECTED:
-				json[JsonStringIceState] = JsonStringConnected;
+				jsonObject["iceState"] = "connected";
 				break;
 			case RTC::IceServer::IceState::COMPLETED:
-				json[JsonStringIceState] = JsonStringCompleted;
+				jsonObject["iceState"] = "completed";
 				break;
 			case RTC::IceServer::IceState::DISCONNECTED:
-				json[JsonStringIceState] = JsonStringDisconnected;
+				jsonObject["iceState"] = "disconnected";
 				break;
 		}
 
-		// Add dtlsLocalParameters.fingerprints.
-		json[JsonStringDtlsLocalParameters][JsonStringFingerprints] =
-		  RTC::DtlsTransport::GetLocalFingerprints();
+		// Add iceSelectedTuple.
+		if (this->iceServer->GetSelectedTuple())
+			this->iceServer->GetSelectedTuple()->FillJson(jsonObject["iceSelectedTuple"]);
 
-		// Add dtlsLocalParameters.role.
-		switch (this->dtlsLocalRole)
+		// Add dtlsParameters.
+		jsonObject["dtlsParameters"] = json::object();
+		auto jsonDtlsParametersIt    = jsonObject.find("dtlsParameters");
+
+		// Add dtlsParameters.fingerprints.
+		(*jsonDtlsParametersIt)["fingerprints"] = json::array();
+		auto jsonDtlsParametersFingerprintsIt   = jsonDtlsParametersIt->find("fingerprints");
+		auto& fingerprints                      = this->dtlsTransport->GetLocalFingerprints();
+
+		for (size_t i{ 0 }; i < fingerprints.size(); ++i)
 		{
+			jsonDtlsParametersFingerprintsIt->emplace_back(json::value_t::object);
+
+			auto& jsonEntry   = (*jsonDtlsParametersFingerprintsIt)[i];
+			auto& fingerprint = fingerprints[i];
+
+			jsonEntry["algorithm"] =
+			  RTC::DtlsTransport::GetFingerprintAlgorithmString(fingerprint.algorithm);
+			jsonEntry["value"] = fingerprint.value;
+		}
+
+		// Add dtlsParameters.role.
+		switch (this->dtlsRole)
+		{
+			case RTC::DtlsTransport::Role::NONE:
+				(*jsonDtlsParametersIt)["role"] = "none";
+				break;
 			case RTC::DtlsTransport::Role::AUTO:
-				json[JsonStringDtlsLocalParameters][JsonStringRole] = JsonStringAuto;
+				(*jsonDtlsParametersIt)["role"] = "auto";
 				break;
 			case RTC::DtlsTransport::Role::CLIENT:
-				json[JsonStringDtlsLocalParameters][JsonStringRole] = JsonStringClient;
+				(*jsonDtlsParametersIt)["role"] = "client";
 				break;
 			case RTC::DtlsTransport::Role::SERVER:
-				json[JsonStringDtlsLocalParameters][JsonStringRole] = JsonStringServer;
+				(*jsonDtlsParametersIt)["role"] = "server";
 				break;
-			default:
-				MS_ABORT("invalid local DTLS role");
 		}
 
 		// Add dtlsState.
 		switch (this->dtlsTransport->GetState())
 		{
-			case DtlsTransport::DtlsState::NEW:
-				json[JsonStringDtlsState] = JsonStringNew;
+			case RTC::DtlsTransport::DtlsState::NEW:
+				jsonObject["dtlsState"] = "new";
 				break;
-			case DtlsTransport::DtlsState::CONNECTING:
-				json[JsonStringDtlsState] = JsonStringConnecting;
+			case RTC::DtlsTransport::DtlsState::CONNECTING:
+				jsonObject["dtlsState"] = "connecting";
 				break;
-			case DtlsTransport::DtlsState::CONNECTED:
-				json[JsonStringDtlsState] = JsonStringConnected;
+			case RTC::DtlsTransport::DtlsState::CONNECTED:
+				jsonObject["dtlsState"] = "connected";
 				break;
-			case DtlsTransport::DtlsState::FAILED:
-				json[JsonStringDtlsState] = JsonStringFailed;
+			case RTC::DtlsTransport::DtlsState::FAILED:
+				jsonObject["dtlsState"] = "failed";
 				break;
-			case DtlsTransport::DtlsState::CLOSED:
-				json[JsonStringDtlsState] = JsonStringClosed;
+			case RTC::DtlsTransport::DtlsState::CLOSED:
+				jsonObject["dtlsState"] = "closed";
 				break;
 		}
-
-		// Add headerExtensionIds.
-
-		if (this->headerExtensionIds.absSendTime != 0u)
-			jsonHeaderExtensionIds[JsonStringAbsSendTime] = this->headerExtensionIds.absSendTime;
-
-		if (this->headerExtensionIds.mid != 0u)
-			jsonHeaderExtensionIds[JsonStringMid] = this->headerExtensionIds.mid;
-
-		if (this->headerExtensionIds.rid != 0u)
-			jsonHeaderExtensionIds[JsonStringRid] = this->headerExtensionIds.rid;
-
-		json[JsonStringHeaderExtensionIds] = jsonHeaderExtensionIds;
-
-		// Add rtpListener.
-		json[JsonStringRtpListener] = this->rtpListener.ToJson();
-
-		return json;
 	}
 
-	Json::Value WebRtcTransport::GetStats() const
+	void WebRtcTransport::FillJsonStats(json& jsonArray)
 	{
 		MS_TRACE();
 
-		static const std::string Type("transport");
-		static const Json::StaticString JsonStringType{ "type" };
-		static const Json::StaticString JsonStringTimestamp{ "timestamp" };
-		static const Json::StaticString JsonStringId{ "id" };
-		static const Json::StaticString JsonStringBytesReceived{ "bytesReceived" };
-		static const Json::StaticString JsonStringBytesSent{ "bytesSent" };
-		static const Json::StaticString JsonStringIceSelectedTuple{ "iceSelectedTuple" };
-		static const Json::StaticString JsonStringDtlsState{ "dtlsState" };
-		static const Json::StaticString JsonStringIceConnectionState{ "iceConnectionState" };
-		// DTLS states.
-		static const Json::StaticString JsonStringNew{ "new" };
-		static const Json::StaticString JsonStringConnecting{ "connecting" };
-		static const Json::StaticString JsonStringConnected{ "connected" };
-		static const Json::StaticString JsonStringClosed{ "closed" };
-		static const Json::StaticString JsonStringFailed{ "failed" };
-		// ICE connection states.
-		static const Json::StaticString JsonStringCompleted{ "completed" };
-		static const Json::StaticString JsonStringDisconnected{ "disconnected" };
-		// Available send bandwidth.
-		static const Json::StaticString JsonStringLocalAvailableSendBw{ "localAvailableSendBw" };
-		static const Json::StaticString JsonStringLocalAvailableSendBwMaxValue{ "maxBitrate" };
-		static const Json::StaticString JsonStringLocalAvailableSendBwValue{ "bitrate" };
-		static const Json::StaticString JsonStringLocalAvailableSendBwSsrcs{ "ssrcs" };
-		static const Json::StaticString JsonStringRemoteAvailableSendBw{ "remoteAvailableSendBw" };
-		static const Json::StaticString JsonStringRemoteAvailableSendBwValue{ "bitrate" };
-		static const Json::StaticString JsonStringRemoteAvailableSendBwSsrcs{ "ssrcs" };
+		// Call the parent method.
+		RTC::Transport::FillJsonStats(jsonArray);
 
-		Json::Value json(Json::objectValue);
+		auto& jsonObject = jsonArray[0];
 
-		json[JsonStringType]      = Type;
-		json[JsonStringTimestamp] = Json::UInt64{ DepLibUV::GetTime() };
-		json[JsonStringId]        = Json::UInt{ this->transportId };
+		// Add type.
+		jsonObject["type"] = "webrtc-transport";
 
-		if (this->selectedTuple != nullptr)
-		{
-			// 'bytesReceived'.
-			json[JsonStringBytesReceived] = Json::UInt64{ this->selectedTuple->GetRecvBytes() };
-			// 'bytesSent'.
-			json[JsonStringBytesSent] = Json::UInt64{ this->selectedTuple->GetSentBytes() };
+		// Add iceRole (we are always "controlled").
+		jsonObject["iceRole"] = "controlled";
 
-			json[JsonStringIceSelectedTuple] = this->selectedTuple->ToJson();
-		}
-
-		// 'dtlsState'.
-		switch (this->dtlsTransport->GetState())
-		{
-			case DtlsTransport::DtlsState::NEW:
-				json[JsonStringDtlsState] = JsonStringNew;
-				break;
-			case DtlsTransport::DtlsState::CONNECTING:
-				json[JsonStringDtlsState] = JsonStringConnecting;
-				break;
-			case DtlsTransport::DtlsState::CONNECTED:
-				json[JsonStringDtlsState] = JsonStringConnected;
-				break;
-			case DtlsTransport::DtlsState::FAILED:
-				json[JsonStringDtlsState] = JsonStringFailed;
-				break;
-			case DtlsTransport::DtlsState::CLOSED:
-				json[JsonStringDtlsState] = JsonStringClosed;
-				break;
-		}
-
-		// 'iceConnectionState'.
+		// Add iceState.
 		switch (this->iceServer->GetState())
 		{
 			case RTC::IceServer::IceState::NEW:
-				json[JsonStringIceConnectionState] = JsonStringNew;
+				jsonObject["iceState"] = "new";
 				break;
 			case RTC::IceServer::IceState::CONNECTED:
-				json[JsonStringIceConnectionState] = JsonStringConnected;
+				jsonObject["iceState"] = "connected";
 				break;
 			case RTC::IceServer::IceState::COMPLETED:
-				json[JsonStringIceConnectionState] = JsonStringCompleted;
+				jsonObject["iceState"] = "completed";
 				break;
 			case RTC::IceServer::IceState::DISCONNECTED:
-				json[JsonStringIceConnectionState] = JsonStringDisconnected;
+				jsonObject["iceState"] = "disconnected";
 				break;
 		}
 
-		// Add local available send bandwidth.
-		Json::Value jsonLocalAvailableSendBw(Json::objectValue);
-		Json::Value jsonLocalAvailableSendBwSsrcs(Json::arrayValue);
+		if (this->iceServer->GetSelectedTuple())
+		{
+			// Add iceSelectedTuple.
+			this->iceServer->GetSelectedTuple()->FillJson(jsonObject["iceSelectedTuple"]);
+		}
 
-		jsonLocalAvailableSendBw[JsonStringLocalAvailableSendBwMaxValue] = Json::UInt{ this->maxBitrate };
-
-		jsonLocalAvailableSendBw[JsonStringLocalAvailableSendBwValue] =
-		  Json::UInt64{ std::get<0>(this->sentRemb) };
-
-		for (auto ssrc : std::get<1>(this->sentRemb))
-			jsonLocalAvailableSendBwSsrcs.append(ssrc);
-
-		jsonLocalAvailableSendBw[JsonStringLocalAvailableSendBwSsrcs] = jsonLocalAvailableSendBwSsrcs;
-
-		json[JsonStringLocalAvailableSendBw] = jsonLocalAvailableSendBw;
-
-		// Add remote available send bandwidth.
-		Json::Value jsonRemoteAvailableSendBw(Json::objectValue);
-		Json::Value jsonRemoteAvailableSendBwSsrcs(Json::arrayValue);
-
-		jsonRemoteAvailableSendBw[JsonStringRemoteAvailableSendBwValue] =
-		  Json::UInt64{ std::get<0>(this->recvRemb) };
-
-		for (auto ssrc : std::get<1>(this->recvRemb))
-			jsonRemoteAvailableSendBwSsrcs.append(ssrc);
-
-		jsonRemoteAvailableSendBw[JsonStringRemoteAvailableSendBwSsrcs] = jsonRemoteAvailableSendBwSsrcs;
-
-		json[JsonStringRemoteAvailableSendBw] = jsonRemoteAvailableSendBw;
-
-		Json::Value array(Json::arrayValue);
-
-		array.append(json);
-
-		return array;
+		// Add dtlsState.
+		switch (this->dtlsTransport->GetState())
+		{
+			case RTC::DtlsTransport::DtlsState::NEW:
+				jsonObject["dtlsState"] = "new";
+				break;
+			case RTC::DtlsTransport::DtlsState::CONNECTING:
+				jsonObject["dtlsState"] = "connecting";
+				break;
+			case RTC::DtlsTransport::DtlsState::CONNECTED:
+				jsonObject["dtlsState"] = "connected";
+				break;
+			case RTC::DtlsTransport::DtlsState::FAILED:
+				jsonObject["dtlsState"] = "failed";
+				break;
+			case RTC::DtlsTransport::DtlsState::CLOSED:
+				jsonObject["dtlsState"] = "closed";
+				break;
+		}
 	}
 
-	RTC::DtlsTransport::Role WebRtcTransport::SetRemoteDtlsParameters(
-	  RTC::DtlsTransport::Fingerprint& fingerprint, RTC::DtlsTransport::Role role)
+	void WebRtcTransport::HandleRequest(Channel::Request* request)
 	{
 		MS_TRACE();
 
-		// Ensure this method is not called twice.
-		if (this->hasRemoteDtlsParameters)
-			MS_THROW_ERROR("Transport already has remote DTLS parameters");
-
-		if (fingerprint.algorithm == RTC::DtlsTransport::FingerprintAlgorithm::NONE)
-			MS_THROW_ERROR("unsupported remote fingerprint algorithm");
-
-		// Set local DTLS role.
-		switch (role)
+		switch (request->methodId)
 		{
-			case RTC::DtlsTransport::Role::CLIENT:
+			case Channel::Request::MethodId::TRANSPORT_CONNECT:
 			{
-				this->dtlsLocalRole = RTC::DtlsTransport::Role::SERVER;
+				// Ensure this method is not called twice.
+				if (this->connectCalled)
+					MS_THROW_ERROR("connect() already called");
+
+				RTC::DtlsTransport::Fingerprint dtlsRemoteFingerprint;
+				RTC::DtlsTransport::Role dtlsRemoteRole;
+
+				auto jsonDtlsParametersIt = request->data.find("dtlsParameters");
+
+				if (jsonDtlsParametersIt == request->data.end() || !jsonDtlsParametersIt->is_object())
+					MS_THROW_TYPE_ERROR("missing dtlsParameters");
+
+				auto jsonFingerprintsIt = jsonDtlsParametersIt->find("fingerprints");
+
+				if (jsonFingerprintsIt == jsonDtlsParametersIt->end() || !jsonFingerprintsIt->is_array())
+					MS_THROW_TYPE_ERROR("missing dtlsParameters.fingerprints");
+
+				// NOTE: Just take the first fingerprint.
+				for (auto& jsonFingerprint : *jsonFingerprintsIt)
+				{
+					if (!jsonFingerprint.is_object())
+						MS_THROW_TYPE_ERROR("wrong entry in dtlsParameters.fingerprints (not an object)");
+
+					auto jsonAlgorithmIt = jsonFingerprint.find("algorithm");
+
+					if (jsonAlgorithmIt == jsonFingerprint.end())
+						MS_THROW_TYPE_ERROR("missing fingerprint.algorithm");
+					else if (!jsonAlgorithmIt->is_string())
+						MS_THROW_TYPE_ERROR("wrong fingerprint.algorithm (not a string)");
+
+					dtlsRemoteFingerprint.algorithm =
+					  RTC::DtlsTransport::GetFingerprintAlgorithm(jsonAlgorithmIt->get<std::string>());
+
+					if (dtlsRemoteFingerprint.algorithm == RTC::DtlsTransport::FingerprintAlgorithm::NONE)
+						MS_THROW_TYPE_ERROR("invalid fingerprint.algorithm value");
+
+					auto jsonValueIt = jsonFingerprint.find("value");
+
+					if (jsonValueIt == jsonFingerprint.end())
+						MS_THROW_TYPE_ERROR("missing fingerprint.value");
+					else if (!jsonValueIt->is_string())
+						MS_THROW_TYPE_ERROR("wrong fingerprint.value (not a string)");
+
+					dtlsRemoteFingerprint.value = jsonValueIt->get<std::string>();
+
+					// Just use the first fingerprint.
+					break;
+				}
+
+				auto jsonRoleIt = jsonDtlsParametersIt->find("role");
+
+				if (jsonRoleIt != jsonDtlsParametersIt->end())
+				{
+					if (!jsonRoleIt->is_string())
+						MS_THROW_TYPE_ERROR("wrong dtlsParameters.role (not a string)");
+
+					dtlsRemoteRole = RTC::DtlsTransport::StringToRole(jsonRoleIt->get<std::string>());
+
+					if (dtlsRemoteRole == RTC::DtlsTransport::Role::NONE)
+						MS_THROW_TYPE_ERROR("invalid dtlsParameters.role value");
+				}
+				else
+				{
+					dtlsRemoteRole = RTC::DtlsTransport::Role::AUTO;
+				}
+
+				// Set local DTLS role.
+				switch (dtlsRemoteRole)
+				{
+					case RTC::DtlsTransport::Role::CLIENT:
+					{
+						this->dtlsRole = RTC::DtlsTransport::Role::SERVER;
+
+						break;
+					}
+					case RTC::DtlsTransport::Role::SERVER:
+					{
+						this->dtlsRole = RTC::DtlsTransport::Role::CLIENT;
+
+						break;
+					}
+					// If the peer has role "auto" we become "client" since we are ICE controlled.
+					case RTC::DtlsTransport::Role::AUTO:
+					{
+						this->dtlsRole = RTC::DtlsTransport::Role::CLIENT;
+
+						break;
+					}
+					case RTC::DtlsTransport::Role::NONE:
+					{
+						MS_THROW_TYPE_ERROR("invalid remote DTLS role");
+					}
+				}
+
+				this->connectCalled = true;
+
+				// Pass the remote fingerprint to the DTLS transport.
+				if (this->dtlsTransport->SetRemoteFingerprint(dtlsRemoteFingerprint))
+				{
+					// If everything is fine, we may run the DTLS transport if ready.
+					MayRunDtlsTransport();
+				}
+
+				// Tell the caller about the selected local DTLS role.
+				json data = json::object();
+
+				switch (this->dtlsRole)
+				{
+					case RTC::DtlsTransport::Role::CLIENT:
+						data["dtlsLocalRole"] = "client";
+						break;
+
+					case RTC::DtlsTransport::Role::SERVER:
+						data["dtlsLocalRole"] = "server";
+						break;
+
+					default:
+						MS_ABORT("invalid local DTLS role");
+				}
+
+				request->Accept(data);
 
 				break;
 			}
-			case RTC::DtlsTransport::Role::SERVER:
+
+			case Channel::Request::MethodId::TRANSPORT_RESTART_ICE:
 			{
-				this->dtlsLocalRole = RTC::DtlsTransport::Role::CLIENT;
+				std::string usernameFragment = Utils::Crypto::GetRandomString(16);
+				std::string password         = Utils::Crypto::GetRandomString(32);
+
+				this->iceServer->SetUsernameFragment(usernameFragment);
+				this->iceServer->SetPassword(password);
+
+				MS_DEBUG_DEV(
+				  "WebRtcTransport ICE usernameFragment and password changed [id:%s]", this->id.c_str());
+
+				// Reply with the updated ICE local parameters.
+				json data = json::object();
+
+				data["iceParameters"]    = json::object();
+				auto jsonIceParametersIt = data.find("iceParameters");
+
+				(*jsonIceParametersIt)["usernameFragment"] = this->iceServer->GetUsernameFragment();
+				(*jsonIceParametersIt)["password"]         = this->iceServer->GetPassword();
+				(*jsonIceParametersIt)["iceLite"]          = true;
+
+				request->Accept(data);
 
 				break;
 			}
-			// If the peer has "auto" we become "client" since we are ICE controlled.
+
+			default:
+			{
+				// Pass it to the parent class.
+				RTC::Transport::HandleRequest(request);
+			}
+		}
+	}
+
+	inline bool WebRtcTransport::IsConnected() const
+	{
+		MS_TRACE();
+
+		// clang-format off
+		return (
+			(
+				this->iceServer->GetState() == RTC::IceServer::IceState::CONNECTED ||
+				this->iceServer->GetState() == RTC::IceServer::IceState::COMPLETED
+			) &&
+			this->dtlsTransport->GetState() == RTC::DtlsTransport::DtlsState::CONNECTED
+		);
+		// clang-format on
+	}
+
+	void WebRtcTransport::MayRunDtlsTransport()
+	{
+		MS_TRACE();
+
+		// Do nothing if we have the same local DTLS role as the DTLS transport.
+		// NOTE: local role in DTLS transport can be NONE, but not ours.
+		if (this->dtlsTransport->GetLocalRole() == this->dtlsRole)
+			return;
+
+		// Check our local DTLS role.
+		switch (this->dtlsRole)
+		{
+			// If still 'auto' then transition to 'server' if ICE is 'connected' or
+			// 'completed'.
 			case RTC::DtlsTransport::Role::AUTO:
 			{
-				this->dtlsLocalRole = RTC::DtlsTransport::Role::CLIENT;
+				// clang-format off
+				if (
+					this->iceServer->GetState() == RTC::IceServer::IceState::CONNECTED ||
+					this->iceServer->GetState() == RTC::IceServer::IceState::COMPLETED
+				)
+				// clang-format on
+				{
+					MS_DEBUG_TAG(
+					  dtls, "transition from DTLS local role 'auto' to 'server' and running DTLS transport");
+
+					this->dtlsRole = RTC::DtlsTransport::Role::SERVER;
+					this->dtlsTransport->Run(RTC::DtlsTransport::Role::SERVER);
+				}
 
 				break;
 			}
+
+			// 'client' is only set if a 'connect' request was previously called with
+			// remote DTLS role 'server'.
+			//
+			// If 'client' then wait for ICE to be 'completed' (got USE-CANDIDATE).
+			//
+			// NOTE: This is the theory, however let's be more flexible as told here:
+			//   https://bugs.chromium.org/p/webrtc/issues/detail?id=3661
+			case RTC::DtlsTransport::Role::CLIENT:
+			{
+				// clang-format off
+				if (
+					this->iceServer->GetState() == RTC::IceServer::IceState::CONNECTED ||
+					this->iceServer->GetState() == RTC::IceServer::IceState::COMPLETED
+				)
+				// clang-format on
+				{
+					MS_DEBUG_TAG(dtls, "running DTLS transport in local role 'client'");
+
+					this->dtlsTransport->Run(RTC::DtlsTransport::Role::CLIENT);
+				}
+
+				break;
+			}
+
+			// If 'server' then run the DTLS transport if ICE is 'connected' (not yet
+			// USE-CANDIDATE) or 'completed'.
+			case RTC::DtlsTransport::Role::SERVER:
+			{
+				// clang-format off
+				if (
+					this->iceServer->GetState() == RTC::IceServer::IceState::CONNECTED ||
+					this->iceServer->GetState() == RTC::IceServer::IceState::COMPLETED
+				)
+				// clang-format on
+				{
+					MS_DEBUG_TAG(dtls, "running DTLS transport in local role 'server'");
+
+					this->dtlsTransport->Run(RTC::DtlsTransport::Role::SERVER);
+				}
+
+				break;
+			}
+
 			case RTC::DtlsTransport::Role::NONE:
 			{
-				MS_THROW_ERROR("invalid remote role");
+				MS_ABORT("local DTLS role not set");
 			}
 		}
-
-		this->hasRemoteDtlsParameters = true;
-
-		// Pass the remote fingerprint to the DTLS transport.
-		if (this->dtlsTransport->SetRemoteFingerprint(fingerprint))
-		{
-			// If everything is fine, we may run the DTLS transport if ready.
-			MayRunDtlsTransport();
-
-			MS_DEBUG_DEV(
-			  "Transport remote DTLS parameters set [transportId:%" PRIu32 "]", this->transportId);
-		}
-
-		return this->dtlsLocalRole;
 	}
 
-	void WebRtcTransport::SetMaxBitrate(uint32_t bitrate)
-	{
-		MS_TRACE();
-
-		static constexpr uint32_t MinBitrate{ 10000 };
-
-		if (bitrate < MinBitrate)
-			bitrate = MinBitrate;
-
-		this->maxBitrate = bitrate;
-
-		MS_DEBUG_TAG(rbe, "Transport max bitrate set to %" PRIu32 "bps", this->maxBitrate);
-	}
-
-	void WebRtcTransport::ChangeUfragPwd(std::string& usernameFragment, std::string& password)
-	{
-		MS_TRACE();
-
-		this->iceServer->SetUsernameFragment(usernameFragment);
-		this->iceServer->SetPassword(password);
-
-		MS_DEBUG_DEV("Transport ICE ufrag&pwd changed [transportId:%" PRIu32 "]", this->transportId);
-	}
-
-	void WebRtcTransport::SendRtpPacket(RTC::RtpPacket* packet)
+	void WebRtcTransport::SendRtpPacket(RTC::RtpPacket* packet, RTC::Transport::onSendCallback* cb)
 	{
 		MS_TRACE();
 
 		if (!IsConnected())
+		{
+			if (cb)
+			{
+				(*cb)(false);
+
+				delete cb;
+			}
+
 			return;
+		}
 
 		// Ensure there is sending SRTP session.
-		if (this->srtpSendSession == nullptr)
+		if (!this->srtpSendSession)
 		{
 			MS_WARN_DEV("ignoring RTP packet due to non sending SRTP session");
+
+			if (cb)
+			{
+				(*cb)(false);
+
+				delete cb;
+			}
 
 			return;
 		}
@@ -578,14 +724,22 @@ namespace RTC
 		const uint8_t* data = packet->GetData();
 		size_t len          = packet->GetSize();
 
-		// Mirror RTP if needed.
-		if (this->mirrorTuple != nullptr && this->mirroringOptions.sendRtp)
-			this->mirrorTuple->Send(data, len);
-
 		if (!this->srtpSendSession->EncryptRtp(&data, &len))
-			return;
+		{
+			if (cb)
+			{
+				(*cb)(false);
 
-		this->selectedTuple->Send(data, len);
+				delete cb;
+			}
+
+			return;
+		}
+
+		this->iceServer->GetSelectedTuple()->Send(data, len, cb);
+
+		// Increase send transmission.
+		RTC::Transport::DataSent(len);
 	}
 
 	void WebRtcTransport::SendRtcpPacket(RTC::RTCP::Packet* packet)
@@ -598,12 +752,8 @@ namespace RTC
 		const uint8_t* data = packet->GetData();
 		size_t len          = packet->GetSize();
 
-		// Mirror RTCP if needed.
-		if (this->mirrorTuple != nullptr && this->mirroringOptions.sendRtcp)
-			this->mirrorTuple->Send(data, len);
-
 		// Ensure there is sending SRTP session.
-		if (this->srtpSendSession == nullptr)
+		if (!this->srtpSendSession)
 		{
 			MS_WARN_DEV("ignoring RTCP packet due to non sending SRTP session");
 
@@ -613,76 +763,10 @@ namespace RTC
 		if (!this->srtpSendSession->EncryptRtcp(&data, &len))
 			return;
 
-		this->selectedTuple->Send(data, len);
-	}
+		this->iceServer->GetSelectedTuple()->Send(data, len);
 
-	bool WebRtcTransport::IsConnected() const
-	{
-		return (
-		  this->selectedTuple != nullptr &&
-		  this->dtlsTransport->GetState() == RTC::DtlsTransport::DtlsState::CONNECTED);
-	}
-
-	inline void WebRtcTransport::MayRunDtlsTransport()
-	{
-		MS_TRACE();
-
-		// Do nothing if we have the same local DTLS role as the DTLS transport.
-		// NOTE: local role in DTLS transport can be NONE, but not ours.
-		if (this->dtlsTransport->GetLocalRole() == this->dtlsLocalRole)
-			return;
-
-		// Check our local DTLS role.
-		switch (this->dtlsLocalRole)
-		{
-			// If still 'auto' then transition to 'server' if ICE is 'connected' or
-			// 'completed'.
-			case RTC::DtlsTransport::Role::AUTO:
-				if (
-				  this->iceServer->GetState() == RTC::IceServer::IceState::CONNECTED ||
-				  this->iceServer->GetState() == RTC::IceServer::IceState::COMPLETED)
-				{
-					MS_DEBUG_TAG(
-					  dtls, "transition from DTLS local role 'auto' to 'server' and running DTLS transport");
-
-					this->dtlsLocalRole = RTC::DtlsTransport::Role::SERVER;
-					this->dtlsTransport->Run(RTC::DtlsTransport::Role::SERVER);
-				}
-				break;
-
-			// 'client' is only set if a 'setRemoteDtlsParameters' request was previously
-			// received with remote DTLS role 'server'.
-			// If 'client' then wait for ICE to be 'completed' (got USE-CANDIDATE).
-			//
-			// NOTE: This is the theory, however let's be mor eflexible as told here:
-			//   https://bugs.chromium.org/p/webrtc/issues/detail?id=3661
-			case RTC::DtlsTransport::Role::CLIENT:
-				if (
-				  this->iceServer->GetState() == RTC::IceServer::IceState::CONNECTED ||
-				  this->iceServer->GetState() == RTC::IceServer::IceState::COMPLETED)
-				{
-					MS_DEBUG_TAG(dtls, "running DTLS transport in local role 'client'");
-
-					this->dtlsTransport->Run(RTC::DtlsTransport::Role::CLIENT);
-				}
-				break;
-
-			// If 'server' then run the DTLS transport if ICE is 'connected' (not yet
-			// USE-CANDIDATE) or 'completed'.
-			case RTC::DtlsTransport::Role::SERVER:
-				if (
-				  this->iceServer->GetState() == RTC::IceServer::IceState::CONNECTED ||
-				  this->iceServer->GetState() == RTC::IceServer::IceState::COMPLETED)
-				{
-					MS_DEBUG_TAG(dtls, "running DTLS transport in local role 'server'");
-
-					this->dtlsTransport->Run(RTC::DtlsTransport::Role::SERVER);
-				}
-				break;
-
-			case RTC::DtlsTransport::Role::NONE:
-				MS_ABORT("local DTLS role not set");
-		}
+		// Increase send transmission.
+		RTC::Transport::DataSent(len);
 	}
 
 	void WebRtcTransport::SendRtcpCompoundPacket(RTC::RTCP::CompoundPacket* packet)
@@ -695,14 +779,10 @@ namespace RTC
 		const uint8_t* data = packet->GetData();
 		size_t len          = packet->GetSize();
 
-		// Mirror RTCP if needed.
-		if (this->mirrorTuple != nullptr && this->mirroringOptions.sendRtcp)
-			this->mirrorTuple->Send(data, len);
-
 		// Ensure there is sending SRTP session.
-		if (this->srtpSendSession == nullptr)
+		if (!this->srtpSendSession)
 		{
-			MS_WARN_DEV("ignoring RTCP packet due to non sending SRTP session");
+			MS_WARN_TAG(rtcp, "ignoring RTCP compound packet due to non sending SRTP session");
 
 			return;
 		}
@@ -710,32 +790,54 @@ namespace RTC
 		if (!this->srtpSendSession->EncryptRtcp(&data, &len))
 			return;
 
-		this->selectedTuple->Send(data, len);
+		this->iceServer->GetSelectedTuple()->Send(data, len);
+
+		// Increase send transmission.
+		RTC::Transport::DataSent(len);
 	}
 
-	inline void WebRtcTransport::OnPacketRecv(RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
+	void WebRtcTransport::SendSctpData(const uint8_t* data, size_t len)
 	{
 		MS_TRACE();
 
-		// Check if it's STUN.
-		if (StunMessage::IsStun(data, len))
+		// clang-format on
+		if (!IsConnected())
 		{
-			OnStunDataRecv(tuple, data, len);
+			MS_WARN_TAG(sctp, "DTLS not connected, cannot send SCTP data");
+
+			return;
+		}
+
+		this->dtlsTransport->SendApplicationData(data, len);
+	}
+
+	inline void WebRtcTransport::OnPacketReceived(
+	  RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
+	{
+		MS_TRACE();
+
+		// Increase receive transmission.
+		RTC::Transport::DataReceived(len);
+
+		// Check if it's STUN.
+		if (RTC::StunPacket::IsStun(data, len))
+		{
+			OnStunDataReceived(tuple, data, len);
 		}
 		// Check if it's RTCP.
-		else if (RTCP::Packet::IsRtcp(data, len))
+		else if (RTC::RTCP::Packet::IsRtcp(data, len))
 		{
-			OnRtcpDataRecv(tuple, data, len);
+			OnRtcpDataReceived(tuple, data, len);
 		}
 		// Check if it's RTP.
-		else if (RtpPacket::IsRtp(data, len))
+		else if (RTC::RtpPacket::IsRtp(data, len))
 		{
-			OnRtpDataRecv(tuple, data, len);
+			OnRtpDataReceived(tuple, data, len);
 		}
 		// Check if it's DTLS.
-		else if (DtlsTransport::IsDtls(data, len))
+		else if (RTC::DtlsTransport::IsDtls(data, len))
 		{
-			OnDtlsDataRecv(tuple, data, len);
+			OnDtlsDataReceived(tuple, data, len);
 		}
 		else
 		{
@@ -743,25 +845,27 @@ namespace RTC
 		}
 	}
 
-	inline void WebRtcTransport::OnStunDataRecv(RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
+	inline void WebRtcTransport::OnStunDataReceived(
+	  RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
 	{
 		MS_TRACE();
 
-		RTC::StunMessage* msg = RTC::StunMessage::Parse(data, len);
-		if (msg == nullptr)
+		RTC::StunPacket* packet = RTC::StunPacket::Parse(data, len);
+
+		if (!packet)
 		{
-			MS_WARN_DEV("ignoring wrong STUN message received");
+			MS_WARN_DEV("ignoring wrong STUN packet received");
 
 			return;
 		}
 
 		// Pass it to the IceServer.
-		this->iceServer->ProcessStunMessage(msg, tuple);
+		this->iceServer->ProcessStunPacket(packet, tuple);
 
-		delete msg;
+		delete packet;
 	}
 
-	inline void WebRtcTransport::OnDtlsDataRecv(
+	inline void WebRtcTransport::OnDtlsDataReceived(
 	  const RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
 	{
 		MS_TRACE();
@@ -779,8 +883,8 @@ namespace RTC
 
 		// Check that DTLS status is 'connecting' or 'connected'.
 		if (
-		  this->dtlsTransport->GetState() == DtlsTransport::DtlsState::CONNECTING ||
-		  this->dtlsTransport->GetState() == DtlsTransport::DtlsState::CONNECTED)
+		  this->dtlsTransport->GetState() == RTC::DtlsTransport::DtlsState::CONNECTING ||
+		  this->dtlsTransport->GetState() == RTC::DtlsTransport::DtlsState::CONNECTED)
 		{
 			MS_DEBUG_DEV("DTLS data received, passing it to the DTLS transport");
 
@@ -794,7 +898,8 @@ namespace RTC
 		}
 	}
 
-	inline void WebRtcTransport::OnRtpDataRecv(RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
+	inline void WebRtcTransport::OnRtpDataReceived(
+	  RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
 	{
 		MS_TRACE();
 
@@ -807,7 +912,7 @@ namespace RTC
 		}
 
 		// Ensure there is receiving SRTP session.
-		if (this->srtpRecvSession == nullptr)
+		if (!this->srtpRecvSession)
 		{
 			MS_DEBUG_TAG(srtp, "ignoring RTP packet due to non receiving SRTP session");
 
@@ -823,11 +928,11 @@ namespace RTC
 		}
 
 		// Decrypt the SRTP packet.
-		if (!this->srtpRecvSession->DecryptSrtp(data, &len))
+		if (!this->srtpRecvSession->DecryptSrtp(const_cast<uint8_t*>(data), &len))
 		{
 			RTC::RtpPacket* packet = RTC::RtpPacket::Parse(data, len);
 
-			if (packet == nullptr)
+			if (!packet)
 			{
 				MS_WARN_TAG(srtp, "DecryptSrtp() failed due to an invalid RTP packet");
 			}
@@ -846,75 +951,24 @@ namespace RTC
 			return;
 		}
 
-		// Mirror RTP if needed.
-		if (this->mirrorTuple != nullptr && this->mirroringOptions.recvRtp)
-			this->mirrorTuple->Send(data, len);
-
 		RTC::RtpPacket* packet = RTC::RtpPacket::Parse(data, len);
 
-		if (packet == nullptr)
+		if (!packet)
 		{
 			MS_WARN_TAG(rtp, "received data is not a valid RTP packet");
 
 			return;
 		}
 
-		// Apply the Transport RTP header extension ids so the RTP listener can use them.
-		if (this->headerExtensionIds.absSendTime != 0u)
-		{
-			packet->AddExtensionMapping(
-			  RtpHeaderExtensionUri::Type::ABS_SEND_TIME, this->headerExtensionIds.absSendTime);
-		}
-		if (this->headerExtensionIds.mid != 0u)
-		{
-			packet->AddExtensionMapping(RtpHeaderExtensionUri::Type::MID, this->headerExtensionIds.mid);
-		}
-		if (this->headerExtensionIds.rid != 0u)
-		{
-			packet->AddExtensionMapping(
-			  RtpHeaderExtensionUri::Type::RTP_STREAM_ID, this->headerExtensionIds.rid);
-		}
-
-		// Feed the remote bitrate estimator (REMB).
-		uint32_t absSendTime;
-
-		if (packet->ReadAbsSendTime(&absSendTime))
-		{
-			this->remoteBitrateEstimator->IncomingPacket(
-			  DepLibUV::GetTime(), packet->GetPayloadLength(), *packet, absSendTime);
-		}
-
-		// Get the associated Producer.
-		RTC::Producer* producer = this->rtpListener.GetProducer(packet);
-
-		if (producer == nullptr)
-		{
-			MS_WARN_TAG(
-			  rtp,
-			  "no suitable Producer for received RTP packet [ssrc:%" PRIu32 ", payloadType:%" PRIu8 "]",
-			  packet->GetSsrc(),
-			  packet->GetPayloadType());
-
-			delete packet;
-			return;
-		}
-
-		MS_DEBUG_DEV(
-		  "RTP packet received [ssrc:%" PRIu32 ", payloadType:%" PRIu8 ", producer:%" PRIu32 "]",
-		  packet->GetSsrc(),
-		  packet->GetPayloadType(),
-		  producer->producerId);
-
 		// Trick for clients performing aggressive ICE regardless we are ICE-Lite.
 		this->iceServer->ForceSelectedTuple(tuple);
 
-		// Pass the RTP packet to the corresponding Producer.
-		producer->ReceiveRtpPacket(packet);
-
-		delete packet;
+		// Pass the packet to the parent transport.
+		RTC::Transport::ReceiveRtpPacket(packet);
 	}
 
-	inline void WebRtcTransport::OnRtcpDataRecv(RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
+	inline void WebRtcTransport::OnRtcpDataReceived(
+	  RTC::TransportTuple* tuple, const uint8_t* data, size_t len)
 	{
 		MS_TRACE();
 
@@ -927,7 +981,7 @@ namespace RTC
 		}
 
 		// Ensure there is receiving SRTP session.
-		if (this->srtpRecvSession == nullptr)
+		if (!this->srtpRecvSession)
 		{
 			MS_DEBUG_TAG(srtp, "ignoring RTCP packet due to non receiving SRTP session");
 
@@ -943,80 +997,68 @@ namespace RTC
 		}
 
 		// Decrypt the SRTCP packet.
-		if (!this->srtpRecvSession->DecryptSrtcp(data, &len))
+		if (!this->srtpRecvSession->DecryptSrtcp(const_cast<uint8_t*>(data), &len))
 			return;
-
-		// Mirror RTCP if needed.
-		if (this->mirrorTuple != nullptr && this->mirroringOptions.recvRtcp)
-			this->mirrorTuple->Send(data, len);
 
 		RTC::RTCP::Packet* packet = RTC::RTCP::Packet::Parse(data, len);
 
-		if (packet == nullptr)
+		if (!packet)
 		{
 			MS_WARN_TAG(rtcp, "received data is not a valid RTCP compound or single packet");
 
 			return;
 		}
 
-		// Handle each RTCP packet.
-		while (packet != nullptr)
-		{
-			HandleRtcpPacket(packet);
-
-			RTC::RTCP::Packet* previousPacket = packet;
-
-			packet = packet->GetNext();
-			delete previousPacket;
-		}
+		// Pass the packet to the parent transport.
+		RTC::Transport::ReceiveRtcpPacket(packet);
 	}
 
-	void WebRtcTransport::OnPacketRecv(
+	inline void WebRtcTransport::OnUdpSocketPacketReceived(
 	  RTC::UdpSocket* socket, const uint8_t* data, size_t len, const struct sockaddr* remoteAddr)
 	{
 		MS_TRACE();
 
 		RTC::TransportTuple tuple(socket, remoteAddr);
 
-		OnPacketRecv(&tuple, data, len);
+		OnPacketReceived(&tuple, data, len);
 	}
 
-	void WebRtcTransport::OnRtcTcpConnectionClosed(
-	  RTC::TcpServer* /*tcpServer*/, RTC::TcpConnection* connection, bool isClosedByPeer)
+	inline void WebRtcTransport::OnRtcTcpConnectionClosed(
+	  RTC::TcpServer* /*tcpServer*/, RTC::TcpConnection* connection)
 	{
 		MS_TRACE();
 
 		RTC::TransportTuple tuple(connection);
 
-		if (isClosedByPeer)
-			this->iceServer->RemoveTuple(&tuple);
+		this->iceServer->RemoveTuple(&tuple);
 	}
 
-	void WebRtcTransport::OnPacketRecv(RTC::TcpConnection* connection, const uint8_t* data, size_t len)
+	inline void WebRtcTransport::OnTcpConnectionPacketReceived(
+	  RTC::TcpConnection* connection, const uint8_t* data, size_t len)
 	{
 		MS_TRACE();
 
 		RTC::TransportTuple tuple(connection);
 
-		OnPacketRecv(&tuple, data, len);
+		OnPacketReceived(&tuple, data, len);
 	}
 
-	void WebRtcTransport::OnOutgoingStunMessage(
-	  const RTC::IceServer* /*iceServer*/, const RTC::StunMessage* msg, RTC::TransportTuple* tuple)
+	inline void WebRtcTransport::OnIceServerSendStunPacket(
+	  const RTC::IceServer* /*iceServer*/, const RTC::StunPacket* packet, RTC::TransportTuple* tuple)
 	{
 		MS_TRACE();
 
 		// Send the STUN response over the same transport tuple.
-		tuple->Send(msg->GetData(), msg->GetSize());
+		tuple->Send(packet->GetData(), packet->GetSize());
+
+		// Increase send transmission.
+		RTC::Transport::DataSent(packet->GetSize());
 	}
 
-	void WebRtcTransport::OnIceSelectedTuple(const RTC::IceServer* /*iceServer*/, RTC::TransportTuple* tuple)
+	inline void WebRtcTransport::OnIceServerSelectedTuple(
+	  const RTC::IceServer* /*iceServer*/, RTC::TransportTuple* /*tuple*/)
 	{
 		MS_TRACE();
-
-		static const Json::StaticString JsonStringIceSelectedTuple{ "iceSelectedTuple" };
-
-		Json::Value eventData(Json::objectValue);
 
 		/*
 		 * RFC 5245 section 11.2 "Receiving Media":
@@ -1025,90 +1067,93 @@ namespace RTC
 		 * on any candidates provided for that component.
 		 */
 
-		// Update the selected tuple.
-		this->selectedTuple = tuple;
+		MS_DEBUG_TAG(ice, "ICE selected tuple");
 
-		// Notify.
-		eventData[JsonStringIceSelectedTuple] = tuple->ToJson();
-		this->notifier->Emit(this->transportId, "iceselectedtuplechange", eventData);
+		// Notify the Node WebRtcTransport.
+		json data = json::object();
+
+		this->iceServer->GetSelectedTuple()->FillJson(data["iceSelectedTuple"]);
+
+		Channel::Notifier::Emit(this->id, "iceselectedtuplechange", data);
 	}
 
-	void WebRtcTransport::OnIceConnected(const RTC::IceServer* /*iceServer*/)
+	inline void WebRtcTransport::OnIceServerConnected(const RTC::IceServer* /*iceServer*/)
 	{
 		MS_TRACE();
-
-		static const Json::StaticString JsonStringIceState{ "iceState" };
-		static const Json::StaticString JsonStringConnected{ "connected" };
-
-		Json::Value eventData(Json::objectValue);
 
 		MS_DEBUG_TAG(ice, "ICE connected");
 
-		// Notify.
-		eventData[JsonStringIceState] = JsonStringConnected;
-		this->notifier->Emit(this->transportId, "icestatechange", eventData);
+		// Notify the Node WebRtcTransport.
+		json data = json::object();
+
+		data["iceState"] = "connected";
+
+		Channel::Notifier::Emit(this->id, "icestatechange", data);
 
 		// If ready, run the DTLS handler.
 		MayRunDtlsTransport();
+
+		// If DTLS was already connected, notify the parent class.
+		if (this->dtlsTransport->GetState() == RTC::DtlsTransport::DtlsState::CONNECTED)
+			RTC::Transport::Connected();
 	}
 
-	void WebRtcTransport::OnIceCompleted(const RTC::IceServer* /*iceServer*/)
+	inline void WebRtcTransport::OnIceServerCompleted(const RTC::IceServer* /*iceServer*/)
 	{
 		MS_TRACE();
-
-		static const Json::StaticString JsonStringIceState{ "iceState" };
-		static const Json::StaticString JsonStringCompleted{ "completed" };
-
-		Json::Value eventData(Json::objectValue);
 
 		MS_DEBUG_TAG(ice, "ICE completed");
 
-		// Notify.
-		eventData[JsonStringIceState] = JsonStringCompleted;
-		this->notifier->Emit(this->transportId, "icestatechange", eventData);
+		// Notify the Node WebRtcTransport.
+		json data = json::object();
+
+		data["iceState"] = "completed";
+
+		Channel::Notifier::Emit(this->id, "icestatechange", data);
 
 		// If ready, run the DTLS handler.
 		MayRunDtlsTransport();
+
+		// If DTLS was already connected, notify the parent class.
+		if (this->dtlsTransport->GetState() == RTC::DtlsTransport::DtlsState::CONNECTED)
+			RTC::Transport::Connected();
 	}
 
-	void WebRtcTransport::OnIceDisconnected(const RTC::IceServer* /*iceServer*/)
+	inline void WebRtcTransport::OnIceServerDisconnected(const RTC::IceServer* /*iceServer*/)
 	{
 		MS_TRACE();
-
-		static const Json::StaticString JsonStringIceState{ "iceState" };
-		static const Json::StaticString JsonStringDisconnected{ "disconnected" };
-
-		Json::Value eventData(Json::objectValue);
 
 		MS_DEBUG_TAG(ice, "ICE disconnected");
 
-		// Unset the selected tuple.
-		this->selectedTuple = nullptr;
+		// Notify the Node WebRtcTransport.
+		json data = json::object();
 
-		// Notify.
-		eventData[JsonStringIceState] = JsonStringDisconnected;
-		this->notifier->Emit(this->transportId, "icestatechange", eventData);
+		data["iceState"] = "disconnected";
+
+		Channel::Notifier::Emit(this->id, "icestatechange", data);
+
+		// If DTLS was already connected, notify the parent class.
+		if (this->dtlsTransport->GetState() == RTC::DtlsTransport::DtlsState::CONNECTED)
+			RTC::Transport::Disconnected();
 	}
 
-	void WebRtcTransport::OnDtlsConnecting(const RTC::DtlsTransport* /*dtlsTransport*/)
+	inline void WebRtcTransport::OnDtlsTransportConnecting(const RTC::DtlsTransport* /*dtlsTransport*/)
 	{
 		MS_TRACE();
 
-		static const Json::StaticString JsonStringDtlsState{ "dtlsState" };
-		static const Json::StaticString JsonStringConnecting{ "connecting" };
-
-		Json::Value eventData(Json::objectValue);
-
 		MS_DEBUG_TAG(dtls, "DTLS connecting");
 
-		// Notify.
-		eventData[JsonStringDtlsState] = JsonStringConnecting;
-		this->notifier->Emit(this->transportId, "dtlsstatechange", eventData);
+		// Notify the Node WebRtcTransport.
+		json data = json::object();
+
+		data["dtlsState"] = "connecting";
+
+		Channel::Notifier::Emit(this->id, "dtlsstatechange", data);
 	}
 
-	void WebRtcTransport::OnDtlsConnected(
+	inline void WebRtcTransport::OnDtlsTransportConnected(
 	  const RTC::DtlsTransport* /*dtlsTransport*/,
-	  RTC::SrtpSession::Profile srtpProfile,
+	  RTC::SrtpSession::CryptoSuite srtpCryptoSuite,
 	  uint8_t* srtpLocalKey,
 	  size_t srtpLocalKeyLen,
 	  uint8_t* srtpRemoteKey,
@@ -1117,30 +1162,19 @@ namespace RTC
 	{
 		MS_TRACE();
 
-		static const Json::StaticString JsonStringDtlsState{ "dtlsState" };
-		static const Json::StaticString JsonStringConnected{ "connected" };
-		static const Json::StaticString JsonStringDtlsRemoteCert{ "dtlsRemoteCert" };
-
-		Json::Value eventData(Json::objectValue);
-
 		MS_DEBUG_TAG(dtls, "DTLS connected");
 
 		// Close it if it was already set and update it.
-		if (this->srtpSendSession != nullptr)
-		{
-			this->srtpSendSession->Destroy();
-			this->srtpSendSession = nullptr;
-		}
-		if (this->srtpRecvSession != nullptr)
-		{
-			this->srtpRecvSession->Destroy();
-			this->srtpRecvSession = nullptr;
-		}
+		delete this->srtpSendSession;
+		this->srtpSendSession = nullptr;
+
+		delete this->srtpRecvSession;
+		this->srtpRecvSession = nullptr;
 
 		try
 		{
 			this->srtpSendSession = new RTC::SrtpSession(
-			  RTC::SrtpSession::Type::OUTBOUND, srtpProfile, srtpLocalKey, srtpLocalKeyLen);
+			  RTC::SrtpSession::Type::OUTBOUND, srtpCryptoSuite, srtpLocalKey, srtpLocalKeyLen);
 		}
 		catch (const MediaSoupError& error)
 		{
@@ -1150,136 +1184,83 @@ namespace RTC
 		try
 		{
 			this->srtpRecvSession = new RTC::SrtpSession(
-			  SrtpSession::Type::INBOUND, srtpProfile, srtpRemoteKey, srtpRemoteKeyLen);
+			  RTC::SrtpSession::Type::INBOUND, srtpCryptoSuite, srtpRemoteKey, srtpRemoteKeyLen);
+
+			// Notify the Node WebRtcTransport.
+			json data = json::object();
+
+			data["dtlsState"]      = "connected";
+			data["dtlsRemoteCert"] = remoteCert;
+
+			Channel::Notifier::Emit(this->id, "dtlsstatechange", data);
+
+			// Tell the parent class.
+			RTC::Transport::Connected();
 		}
 		catch (const MediaSoupError& error)
 		{
 			MS_ERROR("error creating SRTP receiving session: %s", error.what());
 
-			this->srtpSendSession->Destroy();
+			delete this->srtpSendSession;
 			this->srtpSendSession = nullptr;
-		}
-
-		// Notify.
-		eventData[JsonStringDtlsState]      = JsonStringConnected;
-		eventData[JsonStringDtlsRemoteCert] = remoteCert;
-		this->notifier->Emit(this->transportId, "dtlsstatechange", eventData);
-
-		// Iterate all the Consumers and request key frame.
-		for (auto* consumer : this->consumers)
-		{
-			if (consumer->kind == RTC::Media::Kind::VIDEO)
-				MS_DEBUG_2TAGS(rtcp, rtx, "Transport connected, requesting key frame for Consumers");
-
-			consumer->RequestKeyFrame();
 		}
 	}
 
-	void WebRtcTransport::OnDtlsFailed(const RTC::DtlsTransport* /*dtlsTransport*/)
+	inline void WebRtcTransport::OnDtlsTransportFailed(const RTC::DtlsTransport* /*dtlsTransport*/)
 	{
 		MS_TRACE();
-
-		static const Json::StaticString JsonStringDtlsState{ "dtlsState" };
-		static const Json::StaticString JsonStringFailed{ "failed" };
-
-		Json::Value eventData(Json::objectValue);
 
 		MS_WARN_TAG(dtls, "DTLS failed");
 
-		// Notify.
-		eventData[JsonStringDtlsState] = JsonStringFailed;
-		this->notifier->Emit(this->transportId, "dtlsstatechange", eventData);
+		// Notify the Node WebRtcTransport.
+		json data = json::object();
 
-		// This is a fatal error so close the transport.
-		Destroy();
+		data["dtlsState"] = "failed";
+
+		Channel::Notifier::Emit(this->id, "dtlsstatechange", data);
 	}
 
-	void WebRtcTransport::OnDtlsClosed(const RTC::DtlsTransport* /*dtlsTransport*/)
+	inline void WebRtcTransport::OnDtlsTransportClosed(const RTC::DtlsTransport* /*dtlsTransport*/)
 	{
 		MS_TRACE();
 
-		static const Json::StaticString JsonStringDtlsState{ "dtlsState" };
-		static const Json::StaticString JsonStringClosed{ "closed" };
+		MS_WARN_TAG(dtls, "DTLS remotely closed");
 
-		Json::Value eventData(Json::objectValue);
+		// Notify the Node WebRtcTransport.
+		json data = json::object();
 
-		MS_DEBUG_TAG(dtls, "DTLS remotely closed");
+		data["dtlsState"] = "closed";
 
-		// Notify.
-		eventData[JsonStringDtlsState] = JsonStringClosed;
-		this->notifier->Emit(this->transportId, "dtlsstatechange", eventData);
+		Channel::Notifier::Emit(this->id, "dtlsstatechange", data);
 
-		// This is a fatal error so close the transport.
-		Destroy();
+		// Tell the parent class.
+		RTC::Transport::Disconnected();
 	}
 
-	void WebRtcTransport::OnOutgoingDtlsData(
+	inline void WebRtcTransport::OnDtlsTransportSendData(
 	  const RTC::DtlsTransport* /*dtlsTransport*/, const uint8_t* data, size_t len)
 	{
 		MS_TRACE();
 
-		if (this->selectedTuple == nullptr)
+		if (!this->iceServer->GetSelectedTuple())
 		{
 			MS_WARN_TAG(dtls, "no selected tuple set, cannot send DTLS packet");
 
 			return;
 		}
 
-		this->selectedTuple->Send(data, len);
+		this->iceServer->GetSelectedTuple()->Send(data, len);
+
+		// Increase send transmission.
+		RTC::Transport::DataSent(len);
 	}
 
-	void WebRtcTransport::OnDtlsApplicationData(
-	  const RTC::DtlsTransport* /*dtlsTransport*/, const uint8_t* /*data*/, size_t len)
+	inline void WebRtcTransport::OnDtlsTransportApplicationDataReceived(
+	  const RTC::DtlsTransport* /*dtlsTransport*/, const uint8_t* data, size_t len)
 	{
 		MS_TRACE();
 
-		MS_DEBUG_TAG(dtls, "DTLS application data received [size:%zu]", len);
-
-		// NOTE: No DataChannel support, si just ignore it.
-	}
-
-	void WebRtcTransport::OnRemoteBitrateEstimatorValue(const std::vector<uint32_t>& ssrcs, uint32_t bitrate)
-	{
-		MS_TRACE();
-
-		uint32_t effectiveBitrate;
-		uint64_t now = DepLibUV::GetTime();
-
-		// Limit bitrate if requested via API.
-		if (this->maxBitrate != 0u)
-			effectiveBitrate = std::min(bitrate, this->maxBitrate);
-		else
-			effectiveBitrate = bitrate;
-
-		if (MS_HAS_DEBUG_TAG(rbe))
-		{
-			std::ostringstream ssrcsStream;
-
-			if (!ssrcs.empty())
-			{
-				std::copy(ssrcs.begin(), ssrcs.end() - 1, std::ostream_iterator<uint32_t>(ssrcsStream, ","));
-				ssrcsStream << ssrcs.back();
-			}
-
-			MS_DEBUG_TAG(
-			  rbe,
-			  "sending RTCP REMB packet [estimated:%" PRIu32 "bps, effective:%" PRIu32 "bps, ssrcs:%s]",
-			  bitrate,
-			  effectiveBitrate,
-			  ssrcsStream.str().c_str());
-		}
-
-		RTC::RTCP::FeedbackPsRembPacket packet(0, 0);
-
-		packet.SetBitrate(effectiveBitrate);
-		packet.SetSsrcs(ssrcs);
-		packet.Serialize(RTC::RTCP::Buffer);
-		SendRtcpPacket(&packet);
-
-		if (now - this->lastEffectiveMaxBitrateAt > EffectiveMaxBitrateCheckInterval)
-		{
-			this->lastEffectiveMaxBitrateAt = now;
-			this->sentRemb                  = std::make_tuple(effectiveBitrate, ssrcs);
-		}
+		// Pass it to the parent transport.
+		RTC::Transport::ReceiveSctpData(data, len);
 	}
 } // namespace RTC

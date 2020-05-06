@@ -1,78 +1,78 @@
 #ifndef MS_RTC_RTP_STREAM_SEND_HPP
 #define MS_RTC_RTP_STREAM_SEND_HPP
 
-#include "RTC/RTCP/ReceiverReport.hpp"
-#include "RTC/RTCP/SenderReport.hpp"
+#include "RTC/RateCalculator.hpp"
 #include "RTC/RtpStream.hpp"
-#include <list>
 #include <vector>
 
 namespace RTC
 {
-	class RtpStreamSend : public RtpStream
+	class RtpStreamSend : public RTC::RtpStream
 	{
-	private:
-		struct StorageItem
+	public:
+		class Listener : public RTC::RtpStream::Listener
 		{
-			uint8_t store[RTC::MtuSize];
-		};
-
-	private:
-		struct BufferItem
-		{
-			uint16_t seq{ 0 }; // RTP seq.
-			uint64_t resentAtTime{ 0 };
-			RTC::RtpPacket* packet{ nullptr };
+		public:
+			virtual void OnRtpStreamRetransmitRtpPacket(
+			  RTC::RtpStreamSend* rtpStream, RTC::RtpPacket* packet) = 0;
 		};
 
 	public:
-		RtpStreamSend(RTC::RtpStream::Params& params, size_t bufferSize);
+		struct StorageItem
+		{
+			// Cloned packet.
+			RTC::RtpPacket* packet{ nullptr };
+			// Memory to hold the cloned packet (with extra space for RTX encoding).
+			uint8_t store[RTC::MtuSize + 100];
+			// Last time this packet was resent.
+			uint64_t resentAtMs{ 0u };
+			// Number of times this packet was resent.
+			uint8_t sentTimes{ 0u };
+			// Whether the packet has been already RTX encoded.
+			bool rtxEncoded{ false };
+		};
+
+	public:
+		RtpStreamSend(
+		  RTC::RtpStreamSend::Listener* listener, RTC::RtpStream::Params& params, size_t bufferSize);
 		~RtpStreamSend() override;
 
-		Json::Value GetStats() override;
+		void FillJsonStats(json& jsonObject) override;
+		void SetRtx(uint8_t payloadType, uint32_t ssrc) override;
 		bool ReceivePacket(RTC::RtpPacket* packet) override;
+		void ReceiveNack(RTC::RTCP::FeedbackRtpNackPacket* nackPacket);
+		void ReceiveKeyFrameRequest(RTC::RTCP::FeedbackPs::MessageType messageType);
 		void ReceiveRtcpReceiverReport(RTC::RTCP::ReceiverReport* report);
-		void RequestRtpRetransmission(
-		  uint16_t seq, uint16_t bitmask, std::vector<RTC::RtpPacket*>& container);
-		RTC::RTCP::SenderReport* GetRtcpSenderReport(uint64_t now);
-		void SetRtx(uint8_t payloadType, uint32_t ssrc);
-		bool HasRtx() const;
-		void RtxEncode(RtpPacket* packet);
-		void ClearRetransmissionBuffer();
-		bool IsHealthy() const;
+		RTC::RTCP::SenderReport* GetRtcpSenderReport(uint64_t nowMs);
+		RTC::RTCP::SdesChunk* GetRtcpSdesChunk();
+		void Pause() override;
+		void Resume() override;
+		uint32_t GetBitrate(uint64_t nowMs) override
+		{
+			return this->transmissionCounter.GetBitrate(nowMs);
+		}
+		uint32_t GetBitrate(uint64_t nowMs, uint8_t spatialLayer, uint8_t temporalLayer) override;
+		uint32_t GetSpatialLayerBitrate(uint64_t nowMs, uint8_t spatialLayer) override;
+		uint32_t GetLayerBitrate(uint64_t nowMs, uint8_t spatialLayer, uint8_t temporalLayer) override;
 
 	private:
 		void StorePacket(RTC::RtpPacket* packet);
-
-		/* Pure virtual methods inherited from RtpStream. */
-	protected:
-		void CheckStatus() override;
+		void ClearBuffer();
+		void ResetStorageItem(StorageItem* storageItem);
+		void UpdateBufferStartIdx();
+		void FillRetransmissionContainer(uint16_t seq, uint16_t bitmask);
+		void UpdateScore(RTC::RTCP::ReceiverReport* report);
 
 	private:
-		// Passed by argument.
+		uint32_t lostPriorScore{ 0u }; // Packets lost at last interval for score calculation.
+		uint32_t sentPriorScore{ 0u }; // Packets sent at last interval for score calculation.
+		std::vector<StorageItem*> buffer;
+		uint16_t bufferStartIdx{ 0u };
+		size_t bufferSize{ 0u };
 		std::vector<StorageItem> storage;
-		using Buffer = std::list<BufferItem>;
-		Buffer buffer;
-		// Stats.
-		float rtt{ 0 };
-
-	private:
-		// Retransmittion related.
-		bool hasRtx{ false };
-		uint8_t rtxPayloadType{ 0 };
-		uint32_t rtxSsrc{ 0 };
-		uint16_t rtxSeq{ 0 };
+		uint16_t rtxSeq{ 0u };
+		RTC::RtpDataCounter transmissionCounter;
 	};
-
-	inline bool RtpStreamSend::HasRtx() const
-	{
-		return this->hasRtx;
-	}
-
-	inline void RtpStreamSend::CheckStatus()
-	{
-		return;
-	}
 } // namespace RTC
 
 #endif

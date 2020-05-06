@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::ReceiverReport"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/ReceiverReport.hpp"
 #include "Logger.hpp"
@@ -20,7 +20,7 @@ namespace RTC
 			auto* header = const_cast<Header*>(reinterpret_cast<const Header*>(data));
 
 			// Packet size must be >= header size.
-			if (sizeof(Header) > len)
+			if (len < sizeof(Header))
 			{
 				MS_WARN_TAG(rtcp, "not enough space for receiver report, packet discarded");
 
@@ -36,15 +36,15 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<ReceiverReport>");
-			MS_DEBUG_DEV("  ssrc          : %" PRIu32, this->GetSsrc());
-			MS_DEBUG_DEV("  fraction lost : %" PRIu32, this->GetFractionLost());
-			MS_DEBUG_DEV("  total lost    : %" PRIu32, this->GetTotalLost());
-			MS_DEBUG_DEV("  last seq      : %" PRIu32, this->GetLastSeq());
-			MS_DEBUG_DEV("  jitter        : %" PRIu32, this->GetJitter());
-			MS_DEBUG_DEV("  lsr           : %" PRIu32, this->GetLastSenderReport());
-			MS_DEBUG_DEV("  dlsr          : %" PRIu32, this->GetDelaySinceLastSenderReport());
-			MS_DEBUG_DEV("</ReceiverReport>");
+			MS_DUMP("<ReceiverReport>");
+			MS_DUMP("  ssrc          : %" PRIu32, GetSsrc());
+			MS_DUMP("  fraction lost : %" PRIu8, GetFractionLost());
+			MS_DUMP("  total lost    : %" PRIu32, GetTotalLost());
+			MS_DUMP("  last seq      : %" PRIu32, GetLastSeq());
+			MS_DUMP("  jitter        : %" PRIu32, GetJitter());
+			MS_DUMP("  lsr           : %" PRIu32, GetLastSenderReport());
+			MS_DUMP("  dlsr          : %" PRIu32, GetDelaySinceLastSenderReport());
+			MS_DUMP("</ReceiverReport>");
 		}
 
 		size_t ReceiverReport::Serialize(uint8_t* buffer)
@@ -63,7 +63,7 @@ namespace RTC
 		 * ReceiverReportPacket::Parse()
 		 * @param  data   - Points to the begining of the incoming RTCP packet.
 		 * @param  len    - Total length of the packet.
-		 * @param  offset - points to the first Receiver Report if the incoming packet.
+		 * @param  offset - points to the first Receiver Report in the incoming packet.
 		 */
 		ReceiverReportPacket* ReceiverReportPacket::Parse(const uint8_t* data, size_t len, size_t offset)
 		{
@@ -73,24 +73,26 @@ namespace RTC
 			auto* header = const_cast<CommonHeader*>(reinterpret_cast<const CommonHeader*>(data));
 
 			// Ensure there is space for the common header and the SSRC of packet sender.
-			if (sizeof(CommonHeader) + sizeof(uint32_t) > len)
+			if (len < sizeof(CommonHeader) + 4u /* ssrc */)
 			{
 				MS_WARN_TAG(rtcp, "not enough space for receiver report packet, packet discarded");
 
 				return nullptr;
 			}
 
-			std::unique_ptr<ReceiverReportPacket> packet(new ReceiverReportPacket());
+			std::unique_ptr<ReceiverReportPacket> packet(new ReceiverReportPacket(header));
 
-			packet->SetSsrc(
-			  Utils::Byte::Get4Bytes(reinterpret_cast<uint8_t*>(header), sizeof(CommonHeader)));
+			uint32_t ssrc =
+			  Utils::Byte::Get4Bytes(reinterpret_cast<uint8_t*>(header), sizeof(CommonHeader));
+
+			packet->SetSsrc(ssrc);
 
 			if (offset == 0)
-				offset = sizeof(Packet::CommonHeader) + sizeof(uint32_t) /* ssrc */;
+				offset = sizeof(Packet::CommonHeader) + 4u /* ssrc */;
 
 			uint8_t count = header->count;
 
-			while (((count--) != 0u) && (len > offset))
+			while ((count-- != 0u) && (len > offset))
 			{
 				ReceiverReport* report = ReceiverReport::Parse(data + offset, len - offset);
 
@@ -117,11 +119,11 @@ namespace RTC
 			size_t offset = Packet::Serialize(buffer);
 
 			// Copy the SSRC.
-			std::memcpy(buffer + sizeof(Packet::CommonHeader), &this->ssrc, sizeof(this->ssrc));
-			offset += sizeof(this->ssrc);
+			Utils::Byte::Set4Bytes(buffer, sizeof(Packet::CommonHeader), this->ssrc);
+			offset += 4u;
 
 			// Serialize reports.
-			for (auto report : this->reports)
+			for (auto* report : this->reports)
 			{
 				offset += report->Serialize(buffer + offset);
 			}
@@ -133,13 +135,13 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<ReceiverReportPacket>");
-			MS_DEBUG_DEV("  ssrc: %" PRIu32, static_cast<uint32_t>(ntohl(this->ssrc)));
-			for (auto report : this->reports)
+			MS_DUMP("<ReceiverReportPacket>");
+			MS_DUMP("  ssrc: %" PRIu32, this->ssrc);
+			for (auto* report : this->reports)
 			{
 				report->Dump();
 			}
-			MS_DEBUG_DEV("</ReceiverReportPacket>");
+			MS_DUMP("</ReceiverReportPacket>");
 		}
 	} // namespace RTCP
 } // namespace RTC

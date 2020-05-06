@@ -2,190 +2,179 @@
 #define MS_RTC_PRODUCER_HPP
 
 #include "common.hpp"
-#include "Channel/Notifier.hpp"
-#include "RTC/ProducerListener.hpp"
+#include "Channel/Request.hpp"
+#include "RTC/KeyFrameRequestManager.hpp"
 #include "RTC/RTCP/CompoundPacket.hpp"
-#include "RTC/RTCP/Feedback.hpp"
-#include "RTC/RTCP/ReceiverReport.hpp"
+#include "RTC/RTCP/Packet.hpp"
+#include "RTC/RTCP/SenderReport.hpp"
+#include "RTC/RTCP/XrDelaySinceLastRr.hpp"
 #include "RTC/RtpDictionaries.hpp"
+#include "RTC/RtpHeaderExtensionIds.hpp"
 #include "RTC/RtpPacket.hpp"
 #include "RTC/RtpStreamRecv.hpp"
-#include "RTC/Transport.hpp"
-#include "handles/Timer.hpp"
-#include <json/json.h>
+#include <json.hpp>
 #include <map>
 #include <string>
-#include <unordered_set>
 #include <vector>
+
+using json = nlohmann::json;
 
 namespace RTC
 {
-	class Producer : public RtpStreamRecv::Listener, public Timer::Listener
+	class Producer : public RTC::RtpStreamRecv::Listener, public RTC::KeyFrameRequestManager::Listener
 	{
 	public:
+		class Listener
+		{
+		public:
+			virtual void OnProducerPaused(RTC::Producer* producer)  = 0;
+			virtual void OnProducerResumed(RTC::Producer* producer) = 0;
+			virtual void OnProducerNewRtpStream(
+			  RTC::Producer* producer, RTC::RtpStream* rtpStream, uint32_t mappedSsrc) = 0;
+			virtual void OnProducerRtpStreamScore(
+			  RTC::Producer* producer, RTC::RtpStream* rtpStream, uint8_t score, uint8_t previousScore) = 0;
+			virtual void OnProducerRtcpSenderReport(
+			  RTC::Producer* producer, RTC::RtpStream* rtpStream, bool first)                         = 0;
+			virtual void OnProducerRtpPacketReceived(RTC::Producer* producer, RTC::RtpPacket* packet) = 0;
+			virtual void OnProducerSendRtcpPacket(RTC::Producer* producer, RTC::RTCP::Packet* packet) = 0;
+			virtual void OnProducerNeedWorstRemoteFractionLost(
+			  RTC::Producer* producer, uint32_t mappedSsrc, uint8_t& worstRemoteFractionLost) = 0;
+		};
+
+	private:
+		struct RtpEncodingMapping
+		{
+			std::string rid;
+			uint32_t ssrc{ 0 };
+			uint32_t mappedSsrc{ 0 };
+		};
+
+	private:
 		struct RtpMapping
 		{
-			std::map<uint8_t, uint8_t> codecPayloadTypes;
-			std::map<uint8_t, uint8_t> headerExtensionIds;
+			std::map<uint8_t, uint8_t> codecs;
+			std::vector<RtpEncodingMapping> encodings;
 		};
 
 	private:
-		struct HeaderExtensionIds
+		struct VideoOrientation
 		{
-			uint8_t ssrcAudioLevel{ 0 }; // 0 means no ssrc-audio-level id.
-			uint8_t absSendTime{ 0 };    // 0 means no abs-send-time id.
-			uint8_t mid{ 0 };            // 0 means no MID id.
-			uint8_t rid{ 0 };            // 0 means no RID id.
+			bool camera{ false };
+			bool flip{ false };
+			uint16_t rotation{ 0 };
+		};
+
+	public:
+		enum class ReceiveRtpPacketResult
+		{
+			DISCARDED = 0,
+			MEDIA     = 1,
+			RETRANSMISSION
 		};
 
 	private:
-		struct RtpStreamInfo
+		struct TraceEventTypes
 		{
-			RTC::RtpStreamRecv* rtpStream{ nullptr };
-			std::string rid{};
-			RTC::RtpEncodingParameters::Profile profile{ RTC::RtpEncodingParameters::Profile::NONE };
-			uint32_t rtxSsrc{ 0 };
-			bool active{ false };
+			bool rtp{ false };
+			bool keyframe{ false };
+			bool nack{ false };
+			bool pli{ false };
+			bool fir{ false };
 		};
 
 	public:
-		Producer(
-		  Channel::Notifier* notifier,
-		  uint32_t producerId,
-		  RTC::Media::Kind kind,
-		  RTC::Transport* transport,
-		  RTC::RtpParameters& rtpParameters,
-		  struct RtpMapping& rtpMapping,
-		  bool paused);
-
-	public:
-		// Must be public because Router needs to call it.
+		Producer(const std::string& id, RTC::Producer::Listener* listener, json& data);
 		virtual ~Producer();
 
 	public:
-		void Destroy();
-		Json::Value ToJson() const;
-		Json::Value GetStats() const;
-		void AddListener(RTC::ProducerListener* listener);
-		void RemoveListener(RTC::ProducerListener* listener);
-		void Pause();
-		void Resume();
-		void SetPreferredProfile(const RTC::RtpEncodingParameters::Profile profile);
-		const RTC::RtpParameters& GetParameters() const;
-		const struct RTC::Transport::HeaderExtensionIds& GetTransportHeaderExtensionIds() const;
-		bool IsPaused() const;
-		RTC::RtpEncodingParameters::Profile GetPreferredProfile() const;
-		void ReceiveRtpPacket(RTC::RtpPacket* packet);
+		void FillJson(json& jsonObject) const;
+		void FillJsonStats(json& jsonArray) const;
+		void HandleRequest(Channel::Request* request);
+		RTC::Media::Kind GetKind() const
+		{
+			return this->kind;
+		}
+		const RTC::RtpParameters& GetRtpParameters() const
+		{
+			return this->rtpParameters;
+		}
+		const struct RTC::RtpHeaderExtensionIds& GetRtpHeaderExtensionIds() const
+		{
+			return this->rtpHeaderExtensionIds;
+		}
+		RTC::RtpParameters::Type GetType() const
+		{
+			return this->type;
+		}
+		bool IsPaused() const
+		{
+			return this->paused;
+		}
+		std::map<RTC::RtpStreamRecv*, uint32_t>& GetRtpStreams()
+		{
+			return this->mapRtpStreamMappedSsrc;
+		}
+		ReceiveRtpPacketResult ReceiveRtpPacket(RTC::RtpPacket* packet);
 		void ReceiveRtcpSenderReport(RTC::RTCP::SenderReport* report);
-		void GetRtcp(RTC::RTCP::CompoundPacket* packet, uint64_t now);
-		void RequestKeyFrame(bool force = false);
-		const std::map<RTC::RtpEncodingParameters::Profile, const RTC::RtpStream*>& GetActiveProfiles() const;
+		void ReceiveRtcpXrDelaySinceLastRr(RTC::RTCP::DelaySinceLastRr::SsrcInfo* ssrcInfo);
+		void GetRtcp(RTC::RTCP::CompoundPacket* packet, uint64_t nowMs);
+		void RequestKeyFrame(uint32_t mappedSsrc);
 
 	private:
-		void FillHeaderExtensionIds();
-		void MayNeedNewStream(RTC::RtpPacket* packet);
-		void CreateRtpStream(RTC::RtpEncodingParameters& encoding, uint32_t ssrc);
-		void ApplyRtpMapping(RTC::RtpPacket* packet) const;
-		void ActivateStream(RTC::RtpStreamRecv* rtpStream);
-		void DeactivateStream(RTC::RtpStreamRecv* rtpStream);
-		// TODO: Remove?
-		bool IsStreamActive(const RTC::RtpStream* rtpStream) const;
+		RTC::RtpStreamRecv* GetRtpStream(RTC::RtpPacket* packet);
+		RTC::RtpStreamRecv* CreateRtpStream(
+		  RTC::RtpPacket* packet, const RTC::RtpCodecParameters& mediaCodec, size_t encodingIdx);
+		void NotifyNewRtpStream(RTC::RtpStreamRecv* rtpStream);
+		void PreProcessRtpPacket(RTC::RtpPacket* packet);
+		bool MangleRtpPacket(RTC::RtpPacket* packet, RTC::RtpStreamRecv* rtpStream) const;
+		void PostProcessRtpPacket(RTC::RtpPacket* packet);
+		void EmitScore() const;
+		void EmitTraceEventRtpAndKeyFrameTypes(RTC::RtpPacket* packet, bool isRtx = false) const;
+		void EmitTraceEventKeyFrameType(RTC::RtpPacket* packet, bool isRtx = false) const;
+		void EmitTraceEventPliType(uint32_t ssrc) const;
+		void EmitTraceEventFirType(uint32_t ssrc) const;
+		void EmitTraceEventNackType() const;
 
 		/* Pure virtual methods inherited from RTC::RtpStreamRecv::Listener. */
 	public:
-		void OnRtpStreamRecvNackRequired(
-		  RTC::RtpStreamRecv* rtpStream, const std::vector<uint16_t>& seqNumbers) override;
-		void OnRtpStreamRecvPliRequired(RTC::RtpStreamRecv* rtpStream) override;
-		void OnRtpStreamInactive(RTC::RtpStream* rtpStream) override;
-		void OnRtpStreamActive(RTC::RtpStream* rtpStream) override;
+		void OnRtpStreamScore(RTC::RtpStream* rtpStream, uint8_t score, uint8_t previousScore) override;
+		void OnRtpStreamSendRtcpPacket(RTC::RtpStreamRecv* rtpStream, RTC::RTCP::Packet* packet) override;
+		void OnRtpStreamNeedWorstRemoteFractionLost(
+		  RTC::RtpStreamRecv* rtpStream, uint8_t& worstRemoteFractionLost) override;
 
-		/* Pure virtual methods inherited from Timer::Listener. */
+		/* Pure virtual methods inherited from RTC::KeyFrameRequestManager::Listener. */
 	public:
-		void OnTimer(Timer* timer) override;
+		void OnKeyFrameNeeded(RTC::KeyFrameRequestManager* keyFrameRequestManager, uint32_t ssrc) override;
 
 	public:
 		// Passed by argument.
-		uint32_t producerId{ 0 };
-		RTC::Media::Kind kind;
+		const std::string id;
 
 	private:
 		// Passed by argument.
-		Channel::Notifier* notifier{ nullptr };
-		RTC::Transport* transport{ nullptr };
-		RTC::RtpParameters rtpParameters;
-		struct RtpMapping rtpMapping;
-		std::unordered_set<RTC::ProducerListener*> listeners;
+		RTC::Producer::Listener* listener{ nullptr };
 		// Allocated by this.
-		std::map<uint32_t, RtpStreamInfo> mapSsrcRtpStreamInfo;
-		std::map<RTC::RtpEncodingParameters::Profile, const RTC::RtpStream*> mapActiveProfiles;
-		Timer* keyFrameRequestBlockTimer{ nullptr };
+		std::map<uint32_t, RTC::RtpStreamRecv*> mapSsrcRtpStream;
+		RTC::KeyFrameRequestManager* keyFrameRequestManager{ nullptr };
 		// Others.
-		std::vector<RtpEncodingParameters> outputEncodings;
-		struct RTC::Transport::HeaderExtensionIds transportHeaderExtensionIds;
-		struct HeaderExtensionIds headerExtensionIds;
+		RTC::Media::Kind kind;
+		RTC::RtpParameters rtpParameters;
+		RTC::RtpParameters::Type type{ RTC::RtpParameters::Type::NONE };
+		struct RtpMapping rtpMapping;
+		std::map<uint32_t, RTC::RtpStreamRecv*> mapRtxSsrcRtpStream;
+		std::map<RTC::RtpStreamRecv*, uint32_t> mapRtpStreamMappedSsrc;
+		std::map<uint32_t, uint32_t> mapMappedSsrcSsrc;
+		struct RTC::RtpHeaderExtensionIds rtpHeaderExtensionIds;
 		bool paused{ false };
-		bool isKeyFrameRequested{ false };
+		RTC::RtpPacket* currentRtpPacket{ nullptr };
 		// Timestamp when last RTCP was sent.
-		uint64_t lastRtcpSentTime{ 0 };
-		uint16_t maxRtcpInterval{ 0 };
-		// RTP preferred profile.
-		RTC::RtpEncodingParameters::Profile preferredProfile{ RTC::RtpEncodingParameters::Profile::DEFAULT };
+		uint64_t lastRtcpSentTime{ 0u };
+		uint16_t maxRtcpInterval{ 0u };
+		// Video orientation.
+		bool videoOrientationDetected{ false };
+		struct VideoOrientation videoOrientation;
+		struct TraceEventTypes traceEventTypes;
 	};
-
-	/* Inline methods. */
-
-	inline void Producer::AddListener(RTC::ProducerListener* listener)
-	{
-		this->listeners.insert(listener);
-	}
-
-	inline void Producer::RemoveListener(RTC::ProducerListener* listener)
-	{
-		this->listeners.erase(listener);
-	}
-
-	inline void Producer::SetPreferredProfile(const RTC::RtpEncodingParameters::Profile profile)
-	{
-		this->preferredProfile = profile;
-	}
-
-	inline const RTC::RtpParameters& Producer::GetParameters() const
-	{
-		return this->rtpParameters;
-	}
-
-	inline RTC::RtpEncodingParameters::Profile Producer::GetPreferredProfile() const
-	{
-		return this->preferredProfile;
-	}
-
-	inline const struct RTC::Transport::HeaderExtensionIds& Producer::GetTransportHeaderExtensionIds() const
-	{
-		return this->transportHeaderExtensionIds;
-	}
-
-	inline bool Producer::IsPaused() const
-	{
-		return this->paused;
-	}
-
-	inline void Producer::ReceiveRtcpSenderReport(RTC::RTCP::SenderReport* report)
-	{
-		auto it = this->mapSsrcRtpStreamInfo.find(report->GetSsrc());
-		if (it != this->mapSsrcRtpStreamInfo.end())
-		{
-			auto& info      = it->second;
-			auto* rtpStream = info.rtpStream;
-
-			rtpStream->ReceiveRtcpSenderReport(report);
-		}
-	}
-
-	inline const std::map<RTC::RtpEncodingParameters::Profile, const RTC::RtpStream*>& Producer::
-	  GetActiveProfiles() const
-	{
-		return this->mapActiveProfiles;
-	}
 } // namespace RTC
 
 #endif

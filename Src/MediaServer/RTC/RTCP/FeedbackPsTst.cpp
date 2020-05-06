@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::FeedbackPsTst"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/FeedbackPsTst.hpp"
 #include "Logger.hpp"
@@ -40,11 +40,11 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<FeedbackPsTstItem>");
-			MS_DEBUG_DEV("  ssrc            : %" PRIu32, this->GetSsrc());
-			MS_DEBUG_DEV("  sequence number : %" PRIu32, this->GetSequenceNumber());
-			MS_DEBUG_DEV("  index           : %" PRIu32, this->GetIndex());
-			MS_DEBUG_DEV("</FeedbackPsTstItem>");
+			MS_DUMP("<FeedbackPsTstItem>");
+			MS_DUMP("  ssrc            : %" PRIu32, this->GetSsrc());
+			MS_DUMP("  sequence number : %" PRIu32, this->GetSequenceNumber());
+			MS_DUMP("  index           : %" PRIu32, this->GetIndex());
+			MS_DUMP("</FeedbackPsTstItem>");
 		}
 
 		/* Specialization for Tstr class. */

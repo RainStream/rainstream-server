@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::FeedbackRtpTllei"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/FeedbackRtpTllei.hpp"
 #include "Logger.hpp"
@@ -33,10 +33,10 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<FeedbackRtpTlleiItem>");
-			MS_DEBUG_DEV("  pid: %" PRIu16, this->GetPacketId());
-			MS_DEBUG_DEV("  bpl: %" PRIu16, this->GetLostPacketBitmask());
-			MS_DEBUG_DEV("</FeedbackRtpTlleiItem>");
+			MS_DUMP("<FeedbackRtpTlleiItem>");
+			MS_DUMP("  pid: %" PRIu16, this->GetPacketId());
+			MS_DUMP("  bpl: %" PRIu16, this->GetLostPacketBitmask());
+			MS_DUMP("</FeedbackRtpTlleiItem>");
 		}
 	} // namespace RTCP
 } // namespace RTC

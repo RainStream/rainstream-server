@@ -1,16 +1,12 @@
 #define MS_CLASS "Worker"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "Worker.hpp"
 #include "DepLibUV.hpp"
 #include "Logger.hpp"
-#include "MediaSoupError.hpp"
+#include "MediaSoupErrors.hpp"
 #include "Settings.hpp"
-#include <json/json.h>
-#include <cerrno>
-#include <iostream> // std::cout, std::cerr
-#include <string>
-#include <utility> // std::pair()
+#include "Channel/Notifier.hpp"
 
 /* Instance methods. */
 
@@ -21,15 +17,15 @@ Worker::Worker(Channel::UnixStreamSocket* channel) : channel(channel)
 	// Set us as Channel's listener.
 	this->channel->SetListener(this);
 
-	// Create the Notifier instance.
-	this->notifier = new Channel::Notifier(this->channel);
-
 	// Set the signals handler.
 	this->signalsHandler = new SignalsHandler(this);
 
 	// Add signals to handle.
 	this->signalsHandler->AddSignal(SIGINT, "INT");
 	this->signalsHandler->AddSignal(SIGTERM, "TERM");
+
+	// Tell the Node process that we are running.
+	Channel::Notifier::Emit(std::to_string(Logger::pid), "running");
 
 	MS_DEBUG_DEV("starting libuv loop");
 	DepLibUV::RunLoop();
@@ -39,6 +35,9 @@ Worker::Worker(Channel::UnixStreamSocket* channel) : channel(channel)
 Worker::~Worker()
 {
 	MS_TRACE();
+
+	if (!this->closed)
+		Close();
 }
 
 void Worker::Close()
@@ -46,123 +45,169 @@ void Worker::Close()
 	MS_TRACE();
 
 	if (this->closed)
-	{
-		MS_ERROR("already closed");
-
 		return;
-	}
 
 	this->closed = true;
 
-	// Close the SignalsHandler.
-	if (this->signalsHandler != nullptr)
-		this->signalsHandler->Destroy();
+	// Delete the SignalsHandler.
+	delete this->signalsHandler;
 
-	// Close all the Routers.
-	// NOTE: Upon Router closure the onRouterClosed() method is called, which
-	// removes it from the map, so this is the safe way to iterate the map
-	// and remove elements.
-	for (auto it = this->routers.begin(); it != this->routers.end();)
+	// Delete all Routers.
+	for (auto& kv : this->mapRouters)
 	{
-		RTC::Router* router = it->second;
+		auto* router = kv.second;
 
-		it = this->routers.erase(it);
-		router->Destroy();
+		delete router;
 	}
+	this->mapRouters.clear();
 
-	// Delete the Notifier.
-	delete this->notifier;
-
-	// Close the Channel socket.
-	if (this->channel != nullptr)
-		this->channel->Destroy();
+	// Close the Channel.
+	delete this->channel;
 }
 
-RTC::Router* Worker::GetRouterFromRequest(Channel::Request* request, uint32_t* routerId)
+void Worker::FillJson(json& jsonObject) const
 {
 	MS_TRACE();
 
-	static const Json::StaticString JsonStringRouterId{ "routerId" };
+	// Add pid.
+	jsonObject["pid"] = Logger::pid;
 
-	auto jsonRouterId = request->internal[JsonStringRouterId];
+	// Add routerIds.
+	jsonObject["routerIds"] = json::array();
+	auto jsonRouterIdsIt    = jsonObject.find("routerIds");
 
-	if (!jsonRouterId.isUInt())
-		MS_THROW_ERROR("Request has not numeric internal.routerId");
-
-	// If given, fill routerId.
-	if (routerId != nullptr)
-		*routerId = jsonRouterId.asUInt();
-
-	auto it = this->routers.find(jsonRouterId.asUInt());
-	if (it != this->routers.end())
+	for (auto& kv : this->mapRouters)
 	{
-		RTC::Router* router = it->second;
+		auto& routerId = kv.first;
 
-		return router;
-	}
-
-	return nullptr;
-}
-
-void Worker::OnSignal(SignalsHandler* /*signalsHandler*/, int signum)
-{
-	MS_TRACE();
-
-	switch (signum)
-	{
-		case SIGINT:
-		{
-			MS_DEBUG_DEV("signal INT received, exiting");
-
-			Close();
-
-			break;
-		}
-
-		case SIGTERM:
-		{
-			MS_DEBUG_DEV("signal TERM received, exiting");
-
-			Close();
-
-			break;
-		}
-
-		default:
-		{
-			MS_WARN_DEV("received a signal (with signum %d) for which there is no handling code", signum);
-		}
+		jsonRouterIdsIt->emplace_back(routerId);
 	}
 }
 
-void Worker::OnChannelRequest(Channel::UnixStreamSocket* /*channel*/, Channel::Request* request)
+void Worker::FillJsonResourceUsage(json& jsonObject) const
 {
 	MS_TRACE();
 
-	MS_DEBUG_DEV("'%s' request", request->method.c_str());
+	int err;
+	uv_rusage_t uvRusage; // NOLINT(cppcoreguidelines-pro-type-member-init)
+
+	err = uv_getrusage(std::addressof(uvRusage));
+
+	if (err != 0)
+		MS_THROW_ERROR("uv_getrusagerequest() failed: %s", uv_strerror(err));
+
+	// Add ru_utime (uv_timeval_t, user CPU time used, converted to ms).
+	jsonObject["ru_utime"] =
+	  (uvRusage.ru_utime.tv_sec * static_cast<uint64_t>(1000)) + (uvRusage.ru_utime.tv_usec / 1000);
+
+	// Add ru_stime (uv_timeval_t, system CPU time used, converted to ms).
+	jsonObject["ru_stime"] =
+	  (uvRusage.ru_stime.tv_sec * static_cast<uint64_t>(1000)) + (uvRusage.ru_stime.tv_usec / 1000);
+
+	// Add ru_maxrss (uint64_t, maximum resident set size).
+	jsonObject["ru_maxrss"] = uvRusage.ru_maxrss;
+
+	// Add ru_ixrss (uint64_t, integral shared memory size).
+	jsonObject["ru_ixrss"] = uvRusage.ru_ixrss;
+
+	// Add ru_idrss (uint64_t, integral unshared data size).
+	jsonObject["ru_idrss"] = uvRusage.ru_idrss;
+
+	// Add ru_isrss (uint64_t, integral unshared stack size).
+	jsonObject["ru_isrss"] = uvRusage.ru_isrss;
+
+	// Add ru_minflt (uint64_t, page reclaims, soft page faults).
+	jsonObject["ru_minflt"] = uvRusage.ru_minflt;
+
+	// Add ru_majflt (uint64_t, page faults, hard page faults).
+	jsonObject["ru_majflt"] = uvRusage.ru_majflt;
+
+	// Add ru_nswap (uint64_t, swaps).
+	jsonObject["ru_nswap"] = uvRusage.ru_nswap;
+
+	// Add ru_inblock (uint64_t, block input operations).
+	jsonObject["ru_inblock"] = uvRusage.ru_inblock;
+
+	// Add ru_oublock (uint64_t, block output operations).
+	jsonObject["ru_oublock"] = uvRusage.ru_oublock;
+
+	// Add ru_msgsnd (uint64_t, IPC messages sent).
+	jsonObject["ru_msgsnd"] = uvRusage.ru_msgsnd;
+
+	// Add ru_msgrcv (uint64_t, IPC messages received).
+	jsonObject["ru_msgrcv"] = uvRusage.ru_msgrcv;
+
+	// Add ru_nsignals (uint64_t, signals received).
+	jsonObject["ru_nsignals"] = uvRusage.ru_nsignals;
+
+	// Add ru_nvcsw (uint64_t, voluntary context switches).
+	jsonObject["ru_nvcsw"] = uvRusage.ru_nvcsw;
+
+	// Add ru_nivcsw (uint64_t, involuntary context switches).
+	jsonObject["ru_nivcsw"] = uvRusage.ru_nivcsw;
+}
+
+void Worker::SetNewRouterIdFromRequest(Channel::Request* request, std::string& routerId) const
+{
+	MS_TRACE();
+
+	auto jsonRouterIdIt = request->internal.find("routerId");
+
+	if (jsonRouterIdIt == request->internal.end() || !jsonRouterIdIt->is_string())
+		MS_THROW_ERROR("request has no internal.routerId");
+
+	routerId.assign(jsonRouterIdIt->get<std::string>());
+
+	if (this->mapRouters.find(routerId) != this->mapRouters.end())
+		MS_THROW_ERROR("a Router with same routerId already exists");
+}
+
+RTC::Router* Worker::GetRouterFromRequest(Channel::Request* request) const
+{
+	MS_TRACE();
+
+	auto jsonRouterIdIt = request->internal.find("routerId");
+
+	if (jsonRouterIdIt == request->internal.end() || !jsonRouterIdIt->is_string())
+		MS_THROW_ERROR("request has no internal.routerId");
+
+	auto it = this->mapRouters.find(jsonRouterIdIt->get<std::string>());
+
+	if (it == this->mapRouters.end())
+		MS_THROW_ERROR("Router not found");
+
+	RTC::Router* router = it->second;
+
+	return router;
+}
+
+inline void Worker::OnChannelRequest(Channel::UnixStreamSocket* /*channel*/, Channel::Request* request)
+{
+	MS_TRACE();
+
+	MS_DEBUG_DEV(
+	  "Channel request received [method:%s, id:%" PRIu32 "]", request->method.c_str(), request->id);
 
 	switch (request->methodId)
 	{
 		case Channel::Request::MethodId::WORKER_DUMP:
 		{
-			static const Json::StaticString JsonStringWorkerId{ "workerId" };
-			static const Json::StaticString JsonStringRouters{ "routers" };
+			json data = json::object();
 
-			Json::Value json(Json::objectValue);
-			Json::Value jsonRouters(Json::arrayValue);
+			FillJson(data);
 
-			json[JsonStringWorkerId] = Logger::id;
+			request->Accept(data);
 
-			for (auto& kv : this->routers)
-			{
-				auto router = kv.second;
+			break;
+		}
 
-				jsonRouters.append(router->ToJson());
-			}
+		case Channel::Request::MethodId::WORKER_GET_RESOURCE_USAGE:
+		{
+			json data = json::object();
 
-			json[JsonStringRouters] = jsonRouters;
+			FillJsonResourceUsage(data);
 
-			request->Accept(json);
+			request->Accept(data);
 
 			break;
 		}
@@ -176,160 +221,98 @@ void Worker::OnChannelRequest(Channel::UnixStreamSocket* /*channel*/, Channel::R
 
 		case Channel::Request::MethodId::WORKER_CREATE_ROUTER:
 		{
-			RTC::Router* router;
-			uint32_t routerId;
+			std::string routerId;
 
-			try
-			{
-				router = GetRouterFromRequest(request, &routerId);
-			}
-			catch (const MediaSoupError& error)
-			{
-				request->Reject(error.what());
+			// This may throw.
+			SetNewRouterIdFromRequest(request, routerId);
 
-				return;
-			}
+			auto* router = new RTC::Router(routerId);
 
-			if (router != nullptr)
-			{
-				request->Reject("Router already exists");
+			this->mapRouters[routerId] = router;
 
-				return;
-			}
+			MS_DEBUG_DEV("Router created [routerId:%s]", routerId.c_str());
 
-			try
-			{
-				router = new RTC::Router(this, this->notifier, routerId);
-			}
-			catch (const MediaSoupError& error)
-			{
-				request->Reject(error.what());
-
-				return;
-			}
-
-			this->routers[routerId] = router;
-
-			MS_DEBUG_DEV("Router created [routerId:%" PRIu32 "]", routerId);
-
-			Json::Value data(Json::objectValue);
-
-			request->Accept(data);
+			request->Accept();
 
 			break;
 		}
 
 		case Channel::Request::MethodId::ROUTER_CLOSE:
 		{
-			RTC::Router* router;
+			// This may throw.
+			RTC::Router* router = GetRouterFromRequest(request);
 
-			try
-			{
-				router = GetRouterFromRequest(request);
-			}
-			catch (const MediaSoupError& error)
-			{
-				request->Reject(error.what());
+			// Remove it from the map and delete it.
+			this->mapRouters.erase(router->id);
+			delete router;
 
-				return;
-			}
+			MS_DEBUG_DEV("Router closed [id:%s]", router->id.c_str());
 
-			if (router == nullptr)
-			{
-				request->Reject("Router does not exist");
-
-				return;
-			}
-
-			router->Destroy();
 			request->Accept();
 
 			break;
 		}
 
-		case Channel::Request::MethodId::ROUTER_DUMP:
-		case Channel::Request::MethodId::ROUTER_CREATE_WEBRTC_TRANSPORT:
-		case Channel::Request::MethodId::ROUTER_CREATE_PLAIN_RTP_TRANSPORT:
-		case Channel::Request::MethodId::ROUTER_CREATE_PRODUCER:
-		case Channel::Request::MethodId::ROUTER_CREATE_CONSUMER:
-		case Channel::Request::MethodId::ROUTER_SET_AUDIO_LEVELS_EVENT:
-		case Channel::Request::MethodId::TRANSPORT_CLOSE:
-		case Channel::Request::MethodId::TRANSPORT_DUMP:
-		case Channel::Request::MethodId::TRANSPORT_GET_STATS:
-		case Channel::Request::MethodId::TRANSPORT_SET_REMOTE_DTLS_PARAMETERS:
-		case Channel::Request::MethodId::TRANSPORT_SET_REMOTE_PARAMETERS:
-		case Channel::Request::MethodId::TRANSPORT_SET_MAX_BITRATE:
-		case Channel::Request::MethodId::TRANSPORT_CHANGE_UFRAG_PWD:
-		case Channel::Request::MethodId::TRANSPORT_START_MIRRORING:
-		case Channel::Request::MethodId::TRANSPORT_STOP_MIRRORING:
-		case Channel::Request::MethodId::PRODUCER_CLOSE:
-		case Channel::Request::MethodId::PRODUCER_DUMP:
-		case Channel::Request::MethodId::PRODUCER_GET_STATS:
-		case Channel::Request::MethodId::PRODUCER_PAUSE:
-		case Channel::Request::MethodId::PRODUCER_RESUME:
-		case Channel::Request::MethodId::PRODUCER_SET_PREFERRED_PROFILE:
-		case Channel::Request::MethodId::CONSUMER_CLOSE:
-		case Channel::Request::MethodId::CONSUMER_DUMP:
-		case Channel::Request::MethodId::CONSUMER_GET_STATS:
-		case Channel::Request::MethodId::CONSUMER_ENABLE:
-		case Channel::Request::MethodId::CONSUMER_PAUSE:
-		case Channel::Request::MethodId::CONSUMER_RESUME:
-		case Channel::Request::MethodId::CONSUMER_SET_PREFERRED_PROFILE:
-		case Channel::Request::MethodId::CONSUMER_SET_ENCODING_PREFERENCES:
-		case Channel::Request::MethodId::CONSUMER_REQUEST_KEY_FRAME:
+		// Any other request must be delivered to the corresponding Router.
+		default:
 		{
-			RTC::Router* router;
-
-			try
-			{
-				router = GetRouterFromRequest(request);
-			}
-			catch (const MediaSoupError& error)
-			{
-				request->Reject(error.what());
-
-				return;
-			}
-
-			if (router == nullptr)
-			{
-				request->Reject("Router does not exist");
-
-				return;
-			}
+			// This may throw.
+			RTC::Router* router = GetRouterFromRequest(request);
 
 			router->HandleRequest(request);
+
+			break;
+		}
+	}
+}
+
+inline void Worker::OnChannelClosed(Channel::UnixStreamSocket* /*socket*/)
+{
+	MS_TRACE_STD();
+
+	// If the pipe is remotely closed it may mean that mediasoup Node process
+	// abruptly died (SIGKILL?) so we must die.
+	MS_ERROR_STD("channel remotely closed, closing myself");
+
+	Close();
+}
+
+inline void Worker::OnSignal(SignalsHandler* /*signalsHandler*/, int signum)
+{
+	MS_TRACE();
+
+	if (this->closed)
+		return;
+
+	switch (signum)
+	{
+		case SIGINT:
+		{
+			if (this->closed)
+				return;
+
+			MS_DEBUG_DEV("INT signal received, closing myself");
+
+			Close();
+
+			break;
+		}
+
+		case SIGTERM:
+		{
+			if (this->closed)
+				return;
+
+			MS_DEBUG_DEV("TERM signal received, closing myself");
+
+			Close();
 
 			break;
 		}
 
 		default:
 		{
-			MS_ERROR("unknown method");
-
-			request->Reject("unknown method");
+			MS_WARN_DEV("received a non handled signal [signum:%d]", signum);
 		}
 	}
-}
-
-void Worker::OnChannelUnixStreamSocketRemotelyClosed(Channel::UnixStreamSocket* /*socket*/)
-{
-	MS_TRACE_STD();
-
-	// When mediasoup Node process ends, it sends a SIGTERM to us so we close this
-	// pipe and then exit.
-	// If the pipe is remotely closed it means that mediasoup Node process
-	// abruptly died (SIGKILL?) so we must die.
-	MS_ERROR_STD("Channel remotely closed, killing myself");
-
-	this->channel = nullptr;
-
-	Close();
-}
-
-void Worker::OnRouterClosed(RTC::Router* router)
-{
-	MS_TRACE();
-
-	this->routers.erase(router->routerId);
 }

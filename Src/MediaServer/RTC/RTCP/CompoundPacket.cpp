@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::CompoundPacket"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/CompoundPacket.hpp"
 #include "Logger.hpp"
@@ -36,6 +36,9 @@ namespace RTC
 			if (this->sdesPacket.GetCount() != 0u)
 				this->size += this->sdesPacket.GetSize();
 
+			if (this->xrPacket.Begin() != this->xrPacket.End())
+				this->size += this->xrPacket.GetSize();
+
 			// Fill it.
 			size_t offset{ 0 };
 
@@ -45,7 +48,8 @@ namespace RTC
 				offset = this->senderReportPacket.GetSize();
 
 				// Fix header count field.
-				auto* header  = reinterpret_cast<Packet::CommonHeader*>(this->header);
+				auto* header = reinterpret_cast<Packet::CommonHeader*>(this->header);
+
 				header->count = 0;
 
 				if (this->receiverReportPacket.GetCount() != 0u)
@@ -62,6 +66,7 @@ namespace RTC
 					header->count = this->receiverReportPacket.GetCount();
 
 					auto it = this->receiverReportPacket.Begin();
+
 					for (; it != this->receiverReportPacket.End(); ++it)
 					{
 						ReceiverReport* report = (*it);
@@ -78,14 +83,17 @@ namespace RTC
 			}
 
 			if (this->sdesPacket.GetCount() != 0u)
-				this->sdesPacket.Serialize(this->header + offset);
+				offset += this->sdesPacket.Serialize(this->header + offset);
+
+			if (this->xrPacket.Begin() != this->xrPacket.End())
+				this->xrPacket.Serialize(this->header + offset);
 		}
 
 		void CompoundPacket::Dump()
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<CompoundPacket>");
+			MS_DUMP("<CompoundPacket>");
 
 			if (HasSenderReport())
 			{
@@ -95,19 +103,47 @@ namespace RTC
 					this->receiverReportPacket.Dump();
 			}
 			else
+			{
 				this->receiverReportPacket.Dump();
+			}
 
 			if (this->sdesPacket.GetCount() != 0u)
 				this->sdesPacket.Dump();
 
-			MS_DEBUG_DEV("</CompoundPacket>");
+			if (this->xrPacket.Begin() != this->xrPacket.End())
+				this->xrPacket.Dump();
+
+			MS_DUMP("</CompoundPacket>");
 		}
 
 		void CompoundPacket::AddSenderReport(SenderReport* report)
 		{
-			MS_ASSERT(!HasSenderReport(), "a sender report is already present");
+			MS_TRACE();
+
+			MS_ASSERT(!HasSenderReport(), "a Sender Report is already present");
 
 			this->senderReportPacket.AddReport(report);
+		}
+
+		void CompoundPacket::AddReceiverReport(ReceiverReport* report)
+		{
+			MS_TRACE();
+
+			this->receiverReportPacket.AddReport(report);
+		}
+
+		void CompoundPacket::AddSdesChunk(SdesChunk* chunk)
+		{
+			MS_TRACE();
+
+			this->sdesPacket.AddChunk(chunk);
+		}
+
+		void CompoundPacket::AddReceiverReferenceTime(ReceiverReferenceTime* report)
+		{
+			MS_TRACE();
+
+			this->xrPacket.AddReport(report);
 		}
 	} // namespace RTCP
 } // namespace RTC

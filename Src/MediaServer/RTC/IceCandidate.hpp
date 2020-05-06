@@ -4,8 +4,10 @@
 #include "common.hpp"
 #include "RTC/TcpServer.hpp"
 #include "RTC/UdpSocket.hpp"
-#include <json/json.h>
+#include <json.hpp>
 #include <string>
+
+using json = nlohmann::json;
 
 namespace RTC
 {
@@ -31,20 +33,42 @@ namespace RTC
 		};
 
 	public:
-		IceCandidate(RTC::UdpSocket* udpSocket, uint32_t priority);
-		IceCandidate(RTC::TcpServer* tcpServer, uint32_t priority);
+		IceCandidate(RTC::UdpSocket* udpSocket, uint32_t priority)
+		  : foundation("udpcandidate"), priority(priority), ip(udpSocket->GetLocalIp()),
+		    protocol(Protocol::UDP), port(udpSocket->GetLocalPort()), type(CandidateType::HOST)
+		{
+		}
 
-		Json::Value ToJson() const;
+		IceCandidate(RTC::UdpSocket* udpSocket, uint32_t priority, std::string& announcedIp)
+		  : foundation("udpcandidate"), priority(priority), ip(announcedIp), protocol(Protocol::UDP),
+		    port(udpSocket->GetLocalPort()), type(CandidateType::HOST)
+		{
+		}
+
+		IceCandidate(RTC::TcpServer* tcpServer, uint32_t priority)
+		  : foundation("tcpcandidate"), priority(priority), ip(tcpServer->GetLocalIp()),
+		    protocol(Protocol::TCP), port(tcpServer->GetLocalPort()), type(CandidateType::HOST),
+		    tcpType(TcpCandidateType::PASSIVE)
+		{
+		}
+
+		IceCandidate(RTC::TcpServer* tcpServer, uint32_t priority, std::string& announcedIp)
+		  : foundation("tcpcandidate"), priority(priority), ip(announcedIp), protocol(Protocol::TCP),
+		    port(tcpServer->GetLocalPort()), type(CandidateType::HOST),
+		    tcpType(TcpCandidateType::PASSIVE)
+		{
+		}
+
+		void FillJson(json& jsonObject) const;
 
 	private:
 		// Others.
 		std::string foundation;
-		uint32_t priority{ 0 };
-		int family{ 0 };
+		uint32_t priority{ 0u };
 		std::string ip;
 		Protocol protocol;
-		uint16_t port{ 0 };
-		CandidateType type;
+		uint16_t port{ 0u };
+		CandidateType type{ CandidateType::HOST };
 		TcpCandidateType tcpType{ TcpCandidateType::PASSIVE };
 	};
 } // namespace RTC

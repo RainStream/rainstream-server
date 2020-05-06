@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::Packet"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/Packet.hpp"
 #include "Logger.hpp"
@@ -8,6 +8,7 @@
 #include "RTC/RTCP/ReceiverReport.hpp"
 #include "RTC/RTCP/Sdes.hpp"
 #include "RTC/RTCP/SenderReport.hpp"
+#include "RTC/RTCP/XR.hpp"
 
 namespace RTC
 {
@@ -22,8 +23,6 @@ namespace RTC
 		// clang-format off
 		std::map<Type, std::string> Packet::type2String =
 		{
-			{ Type::FIR,   "FIR"   },
-			{ Type::NACK,  "NACK"  },
 			{ Type::SR,    "SR"    },
 			{ Type::RR,    "RR"    },
 			{ Type::SDES,  "SDES"  },
@@ -42,11 +41,11 @@ namespace RTC
 			MS_TRACE();
 
 			// First, Currently parsing and Last RTCP packets in the compound packet.
-			Packet *first, *current, *last;
+			Packet* first{ nullptr };
+			Packet* current{ nullptr };
+			Packet* last{ nullptr };
 
-			first = current = last = nullptr;
-
-			while (int(len) > 0)
+			while (len > 0u)
 			{
 				if (!Packet::IsRtcp(data, len))
 				{
@@ -95,42 +94,49 @@ namespace RTC
 					case Type::RR:
 					{
 						current = ReceiverReportPacket::Parse(data, packetLen);
+
 						break;
 					}
 
 					case Type::SDES:
 					{
 						current = SdesPacket::Parse(data, packetLen);
+
 						break;
 					}
 
 					case Type::BYE:
 					{
 						current = ByePacket::Parse(data, packetLen);
+
 						break;
 					}
 
 					case Type::APP:
 					{
 						current = nullptr;
+
 						break;
 					}
 
 					case Type::RTPFB:
 					{
 						current = FeedbackRtpPacket::Parse(data, packetLen);
+
 						break;
 					}
 
 					case Type::PSFB:
 					{
 						current = FeedbackPsPacket::Parse(data, packetLen);
+
 						break;
 					}
 
 					case Type::XR:
 					{
-						current = nullptr;
+						current = ExtendedReportPacket::Parse(data, packetLen);
+
 						break;
 					}
 
@@ -157,11 +163,7 @@ namespace RTC
 						  " " + FeedbackRtpPacket::MessageType2String(FeedbackRtp::MessageType(header->count));
 					}
 
-					// TMP: Do not log XR parsing error until it is implemented.
-					if (Type(header->packetType) != Type::XR)
-					{
-						MS_WARN_TAG(rtcp, "error parsing %s Packet", packetType.c_str());
-					}
+					MS_WARN_TAG(rtcp, "error parsing %s Packet", packetType.c_str());
 
 					return first;
 				}
@@ -182,12 +184,16 @@ namespace RTC
 
 		const std::string& Packet::Type2String(Type type)
 		{
+			MS_TRACE();
+
 			static const std::string Unknown("UNKNOWN");
 
-			if (Packet::type2String.find(type) == Packet::type2String.end())
+			auto it = Packet::type2String.find(type);
+
+			if (it == Packet::type2String.end())
 				return Unknown;
 
-			return Packet::type2String[type];
+			return it->second;
 		}
 
 		/* Instance methods. */
@@ -198,13 +204,13 @@ namespace RTC
 
 			this->header = reinterpret_cast<CommonHeader*>(buffer);
 
-			size_t length = (this->GetSize() / 4) - 1;
+			size_t length = (GetSize() / 4) - 1;
 
 			// Fill the common header.
 			this->header->version    = 2;
 			this->header->padding    = 0;
-			this->header->count      = static_cast<uint8_t>(this->GetCount());
-			this->header->packetType = static_cast<uint8_t>(this->type);
+			this->header->count      = static_cast<uint8_t>(GetCount());
+			this->header->packetType = static_cast<uint8_t>(GetType());
 			this->header->length     = uint16_t{ htons(length) };
 
 			return sizeof(CommonHeader);

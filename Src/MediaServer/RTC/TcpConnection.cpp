@@ -1,17 +1,27 @@
 #define MS_CLASS "RTC::TcpConnection"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/TcpConnection.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
-#include <cstring> // std::memmove()
+#include <cstring> // std::memmove(), std::memcpy()
 
 namespace RTC
 {
+	/* Static. */
+
+	static constexpr size_t ReadBufferSize{ 65536 };
+	static uint8_t ReadBuffer[ReadBufferSize];
+
 	/* Instance methods. */
 
 	TcpConnection::TcpConnection(Listener* listener, size_t bufferSize)
 	  : ::TcpConnection::TcpConnection(bufferSize), listener(listener)
+	{
+		MS_TRACE();
+	}
+
+	TcpConnection::~TcpConnection()
 	{
 		MS_TRACE();
 	}
@@ -22,9 +32,9 @@ namespace RTC
 
 		MS_DEBUG_DEV(
 		  "data received [local:%s :%" PRIu16 ", remote:%s :%" PRIu16 "]",
-		  GetLocalIP().c_str(),
+		  GetLocalIp().c_str(),
 		  GetLocalPort(),
-		  GetPeerIP().c_str(),
+		  GetPeerIp().c_str(),
 		  GetPeerPort());
 
 		/*
@@ -47,9 +57,9 @@ namespace RTC
 		while (true)
 		{
 			// We may receive multiple packets in the same TCP chunk. If one of them is
-			// a DTLS Close Alert this would be closed (Destroy() called) so we cannot call
+			// a DTLS Close Alert this would be closed (Close() called) so we cannot call
 			// our listeners anymore.
-			if (IsClosing())
+			if (IsClosed())
 				return;
 
 			size_t dataLen = this->bufferDataLen - this->frameStart;
@@ -66,8 +76,11 @@ namespace RTC
 				// Update received bytes and notify the listener.
 				if (packetLen != 0)
 				{
-					this->recvBytes += packetLen;
-					this->listener->OnPacketRecv(this, packet, packetLen);
+					// Copy the received packet into the static buffer so it can be expanded
+					// later.
+					std::memcpy(ReadBuffer, packet, packetLen);
+
+					this->listener->OnTcpConnectionPacketReceived(this, ReadBuffer, packetLen);
 				}
 
 				// If there is no more space available in the buffer and that is because
@@ -125,7 +138,10 @@ namespace RTC
 					  "connection");
 
 					// Close the socket.
-					Destroy();
+					ErrorReceiving();
+
+					// And exit fast since we are supposed to be deallocated.
+					return;
 				}
 			}
 			// The buffer is not full.
@@ -139,19 +155,15 @@ namespace RTC
 		}
 	}
 
-	void TcpConnection::Send(const uint8_t* data, size_t len)
+	void TcpConnection::Send(const uint8_t* data, size_t len, ::TcpConnection::onSendCallback* cb)
 	{
 		MS_TRACE();
-
-		// Update sent bytes.
-		this->sentBytes += len;
 
 		// Write according to Framing RFC 4571.
 
 		uint8_t frameLen[2];
 
 		Utils::Byte::Set2Bytes(frameLen, 0, len);
-
-		Write(frameLen, 2, data, len);
+		::TcpConnection::Write(frameLen, 2, data, len, cb);
 	}
 } // namespace RTC

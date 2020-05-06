@@ -1,14 +1,7 @@
 #define MS_CLASS "RTC::RTCP::Feedback"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/Feedback.hpp"
-// Feedback RTP.
-#include "RTC/RTCP/FeedbackRtpEcn.hpp"
-#include "RTC/RTCP/FeedbackRtpNack.hpp"
-#include "RTC/RTCP/FeedbackRtpSrReq.hpp"
-#include "RTC/RTCP/FeedbackRtpTllei.hpp"
-#include "RTC/RTCP/FeedbackRtpTmmb.hpp"
-// Feedback PS.
 #include "Logger.hpp"
 #include "Utils.hpp"
 #include "RTC/RTCP/FeedbackPsAfb.hpp"
@@ -19,6 +12,12 @@
 #include "RTC/RTCP/FeedbackPsSli.hpp"
 #include "RTC/RTCP/FeedbackPsTst.hpp"
 #include "RTC/RTCP/FeedbackPsVbcm.hpp"
+#include "RTC/RTCP/FeedbackRtpEcn.hpp"
+#include "RTC/RTCP/FeedbackRtpNack.hpp"
+#include "RTC/RTCP/FeedbackRtpSrReq.hpp"
+#include "RTC/RTCP/FeedbackRtpTllei.hpp"
+#include "RTC/RTCP/FeedbackRtpTmmb.hpp"
+#include "RTC/RTCP/FeedbackRtpTransport.hpp"
 #include <cstring>
 
 namespace RTC
@@ -32,18 +31,19 @@ namespace RTC
 		{
 			static const std::string Unknown("UNKNOWN");
 
-			if (FeedbackPacket<T>::type2String.find(type) == FeedbackPacket<T>::type2String.end())
+			auto it = FeedbackPacket<T>::type2String.find(type);
+
+			if (it == FeedbackPacket<T>::type2String.end())
 				return Unknown;
 
-			return FeedbackPacket<T>::type2String[type];
+			return it->second;
 		}
 
 		/* Instance methods. */
 
 		template<typename T>
 		FeedbackPacket<T>::FeedbackPacket(CommonHeader* commonHeader)
-		  : Packet(RTCP::Type(commonHeader->packetType)),
-		    messageType(typename T::MessageType(commonHeader->count))
+		  : Packet(commonHeader), messageType(typename T::MessageType(commonHeader->count))
 		{
 			this->header =
 			  reinterpret_cast<Header*>(reinterpret_cast<uint8_t*>(commonHeader) + sizeof(CommonHeader));
@@ -63,7 +63,7 @@ namespace RTC
 		template<typename T>
 		FeedbackPacket<T>::~FeedbackPacket<T>()
 		{
-			delete this->raw;
+			delete[] this->raw;
 		}
 
 		/* Instance methods. */
@@ -86,9 +86,9 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("  sender ssrc : %" PRIu32, GetSenderSsrc());
-			MS_DEBUG_DEV("  media ssrc  : %" PRIu32, GetMediaSsrc());
-			MS_DEBUG_DEV("  size        : %zu", this->GetSize());
+			MS_DUMP("  sender ssrc : %" PRIu32, GetSenderSsrc());
+			MS_DUMP("  media ssrc  : %" PRIu32, GetMediaSsrc());
+			MS_DUMP("  size        : %zu", this->GetSize());
 		}
 
 		/* Specialization for Ps class. */
@@ -119,7 +119,7 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			if (sizeof(CommonHeader) + sizeof(FeedbackPacket::Header) > len)
+			if (len < sizeof(CommonHeader) + sizeof(FeedbackPacket::Header))
 			{
 				MS_WARN_TAG(rtcp, "not enough space for Feedback packet, discarded");
 
@@ -198,7 +198,8 @@ namespace RTC
 			{ FeedbackRtp::MessageType::TLLEI,  "TLLEI"  },
 			{ FeedbackRtp::MessageType::ECN,    "ECN"    },
 			{ FeedbackRtp::MessageType::PS,     "PS"     },
-			{ FeedbackRtp::MessageType::EXT,    "EXT"    }
+			{ FeedbackRtp::MessageType::EXT,    "EXT"    },
+			{ FeedbackRtp::MessageType::TCC,    "TCC"    }
 		};
 		// clang-format on
 
@@ -209,7 +210,7 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			if (sizeof(CommonHeader) + sizeof(FeedbackPacket::Header) > len)
+			if (len < sizeof(CommonHeader) + sizeof(FeedbackPacket::Header))
 			{
 				MS_WARN_TAG(rtcp, "not enough space for Feedback packet, discarded");
 
@@ -252,6 +253,10 @@ namespace RTC
 					break;
 
 				case FeedbackRtp::MessageType::EXT:
+					break;
+
+				case FeedbackRtp::MessageType::TCC:
+					packet = FeedbackRtpTransportPacket::Parse(data, len);
 					break;
 
 				default:

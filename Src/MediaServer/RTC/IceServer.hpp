@@ -2,7 +2,7 @@
 #define MS_RTC_ICE_SERVER_HPP
 
 #include "common.hpp"
-#include "RTC/StunMessage.hpp"
+#include "RTC/StunPacket.hpp"
 #include "RTC/TransportTuple.hpp"
 #include <list>
 #include <string>
@@ -28,27 +28,49 @@ namespace RTC
 
 		public:
 			/**
-			 * These callbacks are guaranteed to be called before ProcessStunMessage()
+			 * These callbacks are guaranteed to be called before ProcessStunPacket()
 			 * returns, so the given pointers are still usable.
 			 */
-			virtual void OnOutgoingStunMessage(
-			  const RTC::IceServer* iceServer, const RTC::StunMessage* msg, RTC::TransportTuple* tuple) = 0;
-			virtual void OnIceSelectedTuple(const RTC::IceServer* iceServer, RTC::TransportTuple* tuple) = 0;
-			virtual void OnIceConnected(const RTC::IceServer* iceServer)    = 0;
-			virtual void OnIceCompleted(const RTC::IceServer* iceServer)    = 0;
-			virtual void OnIceDisconnected(const RTC::IceServer* iceServer) = 0;
+			virtual void OnIceServerSendStunPacket(
+			  const RTC::IceServer* iceServer, const RTC::StunPacket* packet, RTC::TransportTuple* tuple) = 0;
+			virtual void OnIceServerSelectedTuple(
+			  const RTC::IceServer* iceServer, RTC::TransportTuple* tuple)        = 0;
+			virtual void OnIceServerConnected(const RTC::IceServer* iceServer)    = 0;
+			virtual void OnIceServerCompleted(const RTC::IceServer* iceServer)    = 0;
+			virtual void OnIceServerDisconnected(const RTC::IceServer* iceServer) = 0;
 		};
 
 	public:
 		IceServer(Listener* listener, const std::string& usernameFragment, const std::string& password);
 
-		void Destroy();
-		void ProcessStunMessage(RTC::StunMessage* msg, RTC::TransportTuple* tuple);
-		const std::string& GetUsernameFragment() const;
-		const std::string& GetPassword() const;
-		void SetUsernameFragment(const std::string& usernameFragment);
-		void SetPassword(const std::string& password);
-		IceState GetState() const;
+	public:
+		void ProcessStunPacket(RTC::StunPacket* packet, RTC::TransportTuple* tuple);
+		const std::string& GetUsernameFragment() const
+		{
+			return this->usernameFragment;
+		}
+		const std::string& GetPassword() const
+		{
+			return this->password;
+		}
+		IceState GetState() const
+		{
+			return this->state;
+		}
+		RTC::TransportTuple* GetSelectedTuple() const
+		{
+			return this->selectedTuple;
+		}
+		void SetUsernameFragment(const std::string& usernameFragment)
+		{
+			this->oldUsernameFragment = this->usernameFragment;
+			this->usernameFragment    = usernameFragment;
+		}
+		void SetPassword(const std::string& password)
+		{
+			this->oldPassword = this->password;
+			this->password    = password;
+		}
 		bool IsValidTuple(const RTC::TransportTuple* tuple) const;
 		void RemoveTuple(RTC::TransportTuple* tuple);
 		// This should be just called in 'connected' or completed' state
@@ -77,37 +99,12 @@ namespace RTC
 		// Others.
 		std::string usernameFragment;
 		std::string password;
+		std::string oldUsernameFragment;
+		std::string oldPassword;
 		IceState state{ IceState::NEW };
 		std::list<RTC::TransportTuple> tuples;
 		RTC::TransportTuple* selectedTuple{ nullptr };
 	};
-
-	/* Inline instance methods. */
-
-	inline const std::string& IceServer::GetUsernameFragment() const
-	{
-		return this->usernameFragment;
-	}
-
-	inline const std::string& IceServer::GetPassword() const
-	{
-		return this->password;
-	}
-
-	inline void IceServer::SetUsernameFragment(const std::string& usernameFragment)
-	{
-		this->usernameFragment = usernameFragment;
-	}
-
-	inline void IceServer::SetPassword(const std::string& password)
-	{
-		this->password = password;
-	}
-
-	inline IceServer::IceState IceServer::GetState() const
-	{
-		return this->state;
-	}
 } // namespace RTC
 
 #endif

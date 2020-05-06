@@ -20,17 +20,26 @@ public:
 	explicit Timer(Listener* listener);
 	Timer& operator=(const Timer&) = delete;
 	Timer(const Timer&)            = delete;
-
-private:
-	~Timer() = default;
+	~Timer();
 
 public:
-	void Destroy();
+	void Close();
 	void Start(uint64_t timeout, uint64_t repeat = 0);
 	void Stop();
 	void Reset();
 	void Restart();
-	bool IsActive() const;
+	uint64_t GetTimeout() const
+	{
+		return this->timeout;
+	}
+	uint64_t GetRepeat() const
+	{
+		return this->repeat;
+	}
+	bool IsActive() const
+	{
+		return uv_is_active(reinterpret_cast<uv_handle_t*>(this->uvHandle)) != 0;
+	}
 
 	/* Callbacks fired by UV events. */
 public:
@@ -42,15 +51,9 @@ private:
 	// Allocated by this.
 	uv_timer_t* uvHandle{ nullptr };
 	// Others.
-	uint64_t timeout{ 0 };
-	uint64_t repeat{ 0 };
+	bool closed{ false };
+	uint64_t timeout{ 0u };
+	uint64_t repeat{ 0u };
 };
-
-/* Inline methods. */
-
-inline bool Timer::IsActive() const
-{
-	return uv_is_active(reinterpret_cast<uv_handle_t*>(this->uvHandle)) != 0;
-}
 
 #endif

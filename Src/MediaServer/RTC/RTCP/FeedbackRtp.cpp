@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::FeedbackRtp"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/FeedbackRtp.hpp"
 #include "Logger.hpp"
@@ -19,7 +19,7 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			if (sizeof(CommonHeader) + sizeof(FeedbackPacket::Header) > len)
+			if (len < sizeof(CommonHeader) + sizeof(FeedbackPacket::Header))
 			{
 				MS_WARN_TAG(rtcp, "not enough space for Feedback packet, discarded");
 
@@ -35,7 +35,7 @@ namespace RTC
 
 			while (len > offset)
 			{
-				Item* item = FeedbackItem::Parse<Item>(data + offset, len - offset);
+				auto* item = FeedbackItem::Parse<Item>(data + offset, len - offset);
 
 				if (item)
 				{
@@ -60,7 +60,7 @@ namespace RTC
 
 			size_t offset = FeedbackPacket::Serialize(buffer);
 
-			for (auto item : this->items)
+			for (auto* item : this->items)
 			{
 				offset += item->Serialize(buffer + offset);
 			}
@@ -73,13 +73,13 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<%s>", FeedbackRtpPacket::MessageType2String(Item::messageType).c_str());
+			MS_DUMP("<%s>", FeedbackRtpPacket::MessageType2String(Item::messageType).c_str());
 			FeedbackRtpPacket::Dump();
-			for (auto item : this->items)
+			for (auto* item : this->items)
 			{
 				item->Dump();
 			}
-			MS_DEBUG_DEV("</%s>", FeedbackRtpPacket::MessageType2String(Item::messageType).c_str());
+			MS_DUMP("</%s>", FeedbackRtpPacket::MessageType2String(Item::messageType).c_str());
 		}
 
 		// Explicit instantiation to have all FeedbackRtpPacket definitions in this file.

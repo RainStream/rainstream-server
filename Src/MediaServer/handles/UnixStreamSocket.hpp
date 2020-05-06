@@ -11,65 +11,74 @@ public:
 	/* Struct for the data field of uv_req_t when writing data. */
 	struct UvWriteData
 	{
-		UnixStreamSocket* socket{ nullptr };
+		explicit UvWriteData(size_t storeSize)
+		{
+			this->store = new uint8_t[storeSize];
+		}
+
+		// Disable copy constructor because of the dynamically allocated data (store).
+		UvWriteData(const UvWriteData&) = delete;
+
+		~UvWriteData()
+		{
+			delete[] this->store;
+		}
+
 		uv_write_t req;
-		uint8_t store[1];
+		uint8_t* store{ nullptr };
+	};
+
+	enum class Role
+	{
+		PRODUCER = 1,
+		CONSUMER
 	};
 
 public:
-	UnixStreamSocket(int fd, size_t bufferSize);
+	UnixStreamSocket(int fd, size_t bufferSize, UnixStreamSocket::Role role);
 	UnixStreamSocket& operator=(const UnixStreamSocket&) = delete;
 	UnixStreamSocket(const UnixStreamSocket&)            = delete;
-
-protected:
 	virtual ~UnixStreamSocket();
 
 public:
-	void Destroy();
-	bool IsClosing() const;
+	void Close();
+	bool IsClosed() const
+	{
+		return this->closed;
+	}
 	void Write(const uint8_t* data, size_t len);
-	void Write(const std::string& data);
+	void Write(const std::string& data)
+	{
+		Write(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
+	}
 
 	/* Callbacks fired by UV events. */
 public:
 	void OnUvReadAlloc(size_t suggestedSize, uv_buf_t* buf);
 	void OnUvRead(ssize_t nread, const uv_buf_t* buf);
 	void OnUvWriteError(int error);
-	void OnUvShutdown(uv_shutdown_t* req, int status);
-	void OnUvClosed();
 
 	/* Pure virtual methods that must be implemented by the subclass. */
 protected:
-	virtual void UserOnUnixStreamRead()                            = 0;
-	virtual void UserOnUnixStreamSocketClosed(bool isClosedByPeer) = 0;
+	virtual void UserOnUnixStreamRead()         = 0;
+	virtual void UserOnUnixStreamSocketClosed() = 0;
 
 private:
 	// Allocated by this.
 	uv_pipe_t* uvHandle{ nullptr };
 	// Others.
-	bool isClosing{ false };
+	bool closed{ false };
 	bool isClosedByPeer{ false };
 	bool hasError{ false };
 
 protected:
 	// Passed by argument.
-	size_t bufferSize{ 0 };
+	size_t bufferSize{ 0u };
+	UnixStreamSocket::Role role;
 	// Allocated by this.
 	uint8_t* buffer{ nullptr };
 	// Others.
-	size_t bufferDataLen{ 0 };
+	size_t bufferDataLen{ 0u };
 };
-
-/* Inline methods. */
-
-inline bool UnixStreamSocket::IsClosing() const
-{
-	return this->isClosing;
-}
-
-inline void UnixStreamSocket::Write(const std::string& data)
-{
-	Write(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
-}
 
 #endif

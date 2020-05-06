@@ -2,138 +2,205 @@
 #define MS_RTC_RTP_STREAM_HPP
 
 #include "common.hpp"
-#include "RTC/RtpDataCounter.hpp"
+#include "DepLibUV.hpp"
+#include "RTC/RTCP/FeedbackPsFir.hpp"
+#include "RTC/RTCP/FeedbackPsPli.hpp"
+#include "RTC/RTCP/FeedbackRtpNack.hpp"
+#include "RTC/RTCP/Packet.hpp"
+#include "RTC/RTCP/ReceiverReport.hpp"
+#include "RTC/RTCP/Sdes.hpp"
+#include "RTC/RTCP/SenderReport.hpp"
 #include "RTC/RtpDictionaries.hpp"
-#include "RTC/RtpPacket.hpp"
-#include "handles/Timer.hpp"
-#include <json/json.h>
+#include "RTC/RtxStream.hpp"
+#include <json.hpp>
+#include <string>
+#include <vector>
+
+using json = nlohmann::json;
 
 namespace RTC
 {
-	class RtpStream : public Timer::Listener
+	class RtpStream
 	{
+	protected:
+		class Listener
+		{
+		public:
+			virtual void OnRtpStreamScore(RTC::RtpStream* rtpStream, uint8_t score, uint8_t previousScore) = 0;
+		};
+
 	public:
 		struct Params
 		{
-			Json::Value ToJson() const;
+			void FillJson(json& jsonObject) const;
 
 			uint32_t ssrc{ 0 };
 			uint8_t payloadType{ 0 };
 			RTC::RtpCodecMimeType mimeType;
 			uint32_t clockRate{ 0 };
+			std::string rid;
+			std::string cname;
+			uint32_t rtxSsrc{ 0 };
+			uint8_t rtxPayloadType{ 0 };
 			bool useNack{ false };
 			bool usePli{ false };
+			bool useFir{ false };
+			bool useInBandFec{ false };
+			bool useDtx{ false };
+			uint8_t spatialLayers{ 1 };
+			uint8_t temporalLayers{ 1 };
 		};
 
 	public:
-		explicit RtpStream(RTC::RtpStream::Params& params);
+		RtpStream(RTC::RtpStream::Listener* listener, RTC::RtpStream::Params& params, uint8_t initialScore);
 		virtual ~RtpStream();
 
-		virtual Json::Value ToJson();
-		virtual Json::Value GetStats();
+		void FillJson(json& jsonObject) const;
+		virtual void FillJsonStats(json& jsonObject);
+		uint32_t GetSsrc() const
+		{
+			return this->params.ssrc;
+		}
+		uint8_t GetPayloadType() const
+		{
+			return this->params.payloadType;
+		}
+		const RTC::RtpCodecMimeType& GetMimeType() const
+		{
+			return this->params.mimeType;
+		}
+		uint32_t GetClockRate() const
+		{
+			return this->params.clockRate;
+		}
+		const std::string& GetRid() const
+		{
+			return this->params.rid;
+		}
+		const std::string& GetCname() const
+		{
+			return this->params.cname;
+		}
+		bool HasRtx() const
+		{
+			return this->rtxStream != nullptr;
+		}
+		virtual void SetRtx(uint8_t payloadType, uint32_t ssrc);
+		uint32_t GetRtxSsrc() const
+		{
+			return this->params.rtxSsrc;
+		}
+		uint8_t GetRtxPayloadType() const
+		{
+			return this->params.rtxPayloadType;
+		}
+		uint8_t GetSpatialLayers() const
+		{
+			return this->params.spatialLayers;
+		}
+		uint8_t GetTemporalLayers() const
+		{
+			return this->params.temporalLayers;
+		}
 		virtual bool ReceivePacket(RTC::RtpPacket* packet);
-		uint32_t GetRate(uint64_t now);
-		uint32_t GetSsrc() const;
-		uint8_t GetPayloadType() const;
-		uint32_t GetClockRate() const;
-		const RTC::RtpCodecMimeType& GetMimeType() const;
-		float GetLossPercentage() const;
-		uint64_t GetMaxPacketMs() const;
-		size_t GetExpectedPackets() const;
-		const std::string& GetId() const;
-		void RestartStatusCheckTimer();
-		void StopStatusCheckTimer();
+		virtual void Pause()                                                                     = 0;
+		virtual void Resume()                                                                    = 0;
+		virtual uint32_t GetBitrate(uint64_t nowMs)                                              = 0;
+		virtual uint32_t GetBitrate(uint64_t nowMs, uint8_t spatialLayer, uint8_t temporalLayer) = 0;
+		virtual uint32_t GetSpatialLayerBitrate(uint64_t nowMs, uint8_t spatialLayer)            = 0;
+		virtual uint32_t GetLayerBitrate(uint64_t nowMs, uint8_t spatialLayer, uint8_t temporalLayer) = 0;
+		void ResetScore(uint8_t score, bool notify);
+		uint8_t GetFractionLost() const
+		{
+			return this->fractionLost;
+		}
+		float GetLossPercentage() const
+		{
+			return static_cast<float>(this->fractionLost) * 100 / 256;
+		}
+		float GetRtt() const
+		{
+			return this->rtt;
+		}
+		uint64_t GetMaxPacketMs() const
+		{
+			return this->maxPacketMs;
+		}
+		uint32_t GetMaxPacketTs() const
+		{
+			return this->maxPacketTs;
+		}
+		uint64_t GetSenderReportNtpMs() const
+		{
+			return this->lastSenderReportNtpMs;
+		}
+		uint32_t GetSenderReportTs() const
+		{
+			return this->lastSenderReporTs;
+		}
+		uint8_t GetScore() const
+		{
+			return this->score;
+		}
+		uint64_t GetActiveMs() const
+		{
+			return DepLibUV::GetTimeMs() - this->activeSinceMs;
+		}
 
 	protected:
 		bool UpdateSeq(RTC::RtpPacket* packet);
+		void UpdateScore(uint8_t score);
+		void PacketRetransmitted(RTC::RtpPacket* packet);
+		void PacketRepaired(RTC::RtpPacket* packet);
+		uint32_t GetExpectedPackets() const
+		{
+			return (this->cycles + this->maxSeq) - this->baseSeq + 1;
+		}
 
 	private:
 		void InitSeq(uint16_t seq);
 
-		/* Pure virtual methods that must be implemented by the subclass. */
-	protected:
-		virtual void CheckStatus() = 0;
-
-		/* Pure virtual methods inherited from Timer::Listener. */
-	public:
-		void OnTimer(Timer* timer) override;
-
-	public:
-		// Stats.
-		uint32_t packetsLost{ 0 };
-		uint8_t fractionLost{ 0 };
-		size_t packetsDiscarded{ 0 };
-		size_t packetsRepaired{ 0 };
-		size_t firCount{ 0 };
-		size_t pliCount{ 0 };
-		size_t nackCount{ 0 };
-		size_t sliCount{ 0 };
-
-		RtpDataCounter transmissionCounter;
-		RtpDataCounter retransmissionCounter;
-
 	protected:
 		// Given as argument.
-		RtpStream::Params params;
+		RTC::RtpStream::Listener* listener{ nullptr };
+		Params params;
 		// Others.
-		// Whether at least a RTP packet has been received.
 		//   https://tools.ietf.org/html/rfc3550#appendix-A.1 stuff.
-		bool started{ false };
-		uint16_t maxSeq{ 0 };  // Highest seq. number seen.
-		uint32_t cycles{ 0 };  // Shifted count of seq. number cycles.
-		uint32_t baseSeq{ 0 }; // Base seq number.
-		uint32_t badSeq{ 0 };  // Last 'bad' seq number + 1.
-		// Others.
-		uint32_t maxPacketTs{ 0 }; // Highest timestamp seen.
-		uint64_t maxPacketMs{ 0 }; // When the packet with highest timestammp was seen.
-		Timer* statusCheckTimer{ nullptr };
-		bool notifyStatus{ true };
+		uint16_t maxSeq{ 0u };      // Highest seq. number seen.
+		uint32_t cycles{ 0u };      // Shifted count of seq. number cycles.
+		uint32_t baseSeq{ 0u };     // Base seq number.
+		uint32_t badSeq{ 0u };      // Last 'bad' seq number + 1.
+		uint32_t maxPacketTs{ 0u }; // Highest timestamp seen.
+		uint64_t maxPacketMs{ 0u }; // When the packet with highest timestammp was seen.
+		uint32_t packetsLost{ 0u };
+		uint8_t fractionLost{ 0u };
+		size_t packetsDiscarded{ 0u };
+		size_t packetsRetransmitted{ 0u };
+		size_t packetsRepaired{ 0u };
+		size_t nackCount{ 0u };
+		size_t nackPacketCount{ 0u };
+		size_t pliCount{ 0u };
+		size_t firCount{ 0u };
+		size_t repairedPriorScore{ 0u }; // Packets repaired at last interval for score calculation.
+		size_t retransmittedPriorScore{
+			0u
+		}; // Packets retransmitted at last interval for score calculation.
+		uint64_t lastSenderReportNtpMs{ 0u }; // NTP timestamp in last Sender Report (in ms).
+		uint32_t lastSenderReporTs{ 0u };     // RTP timestamp in last Sender Report.
+		float rtt{ 0 };
+		bool hasRtt{ false };
+		// Instance of RtxStream.
+		RTC::RtxStream* rtxStream{ nullptr };
 
 	private:
-		std::string rtpStreamId{};
+		// Score related.
+		uint8_t score{ 0u };
+		std::vector<uint8_t> scores;
+		// Whether at least a RTP packet has been received.
+		bool started{ false };
+		// Last time since the stream is active.
+		uint64_t activeSinceMs{ 0u };
 	};
-
-	/* Inline instance methods. */
-
-	inline uint32_t RtpStream::GetSsrc() const
-	{
-		return this->params.ssrc;
-	}
-
-	inline uint8_t RtpStream::GetPayloadType() const
-	{
-		return this->params.payloadType;
-	}
-
-	inline uint32_t RtpStream::GetClockRate() const
-	{
-		return this->params.clockRate;
-	}
-
-	inline const RTC::RtpCodecMimeType& RtpStream::GetMimeType() const
-	{
-		return this->params.mimeType;
-	}
-
-	inline float RtpStream::GetLossPercentage() const
-	{
-		return static_cast<float>(this->fractionLost) * 100 / 256;
-	}
-
-	inline uint64_t RtpStream::GetMaxPacketMs() const
-	{
-		return this->maxPacketMs;
-	}
-
-	inline const std::string& RtpStream::GetId() const
-	{
-		return this->rtpStreamId;
-	}
-
-	inline size_t RtpStream::GetExpectedPackets() const
-	{
-		return (this->cycles + this->maxSeq) - this->baseSeq + 1;
-	}
 } // namespace RTC
 
 #endif

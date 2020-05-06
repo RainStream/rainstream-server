@@ -1,47 +1,39 @@
-// import debug from "debug";
+#pragma once
 
-const APP_NAME = "mediasoup";
+#define APP_NAME "mediasoup"
 
 class Logger
 {
-	private readonly _debug: debug.Debugger;
-	private readonly _warn: debug.Debugger;
-	private readonly _error: debug.Debugger;
-
-	Logger(prefix?: string)
+	Logger(std::string prefix)
 	{
 		if (prefix)
 		{
-			this->_debug = debug("${APP_NAME}:${prefix}");
-			this->_warn = debug("${APP_NAME}:WARN:${prefix}");
-			this->_error = debug("${APP_NAME}:ERROR:${prefix}");
+			this->_debug = debug_1.default("${APP_NAME}:${prefix}");
+			this->_warn = debug_1.default("${APP_NAME}:WARN:${prefix}");
+			this->_error = debug_1.default("${APP_NAME}:ERROR:${prefix}");
 		}
 		else
 		{
-			this->_debug = debug(APP_NAME);
-			this->_warn = debug("${APP_NAME}:WARN");
-			this->_error = debug("${APP_NAME}:ERROR");
+			this->_debug = debug_1.default(APP_NAME);
+			this->_warn = debug_1.default("${APP_NAME}:WARN");
+			this->_error = debug_1.default("${APP_NAME}:ERROR");
 		}
-
 		/* eslint-disable no-console */
 		this->_debug.log = console.info.bind(console);
 		this->_warn.log = console.warn.bind(console);
 		this->_error.log = console.error.bind(console);
 		/* eslint-enable no-console */
 	}
-
-	get debug(): debug.Debugger
+	get debug()
 	{
 		return this->_debug;
 	}
-
-	get warn(): debug.Debugger
+	get warn()
 	{
 		return this->_warn;
 	}
-
-	get error(): debug.Debugger
+	get error()
 	{
 		return this->_error;
 	}
-}
+};

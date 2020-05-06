@@ -1,5 +1,5 @@
 #define MS_CLASS "RTC::RTCP::SenderReport"
-// #define MS_LOG_DEV
+// #define MS_LOG_DEV_LEVEL 3
 
 #include "RTC/RTCP/SenderReport.hpp"
 #include "Logger.hpp"
@@ -19,7 +19,7 @@ namespace RTC
 			auto* header = const_cast<Header*>(reinterpret_cast<const Header*>(data));
 
 			// Packet size must be >= header size.
-			if (sizeof(Header) > len)
+			if (len < sizeof(Header))
 			{
 				MS_WARN_TAG(rtcp, "not enough space for sender report, packet discarded");
 
@@ -35,14 +35,14 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<SenderReport>");
-			MS_DEBUG_DEV("  ssrc         : %" PRIu32, this->GetSsrc());
-			MS_DEBUG_DEV("  ntp sec      : %" PRIu32, this->GetNtpSec());
-			MS_DEBUG_DEV("  ntp frac     : %" PRIu32, this->GetNtpFrac());
-			MS_DEBUG_DEV("  rtp ts       : %" PRIu32, this->GetRtpTs());
-			MS_DEBUG_DEV("  packet count : %" PRIu32, this->GetPacketCount());
-			MS_DEBUG_DEV("  octet count  : %" PRIu32, this->GetOctetCount());
-			MS_DEBUG_DEV("</SenderReport>");
+			MS_DUMP("<SenderReport>");
+			MS_DUMP("  ssrc         : %" PRIu32, GetSsrc());
+			MS_DUMP("  ntp sec      : %" PRIu32, GetNtpSec());
+			MS_DUMP("  ntp frac     : %" PRIu32, GetNtpFrac());
+			MS_DUMP("  rtp ts       : %" PRIu32, GetRtpTs());
+			MS_DUMP("  packet count : %" PRIu32, GetPacketCount());
+			MS_DUMP("  octet count  : %" PRIu32, GetOctetCount());
+			MS_DUMP("</SenderReport>");
 		}
 
 		size_t SenderReport::Serialize(uint8_t* buffer)
@@ -61,15 +61,16 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			std::unique_ptr<SenderReportPacket> packet(new SenderReportPacket());
+			// Get the header.
+			auto* header = const_cast<CommonHeader*>(reinterpret_cast<const CommonHeader*>(data));
+
+			std::unique_ptr<SenderReportPacket> packet(new SenderReportPacket(header));
 			size_t offset = sizeof(Packet::CommonHeader);
 
 			SenderReport* report = SenderReport::Parse(data + offset, len - offset);
 
-			if (report != nullptr)
+			if (report)
 				packet->AddReport(report);
-			else
-				return packet.release();
 
 			return packet.release();
 		}
@@ -85,7 +86,7 @@ namespace RTC
 			size_t offset = Packet::Serialize(buffer);
 
 			// Serialize reports.
-			for (auto report : this->reports)
+			for (auto* report : this->reports)
 			{
 				offset += report->Serialize(buffer + offset);
 			}
@@ -97,12 +98,12 @@ namespace RTC
 		{
 			MS_TRACE();
 
-			MS_DEBUG_DEV("<SenderReportPacket>");
-			for (auto report : this->reports)
+			MS_DUMP("<SenderReportPacket>");
+			for (auto* report : this->reports)
 			{
 				report->Dump();
 			}
-			MS_DEBUG_DEV("</SenderReportPacket>");
+			MS_DUMP("</SenderReportPacket>");
 		}
 	} // namespace RTCP
 } // namespace RTC
