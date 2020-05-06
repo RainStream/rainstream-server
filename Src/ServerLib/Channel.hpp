@@ -20,7 +20,7 @@ class Channel : public EnhancedEventEmitter {
     /**
      * @private
      */
-    constructor({ producerSocket, consumerSocket, pid }) {
+	Channel({ producerSocket, consumerSocket, pid }) {
         super();
         // Closed flag.
         this->_closed = false;

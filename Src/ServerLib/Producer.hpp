@@ -12,7 +12,7 @@ class Producer : public EnhancedEventEmitter {
      * @emits trace - (trace: ProducerTraceEventData)
      * @emits @close
      */
-    constructor({ internal, data, channel, appData, paused }) {
+	Producer({ internal, data, channel, appData, paused }) {
         super();
         // Closed flag.
         this->_closed = false;
