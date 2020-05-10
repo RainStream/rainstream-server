@@ -1,8 +1,8 @@
 #pragma once
-Object.defineProperty(exports, "__esModule", { value: true });
-const Logger_1 = require("./Logger");
-const Transport_1 = require("./Transport");
-const logger = new Logger_1.Logger("WebRtcTransport");
+// Object.defineProperty(exports, "__esModule", { value: true });
+// const Logger_1 = require("./Logger");
+// const Transport_1 = require("./Transport");
+// const logger = new Logger_1.Logger("WebRtcTransport");
 class WebRtcTransport : public Transport_1.Transport {
     /**
      * @private

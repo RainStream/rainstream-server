@@ -12,10 +12,11 @@
 // const child_process_1 = require("child_process");
 // const uuid_1 = require("uuid");
 // const Logger_1 = require("./Logger");
-// const EnhancedEventEmitter_1 = require("./EnhancedEventEmitter");
-// const ortc = __importStar(require("./ortc"));
-// const Channel_1 = require("./Channel");
-// const Router_1 = require("./Router");
+#include "EnhancedEventEmitter.hpp"
+#include "ortc.hpp"
+#include "Channel.hpp"
+#include "Router.hpp"
+
 // // If env MEDIASOUP_WORKER_BIN is given, use it as worker binary.
 // // Otherwise if env MEDIASOUP_BUILDTYPE is "Debug" use the Debug binary.
 // // Otherwise use the Release binary.
@@ -26,6 +27,7 @@
 //         : path.join(__dirname, "..", "worker", "out", "Release", "mediasoup-worker");
 // const logger = new Logger_1.Logger("Worker");
 // const workerLogger = new Logger_1.Logger("Worker");
+
 class Worker : public EnhancedEventEmitter {
     /**
      * @private
@@ -84,7 +86,7 @@ class Worker : public EnhancedEventEmitter {
             stdio: ["ignore", "pipe", "pipe", "pipe", "pipe"]
         });
         this->_pid = this->_child.pid;
-        this->_channel = new Channel_1.Channel({
+        this->_channel = new Channel({
             producerSocket: this->_child.stdio[3],
             consumerSocket: this->_child.stdio[4],
             pid: this->_pid

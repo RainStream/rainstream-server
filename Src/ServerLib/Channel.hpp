@@ -1,22 +1,24 @@
 #pragma once
-var __importStar = (this && this->__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-// @ts-ignore
-const netstring = __importStar(require("netstring"));
-const Logger_1 = require("./Logger");
-const EnhancedEventEmitter_1 = require("./EnhancedEventEmitter");
-const errors_1 = require("./errors");
-const logger = new Logger_1.Logger("Channel");
+// var __importStar = (this && this->__importStar) || function (mod) {
+//     if (mod && mod.__esModule) return mod;
+//     var result = {};
+//     if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+//     result["default"] = mod;
+//     return result;
+// };
+// Object.defineProperty(exports, "__esModule", { value: true });
+// // @ts-ignore
+// const netstring = __importStar(require("netstring"));
+// const Logger_1 = require("./Logger");
+#include "EnhancedEventEmitter.hpp"
+// const errors_1 = require("./errors");
+// const logger = new Logger_1.Logger("Channel");
 // netstring length for a 4194304 bytes payload.
-const NS_MESSAGE_MAX_LEN = 4194313;
-const NS_PAYLOAD_MAX_LEN = 4194304;
-class Channel : public EnhancedEventEmitter {
+#define NS_MESSAGE_MAX_LEN = 4194313;
+#define NS_PAYLOAD_MAX_LEN = 4194304;
+
+class Channel : public EnhancedEventEmitter
+{
     /**
      * @private
      */

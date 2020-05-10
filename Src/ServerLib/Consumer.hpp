@@ -1,5 +1,5 @@
 #pragma once
-Object.defineProperty(exports, "__esModule", { value: true });
+//Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("./Logger");
 const EnhancedEventEmitter_1 = require("./EnhancedEventEmitter");
 const logger = new Logger_1.Logger("Consumer");
@@ -58,7 +58,7 @@ class Consumer : public EnhancedEventEmitter {
     /**
      * Whether the Consumer is closed.
      */
-    get closed() {
+    bool closed() {
         return this->_closed;
     }
     /**
@@ -70,7 +70,7 @@ class Consumer : public EnhancedEventEmitter {
     /**
      * RTP parameters.
      */
-    get rtpParameters() {
+    json rtpParameters() {
         return this->_data.rtpParameters;
     }
     /**
@@ -252,7 +252,8 @@ class Consumer : public EnhancedEventEmitter {
         const reqData = { types };
         await this->_channel.request("consumer.enableTraceEvent", this->_internal, reqData);
     }
-    _handleWorkerNotifications() {
+    _handleWorkerNotifications()
+	{
         this->_channel.on(this->_internal.consumerId, (event, data) => {
             switch (event) {
                 case "producerclose":
