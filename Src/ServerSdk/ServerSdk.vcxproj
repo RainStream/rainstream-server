@@ -175,22 +175,29 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\RainStream\AudioLevelObserver.hpp" />
     <ClInclude Include="include\RainStream\Channel.hpp" />
     <ClInclude Include="include\RainStream\Consumer.hpp" />
+    <ClInclude Include="include\RainStream\DataConsumer.hpp" />
+    <ClInclude Include="include\RainStream\DataProducer.hpp" />
+    <ClInclude Include="include\RainStream\EnhancedEventEmitter.hpp" />
     <ClInclude Include="include\RainStream\EventEmitter.hpp" />
     <ClInclude Include="include\RainStream\errors.hpp" />
     <ClInclude Include="include\RainStream\Logger.hpp" />
     <ClInclude Include="include\RainStream\ortc.hpp" />
-    <ClInclude Include="include\RainStream\Peer.hpp" />
-    <ClInclude Include="include\RainStream\PlainRtpTransport.hpp" />
-    <ClInclude Include="include\RainStream\plugins\ActiveSpeakerDetector.hpp" />
+    <ClInclude Include="include\RainStream\PipeTransport.hpp" />
+    <ClInclude Include="include\RainStream\PlainTransport.hpp" />
     <ClInclude Include="include\RainStream\Producer.hpp" />
     <ClInclude Include="include\RainStream\RainStream.hpp" />
     <ClInclude Include="include\RainStream\RainStreamInc.hpp" />
-    <ClInclude Include="include\RainStream\Room.hpp" />
-    <ClInclude Include="include\RainStream\Server.hpp" />
-    <ClInclude Include="include\RainStream\StringUtils.hpp" />
+    <ClInclude Include="include\RainStream\Router.hpp" />
+    <ClInclude Include="include\RainStream\RtpObserver.hpp" />
+    <ClInclude Include="include\RainStream\RtpParameters.hpp" />
+    <ClInclude Include="include\RainStream\scalabilityModes.hpp" />
+    <ClInclude Include="include\RainStream\SctpParameters.hpp" />
+    <ClInclude Include="include\RainStream\SrtpParameters.hpp" />
     <ClInclude Include="include\RainStream\supportedRtpCapabilities.hpp" />
+    <ClInclude Include="include\RainStream\Transport.hpp" />
     <ClInclude Include="include\RainStream\utils.hpp" />
     <ClInclude Include="include\RainStream\WebRtcTransport.hpp" />
     <ClInclude Include="include\RainStream\Worker.hpp" />
