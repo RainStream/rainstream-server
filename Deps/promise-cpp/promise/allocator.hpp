@@ -29,7 +29,15 @@
  * THE SOFTWARE.
  */
 
+#ifdef PM_MULTITHREAD
+#include <mutex>
+#endif
+
+#include <memory>
+
 namespace promise {
+
+inline void destroy_node(pm_list *node);
 
 struct pm_memory_pool {
     pm_list free_;
@@ -37,6 +45,14 @@ struct pm_memory_pool {
     pm_memory_pool(size_t size)
         : free_()
         , size_(size){
+    }
+    ~pm_memory_pool(){
+        pm_list *node = free_.next();
+        while(node != &free_){
+            pm_list *next = node->next();
+            destroy_node(node);
+            node = next;
+        }
     }
 };
 
@@ -81,14 +97,26 @@ struct dummy_pool_buf {
     }
 };
 
+inline void destroy_node(pm_list *node) {
+    pm_memory_pool_buf_header *header = pm_container_of(node, &pm_memory_pool_buf_header::list_);
+    header->~pm_memory_pool_buf_header();
+#ifdef PM_EMBED_STACK
+    //nothing to be freed
+#else
+    dummy_pool_buf *pool_buf = pm_container_of
+        (header, &dummy_pool_buf::header_);
+    void **buf = reinterpret_cast<void **>(pool_buf);
+    delete[] buf;
+#endif
+}
 
 template <size_t SIZE>
 struct pm_size_allocator {
     static inline pm_memory_pool *get_memory_pool() {
-        thread_local static pm_memory_pool *pool_ = nullptr;
+        thread_local static std::unique_ptr<pm_memory_pool> pool_;
         if(pool_ == nullptr)
-            pool_ = pm_stack_new<pm_memory_pool>(SIZE);
-        return pool_;
+            pool_.reset(pm_stack_new<pm_memory_pool>(SIZE));
+        return pool_.get();
     }
 };
 
@@ -154,6 +182,10 @@ private:
         if (object != nullptr) {
             pm_memory_pool_buf_header *header = dummy_pool_buf::from_ptr(object);
             //printf("++ %p %d -> %d\n", pool_buf, pool_buf->ref_count_, pool_buf->ref_count_ + 1);
+
+#ifdef PM_MULTITHREAD
+            std::lock_guard<std::recursive_mutex> lock(pm_mutex::get_mutex());
+#endif
             ++header->ref_count_;
 
             //Check if ref_count_ must overflow£¡
@@ -168,6 +200,10 @@ private:
         if (object != nullptr) {
             pm_memory_pool_buf_header *header = dummy_pool_buf::from_ptr(object);
             //printf("-- %p %d -> %d\n", pool_buf, pool_buf->ref_count_, pool_buf->ref_count_ - 1);
+
+#ifdef PM_MULTITHREAD
+            std::lock_guard<std::recursive_mutex> lock(pm_mutex::get_mutex());
+#endif
             pm_assert(header->ref_count_ > 0);
             --header->ref_count_;
             if (header->ref_count_ == 0) {

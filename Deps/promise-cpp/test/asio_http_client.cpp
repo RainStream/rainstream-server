@@ -36,9 +36,10 @@
 #include "asio/io.hpp"
 
 using namespace promise;
-
-using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
-namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
+namespace asio   = boost::asio;
+using     tcp    = boost::asio::ip::tcp;
+namespace http   = boost::beast::http;
+namespace beast  = boost::beast;
 
                                         //------------------------------------------------------------------------------
 
@@ -48,16 +49,16 @@ void do_session(
     std::string const& port,
     std::string const& target,
     int version,
-    boost::asio::io_context& ioc) {
+    asio::io_context& ioc) {
 
     struct Session {
         tcp::resolver resolver_;
         tcp::socket socket_;
-        boost::beast::flat_buffer buffer_;
+        beast::flat_buffer buffer_;
         http::request<http::empty_body> req_;
         http::response<http::string_body> res_;
 
-        explicit Session(boost::asio::io_context& ioc)
+        explicit Session(asio::io_context& ioc)
             : resolver_(ioc)
             , socket_(ioc) {
         }
@@ -84,12 +85,12 @@ void do_session(
         //<3> Write the request
         return async_write(session->socket_, session->req_);
 
-    }).then([=](std::size_t bytes_transferred) {
+    }).then([=](size_t bytes_transferred) {
         boost::ignore_unused(bytes_transferred);
         //<4> Read the response
         return async_read(session->socket_, session->buffer_, session->res_);
 
-    }).then([=](std::size_t bytes_transferred) {
+    }).then([=](size_t bytes_transferred) {
         boost::ignore_unused(bytes_transferred);
         //<5> Write the message to standard out
         std::cout << session->res_ << std::endl;
@@ -128,7 +129,7 @@ int main(int argc, char** argv)
     int version = argc == 5 && !std::strcmp("1.0", argv[4]) ? 10 : 11;
 
     // The io_context is required for all I/O
-    boost::asio::io_context ioc;
+    asio::io_context ioc;
 
     // Launch the asynchronous operation
     do_session(host, port, target, version, ioc);

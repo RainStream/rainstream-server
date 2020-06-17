@@ -32,6 +32,9 @@
 // See Readme.md for functions and detailed usage --
 //
 
+// support multithread
+// #define PM_MULTITHREAD
+
 // macro for debug
 // #define PM_DEBUG
 
@@ -44,12 +47,16 @@
 // define PM_NO_ALLOC_CACHE to disable memory cache in this library.
 // #define PM_NO_ALLOC_CACHE
 
+#include <cstdio>
 #include <memory>
 #include <typeinfo>
 #include <utility>
 #include <algorithm>
 #include <iterator>
 #include <functional>
+#ifdef PM_MULTITHREAD
+#include <mutex>
+#endif
 
 #ifndef PM_EMBED
 #include <exception>
@@ -415,10 +422,16 @@ public:
     void reject(const pm_any &ret_arg) const {
         object_->reject(ret_arg);
     }
-
+    void reject(const std::exception_ptr &ptr) const {
+        object_->reject(ptr);
+    }
 
     Defer then(Defer &promise) {
         return object_->then(promise);
+    }
+
+    Defer then(Defer&& promise) {
+        return then(promise);
     }
 
     template <typename FUNC_ON_RESOLVED, typename FUNC_ON_REJECTED>
@@ -446,6 +459,13 @@ public:
         return object_->template finally<FUNC_ON_FINALLY>(on_finally);
     }
 
+    void call(Defer &promise) {
+        object_->call(promise);
+    }
+
+    void dump() {
+        object_->dump();
+    }
 private:
     inline void swap(Defer &ptr) {
         std::swap(object_, ptr.object_);
@@ -471,7 +491,7 @@ struct ExCheck;
 typedef std::function<void(Defer &d)> FnOnUncaughtException;
 #endif
 
-inline Defer newHeadPromise(void);
+inline Defer newPromise(void);
 
 struct PromiseCaller{
     virtual ~PromiseCaller(){};
@@ -544,6 +564,9 @@ struct Promise {
     virtual ~Promise() {
         clear_func();
         if (next_.operator->()) {
+#ifdef PM_MULTITHREAD
+            std::lock_guard<std::recursive_mutex> lock(pm_mutex::get_mutex());
+#endif
             next_->prev_ = pm_stack::ptr_to_itr(nullptr);
         }
 #ifndef PM_EMBED
@@ -562,7 +585,7 @@ struct Promise {
     static void onUncaughtException(const pm_any &any) {
         FnOnUncaughtException *onUncaughtException = getUncaughtExceptionHandler();
         if (*onUncaughtException != nullptr) {
-            Defer promise = newHeadPromise();
+            Defer promise = newPromise();
             promise.reject(any);
             (*onUncaughtException)(promise);
             get_tail(promise.operator->())->fail([] {
@@ -617,6 +640,12 @@ struct Promise {
             call_next();
     }
 
+    void reject(const std::exception_ptr &ptr) {
+        prepare_reject(ptr);
+        if (status_ == kRejected)
+            call_next();
+    }
+
     Defer call_resolve(Defer &self, Promise *caller){
         if(resolved_ == nullptr){
             self->prepare_resolve(caller->any_);
@@ -630,8 +659,10 @@ struct Promise {
 #ifdef PM_MAX_CALL_LEN
         -- (*dbg_promise_call_len());
 #endif
-        if(ret != self)
+        if (ret != self) {
             joinDeferObject(self, ret);
+            self->status_ = kFinished;
+        }
         return ret;
     }
 
@@ -648,8 +679,10 @@ struct Promise {
 #ifdef PM_MAX_CALL_LEN
         -- (*dbg_promise_call_len());
 #endif
-        if(ret != self)
+        if (ret != self) {
             joinDeferObject(self, ret);
+            self->status_ = kFinished;
+        }
         return ret;
     }
 
@@ -676,33 +709,51 @@ struct Promise {
     }
     
     Defer call_next() {
-        if(status_ == kResolved) {
-            if(next_.operator->()){
-                pm_allocator::add_ref(this);
-                status_ = kFinished;
-                Defer d = next_->call_resolve(next_, this);
-                this->any_.clear();
-                next_->clear_func();
-                if(d.operator->())
-                    d->call_next();
-                //next_.clear();
-                pm_allocator::dec_ref(this);
-                return d;
+        uint8_t status = kInit;
+        if (status_ == kResolved) {
+            if (next_.operator->()) {
+#ifdef PM_MULTITHREAD
+                std::lock_guard<std::recursive_mutex> lock(pm_mutex::get_mutex());
+#endif
+                if (status_ == kResolved) {
+                    status = status_;
+                    status_ = kFinished;
+                }
             }
         }
-        else if(status_ == kRejected ) {
-            if(next_.operator->()){
-                pm_allocator::add_ref(this);
-                status_ = kFinished;
-                Defer d =  next_->call_reject(next_, this);
-                this->any_.clear();
-                next_->clear_func();
-                if (d.operator->())
-                    d->call_next();
-                //next_.clear();
-                pm_allocator::dec_ref(this);
-                return d;
+        else if (status_ == kRejected) {
+            if (next_.operator->()) {
+#ifdef PM_MULTITHREAD
+                std::lock_guard<std::recursive_mutex> lock(pm_mutex::get_mutex());
+#endif
+                if (status_ == kRejected) {
+                    status = status_;
+                    status_ = kFinished;
+                }
             }
+        }
+
+        if(status == kResolved){
+            pm_allocator::add_ref(this);
+            Defer d = next_->call_resolve(next_, this);
+            this->any_.clear();
+            next_->clear_func();
+            if(d.operator->())
+                d->call_next();
+            //next_.clear();
+            pm_allocator::dec_ref(this);
+            return d;
+        }
+        else if(status == kRejected ) {
+            pm_allocator::add_ref(this);
+            Defer d =  next_->call_reject(next_, this);
+            this->any_.clear();
+            next_->clear_func();
+            if (d.operator->())
+                d->call_next();
+            //next_.clear();
+            pm_allocator::dec_ref(this);
+            return d;
         }
 
         return next_;
@@ -710,7 +761,7 @@ struct Promise {
 
 
     Defer then_impl(PromiseCaller *resolved, PromiseCaller *rejected){
-        Defer promise = newHeadPromise();
+        Defer promise = newPromise();
         promise->resolved_ = resolved;
         promise->rejected_ = rejected;
         return then(promise);
@@ -769,8 +820,20 @@ struct Promise {
         });
     }
 
+    void call(Defer &promise) {
+        then([promise](Promise *caller) -> BypassAnyArg {
+            promise.resolve(caller->any_);
+            return BypassAnyArg();
+        }, [promise](Defer &self, Promise *caller) -> BypassAnyArg {
+            promise.reject(caller->any_);
+            return BypassAnyArg();
+        });
+    }
 
     Defer find_pending() {
+#ifdef PM_MULTITHREAD
+        std::lock_guard<std::recursive_mutex> lock(pm_mutex::get_mutex());
+#endif
         if (status_ == kInit) {
             Promise *p = this;
             Promise *prev = static_cast<Promise *>(pm_stack::itr_to_ptr(p->prev_));
@@ -803,6 +866,26 @@ struct Promise {
             pending.reject();
     }
 
+    void dump() {
+#ifdef PM_MULTITHREAD
+        std::lock_guard<std::recursive_mutex> lock(pm_mutex::get_mutex());
+#endif
+
+        /* Check if there's any functions return null Defer object */
+        pm_assert(next.operator->() != nullptr);
+
+        Promise *head = get_head(this);
+        printf("dump ");
+        for (Promise *p = head; p != nullptr; p = p->next_.operator->()) {
+            if(p == this)
+                printf("*%p[%d] ", p, (int)p->status_);
+            else
+                printf("%p[%d] ", p, (int)p->status_);
+        }
+        printf("\n");
+    }
+
+private:
     static Promise *get_head(Promise *p){
         while(p){
             Promise *prev = static_cast<Promise *>(pm_stack::itr_to_ptr(p->prev_));
@@ -822,6 +905,10 @@ struct Promise {
     
     
     static inline void joinDeferObject(Promise *self, Defer &next){
+#ifdef PM_MULTITHREAD
+        std::lock_guard<std::recursive_mutex> lock(pm_mutex::get_mutex());
+#endif
+
         /* Check if there's any functions return null Defer object */
         pm_assert(next.operator->() != nullptr);
 
@@ -1130,14 +1217,14 @@ struct RejectChecker<RET, FnSimple> {
     }
 };
 
-inline Defer newHeadPromise(){
+inline Defer newPromise(){
     return Defer(pm_new<Promise>());
 }
 
 /* Create new promise object */
 template <typename FUNC>
 inline Defer newPromise(FUNC func) {
-    Defer promise = newHeadPromise();
+    Defer promise = newPromise();
     promise->run(func, promise);
     return promise;
 }
@@ -1158,7 +1245,7 @@ inline Defer doWhile_unsafe(FUNC func) {
 template <typename FUNC>
 inline Defer doWhile(FUNC func) {
     return newPromise([func](Defer d) {
-        doWhile_unsafe(func).then(d);
+        doWhile_unsafe(func).call(d);
     });
 }
 
@@ -1216,6 +1303,11 @@ inline Defer all(std::initializer_list<Defer> promise_list) {
     return all<std::initializer_list<Defer>>(promise_list);
 }
 
+template <typename ... PROMISE_LIST>
+inline Defer all(PROMISE_LIST ...promise_list) {
+    return all({ promise_list ... });
+}
+
 
 /* returns a promise that resolves or rejects as soon as one of
 the promises in the iterable resolves or rejects, with the value
@@ -1235,6 +1327,11 @@ inline Defer race(PROMISE_LIST promise_list) {
 
 inline Defer race(std::initializer_list<Defer> promise_list) {
     return race<std::initializer_list<Defer>>(promise_list);
+}
+
+template <typename ... PROMISE_LIST>
+inline Defer race(PROMISE_LIST ...promise_list) {
+    return race({ promise_list ... });
 }
 
 #ifndef PM_EMBED

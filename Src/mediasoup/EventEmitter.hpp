@@ -1,11 +1,7 @@
 #pragma once
 
 #include "Logger.hpp"
-#include <nlohmann/json.hpp>
-#include <string>
 #include <unordered_map>
-
-using json = nlohmann::json;
 
 namespace rs
 {

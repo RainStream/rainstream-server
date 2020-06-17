@@ -26,4 +26,33 @@ typedef SSIZE_T ssize_t;
 #include <sys/socket.h> // struct sockaddr, struct sockaddr_storage, AF_INET, AF_INET6
 #endif
 
+// STL stuff:
+#include <array>
+#include <chrono>
+#include <vector>
+#include <list>
+#include <deque>
+#include <string>
+#include <map>
+#include <algorithm>
+#include <memory>
+#include <set>
+#include <queue>
+#include <limits>
+#include <random>
+#include <type_traits>
+#include <atomic>
+#include <mutex>
+#include <thread>
+#include <any>
+#include <optional>
+#include <variant>
+#include <condition_variable>
+
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+#include <promise.hpp>
+using namespace promise;
+
 #endif

@@ -30,9 +30,9 @@
 #include <boost/asio.hpp>
 
 using namespace promise;
-using namespace boost::asio;
+namespace asio = boost::asio;
 
-Defer testTimer(io_service &io) {
+Defer testTimer(asio::io_service &io) {
 
     return delay(io, 3000).then([&] {
         printf("timer after 3000 ms!\n");
@@ -47,7 +47,7 @@ Defer testTimer(io_service &io) {
     });
 }
 
-void testPromiseRace(io_service &io) {
+void testPromiseRace(asio::io_service &io) {
     auto promise0 = delay(io, 10000).then([] {
         printf("race: one resolved\n");
         return "one";
@@ -57,13 +57,13 @@ void testPromiseRace(io_service &io) {
         return "two";
     });
 
-    race({promise0, promise1}).then([](const char *str) {
+    race(promise0, promise1).then([](const char *str) {
         printf("race result = %s\n", str);
-        // Both resolve, but promise2 is faster
+        // Both resolve, but promise1 is faster
     });
 }
 
-void testPromiseAll(io_service &io) {
+void testPromiseAll(asio::io_service &io) {
     auto promise0 = delay(io, 10000).then([] {
         printf("all: one resolved\n");
         return std::string("one");
@@ -73,17 +73,17 @@ void testPromiseAll(io_service &io) {
         return std::string("two");
     });
 
-    all({promise0, promise1}).then([](const std::vector<pm_any> &results) {
+    all(promise0, promise1).then([](const std::vector<pm_any> &results) {
         printf("all size = %d\n", (int)results.size());
         for(size_t i = 0; i < results.size(); ++i)
             printf("all result = %s\n",
                 static_cast<std::string *>(results[i].tuple_element(0))->c_str());
-        // Both resolve, but promise2 is faster
+        // Both resolve, but promise1 is faster
     });
 }
 
 int main() {
-    io_service io;
+    asio::io_service io;
 
     testPromiseRace(io);
     testPromiseAll(io);
