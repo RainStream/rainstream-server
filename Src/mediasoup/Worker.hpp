@@ -1,13 +1,8 @@
 #pragma once
-
-#include <set>
 #include "EventEmitter.hpp"
 #include "StringUtils.hpp"
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
 
 class EnhancedEventEmitter;
-
 
 namespace rs
 {
