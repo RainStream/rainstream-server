@@ -121,7 +121,9 @@ namespace rs
 	{
 		DLOG(INFO) << "dump()";
 
-		return this->_channel->request("worker.dump");
+		auto ret = co_await this->_channel->request("worker.dump");
+
+		co_return ret;
 	}
 // 
 // 	Defer Worker::updateSettings(json& spawnOptions)
