@@ -13,14 +13,14 @@ namespace rs
 	class Channel
 	{
 	public:
-		Channel(Socket* socket);
+		Channel(Socket* producerSocket, Socket* consumerSocket, int pid);
 
 		void close();
 
 		Defer request(std::string method, const json& internal = json::object(), const json& data = json::object());
 
-		void addEventListener(uint32_t id, ChannelListener* listener);
-		void off(uint32_t id);
+		void addEventListener(std::string id, ChannelListener* listener);
+		void off(std::string id);
 
 	protected:
 		void _processMessage(const json& msg);
@@ -28,9 +28,17 @@ namespace rs
 		std::string _makePayload(const json& msg);
 
 	private:
-		std::unordered_map<uint32_t, Defer> _pendingSent;
-		std::unordered_map<uint32_t, ChannelListener*> _eventListeners;
+		std::unordered_map<uint32_t, Defer> _sents;
+		std::unordered_map<std::string, ChannelListener*> _eventListeners;
 
-		Socket* _socket{ nullptr };
+		// Closed flag.
+		bool _closed = false;
+
+		Socket* _producerSocket{ nullptr };
+		Socket* _consumerSocket{ nullptr };
+
+		// Next id for messages sent to the worker process.
+		int32_t _nextId = 0;
+
 	};
 }

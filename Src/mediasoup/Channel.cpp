@@ -11,17 +11,16 @@ namespace rs
 	const int REQUEST_TIMEOUT = 5000;
 	static uint8_t WriteBuffer[NS_MAX_SIZE];
 
-	Channel::Channel(Socket* socket)
+	Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 	{
-		int err;
-
 		DLOG(INFO) << "constructor()";
 
-		// Unix Socket instance.
-		this->_socket = socket;
+		this->_producerSocket = producerSocket;
+		this->_consumerSocket = consumerSocket;
+	
 
 		// Read Channel responses/notifications from the worker.
-		this->_socket->addEventListener("data", [=](json data)
+		this->_consumerSocket->addEventListener("data", [=](json data)
 		{
 			std::string nsPayload = data.get<std::string>();
 			try
@@ -48,6 +47,11 @@ namespace rs
 				case 69:
 					LOG(ERROR) << nsPayload.substr(1);
 					break;
+					// 88 = 'X' (a dump log).
+				case 88:
+					// eslint-disable-next-line no-console
+					DLOG(INFO) << nsPayload.substr(1);
+					break;
 
 				default:
 					LOG(ERROR) << 
@@ -61,48 +65,64 @@ namespace rs
 
 		});
 
-		this->_socket->addEventListener("end", [=](json data)
+		this->_consumerSocket->addEventListener("end", [=](json data)
 		{
-			DLOG(INFO) << "channel ended by the other side";
+			DLOG(INFO) << "Consumer channel ended by the other side";
 		});
 
-		this->_socket->addEventListener("error", [=](json data)
+		this->_consumerSocket->addEventListener("error", [=](json data)
 		{
-			LOG(ERROR) << "channel error:" << data.dump();
+			LOG(ERROR) << "Consumer channel error:" << data.dump();
 		});
 
-		_socket->Start();
+		this->_producerSocket->addEventListener("end", [=](json data)
+		{
+			DLOG(INFO) << "Producer channel ended by the other side";
+		});
+
+		this->_producerSocket->addEventListener("error", [=](json data)
+		{
+			LOG(ERROR) << "Producer channel error:" << data.dump();
+		});
+
+		_consumerSocket->Start();
+		_producerSocket->Start();
 	}
 
 
 	void Channel::close()
 	{
+		if (this->_closed)
+			return;
+
 		DLOG(INFO) << "close()";
 
+		this->_closed = true;
+
 		// Close every pending sent.
-		for (auto sent : this->_pendingSent)
+		for (auto sent : this->_sents)
 		{
 			sent.second.clear();
 		}
 
-		// Remove event listeners but leave a fake "error" hander
-		// to avoid propagation.
-// 		this->_socket->off("end");
-// 		this->_socket->off("error");
-		this->_socket->addEventListener("error", [](json) {});
-
-		// Destroy the socket after a while to allow pending incoming
-		// messages.
-	// 	setTimeout(() = >
-	// 	{
-	// 		try
-	// 		{
-	// 			this->_socket.destroy();
-	// 		}
-	// 		catch (error)
-	// 		{
-	// 		}
-	// 	}, 250);
+// 		// Remove event listeners but leave a fake 'error' hander to avoid
+// 		// propagation.
+// 		this->_consumerSocket->removeAllListeners("end");
+// 		this->_consumerSocket->removeAllListeners("error");
+// 		this->_consumerSocket->on("error", () = > {});
+// 
+// 		this->_producerSocket->removeAllListeners("end");
+// 		this->_producerSocket->removeAllListeners("error");
+// 		this->_producerSocket->on("error", () = > {});
+// 
+// 		// Destroy the socket after a while to allow pending incoming messages.
+// 		setTimeout(() = >
+// 		{
+// 			try { this->_producerSocket.destroy(); }
+// 			catch (error) {}
+// 			try { this->_consumerSocket.destroy(); }
+// 			catch (error) {}
+// 		}, 200);
 	}
 
 	Defer Channel::request(std::string method, const json& internal, const json& data)
@@ -126,7 +146,7 @@ namespace rs
 		// This may raise if closed or remote side ended.
 		try
 		{
-			this->_socket->Write(nsPayload);
+			this->_producerSocket->Write(nsPayload);
 		}
 		catch (std::exception error)
 		{
@@ -134,16 +154,16 @@ namespace rs
 		}
 
 		return newPromise([=](Defer d) {
-			this->_pendingSent.insert(std::make_pair(id, d));
+			this->_sents.insert(std::make_pair(id, d));
 		});
 	}
 
-	void Channel::addEventListener(uint32_t id, ChannelListener* listener)
+	void Channel::addEventListener(std::string id, ChannelListener* listener)
 	{
 		_eventListeners.insert(std::make_pair(id, listener));
 	}
 
-	void Channel::off(uint32_t id)
+	void Channel::off(std::string id)
 	{
 		_eventListeners.erase(id);
 	}
@@ -161,14 +181,14 @@ namespace rs
 				LOG(ERROR) << "request failed [id:" << id <<
 				" reason:"<< msg["reason"].get<std::string>() << "]";
 
-			if (!this->_pendingSent.count(id))
+			if (!this->_sents.count(id))
 			{
 				LOG(ERROR) << "received Response does not match any sent Request";
 
 				return;
 			}
 
-			auto sent = this->_pendingSent[id];
+			auto sent = this->_sents[id];
 
 			if (msg.value("accepted", false))
 				sent.resolve(msg["data"]);
@@ -178,7 +198,7 @@ namespace rs
 		// If a Notification emit it to the corresponding entity.
 		else if (msg.count("targetId") && msg.count("event"))
 		{
-			uint32_t targetId = msg["targetId"].get<uint32_t>();
+			std::string targetId = msg["targetId"].get<std::string>();
 
 			if (_eventListeners.count(targetId))
 			{

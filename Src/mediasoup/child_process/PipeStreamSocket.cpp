@@ -237,7 +237,7 @@ namespace rs
 		// Some error.
 		else
 		{
-			LOG(ERROR) << "read error, closing the pipe: %s" << uv_strerror(nread);
+			LOG(ERROR) << "read error, closing the pipe: " << uv_strerror(nread);
 
 			this->hasError = true;
 

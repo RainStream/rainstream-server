@@ -133,6 +133,11 @@ namespace rs
 		
 	}
 
+	int SubProcess::pid()
+	{
+		return this->req.pid;
+	}
+
 	void SubProcess::Close(std::string error)
 	{
 		if (this->closed)

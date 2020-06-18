@@ -70,10 +70,11 @@ namespace rs
 
 		this->_child = SubProcess::spawn(WORK_PATH, spawnArgs, spawnOptions);
 
-		
+		this->_pid = this->_child->pid();
 
-		// Channel instance.
-		//this->_channel = new Channel(_child->getSocket());
+		this->_channel = new Channel(this->_child->stdio()[3],
+			this->_child->stdio()[4],
+			this->_pid);
 	}
 
 	void Worker::close()

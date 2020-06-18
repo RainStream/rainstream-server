@@ -21,6 +21,7 @@ namespace rs
 		void OnUvReqClosed(int64_t exit_status, int term_signal);
 
 	public:
+		int pid();
 		void Close(std::string error = "");
 		std::vector<Socket*>& stdio();
 
