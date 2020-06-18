@@ -1,6 +1,6 @@
 #pragma once
 
-#include <netstring.h>
+#include <future>
 #include <unordered_map>
 #include "utils.hpp"
 #include "errors.hpp"
@@ -17,7 +17,7 @@ namespace rs
 
 		void close();
 
-		Defer request(std::string method, const json& internal = json::object(), const json& data = json::object());
+		std::future<json> request(std::string method, const json& internal = json::object(), const json& data = json::object());
 
 		void addEventListener(std::string id, ChannelListener* listener);
 		void off(std::string id);
@@ -28,7 +28,7 @@ namespace rs
 		std::string _makePayload(const json& msg);
 
 	private:
-		std::unordered_map<uint32_t, Defer> _sents;
+		std::unordered_map<uint32_t, std::promise<json> > _sents;
 		std::unordered_map<std::string, ChannelListener*> _eventListeners;
 
 		// Closed flag.

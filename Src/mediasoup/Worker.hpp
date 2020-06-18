@@ -1,5 +1,6 @@
 #pragma once
 
+#include <future>
 #include "utils.hpp"
 #include "common.hpp"
 #include "EventEmitter.hpp"
@@ -20,7 +21,7 @@ namespace rs
 
 		void close();
 
-		Defer dump();
+		std::future<json> dump();
 
 		//Defer updateSettings(json& options);
 

@@ -117,23 +117,11 @@ namespace rs
 // 		this->_observer->safeEmit('close');
 	}
 
-	Defer Worker::dump()
+	std::future<json> Worker::dump()
 	{
 		DLOG(INFO) << "dump()";
 
-		return this->_channel->request("worker.dump")
-			.then([=](const json& data)
-		{
-			DLOG(INFO) << "\"worker.dump\" request succeed" << data.dump();
-
-			return data;
-		})
-			.fail([=](Error error)
-		{
-			LOG(ERROR) << "\"worker.dump\" request failed:"<< error.ToString();
-
-			throw error;
-		});
+		return this->_channel->request("worker.dump");
 	}
 // 
 // 	Defer Worker::updateSettings(json& spawnOptions)

@@ -2,6 +2,7 @@
 #include "Channel.hpp"
 #include "child_process/Socket.hpp"
 #include "Logger.hpp"
+#include <netstring.h>
 
 namespace rs
 {
@@ -100,10 +101,10 @@ namespace rs
 		this->_closed = true;
 
 		// Close every pending sent.
-		for (auto sent : this->_sents)
-		{
-			sent.second.clear();
-		}
+// 		for (auto sent : this->_sents)
+// 		{
+// 			sent.second.clear();
+// 		}
 
 // 		// Remove event listeners but leave a fake 'error' hander to avoid
 // 		// propagation.
@@ -125,8 +126,9 @@ namespace rs
 // 		}, 200);
 	}
 
-	Defer Channel::request(std::string method, const json& internal, const json& data)
+	std::future<json> Channel::request(std::string method, const json& internal, const json& data)
 	{
+		std::promise<json> promise;
 		uint32_t id = utils::randomNumber();
 
 		DLOG(INFO) << "request() [method"<< method << ", id:" << id << "]";
@@ -140,8 +142,8 @@ namespace rs
 
 		std::string nsPayload = _makePayload(request);
 
-		if (nsPayload.length() > NS_MAX_SIZE)
-			return promise::reject(Error("request too big"));
+// 		if (nsPayload.length() > NS_MAX_SIZE)
+// 			return promise.set_exception(Error("request too big"));
 
 		// This may raise if closed or remote side ended.
 		try
@@ -150,12 +152,12 @@ namespace rs
 		}
 		catch (std::exception error)
 		{
-			return promise::reject(Error(error.what()));
+			//return promise::reject(Error(error.what()));
 		}
 
-		return newPromise([=](Defer d) {
-			this->_sents.insert(std::make_pair(id, d));
-		});
+		this->_sents.insert(std::make_pair(id, std::move(promise)));
+
+		return this->_sents[id].get_future();
 	}
 
 	void Channel::addEventListener(std::string id, ChannelListener* listener)
@@ -188,12 +190,12 @@ namespace rs
 				return;
 			}
 
-			auto sent = this->_sents[id];
+			std::promise<json> sent = std::move(this->_sents[id]);
 
 			if (msg.value("accepted", false))
-				sent.resolve(msg["data"]);
+				sent.set_value(msg["data"]);
 			else if (msg.value("rejected", false))
-				sent.reject(Error(msg["reason"].get<std::string>()));
+				sent.set_exception(std::make_exception_ptr(Error(msg["reason"].get<std::string>())));
 		}
 		// If a Notification emit it to the corresponding entity.
 		else if (msg.count("targetId") && msg.count("event"))
