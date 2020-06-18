@@ -6,6 +6,8 @@
 #include "utils.hpp"
 #include "child_process/SubProcess.hpp"
 
+#define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
+
 #ifdef _DEBUG
 #define WORK_PATH "D:/Develop/mediasoup/worker/out/Debug/mediasoup-worker.exe"
 #else
@@ -56,9 +58,19 @@ namespace rs
 		if (!dtlsPrivateKeyFile.empty())
 			spawnArgs.push_back(utils::Printf("--dtlsPrivateKeyFile=%s", dtlsPrivateKeyFile.c_str()));
 
-		DLOG(INFO) << utils::Printf("spawning worker process: %s %s", spawnBin, utils::join(spawnArgs,","));
+		DLOG(INFO) << utils::Printf("spawning worker process: %s %s", 
+			spawnBin.c_str(), utils::join(spawnArgs,",").c_str());
 
-		this->_child = SubProcess::spawn(WORK_PATH, spawnArgs);
+		json spawnOptions = {
+			{ "env", { {"MEDIASOUP_VERSION", __MEDIASOUP_VERSION__} } },
+			{ "detached", false },
+			{ "stdio", { "ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"} },
+			{ "windowsHide", true }
+		};
+
+		this->_child = SubProcess::spawn(WORK_PATH, spawnArgs, spawnOptions);
+
+		
 
 		// Channel instance.
 		this->_channel = new Channel(_child->getSocket());

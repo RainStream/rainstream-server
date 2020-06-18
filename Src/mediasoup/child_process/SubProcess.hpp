@@ -11,7 +11,7 @@ namespace rs
 	class SubProcess : public EventEmitter
 	{
 	public:
-		static SubProcess* spawn(std::string workerPath, AStringVector parameters);
+		static SubProcess* spawn(std::string workerPath, AStringVector parameters, json options = json::object());
 
 	protected:
 		SubProcess();

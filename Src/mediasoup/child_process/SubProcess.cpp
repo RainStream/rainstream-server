@@ -18,7 +18,7 @@ namespace rs
 		static_cast<SubProcess*>(handle->data)->OnUvReqClosed(exit_status, term_signal);
 	}
 
-	SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters)
+	SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, json options)
 	{
 		SubProcess *subProcess = new SubProcess();
 
@@ -31,25 +31,80 @@ namespace rs
 			spawnArgs[i + 1] = (char*)parameters[i].c_str();
 		}
 
-		uv_stdio_container_t child_stdio[4];
-		child_stdio[0].flags = UV_IGNORE;
-		child_stdio[0].data.fd = 0;//stdin
-		child_stdio[1].flags = UV_INHERIT_FD;
-		child_stdio[1].data.fd = 1;//stdout
-		child_stdio[2].flags = UV_INHERIT_FD;
-		child_stdio[2].data.fd = 2;//stderr
-		child_stdio[3].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE | UV_WRITABLE_PIPE);
-		child_stdio[3].data.stream = (uv_stream_t*)subProcess->socket->GetUvHandle();
+		std::vector<uv_stdio_container_t> child_stdios;
+		
+		if (options.contains("stdio") && options["stdio"].is_array())
+		{
+			// fd 0 (stdin)   : Just ignore it.
+			// fd 1 (stdout)  : Pipe it for 3rd libraries that log their own stuff.
+			// fd 2 (stderr)  : Same as stdout.
+			// fd 3 (channel) : Producer Channel fd.
+			// fd 4 (channel) : Consumer Channel fd.
+			// fd 5 (channel) : Producer PayloadChannel fd.
+			// fd 6 (channel) : Consumer PayloadChannel fd.
 
-		char* envs[2];
-		envs[0] = "MEDIASOUP_VERSION=__MEDIASOUP_VERSION__";
-		envs[1] = NULL;
+			int i = 0;
+			for (auto& stdio: options["stdio"])
+			{
+				std::string stdio_type = stdio.get<std::string>();
+
+				uv_stdio_container_t child_stdio;
+
+				if (i == 0)
+				{
+					child_stdio.data.fd = i;//stdin
+					child_stdio.flags = UV_IGNORE;
+				}
+				else if (i == 1)
+				{
+					child_stdio.data.fd = i;//stdout
+					child_stdio.flags = UV_INHERIT_FD;
+				}
+				else if (i == 2)
+				{
+					child_stdio.data.fd = i;//stderr
+					child_stdio.flags = UV_INHERIT_FD;
+				}
+				else
+				{
+					if (stdio_type == "pipe")
+					{
+						child_stdio.data.fd = i;//channel
+						child_stdio.flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE | UV_WRITABLE_PIPE);
+						child_stdio.data.stream = (uv_stream_t*)subProcess->socket->GetUvHandle();
+					}
+					else
+					{
+						child_stdio.data.fd = i;
+						child_stdio.flags = UV_IGNORE;
+					}
+				}
+				
+				child_stdios.push_back(child_stdio);
+			}
+		}
+
+		std::vector<std::string> strEnvs;
+		if (options.contains("env") && options["env"].is_object())
+		{
+			for (auto& el : options["env"].items()) {
+				std::string env = utils::Printf("%s=%s", el.key().c_str(), std::string(el.value()).c_str());
+				strEnvs.push_back(env);
+			}
+		}
+
+		std::vector<char*> envs;
+		for (auto &env : strEnvs)
+		{
+			envs.push_back(env.data());
+		}
+		envs.push_back('\0');
 
 		subProcess->options.args = spawnArgs;
-		subProcess->options.env = envs;
+		subProcess->options.env = envs.data();
 		subProcess->options.file = spawnArgs[0];
-		subProcess->options.stdio = child_stdio;
-		subProcess->options.stdio_count = ARRAYCOUNT(child_stdio);
+		subProcess->options.stdio = child_stdios.data();
+		subProcess->options.stdio_count = child_stdios.size();
 		subProcess->options.exit_cb = onReqClose;
 
 		subProcess->req.data = (void*)subProcess;
