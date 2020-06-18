@@ -22,7 +22,7 @@ namespace rs
 
 	public:
 		void Close(std::string error = "");
-		Socket* getSocket();
+		std::vector<Socket*>& stdio();
 
 	private:
 		// Allocated by this.
@@ -32,11 +32,6 @@ namespace rs
 		// Others.
 		bool closed{ false };
 
-		Socket* socket{ nullptr };
+		std::vector<Socket*> _stdio;
 	};
-
-	inline Socket* SubProcess::getSocket()
-	{
-		return this->socket;
-	}
 }

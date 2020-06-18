@@ -73,7 +73,7 @@ namespace rs
 		
 
 		// Channel instance.
-		this->_channel = new Channel(_child->getSocket());
+		//this->_channel = new Channel(_child->getSocket());
 	}
 
 	void Worker::close()

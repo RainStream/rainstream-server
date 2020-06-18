@@ -22,14 +22,13 @@ namespace rs
 	{
 		SubProcess *subProcess = new SubProcess();
 
-		int argc = parameters.size() + 2;
-		char** spawnArgs = new char*[argc];
-		spawnArgs[0] = (char*)workerPath.c_str();
-		spawnArgs[argc - 1] = NULL;
+		std::vector<char*> spawnArgs;
+		spawnArgs.push_back((char*)workerPath.c_str());
 		for (size_t i = 0; i < parameters.size(); ++i)
 		{
-			spawnArgs[i + 1] = (char*)parameters[i].c_str();
+			spawnArgs.push_back((char*)parameters[i].c_str());
 		}
+		spawnArgs.push_back('\0');
 
 		std::vector<uv_stdio_container_t> child_stdios;
 		
@@ -49,6 +48,7 @@ namespace rs
 				std::string stdio_type = stdio.get<std::string>();
 
 				uv_stdio_container_t child_stdio;
+				Socket* socket = nullptr;
 
 				if (i == 0)
 				{
@@ -69,9 +69,10 @@ namespace rs
 				{
 					if (stdio_type == "pipe")
 					{
+						socket = new Socket;
 						child_stdio.data.fd = i;//channel
 						child_stdio.flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE | UV_WRITABLE_PIPE);
-						child_stdio.data.stream = (uv_stream_t*)subProcess->socket->GetUvHandle();
+						child_stdio.data.stream = (uv_stream_t*)socket->GetUvHandle();
 					}
 					else
 					{
@@ -80,7 +81,10 @@ namespace rs
 					}
 				}
 				
+				subProcess->_stdio.push_back(socket);
 				child_stdios.push_back(child_stdio);
+
+				i++;
 			}
 		}
 
@@ -100,12 +104,13 @@ namespace rs
 		}
 		envs.push_back('\0');
 
-		subProcess->options.args = spawnArgs;
+		subProcess->options.args = spawnArgs.data();;
 		subProcess->options.env = envs.data();
 		subProcess->options.file = spawnArgs[0];
 		subProcess->options.stdio = child_stdios.data();
 		subProcess->options.stdio_count = child_stdios.size();
 		subProcess->options.exit_cb = onReqClose;
+		//subProcess->options.flags = UV_PROCESS_DETACHED;
 
 		subProcess->req.data = (void*)subProcess;
 		// Create the rainstream-worker child process.
@@ -125,7 +130,7 @@ namespace rs
 
 	SubProcess::SubProcess()
 	{
-		socket = new Socket;
+		
 	}
 
 	void SubProcess::Close(std::string error)
@@ -146,17 +151,27 @@ namespace rs
 		}
 
 		// Close the Channel socket.
-		if (this->socket != nullptr)
-			this->socket->Destroy();
+
+		for (auto stdio : this->_stdio)
+		{
+			if (stdio)
+			{
+				stdio->Destroy();
+			}
+		}
 
 		this->doEvent("close", error);
+	}
+
+	std::vector<Socket*>& SubProcess::stdio()
+	{
+		return this->_stdio;
 	}
 
 
 	void SubProcess::OnUvReqClosed(int64_t exit_status, int term_signal)
 	{
 		Close();
-
 
 		LOG(ERROR) << "child process exited "
 			<<" code:" << exit_status
