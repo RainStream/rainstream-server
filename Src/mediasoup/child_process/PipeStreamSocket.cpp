@@ -62,7 +62,7 @@ namespace rs
 		this->uvHandle = new uv_pipe_t{ 0 };
 		this->uvHandle->data = (void*)this;
 
-		err = uv_pipe_init(uv_default_loop(), this->uvHandle, 1);
+		err = uv_pipe_init(uv_default_loop(), this->uvHandle, 0);
 		if (err != 0)
 		{
 			delete this->uvHandle;

@@ -117,24 +117,24 @@ namespace rs
 // 		this->_observer->safeEmit('close');
 	}
 
-// 	Defer Worker::dump()
-// 	{
-// 		DLOG(INFO) << "dump()";
-// 
-// 		return this->_channel->request("worker.dump")
-// 			.then([=](const json& data)
-// 		{
-// 			DLOG(INFO) << "\"worker.dump\" request succeeded";
-// 
-// 			return data;
-// 		})
-// 			.fail([=](Error error)
-// 		{
-// 			LOG(ERROR) << "\"worker.dump\" request failed:"<< error.ToString();
-// 
-// 			throw error;
-// 		});
-// 	}
+	Defer Worker::dump()
+	{
+		DLOG(INFO) << "dump()";
+
+		return this->_channel->request("worker.dump")
+			.then([=](const json& data)
+		{
+			DLOG(INFO) << "\"worker.dump\" request succeed" << data.dump();
+
+			return data;
+		})
+			.fail([=](Error error)
+		{
+			LOG(ERROR) << "\"worker.dump\" request failed:"<< error.ToString();
+
+			throw error;
+		});
+	}
 // 
 // 	Defer Worker::updateSettings(json& spawnOptions)
 // 	{

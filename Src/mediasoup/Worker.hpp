@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils.hpp"
+#include "common.hpp"
 #include "EventEmitter.hpp"
 
 class EnhancedEventEmitter;
@@ -19,7 +20,7 @@ namespace rs
 
 		void close();
 
-		//Defer dump();
+		Defer dump();
 
 		//Defer updateSettings(json& options);
 
