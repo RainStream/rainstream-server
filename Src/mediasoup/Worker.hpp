@@ -1,6 +1,7 @@
 #pragma once
+
+#include "utils.hpp"
 #include "EventEmitter.hpp"
-#include "StringUtils.hpp"
 
 class EnhancedEventEmitter;
 
@@ -14,7 +15,7 @@ namespace rs
 	class Worker : public EventEmitter
 	{
 	public:
-		Worker(std::string id, AStringVector parameters);
+		Worker(json settings);
 
 		void close();
 
@@ -31,8 +32,6 @@ namespace rs
 
 
 	private:
-		std::string _id;
-
 		SubProcess* _child{ nullptr };
 
 		uint32_t _pid{ 0 };

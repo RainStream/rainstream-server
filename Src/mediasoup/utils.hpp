@@ -1,6 +1,10 @@
 #pragma once
 
 #include <random>
+#include <string>
+#include <vector>
+
+using AStringVector = std::vector<std::string>;
 
 /** Evaluates to the number of elements in an array (compile-time!) */
 #define ARRAYCOUNT(X) (sizeof(X) / sizeof(*(X)))
@@ -41,13 +45,7 @@ namespace utils
 
 	std::string ToUpperCase(const std::string& str);
 
-	inline json cloneObject(const json& obj)
-	{
-		if (obj.is_object())
-			return obj;
-
-		return obj;
-	};
+	std::string join(const AStringVector& vec, const std::string & delimeter);
 }
 
 uint32_t setInterval(std::function<void(void)> func, int interval);

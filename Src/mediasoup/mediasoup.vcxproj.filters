@@ -42,9 +42,6 @@
     <ClCompile Include="Worker.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="StringUtils.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="utils.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -72,9 +69,6 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Worker.hpp">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="StringUtils.hpp">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="utils.hpp">

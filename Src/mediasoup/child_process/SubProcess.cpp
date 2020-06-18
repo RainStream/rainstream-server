@@ -18,9 +18,9 @@ namespace rs
 		static_cast<SubProcess*>(handle->data)->OnUvReqClosed(exit_status, term_signal);
 	}
 
-	SubProcess* SubProcess::spawn(std::string id, std::string workerPath, AStringVector parameters)
+	SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters)
 	{
-		SubProcess *subProcess = new SubProcess(id);
+		SubProcess *subProcess = new SubProcess();
 
 		int argc = parameters.size() + 2;
 		char** spawnArgs = new char*[argc];
@@ -42,7 +42,7 @@ namespace rs
 		child_stdio[3].data.stream = (uv_stream_t*)subProcess->socket->GetUvHandle();
 
 		char* envs[2];
-		envs[0] = "MEDIASOUP_CHANNEL_FD=3";
+		envs[0] = "MEDIASOUP_VERSION=__MEDIASOUP_VERSION__";
 		envs[1] = NULL;
 
 		subProcess->options.args = spawnArgs;
@@ -68,8 +68,7 @@ namespace rs
 		return subProcess;
 	}
 
-	SubProcess::SubProcess(std::string id)
-		: _id(id)
+	SubProcess::SubProcess()
 	{
 		socket = new Socket;
 	}
@@ -105,8 +104,7 @@ namespace rs
 
 
 		LOG(ERROR) << "child process exited "
-			<<"[id:" << _id 
-			<< "] code:" << exit_status
+			<<" code:" << exit_status
 			<< " signal:" <<  term_signal;
 	}
 }

@@ -3,29 +3,65 @@
 #include "Worker.hpp"
 #include "Channel.hpp"
 #include "Logger.hpp"
+#include "utils.hpp"
 #include "child_process/SubProcess.hpp"
+
+#ifdef _DEBUG
+#define WORK_PATH "D:/Develop/mediasoup/worker/out/Debug/mediasoup-worker.exe"
+#else
+#define WORK_PATH "D:/Develop/mediasoup/worker/out/Release/mediasoup-worker.exe"
+#endif
 
 namespace rs
 {
 
 	const int CHANNEL_FD = 3;
-#define WORK_PATH "MediaServer"
+
 	std::string workerPath;
 
-	Worker::Worker(std::string id, AStringVector parameters)
-		: _id(id)
+	Worker::Worker(json settings)
 	{
 		//this->setMaxListeners(Infinity);
 
-		DLOG(INFO) << "constructor() [id:" << id << "parameters:" << join(parameters, " ") << "]";
+		DLOG(INFO) << "constructor() [ "<< "workerSettings:" << settings.dump() << "]";
 
-		parameters.insert(parameters.begin(), id);
+		std::string spawnBin = WORK_PATH;
+		AStringVector spawnArgs;
 
-		this->_child = SubProcess::spawn(id, WORK_PATH, parameters);
+		std::string logLevel = settings.value("logLevel", "");
+		json logTags = settings.value("logTags", json::array());
+		uint32_t rtcMinPort = settings.value("rtcMinPort", 0);
+		uint32_t rtcMaxPort = settings.value("rtcMaxPort", 0);
+		std::string dtlsCertificateFile = settings.value("dtlsCertificateFile", "");
+		std::string dtlsPrivateKeyFile = settings.value("dtlsPrivateKeyFile", "");
+
+		if (!logLevel.empty())
+			spawnArgs.push_back(utils::Printf("--logLevel=%s", logLevel.c_str()));
+
+		for (auto& logTag : logTags)
+		{
+			if (logTag.is_string() && !std::string(logTag).empty())
+				spawnArgs.push_back(utils::Printf("--logTag=%s", std::string(logTag).c_str()));
+		}
+
+		if (rtcMinPort > 0)
+			spawnArgs.push_back(utils::Printf("--rtcMinPort=%d", rtcMinPort));
+
+		if (rtcMaxPort > 0)
+			spawnArgs.push_back(utils::Printf("--rtcMaxPort=%d", rtcMaxPort));
+
+		if (!dtlsCertificateFile.empty())
+			spawnArgs.push_back(utils::Printf("--dtlsCertificateFile=%s", dtlsCertificateFile.c_str()));
+
+		if (!dtlsPrivateKeyFile.empty())
+			spawnArgs.push_back(utils::Printf("--dtlsPrivateKeyFile=%s", dtlsPrivateKeyFile.c_str()));
+
+		DLOG(INFO) << utils::Printf("spawning worker process: %s %s", spawnBin, utils::join(spawnArgs,","));
+
+		this->_child = SubProcess::spawn(WORK_PATH, spawnArgs);
 
 		// Channel instance.
 		this->_channel = new Channel(_child->getSocket());
-
 	}
 
 	void Worker::close()

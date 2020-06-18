@@ -1,8 +1,8 @@
 #pragma once
 
 #include <uv.h>
+#include "utils.hpp"
 #include "EventEmitter.hpp"
-#include "StringUtils.hpp"
 
 namespace rs
 {
@@ -11,9 +11,10 @@ namespace rs
 	class SubProcess : public EventEmitter
 	{
 	public:
-		static SubProcess* spawn(std::string id, std::string workerPath, AStringVector parameters);
+		static SubProcess* spawn(std::string workerPath, AStringVector parameters);
 
-		SubProcess(std::string id);
+	protected:
+		SubProcess();
 
 		/* Callbacks fired by UV events. */
 	public:
@@ -30,8 +31,6 @@ namespace rs
 
 		// Others.
 		bool closed{ false };
-
-		std::string _id;
 
 		Socket* socket{ nullptr };
 	};

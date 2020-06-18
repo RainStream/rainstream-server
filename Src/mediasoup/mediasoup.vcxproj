@@ -163,7 +163,6 @@
     <ClCompile Include="EventEmitter.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="common.cpp" />
-    <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="Worker.cpp" />
   </ItemGroup>
@@ -176,7 +175,6 @@
     <ClInclude Include="EventEmitter.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="common.hpp" />
-    <ClInclude Include="StringUtils.hpp" />
     <ClInclude Include="utils.hpp" />
     <ClInclude Include="Worker.hpp" />
   </ItemGroup>

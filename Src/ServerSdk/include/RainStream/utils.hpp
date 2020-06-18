@@ -1,7 +1,10 @@
 #pragma once
 
 #include <random>
+#include <string>
+#include <vector>
 
+using AStringVector = std::vector<std::string>;
 
 namespace utils
 {
@@ -38,6 +41,8 @@ namespace utils
 	std::string ToLowerCase(const std::string& str);
 
 	std::string ToUpperCase(const std::string& str);
+
+	std::string join(const AStringVector& vec, const std::string & delimeter);
 
 	inline Json cloneObject(const Json& obj)
 	{
