@@ -4,13 +4,13 @@
 #include <unordered_map>
 #include "utils.hpp"
 #include "errors.hpp"
+#include <EventEmitter.hpp>
 
 namespace rs
 {
 	class Socket;
-	class ChannelListener;
 
-	class Channel
+	class Channel : public EventEmitter
 	{
 	public:
 		Channel(Socket* producerSocket, Socket* consumerSocket, int pid);
@@ -19,9 +19,6 @@ namespace rs
 
 		std::future<json> request(std::string method, const json& internal = json::object(), const json& data = json::object());
 
-		void addEventListener(std::string id, ChannelListener* listener);
-		void off(std::string id);
-
 	protected:
 		void _processMessage(const json& msg);
 
@@ -29,7 +26,6 @@ namespace rs
 
 	private:
 		std::unordered_map<uint32_t, std::promise<json> > _sents;
-		std::unordered_map<std::string, ChannelListener*> _eventListeners;
 
 		// Closed flag.
 		bool _closed = false;

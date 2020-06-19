@@ -165,7 +165,7 @@ namespace rs
 			}
 		}
 
-		this->doEvent("close", error);
+		this->emit("close", error);
 	}
 
 	std::vector<Socket*>& SubProcess::stdio()

@@ -6,11 +6,12 @@
 
 namespace rs
 {
-	// netstring length for a 65536 bytes payload.
-	const int NS_MAX_SIZE = 65543;
-	// Max time waiting for a response from the worker subprocess.
-	const int REQUEST_TIMEOUT = 5000;
-	static uint8_t WriteBuffer[NS_MAX_SIZE];
+
+	// netstring length for a 4194304 bytes payload.
+	const int  NS_MESSAGE_MAX_LEN = 4194313;
+	const int  NS_PAYLOAD_MAX_LEN = 4194304;
+	
+	static uint8_t WriteBuffer[NS_MESSAGE_MAX_LEN];
 
 	Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 	{
@@ -21,9 +22,8 @@ namespace rs
 	
 
 		// Read Channel responses/notifications from the worker.
-		this->_consumerSocket->addEventListener("data", [=](json data)
+		this->_consumerSocket->on("data", [=](const std::string& nsPayload)
 		{
-			std::string nsPayload = data.get<std::string>();
 			try
 			{
 				// We can receive JSON messages (Channel messages) or log strings.
@@ -66,22 +66,22 @@ namespace rs
 
 		});
 
-		this->_consumerSocket->addEventListener("end", [=](json data)
+		this->_consumerSocket->on("end", [=](json data)
 		{
 			DLOG(INFO) << "Consumer channel ended by the other side";
 		});
 
-		this->_consumerSocket->addEventListener("error", [=](json data)
+		this->_consumerSocket->on("error", [=](json data)
 		{
 			LOG(ERROR) << "Consumer channel error:" << data.dump();
 		});
 
-		this->_producerSocket->addEventListener("end", [=](json data)
+		this->_producerSocket->on("end", [=](json data)
 		{
 			DLOG(INFO) << "Producer channel ended by the other side";
 		});
 
-		this->_producerSocket->addEventListener("error", [=](json data)
+		this->_producerSocket->on("error", [=](json data)
 		{
 			LOG(ERROR) << "Producer channel error:" << data.dump();
 		});
@@ -128,10 +128,14 @@ namespace rs
 
 	std::future<json> Channel::request(std::string method, const json& internal, const json& data)
 	{
-		std::promise<json> promise;
-		uint32_t id = utils::randomNumber();
+		this->_nextId < 4294967295 ? ++this->_nextId : (this->_nextId = 1);
+
+		uint32_t id = this->_nextId;
 
 		DLOG(INFO) << "request() [method"<< method << ", id:" << id << "]";
+
+		if (this->_closed)
+			throw new InvalidStateError("Channel closed");
 
 		json request = {
 			{ "id",id },
@@ -142,8 +146,8 @@ namespace rs
 
 		std::string nsPayload = _makePayload(request);
 
-// 		if (nsPayload.length() > NS_MAX_SIZE)
-// 			return promise.set_exception(Error("request too big"));
+		if (nsPayload.length() > NS_MESSAGE_MAX_LEN)
+			throw new Error("Channel request too big");
 
 		// This may raise if closed or remote side ended.
 		try
@@ -152,22 +156,13 @@ namespace rs
 		}
 		catch (std::exception error)
 		{
-			//return promise::reject(Error(error.what()));
+			throw new Error("Channel request too big");
 		}
 
+		std::promise<json> promise;
 		this->_sents.insert(std::make_pair(id, std::move(promise)));
 
 		return this->_sents[id].get_future();
-	}
-
-	void Channel::addEventListener(std::string id, ChannelListener* listener)
-	{
-		_eventListeners.insert(std::make_pair(id, listener));
-	}
-
-	void Channel::off(std::string id)
-	{
-		_eventListeners.erase(id);
 	}
 
 	void Channel::_processMessage(const json& msg)
@@ -191,22 +186,20 @@ namespace rs
 			}
 
 			std::promise<json> sent = std::move(this->_sents[id]);
+			this->_sents.erase(id);
 
 			if (msg.value("accepted", false))
 				sent.set_value(msg["data"]);
 			else if (msg.value("rejected", false))
 				sent.set_exception(std::make_exception_ptr(Error(msg["reason"].get<std::string>())));
+
 		}
 		// If a Notification emit it to the corresponding entity.
 		else if (msg.count("targetId") && msg.count("event"))
 		{
 			std::string targetId = msg["targetId"].get<std::string>();
 
-			if (_eventListeners.count(targetId))
-			{
-				auto listener = _eventListeners[targetId];
-				listener->onEvent(msg["event"].get<std::string>(), msg.value("data", json::object()));
-			}
+			this->emit(targetId, msg["event"].get<std::string>(), msg.value("data", json::object()));
 		}
 		// Otherwise unexpected message.
 		else

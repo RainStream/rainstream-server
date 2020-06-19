@@ -152,12 +152,12 @@ namespace rs
 
 		if (isClosedByPeer)
 		{
-			doEvent("close", isClosedByPeer);
+			this->emit("close", isClosedByPeer);
 		}
 	}
 
 	void Socket::processMessage(const std::string& msg)
 	{
-		doEvent("data", msg);
+		this->emit("data", msg);
 	}
 }
