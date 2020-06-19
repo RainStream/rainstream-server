@@ -7,8 +7,8 @@ struct SctpCapabilities =
 
 /**
  * Both OS and MIS are part of the SCTP INIT+ACK handshake. OS refers to the
- * initial number of outgoing SCTP streams that the server side transport creates
- * (to be used by DataConsumers), while MIS refers to the maximum number of
+ * initial uint32_t of outgoing SCTP streams that the server side transport creates
+ * (to be used by DataConsumers), while MIS refers to the maximum uint32_t of
  * incoming SCTP streams that the server side transport can receive (to be used
  * by DataProducers). So, if the server side transport will just be used to
  * create data producers (but no data consumers), OS can be low (~1). However,
@@ -17,7 +17,7 @@ struct SctpCapabilities =
  * supports  SCTP_ADD_STREAMS extension or not.
  *
  * libwebrtc (Chrome, Safari, etc) does not enable SCTP_ADD_STREAMS so, if data
- * consumers are required,  OS should be 1024 (the maximum number of DataChannels
+ * consumers are required,  OS should be 1024 (the maximum uint32_t of DataChannels
  * that libwebrtc enables).
  *
  * Firefox does enable SCTP_ADD_STREAMS so, if data consumers are required, OS
@@ -30,14 +30,14 @@ struct SctpCapabilities =
 struct NumSctpStreams =
 {
 	/**
-	 * Initially requested number of outgoing SCTP streams.
+	 * Initially requested uint32_t of outgoing SCTP streams.
 	 */
-	OS: number;
+	OS: uint32_t;
 
 	/**
-	 * Maximum number of incoming SCTP streams.
+	 * Maximum uint32_t of incoming SCTP streams.
 	 */
-	MIS: number;
+	MIS: uint32_t;
 }
 
 struct SctpParameters =
@@ -45,22 +45,22 @@ struct SctpParameters =
 	/**
 	 * Must always equal 5000.
 	 */
-	port: number;
+	port: uint32_t;
 
 	/**
-	 * Initially requested number of outgoing SCTP streams.
+	 * Initially requested uint32_t of outgoing SCTP streams.
 	 */
-	OS: number;
+	OS: uint32_t;
 
 	/**
-	 * Maximum number of incoming SCTP streams.
+	 * Maximum uint32_t of incoming SCTP streams.
 	 */
-	MIS: number;
+	MIS: uint32_t;
 
 	/**
 	 * Maximum allowed size for SCTP messages.
 	 */
-	maxMessageSize: number;
+	maxMessageSize: uint32_t;
 }
 
 /**
@@ -75,23 +75,23 @@ struct SctpStreamParameters =
 	/**
 	 * SCTP stream id.
 	 */
-	streamId: number;
+	streamId: uint32_t;
 
 	/**
 	 * Whether data messages must be received in order. If true the messages will
 	 * be sent reliably. Default true.
 	 */
-	ordered?: boolean;
+	ordered?: bool;
 
 	/**
 	 * When ordered is false indicates the time (in milliseconds) after which a
 	 * SCTP packet will stop being retransmitted.
 	 */
-	maxPacketLifeTime?: number;
+	maxPacketLifeTime?: uint32_t;
 
 	/**
-	 * When ordered is false indicates the maximum number of times a packet will
+	 * When ordered is false indicates the maximum uint32_t of times a packet will
 	 * be retransmitted.
 	 */
-	maxRetransmits?: number;
+	maxRetransmits?: uint32_t;
 }

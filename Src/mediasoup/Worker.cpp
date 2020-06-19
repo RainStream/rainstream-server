@@ -4,6 +4,7 @@
 #include "Channel.hpp"
 #include "Logger.hpp"
 #include "utils.hpp"
+#include "PayloadChannel.hpp"
 #include "child_process/SubProcess.hpp"
 
 #define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
@@ -19,10 +20,12 @@ const int CHANNEL_FD = 3;
 std::string workerPath;
 
 Worker::Worker(json settings)
+	: logger(new Logger("Worker"))
+	, _observer(new EnhancedEventEmitter())
 {
 	//this->setMaxListeners(Infinity);
 
-	DLOG(INFO) << "constructor() [ " << "workerSettings:" << settings.dump() << "]";
+	logger->debug("constructor()");
 
 	std::string spawnBin = WORK_PATH;
 	AStringVector spawnArgs;
@@ -55,9 +58,6 @@ Worker::Worker(json settings)
 	if (!dtlsPrivateKeyFile.empty())
 		spawnArgs.push_back(utils::Printf("--dtlsPrivateKeyFile=%s", dtlsPrivateKeyFile.c_str()));
 
-	DLOG(INFO) << utils::Printf("spawning worker process: %s %s",
-		spawnBin.c_str(), utils::join(spawnArgs, ",").c_str());
-
 	json spawnOptions = {
 		{ "env", { {"MEDIASOUP_VERSION", __MEDIASOUP_VERSION__} } },
 		{ "detached", false },
@@ -72,51 +72,151 @@ Worker::Worker(json settings)
 	this->_channel = new Channel(this->_child->stdio()[3],
 		this->_child->stdio()[4],
 		this->_pid);
+
+	this->_payloadChannel = new PayloadChannel(this->_child->stdio()[5],
+		this->_child->stdio()[6]);
+
+	this->_appData = settings.value("appData", json());
+
+	bool spawnDone = false;
+
+	// Listen for "running" notification.
+	this->_channel->once(std::to_string(this->_pid), [&](std::string event)
+	{
+		if (!spawnDone && event == "running")
+		{
+			spawnDone = true;
+
+			logger->debug("worker process running [pid:%d]", this->_pid);
+
+			this->emit("@success");
+		}
+	});
+
+	this->_child->on("exit", [&](int code, int signal)
+	{
+		this->_child = nullptr;
+		this->close();
+
+		if (!spawnDone)
+		{
+			spawnDone = true;
+
+			if (code == 42)
+			{
+				logger->error(
+					"worker process failed due to wrong settings [pid:%d]", this->_pid);
+
+				this->emit("@failure", new TypeError("wrong settings"));
+			}
+			else
+			{
+				logger->error(
+					"worker process failed unexpectedly [pid:%d, code:%s, signal:%s]",
+					this->_pid, code, signal);
+
+				this->emit(
+					"@failure",
+					new Error("[pid:${ this->_pid }, code : ${ code }, signal : ${ signal }]"));
+			}
+		}
+		else
+		{
+			logger->error(
+				"worker process died unexpectedly [pid:%s, code:%s, signal:%s]",
+				this->_pid, code, signal);
+
+			this->safeEmit(
+				"died",
+				new Error("[pid:${ this->_pid }, code : ${ code }, signal : ${ signal }]"));
+		}
+	});
+
+	this->_child->on("error", (Error error)
+	{
+		this->_child = undefined;
+		this->close();
+
+		if (!spawnDone)
+		{
+			spawnDone = true;
+
+			logger->error(
+				"worker process failed [pid:%s]: %s", this->_pid, error.message);
+
+			this->emit("@failure", error);
+		}
+		else
+		{
+			logger->error(
+				"worker process error [pid:%s]: %s", this->_pid, error.message);
+
+			this->safeEmit("died", error);
+		}
+	});
+
+	// Be ready for 3rd party worker libraries logging to stdout.
+// 	this->_child->stdout!.on("data", (buffer) = >
+// 	{
+// 		for (const line of buffer.toString("utf8").split("\n"))
+// 		{
+// 			if (line)
+// 				workerLogger.debug(`(stdout) $ { line }`);
+// 		}
+// 	});
+// 
+// 	// In case of a worker bug, mediasoup will log to stderr.
+// 	this->_child->stderr!.on("data", (buffer) = >
+// 	{
+// 		for (const line of buffer.toString("utf8").split("\n"))
+// 		{
+// 			if (line)
+// 				workerLogger.error(`(stderr) $ { line }`);
+// 		}
+// 	});
 }
 
 void Worker::close()
 {
-	DLOG(INFO) << "close()";
-
 	if (this->_closed)
 		return;
 
-	DLOG(INFO) << "close()";
+	logger->debug("close()");
 
 	this->_closed = true;
 
 	// Kill the worker process.
-// 		if (this->_child)
-// 		{
-// 			// Remove event listeners but leave a fake "error" hander to avoid
-// 			// propagation.
-// 			this->_child->removeAllListeners("exit");
-// 			this->_child->removeAllListeners("error");
-// 			this->_child->on("error", () = > {});
-// 			this->_child->kill("SIGTERM");
-// 			this->_child = undefined;
-// 		}
+	if (this->_child)
+	{
+		// Remove event listeners but leave a fake "error" hander to avoid
+		// propagation.
+		this->_child->removeAllListeners("exit");
+		this->_child->removeAllListeners("error");
+		this->_child->on("error", [](){});
+		//this->_child->kill("SIGTERM");
+		this->_child = nullptr;
+	}
 
-		// Close the Channel instance.
+	// Close the Channel instance.
 	this->_channel->close();
 
 	// Close the PayloadChannel instance.
 	this->_payloadChannel->close();
 
 	// Close every Router.
-// 		for (auto router : this->_routers)
-// 		{
-// 			router->workerClosed();
-// 		}
-// 		this->_routers.clear();
-// 
-// 		// Emit observer event.
-// 		this->_observer->safeEmit("close");
+	for (Router* router : this->_routers)
+	{
+		router->workerClosed();
+	}
+	this->_routers.clear();
+
+	// Emit observer event.
+	this->_observer->safeEmit("close");
 }
 
 std::future<json> Worker::dump()
 {
-	DLOG(INFO) << "dump()";
+	logger->debug("dump()");
 
 	auto ret = co_await this->_channel->request("worker.dump");
 

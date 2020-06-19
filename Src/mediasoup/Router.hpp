@@ -28,12 +28,12 @@ struct RouterOptions
 	/**
 	 * Router media codecs.
 	 */
-	mediaCodecs?: RtpCodecCapability[];
+	std::vector<RtpCodecCapability> mediaCodecs;
 
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
+	json appData;
 };
 
 struct PipeToRouterOptions
@@ -41,12 +41,12 @@ struct PipeToRouterOptions
 	/**
 	 * The id of the Producer to consume.
 	 */
-	producerId?: string;
+	producerId?: std::string;
 
 	/**
 	 * The id of the DataProducer to consume.
 	 */
-	dataProducerId?: string;
+	dataProducerId?: std::string;
 
 	/**
 	 * Target Router instance.
@@ -56,27 +56,27 @@ struct PipeToRouterOptions
 	/**
 	 * IP used in the PipeTransport pair. Default "127.0.0.1".
 	 */
-	listenIp?: TransportListenIp | string;
+	listenIp?: TransportListenIp | std::string;
 
 	/**
 	 * Create a SCTP association. Default false.
 	 */
-	enableSctp?: boolean;
+	enableSctp?: bool;
 
 	/**
-	 * SCTP streams number.
+	 * SCTP streams uint32_t.
 	 */
 	numSctpStreams?: NumSctpStreams;
 
 	/**
 	 * Enable RTX and NACK for RTP retransmission.
 	 */
-	enableRtx?: boolean;
+	enableRtx?: bool;
 
 	/**
 	 * Enable SRTP.
 	 */
-	enableSrtp?: boolean;
+	enableSrtp?: bool;
 };
 
 struct PipeToRouterResult
@@ -109,7 +109,7 @@ class Router : public EnhancedEventEmitter
 	// Internal data.
 	private readonly _internal:
 	{
-		routerId: string;
+		routerId: std::string;
 	};
 
 	// Router data.
@@ -131,26 +131,26 @@ class Router : public EnhancedEventEmitter
 	private readonly _appData?: any;
 
 	// Transports map.
-	private readonly _transports: Map<string, Transport> = new Map();
+	std::map<std::string, Transport*> _transports;
 
 	// Producers map.
-	private readonly _producers: Map<string, Producer> = new Map();
+	std::map<std::string, Producer*> _producers;
 
 	// RtpObservers map.
-	private readonly _rtpObservers: Map<string, RtpObserver> = new Map();
+	std::map<std::string, RtpObserver*> _rtpObservers;
 
 	// DataProducers map.
-	private readonly _dataProducers: Map<string, DataProducer> = new Map();
+	std::map<std::string, DataProducer*> _dataProducers;
 
 	// Router to PipeTransport map.
-	private readonly _mapRouterPipeTransports: Map<Router, PipeTransport[]> = new Map();
+	std::map<Router*, PipeTransport*> _mapRouterPipeTransports;
 
 	// AwaitQueue instance to make pipeToRouter tasks happen sequentially.
 	private readonly _pipeToRouterQueue =
 		new AwaitQueue({ ClosedErrorClass: InvalidStateError });
 
 	// Observer instance.
-	private readonly _observer = new EnhancedEventEmitter();
+	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
 	/**
 	 * @private
@@ -188,7 +188,7 @@ class Router : public EnhancedEventEmitter
 	/**
 	 * Router id.
 	 */
-	std::string id()
+	std::std::string id()
 	{
 		return this->_internal.routerId;
 	}
@@ -364,7 +364,7 @@ class Router : public EnhancedEventEmitter
 
 		listenIps = listenIps.map((listenIp) =>
 		{
-			if (typeof listenIp === "string" && listenIp)
+			if (typeof listenIp === "std::string" && listenIp)
 			{
 				return { ip: listenIp };
 			}
@@ -406,10 +406,10 @@ class Router : public EnhancedEventEmitter
 				payloadChannel           : this->_payloadChannel,
 				appData,
 				getRouterRtpCapabilities : (): RtpCapabilities => this->_data.rtpCapabilities,
-				getProducerById          : (producerId: string): Producer | undefined => (
+				getProducerById          : (producerId: std::string): Producer | undefined => (
 					this->_producers.get(producerId)
 				),
-				getDataProducerById : (dataProducerId: string): DataProducer | undefined => (
+				getDataProducerById : (dataProducerId: std::string): DataProducer | undefined => (
 					this->_dataProducers.get(dataProducerId)
 				)
 			});
@@ -455,7 +455,7 @@ class Router : public EnhancedEventEmitter
 		else if (appData && typeof appData !== "object")
 			throw new TypeError("if given, appData must be an object");
 
-		if (typeof listenIp === "string" && listenIp)
+		if (typeof listenIp === "std::string" && listenIp)
 		{
 			listenIp = { ip: listenIp };
 		}
@@ -496,10 +496,10 @@ class Router : public EnhancedEventEmitter
 				payloadChannel           : this->_payloadChannel,
 				appData,
 				getRouterRtpCapabilities : (): RtpCapabilities => this->_data.rtpCapabilities,
-				getProducerById          : (producerId: string): Producer | undefined => (
+				getProducerById          : (producerId: std::string): Producer | undefined => (
 					this->_producers.get(producerId)
 				),
-				getDataProducerById : (dataProducerId: string): DataProducer | undefined => (
+				getDataProducerById : (dataProducerId: std::string): DataProducer | undefined => (
 					this->_dataProducers.get(dataProducerId)
 				)
 			});
@@ -556,7 +556,7 @@ class Router : public EnhancedEventEmitter
 		else if (appData && typeof appData !== "object")
 			throw new TypeError("if given, appData must be an object");
 
-		if (typeof listenIp === "string" && listenIp)
+		if (typeof listenIp === "std::string" && listenIp)
 		{
 			listenIp = { ip: listenIp };
 		}
@@ -595,10 +595,10 @@ class Router : public EnhancedEventEmitter
 				payloadChannel           : this->_payloadChannel,
 				appData,
 				getRouterRtpCapabilities : (): RtpCapabilities => this->_data.rtpCapabilities,
-				getProducerById          : (producerId: string): Producer | undefined => (
+				getProducerById          : (producerId: std::string): Producer | undefined => (
 					this->_producers.get(producerId)
 				),
-				getDataProducerById : (dataProducerId: string): DataProducer | undefined => (
+				getDataProducerById : (dataProducerId: std::string): DataProducer | undefined => (
 					this->_dataProducers.get(dataProducerId)
 				)
 			});
@@ -649,10 +649,10 @@ class Router : public EnhancedEventEmitter
 				payloadChannel           : this->_payloadChannel,
 				appData,
 				getRouterRtpCapabilities : (): RtpCapabilities => this->_data.rtpCapabilities,
-				getProducerById          : (producerId: string): Producer | undefined => (
+				getProducerById          : (producerId: std::string): Producer | undefined => (
 					this->_producers.get(producerId)
 				),
-				getDataProducerById : (dataProducerId: string): DataProducer | undefined => (
+				getDataProducerById : (dataProducerId: std::string): DataProducer | undefined => (
 					this->_dataProducers.get(dataProducerId)
 				)
 			});
@@ -925,7 +925,7 @@ class Router : public EnhancedEventEmitter
 				channel         : this->_channel,
 				payloadChannel  : this->_payloadChannel,
 				appData,
-				getProducerById : (producerId: string): Producer | undefined => (
+				getProducerById : (producerId: std::string): Producer | undefined => (
 					this->_producers.get(producerId)
 				)
 			});
@@ -951,7 +951,7 @@ class Router : public EnhancedEventEmitter
 			rtpCapabilities
 		}:
 		{
-			producerId: string;
+			producerId: std::string;
 			rtpCapabilities: RtpCapabilities;
 		}
 	)
@@ -961,7 +961,7 @@ class Router : public EnhancedEventEmitter
 		if (!producer)
 		{
 			logger->error(
-				"canConsume() | Producer with id "%s" not found", producerId);
+				"canConsume() | Producer with id \"%s\" not found", producerId);
 
 			return false;
 		}

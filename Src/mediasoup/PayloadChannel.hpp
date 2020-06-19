@@ -1,57 +1,57 @@
 #pragma once 
 
-import { Duplex } from "stream";
-// @ts-ignore
-import * as netstring from "netstring";
+extern "C" {
+#include <netstring.h>
+}
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import { InvalidStateError } from "./errors";
+#include "errors.hpp"
+#include "child_process/Socket.hpp"
 
-const Logger* logger = new Logger("PayloadChannel");
+class Socket;
+
+
 
 // netstring length for a 4194304 bytes payload.
-const NS_MESSAGE_MAX_LEN = 4194313;
-const NS_PAYLOAD_MAX_LEN = 4194304;
+const int NS_MESSAGE_MAX_LEN = 4194313;
+const int NS_PAYLOAD_MAX_LEN = 4194304;
 
 class PayloadChannel : public EnhancedEventEmitter
 {
+private:
+	Logger* logger;
+
 	// Closed flag.
-	private _closed = false;
+	bool _closed = false;
 
 	// Unix Socket instance for sending messages to the worker process.
-	private readonly _producerSocket: Duplex;
+	Socket* _producerSocket;
 
 	// Unix Socket instance for receiving messages to the worker process.
-	private readonly _consumerSocket: Duplex;
+	Socket* _consumerSocket;
 
 	// Buffer for reading messages from the worker.
-	private _recvBuffer?: Buffer;
+	_recvBuffer ? : Buffer;
 
 	// Ongoing notification (waiting for its payload).
-	private _ongoingNotification?: { targetId: string; event: string; data?: any };
+	json _ongoingNotification : { targetId: string; event: string; data ? : any };
 
+public:
 	/**
 	 * @private
 	 */
-	constructor(
-		{
-			producerSocket,
-			consumerSocket
-		}:
-		{
-			producerSocket: any;
-			consumerSocket: any;
-		})
+	PayloadChannel(Socket* producerSocket,
+		Socket* consumerSocket)
+		: EnhancedEventEmitter()
+		, logger(new Logger("PayloadChannel"))
 	{
-		super();
-
 		logger->debug("constructor()");
 
-		this->_producerSocket = producerSocket as Duplex;
-		this->_consumerSocket = consumerSocket as Duplex;
+		this->_producerSocket = producerSocket;
+		this->_consumerSocket = consumerSocket;
 
 		// Read PayloadChannel notifications from the worker.
-		this->_consumerSocket.on("data", (buffer) =>
+		this->_consumerSocket->on("data", (buffer) = >
 		{
 			if (!this->_recvBuffer)
 			{
@@ -60,7 +60,7 @@ class PayloadChannel : public EnhancedEventEmitter
 			else
 			{
 				this->_recvBuffer = Buffer.concat(
-					[ this->_recvBuffer, buffer ],
+					[this->_recvBuffer, buffer],
 					this->_recvBuffer.length + buffer.length);
 			}
 
@@ -95,7 +95,7 @@ class PayloadChannel : public EnhancedEventEmitter
 				}
 
 				// Incomplete netstring message.
-				if (nsPayload === -1)
+				if (nsPayload == = -1)
 					return;
 
 				this->_processData(nsPayload);
@@ -113,21 +113,21 @@ class PayloadChannel : public EnhancedEventEmitter
 			}
 		});
 
-		this->_consumerSocket.on("end", () => (
+		this->_consumerSocket->on("end", () = > (
 			logger->debug("Consumer PayloadChannel ended by the worker process")
-		));
+			));
 
-		this->_consumerSocket.on("error", (error) => (
+		this->_consumerSocket->on("error", (error) = > (
 			logger->error("Consumer PayloadChannel error: %s", String(error))
-		));
+			));
 
-		this->_producerSocket.on("end", () => (
+		this->_producerSocket->on("end", () = > (
 			logger->debug("Producer PayloadChannel ended by the worker process")
-		));
+			));
 
-		this->_producerSocket.on("error", (error) => (
+		this->_producerSocket->on("error", (error) = > (
 			logger->error("Producer PayloadChannel error: %s", String(error))
-		));
+			));
 	}
 
 	/**
@@ -144,20 +144,20 @@ class PayloadChannel : public EnhancedEventEmitter
 
 		// Remove event listeners but leave a fake "error" hander to avoid
 		// propagation.
-		this->_consumerSocket.removeAllListeners("end");
-		this->_consumerSocket.removeAllListeners("error");
-		this->_consumerSocket.on("error", () => {});
+		this->_consumerSocket->removeAllListeners("end");
+		this->_consumerSocket->removeAllListeners("error");
+		this->_consumerSocket->on("error", () = > {});
 
-		this->_producerSocket.removeAllListeners("end");
-		this->_producerSocket.removeAllListeners("error");
-		this->_producerSocket.on("error", () => {});
+		this->_producerSocket->removeAllListeners("end");
+		this->_producerSocket->removeAllListeners("error");
+		this->_producerSocket->on("error", () = > {});
 
 		// Destroy the socket after a while to allow pending incoming messages.
-		setTimeout(() =>
+		setTimeout(() = >
 		{
-			try { this->_producerSocket.destroy(); }
+			try { this->_producerSocket->destroy(); }
 			catch (error) {}
-			try { this->_consumerSocket.destroy(); }
+			try { this->_consumerSocket->destroy(); }
 			catch (error) {}
 		}, 200);
 	}
@@ -165,12 +165,12 @@ class PayloadChannel : public EnhancedEventEmitter
 	/**
 	 * @private
 	 */
-	notify(
+	void notify(
 		event: string,
-		internal: object,
-		data: any | undefined,
-		payload: string | Buffer
-	): void
+internal: object,
+		data : any | undefined,
+		payload : string | Buffer
+	)
 	{
 		logger->debug("notify() [event:%s]", event);
 
@@ -189,7 +189,7 @@ class PayloadChannel : public EnhancedEventEmitter
 		try
 		{
 			// This may throw if closed or remote side ended.
-			this->_producerSocket.write(ns1);
+			this->_producerSocket->write(ns1);
 		}
 		catch (error)
 		{
@@ -201,7 +201,7 @@ class PayloadChannel : public EnhancedEventEmitter
 		try
 		{
 			// This may throw if closed or remote side ended.
-			this->_producerSocket.write(ns2);
+			this->_producerSocket->write(ns2);
 		}
 		catch (error)
 		{
@@ -211,7 +211,8 @@ class PayloadChannel : public EnhancedEventEmitter
 		}
 	}
 
-	private _processData(data: Buffer): void
+private:
+	void _processData(Buffer data)
 	{
 		if (!this->_ongoingNotification)
 		{
@@ -239,9 +240,9 @@ class PayloadChannel : public EnhancedEventEmitter
 
 			this->_ongoingNotification =
 			{
-				targetId : msg.targetId,
-				event    : msg.event,
-				data     : msg.data
+				targetId: msg.targetId,
+				event : msg.event,
+				data : msg.data
 			};
 		}
 		else
@@ -259,4 +260,4 @@ class PayloadChannel : public EnhancedEventEmitter
 			this->_ongoingNotification = undefined;
 		}
 	}
-}
+};

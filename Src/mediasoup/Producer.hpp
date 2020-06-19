@@ -25,13 +25,13 @@ struct ProducerOptions
 	/**
 	 * Whether the producer must start in paused mode. Default false.
 	 */
-	paused?: boolean;
+	paused?: bool;
 
 	/**
 	 * Just for video. Time (in ms) before asking the sender for a new key frame
 	 * after having asked a previous one. Default 0.
 	 */
-	keyFrameRequestDelay?: number;
+	keyFrameRequestDelay?;
 
 	/**
 	 * Custom application data.
@@ -47,17 +47,17 @@ struct ProducerTraceEventType = "rtp" | "keyframe" | "nack" | "pli" | "fir";
 /**
  * "trace" event data.
  */
-struct ProducerTraceEventData =
+struct ProducerTraceEventData
 {
 	/**
 	 * Trace type.
 	 */
-	type: ProducerTraceEventType;
+	ProducerTraceEventType type;
 
 	/**
 	 * Event timestamp.
 	 */
-	timestamp: number;
+	uint32_t timestamp;
 
 	/**
 	 * Event direction.
@@ -67,15 +67,15 @@ struct ProducerTraceEventData =
 	/**
 	 * Per type information.
 	 */
-	info: any;
+	json info;
 };
 
-struct ProducerScore =
+struct ProducerScore
 {
 	/**
 	 * SSRC of the RTP stream.
 	 */
-	ssrc: number;
+	uint32_t ssrc;
 
 	/**
 	 * RID of the RTP stream.
@@ -85,54 +85,54 @@ struct ProducerScore =
 	/**
 	 * The score of the RTP stream.
 	 */
-	score: number;
+	uint32_t score;
 };
 
-struct ProducerVideoOrientation =
+struct ProducerVideoOrientation
 {
 	/**
 	 * Whether the source is a video camera.
 	 */
-	camera: boolean;
+	bool camera;
 
 	/**
 	 * Whether the video source is flipped.
 	 */
-	flip: boolean;
+	bool flip;
 
 	/**
 	 * Rotation degrees (0, 90, 180 or 270).
 	 */
-	rotation: number;
+	uint32_t rotation;
 };
 
 struct ProducerStat
 {
 	// Common to all RtpStreams.
-	type: string;
-	timestamp: number;
-	ssrc: number;
-	rtxSsrc?: number;
-	rid?: string;
-	kind: string;
-	mimeType: string;
-	packetsLost: number;
-	fractionLost: number;
-	packetsDiscarded: number;
-	packetsRetransmitted: number;
-	packetsRepaired: number;
-	nackCount: number;
-	nackPacketCount: number;
-	pliCount: number;
-	firCount: number;
-	score: number;
-	packetCount: number;
-	byteCount: number;
-	bitrate: number;
-	roundTripTime?: number;
+	std::string type;
+	uint32_t timestamp;
+	uint32_t ssrc;
+	uint32_t rtxSsrc;
+	std::string rid;
+	std::string kind;
+	std::string mimeType;
+	uint32_t packetsLost;
+	uint32_t fractionLost;
+	uint32_t packetsDiscarded;
+	uint32_t packetsRetransmitted;
+	uint32_t packetsRepaired;
+	uint32_t nackCount;
+	uint32_t nackPacketCount;
+	uint32_t pliCount;
+	uint32_t firCount;
+	uint32_t score;
+	uint32_t packetCount;
+	uint32_t byteCount;
+	uint32_t bitrate;
+	uint32_t roundTripTime;
 	// RtpStreamRecv specific.
-	jitter: number;
-	bitrateByLayer?: any;
+	uint32_t jitter;
+	json bitrateByLayer;
 };
 
 /**
@@ -145,7 +145,8 @@ const Logger* logger = new Logger("Producer");
 class Producer : public EnhancedEventEmitter
 {
 	// Internal data.
-	private json _internal:
+private:
+	json _internal:
 	{
 		routerId: string;
 		transportId: string;
@@ -153,7 +154,7 @@ class Producer : public EnhancedEventEmitter
 	};
 
 	// Producer data.
-	private readonly _data:
+	readonly _data:
 	{
 		kind: MediaKind;
 		rtpParameters: RtpParameters;
@@ -162,22 +163,22 @@ class Producer : public EnhancedEventEmitter
 	};
 
 	// Channel instance.
-	private readonly _channel: Channel;
+	Channel* _channel;
 
 	// Closed flag.
-	private _closed = false;
+	bool _closed = false;
 
 	// Custom app data.
-	private readonly _appData?: any;
+	readonly _appData?: any;
 
 	// Paused flag.
-	private _paused = false;
+	bool _paused = false;
 
 	// Current score.
-	private _score: ProducerScore[] = [];
+	_score: ProducerScore[] = [];
 
 	// Observer instance.
-	private readonly _observer = new EnhancedEventEmitter();
+	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
 	/**
 	 * @private
@@ -200,7 +201,7 @@ class Producer : public EnhancedEventEmitter
 			data: any;
 			channel: Channel;
 			appData?: any;
-			paused: boolean;
+			paused: bool;
 		}
 	)
 	{
@@ -476,7 +477,7 @@ class Producer : public EnhancedEventEmitter
 
 				default:
 				{
-					logger->error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event \"%s\"", event);
 				}
 			}
 		});

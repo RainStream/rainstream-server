@@ -36,9 +36,9 @@ struct TransportProtocol = "udp" | "tcp";
 export interface TransportTuple
 {
 	localIp: string;
-	localPort: number;
+	localPort: uint32_t;
 	remoteIp?: string;
-	remotePort?: number;
+	remotePort?: uint32_t;
 	protocol: TransportProtocol;
 }£»
 
@@ -60,7 +60,7 @@ export interface TransportTraceEventData
 	/**
 	 * Event timestamp.
 	 */
-	timestamp: number;
+	timestamp: uint32_t;
 
 	/**
 	 * Event direction.
@@ -390,7 +390,7 @@ protected:
 	/**
 	 * Set maximum incoming bitrate for receiving media.
 	 */
-	async setMaxIncomingBitrate(bitrate: number): Promise<void>
+	async setMaxIncomingBitrate(bitrate: uint32_t): Promise<void>
 	{
 		logger->debug("setMaxIncomingBitrate() [bitrate:%s]", bitrate);
 
@@ -695,7 +695,7 @@ protected:
 
 		let type: DataConsumerType;
 		let sctpStreamParameters: SctpStreamParameters | undefined;
-		let sctpStreamId: number;
+		let sctpStreamId: uint32_t;
 
 		// If this is not a DirectTransport, use sctpStreamParameters from the
 		// DataProducer (if type "sctp") unless they are given in method parameters.
@@ -795,11 +795,11 @@ protected:
 			"transport.enableTraceEvent", this->_internal, reqData);
 	}
 
-	private _getNextSctpStreamId(): number
+	private _getNextSctpStreamId(): uint32_t
 	{
 		if (
 			!this->_data.sctpParameters ||
-			typeof this->_data.sctpParameters.MIS !== "number"
+			typeof this->_data.sctpParameters.MIS !== "uint32_t"
 		)
 		{
 			throw new TypeError("missing data.sctpParameters.MIS");

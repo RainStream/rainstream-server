@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
@@ -19,7 +20,7 @@ struct DataConsumerOptions =
 	 * be sent reliably. Defaults to the value in the DataProducer if it has type
 	 * "sctp" or to true if it has type "direct".
 	 */
-	ordered?: boolean;
+	ordered?: bool;
 
 	/**
 	 * Just if consuming over SCTP.
@@ -27,15 +28,15 @@ struct DataConsumerOptions =
 	 * SCTP packet will stop being retransmitted. Defaults to the value in the
 	 * DataProducer if it has type "sctp" or unset if it has type "direct".
 	 */
-	maxPacketLifeTime?: number;
+	maxPacketLifeTime?: uint32_t;
 
 	/**
 	 * Just if consuming over SCTP.
-	 * When ordered is false indicates the maximum number of times a packet will
+	 * When ordered is false indicates the maximum uint32_t of times a packet will
 	 * be retransmitted. Defaults to the value in the DataProducer if it has type
 	 * "sctp" or unset if it has type "direct".
 	 */
-	maxRetransmits?: number;
+	maxRetransmits?: uint32_t;
 
 	/**
 	 * Custom application data.
@@ -46,11 +47,11 @@ struct DataConsumerOptions =
 struct DataConsumerStat =
 {
 	type: string;
-	timestamp: number;
+	timestamp: uint32_t;
 	label: string;
 	protocol: string;
-	messagesSent: number;
-	bytesSent: number;
+	messagesSent: uint32_t;
+	bytesSent: uint32_t;
 }
 
 /**
@@ -99,7 +100,7 @@ class DataConsumer : public EnhancedEventEmitter
 	 * @private
 	 * @emits transportclose
 	 * @emits dataproducerclose
-	 * @emits message - (message: Buffer, ppid: number)
+	 * @emits message - (message: Buffer, ppid: uint32_t)
 	 * @emits @close
 	 * @emits @dataproducerclose
 	 */
@@ -309,7 +310,7 @@ class DataConsumer : public EnhancedEventEmitter
 
 				default:
 				{
-					logger->error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event \"%s\"", event);
 				}
 			}
 		});
@@ -325,7 +326,7 @@ class DataConsumer : public EnhancedEventEmitter
 						if (this->_closed)
 							break;
 
-						const ppid = data.ppid as number;
+						const ppid = data.ppid as uint32_t;
 						const message = payload;
 
 						this->safeEmit("message", message, ppid);
@@ -335,7 +336,7 @@ class DataConsumer : public EnhancedEventEmitter
 
 					default:
 					{
-						logger->error("ignoring unknown event "%s"", event);
+						logger->error("ignoring unknown event \"%s\"", event);
 					}
 				}
 			});

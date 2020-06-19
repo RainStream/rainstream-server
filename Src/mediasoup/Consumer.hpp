@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
@@ -60,7 +61,7 @@ struct ConsumerTraceEventData
 	/**
 	 * Trace type.
 	 */
-	type: ConsumerTraceEventType;
+	ConsumerTraceEventType type;
 
 	/**
 	 * Event timestamp.
@@ -113,26 +114,26 @@ struct ConsumerLayers
 struct ConsumerStat
 {
 	// Common to all RtpStreams.
-	type: string;
-	timestamp: number;
-	ssrc: number;
-	rtxSsrc?: number;
-	kind: string;
-	mimeType: string;
-	packetsLost: number;
-	fractionLost: number;
-	packetsDiscarded: number;
-	packetsRetransmitted: number;
-	packetsRepaired: number;
-	nackCount: number;
-	nackPacketCount: number;
-	pliCount: number;
-	firCount: number;
-	score: number;
-	packetCount: number;
-	byteCount: number;
-	bitrate: number;
-	roundTripTime?: number;
+	std::string type;
+	uint32_t timestamp;
+	uint32_t ssrc;
+	uint32_t rtxSsrc;
+	std::string kind;
+	std::string mimeType;
+	uint32_t packetsLost;
+	uint32_t fractionLost;
+	uint32_t packetsDiscarded;
+	uint32_t packetsRetransmitted;
+	uint32_t packetsRepaired;
+	uint32_t nackCount;
+	uint32_t nackPacketCount;
+	uint32_t pliCount;
+	uint32_t firCount;
+	uint32_t score;
+	uint32_t packetCount;
+	uint32_t byteCount;
+	uint32_t bitrate;
+	uint32_t roundTripTime;
 }
 
 /**
@@ -220,8 +221,8 @@ private:
 			data: any;
 			channel: Channel;
 			appData?: any;
-			paused: boolean;
-			producerPaused: boolean;
+			paused: bool;
+			producerPaused: bool;
 			score?: ConsumerScore;
 			preferredLayers?: ConsumerLayers;
 		})
@@ -476,10 +477,10 @@ private:
 	 * Set preferred video layers.
 	 */
 	async setPreferredLayers(
-		{
+		ConsumerLayers{
 			spatialLayer,
 			temporalLayer
-		}: ConsumerLayers
+		}
 	): Promise<void>
 	{
 		logger->debug("setPreferredLayers()");
@@ -495,7 +496,7 @@ private:
 	/**
 	 * Set priority.
 	 */
-	async setPriority(priority: number): Promise<void>
+	async setPriority(priority): Promise<void>
 	{
 		logger->debug("setPriority()");
 
@@ -648,7 +649,7 @@ private:
 
 				default:
 				{
-					logger->error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event \"%s\"", event);
 				}
 			}
 		});

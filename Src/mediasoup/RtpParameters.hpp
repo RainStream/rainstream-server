@@ -67,7 +67,7 @@ struct RtpCodecCapability
 	uint32_t clockRate;
 
 	/**
-	 * The number of channels supported (e.g. two for stereo). Just for audio.
+	 * The uint32_t of channels supported (e.g. two for stereo). Just for audio.
 	 * Default 1.
 	 */
 	uint32_t channels;
@@ -215,7 +215,7 @@ struct RtpCodecParameters =
 	uint32_t clockRate;
 
 	/**
-	 * The number of channels supported (e.g. two for stereo). Just for audio.
+	 * The uint32_t of channels supported (e.g. two for stereo). Just for audio.
 	 * Default 1.
 	 */
 	uint32_t channels;
@@ -278,7 +278,7 @@ struct RtpEncodingParameters =
 	 * RTX stream information. It must contain a numeric ssrc field indicating
 	 * the RTX SSRC.
 	 */
-	rtx?: { ssrc: number };
+	rtx?: { ssrc: uint32_t };
 
 	/**
 	 * It indicates whether discontinuous RTP transmission will be used. Useful

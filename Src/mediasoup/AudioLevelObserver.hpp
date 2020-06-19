@@ -1,5 +1,6 @@
-
 #pragma once 
+
+#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "RtpObserver.hpp"
@@ -8,20 +9,20 @@
 struct AudioLevelObserverOptions
 {
 	/**
-	 * Maximum number of entries in the "volumes”" event. Default 1.
+	 * Maximum uint32_t of entries in the "volumes”" event. Default 1.
 	 */
-	maxEntries?: number;
+	maxEntries?: uint32_t;
 
 	/**
 	 * Minimum average volume (in dBvo from -127 to 0) for entries in the
 	 * "volumes" event.	Default -80.
 	 */
-	threshold?: number;
+	threshold?: uint32_t;
 
 	/**
 	 * Interval in ms for checking audio volumes. Default 1000.
 	 */
-	interval?: number;
+	interval?: uint32_t;
 
 	/**
 	 * Custom application data.
@@ -40,7 +41,7 @@ struct AudioLevelObserverVolume
 	 * The average volume (in dBvo from -127 to 0) of the audio producer in the
 	 * last interval.
 	 */
-	volume: number;
+	volume: uint32_t;
 }
 
 const Logger* logger = new Logger("AudioLevelObserver");
@@ -86,7 +87,7 @@ private:
 					// Get the corresponding Producer instance and remove entries with
 					// no Producer (it may have been closed in the meanwhile).
 					const volumes: AudioLevelObserverVolume[] = data
-						.map(({ producerId, volume }: { producerId: string; volume: number }) => (
+						.map(({ producerId, volume }: { producerId: string; volume: uint32_t }) => (
 							{
 								producer : this->_getProducerById(producerId),
 								volume
@@ -117,7 +118,7 @@ private:
 
 				default:
 				{
-					logger->error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event \"%s\"", event);
 				}
 			}
 		});

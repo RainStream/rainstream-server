@@ -123,6 +123,7 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 		return nullptr;
 	}
 
+
 	return subProcess;
 }
 
@@ -175,6 +176,8 @@ std::vector<Socket*>& SubProcess::stdio()
 void SubProcess::OnUvReqClosed(int64_t exit_status, int term_signal)
 {
 	Close();
+
+	emit("exit", exit_status, term_signal);
 
 	LOG(ERROR) << "child process exited "
 		<< " code:" << exit_status

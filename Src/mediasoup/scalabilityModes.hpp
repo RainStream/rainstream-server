@@ -3,31 +3,31 @@
 const ScalabilityModeRegex =
 	new RegExp("^[LS]([1-9]\\d{0,1})T([1-9]\\d{0,1})(_KEY)?");
 
-struct ScalabilityMode =
+struct ScalabilityMode
 {
-	spatialLayers: number;
-	temporalLayers: number;
-	ksvc: boolean;
-}
+	uint32_t spatialLayers;
+	uint32_t temporalLayers;
+	bool ksvc;
+};
 
-export function parse(scalabilityMode?: string): ScalabilityMode
+ScalabilityMode parse(std::string scalabilityMode)
 {
 	const match = ScalabilityModeRegex.exec(scalabilityMode || "");
 
 	if (match)
 	{
 		return {
-			spatialLayers  : Number(match[1]),
+			spatialLayers: Number(match[1]),
 			temporalLayers : Number(match[2]),
-			ksvc           : Boolean(match[3])
+			ksvc : Boolean(match[3])
 		};
 	}
 	else
 	{
 		return {
-			spatialLayers  : 1,
+			spatialLayers: 1,
 			temporalLayers : 1,
-			ksvc           : false
+			ksvc : false
 		};
 	}
 }

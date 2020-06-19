@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
@@ -38,11 +39,11 @@ struct DataProducerOptions =
 struct DataProducerStat =
 {
 	type: string;
-	timestamp: number;
+	timestamp: uint32_t;
 	label: string;
 	protocol: string;
-	messagesReceived: number;
-	bytesReceived: number;
+	messagesReceived: uint32_t;
+	bytesReceived: uint32_t;
 }
 
 /**
@@ -262,7 +263,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * Send data (just valid for DataProducers created on a DirectTransport).
 	 */
-	send(message: string | Buffer, ppid?: number): void
+	send(message: string | Buffer, ppid?: uint32_t): void
 	{
 		logger->debug("send()");
 
@@ -287,7 +288,7 @@ class DataProducer : public EnhancedEventEmitter
 		 * +-------------------------------+----------+
 		 */
 
-		if (typeof ppid !== "number")
+		if (typeof ppid !== "uint32_t")
 		{
 			ppid = (typeof message === "string")
 				? message.length > 0 ? 51 : 56

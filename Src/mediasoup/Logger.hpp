@@ -1,7 +1,7 @@
 #pragma once
 
 
-#define  APP_NAME "mediasoup"
+//#define  APP_NAME "mediasoup"
 
 class Logger
 {

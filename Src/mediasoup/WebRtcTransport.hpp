@@ -18,35 +18,35 @@ struct WebRtcTransportOptions
 	/**
 	 * Listen in UDP. Default true.
 	 */
-	enableUdp?: boolean;
+	enableUdp?: bool;
 
 	/**
 	 * Listen in TCP. Default false.
 	 */
-	enableTcp?: boolean;
+	enableTcp?: bool;
 
 	/**
 	 * Prefer UDP. Default false.
 	 */
-	preferUdp?: boolean;
+	preferUdp?: bool;
 
 	/**
 	 * Prefer TCP. Default false.
 	 */
-	preferTcp?: boolean;
+	preferTcp?: bool;
 
 	/**
 	 * Initial available outgoing bitrate (in bps). Default 600000.
 	 */
-	initialAvailableOutgoingBitrate?: number;
+	initialAvailableOutgoingBitrate?: uint32_t;
 
 	/**
 	 * Create a SCTP association. Default false.
 	 */
-	enableSctp?: boolean;
+	enableSctp?: bool;
 
 	/**
-	 * SCTP streams number.
+	 * SCTP streams uint32_t.
 	 */
 	numSctpStreams?: NumSctpStreams;
 
@@ -54,7 +54,7 @@ struct WebRtcTransportOptions
 	 * Maximum allowed size for SCTP messages sent by DataProducers.
 	 * Default 262144.
 	 */
-	maxSctpMessageSize?: number;
+	maxSctpMessageSize?: uint32_t;
 
 	/**
 	 * Custom application data.
@@ -62,25 +62,25 @@ struct WebRtcTransportOptions
 	appData?: any;
 };
 
-struct IceParameters =
+struct IceParameters
 {
 	usernameFragment: string;
 	password: string;
-	iceLite?: boolean;
+	iceLite?: bool;
 };
 
-struct IceCandidate =
+struct IceCandidate
 {
 	foundation: string;
-	priority: number;
+	priority: uint32_t;
 	ip: string;
 	protocol: TransportProtocol;
-	port: number;
+	port: uint32_t;
 	type: "host";
 	tcpType: "passive" | undefined;
 };
 
-struct DtlsParameters =
+struct DtlsParameters
 {
 	role?: DtlsRole;
 	fingerprints: DtlsFingerprint[];
@@ -92,7 +92,7 @@ struct DtlsParameters =
  * certificate fingerprint value (in lowercase hex string as expressed utilizing
  * the syntax of "fingerprint" in RFC 4572 Section 5).
  */
-struct DtlsFingerprint =
+struct DtlsFingerprint
 {
 	algorithm: string;
 	value: string;
@@ -109,27 +109,27 @@ struct WebRtcTransportStat =
 	// Common to all Transports.
 	type: string;
 	transportId: string;
-	timestamp: number;
+	timestamp: uint32_t;
 	sctpState?: SctpState;
-	bytesReceived: number;
-	recvBitrate: number;
-	bytesSent: number;
-	sendBitrate: number;
-	rtpBytesReceived: number;
-	rtpRecvBitrate: number;
-	rtpBytesSent: number;
-	rtpSendBitrate: number;
-	rtxBytesReceived: number;
-	rtxRecvBitrate: number;
-	rtxBytesSent: number;
-	rtxSendBitrate: number;
-	probationBytesReceived: number;
-	probationRecvBitrate: number;
-	probationBytesSent: number;
-	probationSendBitrate: number;
-	availableOutgoingBitrate?: number;
-	availableIncomingBitrate?: number;
-	maxIncomingBitrate?: number;
+	bytesReceived: uint32_t;
+	recvBitrate: uint32_t;
+	bytesSent: uint32_t;
+	sendBitrate: uint32_t;
+	rtpBytesReceived: uint32_t;
+	rtpRecvBitrate: uint32_t;
+	rtpBytesSent: uint32_t;
+	rtpSendBitrate: uint32_t;
+	rtxBytesReceived: uint32_t;
+	rtxRecvBitrate: uint32_t;
+	rtxBytesSent: uint32_t;
+	rtxSendBitrate: uint32_t;
+	probationBytesReceived: uint32_t;
+	probationRecvBitrate: uint32_t;
+	probationBytesSent: uint32_t;
+	probationSendBitrate: uint32_t;
+	availableOutgoingBitrate?: uint32_t;
+	availableIncomingBitrate?: uint32_t;
+	maxIncomingBitrate?: uint32_t;
 	// WebRtcTransport specific.
 	iceRole: string;
 	iceState: IceState;
@@ -200,7 +200,7 @@ class WebRtcTransport : public Transport
 	/**
 	 * ICE parameters.
 	 */
-	get iceParameters(): IceParameters
+	IceParameters iceParameters()
 	{
 		return this->_data.iceParameters;
 	}
@@ -208,7 +208,7 @@ class WebRtcTransport : public Transport
 	/**
 	 * ICE candidates.
 	 */
-	get iceCandidates(): IceCandidate[]
+	IceCandidate[] iceCandidates()
 	{
 		return this->_data.iceCandidates;
 	}
@@ -216,7 +216,7 @@ class WebRtcTransport : public Transport
 	/**
 	 * ICE state.
 	 */
-	get iceState(): IceState
+	IceState iceState()
 	{
 		return this->_data.iceState;
 	}
@@ -232,7 +232,7 @@ class WebRtcTransport : public Transport
 	/**
 	 * DTLS parameters.
 	 */
-	get dtlsParameters(): DtlsParameters
+	DtlsParameters dtlsParameters()
 	{
 		return this->_data.dtlsParameters;
 	}
@@ -240,7 +240,7 @@ class WebRtcTransport : public Transport
 	/**
 	 * DTLS state.
 	 */
-	get dtlsState(): DtlsState
+	DtlsState dtlsState()
 	{
 		return this->_data.dtlsState;
 	}
@@ -315,7 +315,7 @@ class WebRtcTransport : public Transport
 	 * @private
 	 * @override
 	 */
-	routerClosed(): void
+	void routerClosed()
 	{
 		if (this->_closed)
 			return;
@@ -457,9 +457,9 @@ class WebRtcTransport : public Transport
 
 				default:
 				{
-					logger->error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event \"%s\"", event);
 				}
 			}
 		});
-	};
+	}
 };

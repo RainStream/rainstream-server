@@ -2,12 +2,12 @@
 
 #include <uv.h>
 #include "utils.hpp"
-#include "EventEmitter.hpp"
+#include "EnhancedEventEmitter.hpp"
 
 
 class Socket;
 
-class SubProcess : public EventEmitter
+class SubProcess : public EnhancedEventEmitter
 {
 public:
 	static SubProcess* spawn(std::string workerPath, AStringVector parameters, json options = json::object());

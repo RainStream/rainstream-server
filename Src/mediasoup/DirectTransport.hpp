@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 import { UnsupportedError } from "./errors";
@@ -13,7 +14,7 @@ struct DirectTransportOptions =
 	 * Maximum allowed size for direct messages sent from DataProducers.
 	 * Default 262144.
 	 */
-	maxMessageSize: number;
+	maxMessageSize: uint32_t;
 
 	/**
 	 * Custom application data.
@@ -26,26 +27,26 @@ struct DirectTransportStat =
 	// Common to all Transports.
 	type: string;
 	transportId: string;
-	timestamp: number;
-	bytesReceived: number;
-	recvBitrate: number;
-	bytesSent: number;
-	sendBitrate: number;
-	rtpBytesReceived: number;
-	rtpRecvBitrate: number;
-	rtpBytesSent: number;
-	rtpSendBitrate: number;
-	rtxBytesReceived: number;
-	rtxRecvBitrate: number;
-	rtxBytesSent: number;
-	rtxSendBitrate: number;
-	probationBytesReceived: number;
-	probationRecvBitrate: number;
-	probationBytesSent: number;
-	probationSendBitrate: number;
-	availableOutgoingBitrate?: number;
-	availableIncomingBitrate?: number;
-	maxIncomingBitrate?: number;
+	timestamp: uint32_t;
+	bytesReceived: uint32_t;
+	recvBitrate: uint32_t;
+	bytesSent: uint32_t;
+	sendBitrate: uint32_t;
+	rtpBytesReceived: uint32_t;
+	rtpRecvBitrate: uint32_t;
+	rtpBytesSent: uint32_t;
+	rtpSendBitrate: uint32_t;
+	rtxBytesReceived: uint32_t;
+	rtxRecvBitrate: uint32_t;
+	rtxBytesSent: uint32_t;
+	rtxSendBitrate: uint32_t;
+	probationBytesReceived: uint32_t;
+	probationRecvBitrate: uint32_t;
+	probationBytesSent: uint32_t;
+	probationSendBitrate: uint32_t;
+	availableOutgoingBitrate?: uint32_t;
+	availableIncomingBitrate?: uint32_t;
+	maxIncomingBitrate?: uint32_t;
 }
 
 const Logger* logger = new Logger("DirectTransport");
@@ -146,7 +147,7 @@ class DirectTransport : public Transport
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async setMaxIncomingBitrate(bitrate: number): Promise<void>
+	async setMaxIncomingBitrate(bitrate: uint32_t): Promise<void>
 	{
 		throw new UnsupportedError(
 			"setMaxIncomingBitrate() not implemented in DirectTransport");
@@ -190,7 +191,7 @@ class DirectTransport : public Transport
 
 				default:
 				{
-					logger->error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event \"%s\"", event);
 				}
 			}
 		});

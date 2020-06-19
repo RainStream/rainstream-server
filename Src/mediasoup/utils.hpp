@@ -6,7 +6,7 @@
 
 using AStringVector = std::vector<std::string>;
 
-/** Evaluates to the number of elements in an array (compile-time!) */
+/** Evaluates to the uint32_t of elements in an array (compile-time!) */
 #define ARRAYCOUNT(X) (sizeof(X) / sizeof(*(X)))
 
 namespace utils

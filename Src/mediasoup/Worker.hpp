@@ -1,6 +1,7 @@
 #pragma once
 
 #include <future>
+#include "Logger.hpp"
 #include "utils.hpp"
 #include "common.hpp"
 #include "EnhancedEventEmitter.hpp"
@@ -10,6 +11,7 @@ class Router;
 class Channel;
 class Request;
 class SubProcess;
+class PayloadChannel;
 
 class Worker : public EnhancedEventEmitter
 {
@@ -31,19 +33,21 @@ public:
 
 
 private:
+	Logger* logger;
+
 	SubProcess* _child{ nullptr };
 
 	uint32_t _pid{ 0 };
 
 	Channel* _channel{ nullptr };
 
-	Channel* _payloadChannel{ nullptr };
-
-	json _appData{ json() };
+	PayloadChannel* _payloadChannel{ nullptr };
 
 	bool _closed = false;
 
-	// Set of Room instances.
+	json _appData{ json() };
+
+	// Routers set.
 	std::set<Router*> _routers;
 
 	EnhancedEventEmitter* _observer{ nullptr };

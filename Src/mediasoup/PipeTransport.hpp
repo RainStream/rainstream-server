@@ -18,10 +18,10 @@ struct PipeTransportOptions
 	/**
 	 * Create a SCTP association. Default false.
 	 */
-	enableSctp?: boolean;
+	enableSctp?: bool;
 
 	/**
-	 * SCTP streams number.
+	 * SCTP streams uint32_t.
 	 */
 	numSctpStreams?: NumSctpStreams;
 
@@ -29,21 +29,21 @@ struct PipeTransportOptions
 	 * Maximum allowed size for SCTP messages sent by DataProducers.
 	 * Default 1073741823.
 	 */
-	maxSctpMessageSize?: number;
+	maxSctpMessageSize?: uint32_t;
 
 	/**
 	 * Enable RTX and NACK for RTP retransmission. Useful if both Routers are
 	 * located in different hosts and there is packet lost in the link. For this
 	 * to work, both PipeTransports must enable this setting. Default false.
 	 */
-	enableRtx?: boolean;
+	enableRtx?: bool;
 
 	/**
 	 * Enable SRTP. Useful to protect the RTP and RTCP traffic if both Routers
 	 * are located in different hosts. For this to work, connect() must be called
 	 * with remote SRTP parameters. Default false.
 	 */
-	enableSrtp?: boolean;
+	enableSrtp?: bool;
 
 	/**
 	 * Custom application data.
@@ -56,27 +56,27 @@ struct PipeTransportStat
 	// Common to all Transports.
 	type: string;
 	transportId: string;
-	timestamp: number;
+	timestamp: uint32_t;
 	sctpState?: SctpState;
-	bytesReceived: number;
-	recvBitrate: number;
-	bytesSent: number;
-	sendBitrate: number;
-	rtpBytesReceived: number;
-	rtpRecvBitrate: number;
-	rtpBytesSent: number;
-	rtpSendBitrate: number;
-	rtxBytesReceived: number;
-	rtxRecvBitrate: number;
-	rtxBytesSent: number;
-	rtxSendBitrate: number;
-	probationBytesReceived: number;
-	probationRecvBitrate: number;
-	probationBytesSent: number;
-	probationSendBitrate: number;
-	availableOutgoingBitrate?: number;
-	availableIncomingBitrate?: number;
-	maxIncomingBitrate?: number;
+	bytesReceived: uint32_t;
+	recvBitrate: uint32_t;
+	bytesSent: uint32_t;
+	sendBitrate: uint32_t;
+	rtpBytesReceived: uint32_t;
+	rtpRecvBitrate: uint32_t;
+	rtpBytesSent: uint32_t;
+	rtpSendBitrate: uint32_t;
+	rtxBytesReceived: uint32_t;
+	rtxRecvBitrate: uint32_t;
+	rtxBytesSent: uint32_t;
+	rtxSendBitrate: uint32_t;
+	probationBytesReceived: uint32_t;
+	probationRecvBitrate: uint32_t;
+	probationBytesSent: uint32_t;
+	probationSendBitrate: uint32_t;
+	availableOutgoingBitrate?: uint32_t;
+	availableIncomingBitrate?: uint32_t;
+	maxIncomingBitrate?: uint32_t;
 	// PipeTransport specific.
 	tuple: TransportTuple;
 }
@@ -91,7 +91,7 @@ class PipeTransport : public Transport
 		tuple: TransportTuple;
 		sctpParameters?: SctpParameters;
 		sctpState?: SctpState;
-		rtx: boolean;
+		rtx: bool;
 		srtpParameters?: SrtpParameters;
 	};
 
@@ -227,7 +227,7 @@ class PipeTransport : public Transport
 		}:
 		{
 			ip: string;
-			port: number;
+			port: uint32_t;
 			srtpParameters?: SrtpParameters;
 		}
 	): Promise<void>
@@ -334,7 +334,7 @@ class PipeTransport : public Transport
 
 				default:
 				{
-					logger->error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event \"%s\"", event);
 				}
 			}
 		});
