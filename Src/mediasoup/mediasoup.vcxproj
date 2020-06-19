@@ -168,14 +168,34 @@
     <ClCompile Include="Worker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioLevelObserver.hpp" />
     <ClInclude Include="Channel.hpp" />
     <ClInclude Include="child_process\PipeStreamSocket.hpp" />
     <ClInclude Include="child_process\Socket.hpp" />
     <ClInclude Include="child_process\SubProcess.hpp" />
+    <ClInclude Include="Consumer.hpp" />
+    <ClInclude Include="DataConsumer.hpp" />
+    <ClInclude Include="DataProducer.hpp" />
+    <ClInclude Include="DirectTransport.hpp" />
+    <ClInclude Include="EnhancedEventEmitter.hpp" />
     <ClInclude Include="errors.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="common.hpp" />
+    <ClInclude Include="ortc.hpp" />
+    <ClInclude Include="PayloadChannel.hpp" />
+    <ClInclude Include="PipeTransport.hpp" />
+    <ClInclude Include="PlainTransport.hpp" />
+    <ClInclude Include="Producer.hpp" />
+    <ClInclude Include="Router.hpp" />
+    <ClInclude Include="RtpObserver.hpp" />
+    <ClInclude Include="RtpParameters.hpp" />
+    <ClInclude Include="scalabilityModes.hpp" />
+    <ClInclude Include="SctpParameters.hpp" />
+    <ClInclude Include="SrtpParameters.hpp" />
+    <ClInclude Include="supportedRtpCapabilities.hpp" />
+    <ClInclude Include="Transport.hpp" />
     <ClInclude Include="utils.hpp" />
+    <ClInclude Include="WebRtcTransport.hpp" />
     <ClInclude Include="Worker.hpp" />
   </ItemGroup>
   <ItemGroup>

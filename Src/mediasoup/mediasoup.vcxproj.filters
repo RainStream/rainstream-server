@@ -71,6 +71,66 @@
     <ClInclude Include="errors.hpp">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="AudioLevelObserver.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Consumer.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DataConsumer.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DataProducer.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectTransport.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="EnhancedEventEmitter.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ortc.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="PayloadChannel.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="PipeTransport.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="PlainTransport.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Producer.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Router.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="RtpObserver.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="RtpParameters.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="scalabilityModes.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="SctpParameters.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="SrtpParameters.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="supportedRtpCapabilities.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Transport.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="WebRtcTransport.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

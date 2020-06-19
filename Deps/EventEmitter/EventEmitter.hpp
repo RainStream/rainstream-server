@@ -97,7 +97,7 @@ public:
      *
      *  @param event  Event name
      */
-    ssize_t listener_count(const std::string& event) {
+    size_t listener_count(const std::string& event) {
         std::unique_lock<std::mutex> locker(_events_mtx);
         auto event_listeners = events.find(event);
         if (event_listeners == events.end()) return 0;
