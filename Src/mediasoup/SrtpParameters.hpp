@@ -20,5 +20,5 @@ struct SrtpParameters =
  * SRTP crypto suite.
  */
 struct SrtpCryptoSuite =
-	| 'AES_CM_128_HMAC_SHA1_80'
-	| 'AES_CM_128_HMAC_SHA1_32';
+	| "AES_CM_128_HMAC_SHA1_80"
+	| "AES_CM_128_HMAC_SHA1_32";

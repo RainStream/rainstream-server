@@ -48,7 +48,7 @@ namespace rs
 				case 69:
 					LOG(ERROR) << nsPayload.substr(1);
 					break;
-					// 88 = 'X' (a dump log).
+					// 88 = "X" (a dump log).
 				case 88:
 					// eslint-disable-next-line no-console
 					DLOG(INFO) << nsPayload.substr(1);
@@ -106,7 +106,7 @@ namespace rs
 // 			sent.second.clear();
 // 		}
 
-// 		// Remove event listeners but leave a fake 'error' hander to avoid
+// 		// Remove event listeners but leave a fake "error" hander to avoid
 // 		// propagation.
 // 		this->_consumerSocket->removeAllListeners("end");
 // 		this->_consumerSocket->removeAllListeners("error");
@@ -221,16 +221,16 @@ namespace rs
 		if (nsPayloadLen == 0)
 		{
 			nsNumLen = 1;
-			WriteBuffer[0] = '0';
-			WriteBuffer[1] = ':';
-			WriteBuffer[2] = ',';
+			WriteBuffer[0] = "0";
+			WriteBuffer[1] = ":";
+			WriteBuffer[2] = ",";
 		}
 		else
 		{
 			nsNumLen = static_cast<size_t>(std::ceil(std::log10(static_cast<double>(nsPayloadLen) + 1)));
 			std::sprintf(reinterpret_cast<char*>(WriteBuffer), "%zu:", nsPayloadLen);
 			std::memcpy(WriteBuffer + nsNumLen + 1, nsPayload.c_str(), nsPayloadLen);
-			WriteBuffer[nsNumLen + nsPayloadLen + 1] = ',';
+			WriteBuffer[nsNumLen + nsPayloadLen + 1] = ",";
 		}
 
 		nsLen = nsNumLen + nsPayloadLen + 2;

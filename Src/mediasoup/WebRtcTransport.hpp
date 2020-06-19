@@ -137,7 +137,7 @@ struct WebRtcTransportStat =
 	dtlsState: DtlsState;
 };
 
-const logger = new Logger("WebRtcTransport");
+const Logger* logger = new Logger("WebRtcTransport");
 
 class WebRtcTransport : public Transport
 {
@@ -168,7 +168,7 @@ class WebRtcTransport : public Transport
 	{
 		super(params);
 
-		logger.debug("constructor()");
+		logger->debug("constructor()");
 
 		const { data } = params;
 
@@ -337,7 +337,7 @@ class WebRtcTransport : public Transport
 	 */
 	async getStats(): Promise<WebRtcTransportStat[]>
 	{
-		logger.debug("getStats()");
+		logger->debug("getStats()");
 
 		return this->_channel->request("transport.getStats", this->_internal);
 	}
@@ -349,7 +349,7 @@ class WebRtcTransport : public Transport
 	 */
 	async connect({ dtlsParameters }: { dtlsParameters: DtlsParameters }): Promise<void>
 	{
-		logger.debug("connect()");
+		logger->debug("connect()");
 
 		const reqData = { dtlsParameters };
 
@@ -365,7 +365,7 @@ class WebRtcTransport : public Transport
 	 */
 	async restartIce(): Promise<IceParameters>
 	{
-		logger.debug("restartIce()");
+		logger->debug("restartIce()");
 
 		const data =
 			await this->_channel->request("transport.restartIce", this->_internal);
@@ -457,7 +457,7 @@ class WebRtcTransport : public Transport
 
 				default:
 				{
-					logger.error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event "%s"", event);
 				}
 			}
 		});

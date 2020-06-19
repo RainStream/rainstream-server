@@ -17,7 +17,7 @@ struct ConsumerOptions
 	/**
 	 * RTP capabilities of the consuming endpoint.
 	 */
-	rtpCapabilities?: RtpCapabilities;
+	RtpCapabilities rtpCapabilities;
 
 	/**
 	 * Whether the Consumer must start in paused mode. Default false.
@@ -55,7 +55,7 @@ struct ConsumerTraceEventType = "rtp" | "keyframe" | "nack" | "pli" | "fir";
 /**
  * "trace" event data.
  */
-struct ConsumerTraceEventData =
+struct ConsumerTraceEventData
 {
 	/**
 	 * Trace type.
@@ -140,7 +140,7 @@ struct ConsumerStat
  */
 struct ConsumerType = "simple" | "simulcast" | "svc" | "pipe";
 
-const logger = new Logger("Consumer");
+const Logger* logger = new Logger("Consumer");
 
 class Consumer : public EnhancedEventEmitter
 {
@@ -162,10 +162,10 @@ class Consumer : public EnhancedEventEmitter
 	};
 
 	// Channel instance.
-	private readonly _channel: Channel;
+	Channel* _channel;
 
 	// Closed flag.
-	private _closed = false;
+	bool _closed = false;
 
 	// Custom app data.
 	private readonly _appData?: any;
@@ -227,7 +227,7 @@ class Consumer : public EnhancedEventEmitter
 	{
 		super();
 
-		logger.debug("constructor()");
+		logger->debug("constructor()");
 
 		this->_internal = internal;
 		this->_data = data;
@@ -252,7 +252,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Associated Producer id.
 	 */
-	get producerId(): string
+	std::string producerId()
 	{
 		return this->_internal.producerId;
 	}
@@ -260,7 +260,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Whether the Consumer is closed.
 	 */
-	get closed(): boolean
+	bool closed()
 	{
 		return this->_closed;
 	}
@@ -376,7 +376,7 @@ class Consumer : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug("close()");
+		logger->debug("close()");
 
 		this->_closed = true;
 
@@ -402,7 +402,7 @@ class Consumer : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug("transportClosed()");
+		logger->debug("transportClosed()");
 
 		this->_closed = true;
 
@@ -420,7 +420,7 @@ class Consumer : public EnhancedEventEmitter
 	 */
 	async dump(): Promise<any>
 	{
-		logger.debug("dump()");
+		logger->debug("dump()");
 
 		return this->_channel->request("consumer.dump", this->_internal);
 	}
@@ -430,7 +430,7 @@ class Consumer : public EnhancedEventEmitter
 	 */
 	async getStats(): Promise<Array<ConsumerStat | ProducerStat>>
 	{
-		logger.debug("getStats()");
+		logger->debug("getStats()");
 
 		return this->_channel->request("consumer.getStats", this->_internal);
 	}
@@ -440,7 +440,7 @@ class Consumer : public EnhancedEventEmitter
 	 */
 	async pause(): Promise<void>
 	{
-		logger.debug("pause()");
+		logger->debug("pause()");
 
 		const wasPaused = this->_paused || this->_producerPaused;
 
@@ -458,7 +458,7 @@ class Consumer : public EnhancedEventEmitter
 	 */
 	async resume(): Promise<void>
 	{
-		logger.debug("resume()");
+		logger->debug("resume()");
 
 		const wasPaused = this->_paused || this->_producerPaused;
 
@@ -481,7 +481,7 @@ class Consumer : public EnhancedEventEmitter
 		}: ConsumerLayers
 	): Promise<void>
 	{
-		logger.debug("setPreferredLayers()");
+		logger->debug("setPreferredLayers()");
 
 		const reqData = { spatialLayer, temporalLayer };
 
@@ -496,7 +496,7 @@ class Consumer : public EnhancedEventEmitter
 	 */
 	async setPriority(priority: number): Promise<void>
 	{
-		logger.debug("setPriority()");
+		logger->debug("setPriority()");
 
 		const reqData = { priority };
 
@@ -511,7 +511,7 @@ class Consumer : public EnhancedEventEmitter
 	 */
 	async unsetPriority(): Promise<void>
 	{
-		logger.debug("unsetPriority()");
+		logger->debug("unsetPriority()");
 
 		const reqData = { priority: 1 };
 
@@ -526,7 +526,7 @@ class Consumer : public EnhancedEventEmitter
 	 */
 	async requestKeyFrame(): Promise<void>
 	{
-		logger.debug("requestKeyFrame()");
+		logger->debug("requestKeyFrame()");
 
 		await this->_channel->request("consumer.requestKeyFrame", this->_internal);
 	}
@@ -536,7 +536,7 @@ class Consumer : public EnhancedEventEmitter
 	 */
 	async enableTraceEvent(types: ConsumerTraceEventType[] = []): Promise<void>
 	{
-		logger.debug("enableTraceEvent()");
+		logger->debug("enableTraceEvent()");
 
 		const reqData = { types };
 
@@ -647,7 +647,7 @@ class Consumer : public EnhancedEventEmitter
 
 				default:
 				{
-					logger.error("ignoring unknown event "%s"", event);
+					logger->error("ignoring unknown event "%s"", event);
 				}
 			}
 		});

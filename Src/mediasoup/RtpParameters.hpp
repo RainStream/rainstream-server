@@ -23,9 +23,9 @@ struct RtpCapabilities =
 }
 
 /**
- * Media kind ('audio' or 'video').
+ * Media kind ("audio" or "video").
  */
-struct MediaKind = 'audio' | 'video';
+struct MediaKind = "audio" | "video";
 
 /**
  * Provides information on the capabilities of a codec within the RTP
@@ -36,13 +36,13 @@ struct MediaKind = 'audio' | 'video';
  * of parameters that requires a distinct value of preferredPayloadType. For
  * example:
  *
- * - Multiple H264 codecs, each with their own distinct 'packetization-mode' and
- *   'profile-level-id' values.
- * - Multiple VP9 codecs, each with their own distinct 'profile-id' value.
+ * - Multiple H264 codecs, each with their own distinct "packetization-mode" and
+ *   "profile-level-id" values.
+ * - Multiple VP9 codecs, each with their own distinct "profile-id" value.
  *
  * RtpCodecCapability entries in the mediaCodecs array of RouterOptions do not
  * require preferredPayloadType field (if unset, mediasoup will choose a random
- * one). If given, make sure it's in the 96-127 range.
+ * one). If given, make sure it"s in the 96-127 range.
  */
 struct RtpCodecCapability =
 {
@@ -52,7 +52,7 @@ struct RtpCodecCapability =
 	kind: MediaKind;
 
 	/**
-	 * The codec MIME media type/subtype (e.g. 'audio/opus', 'video/VP8').
+	 * The codec MIME media type/subtype (e.g. "audio/opus", "video/VP8").
 	 */
 	mimeType: string;
 
@@ -73,8 +73,8 @@ struct RtpCodecCapability =
 	channels?: number;
 
 	/**
-	 * Codec specific parameters. Some parameters (such as 'packetization-mode'
-	 * and 'profile-level-id' in H264 or 'profile-id' in VP9) are critical for
+	 * Codec specific parameters. Some parameters (such as "packetization-mode"
+	 * and "profile-level-id" in H264 or "profile-id" in VP9) are critical for
 	 * codec matching.
 	 */
 	parameters?: any;
@@ -88,7 +88,7 @@ struct RtpCodecCapability =
 /**
  * Direction of RTP header extension.
  */
-struct RtpHeaderExtensionDirection = 'sendrecv' | 'sendonly' | 'recvonly' | 'inactive';
+struct RtpHeaderExtensionDirection = "sendrecv" | "sendonly" | "recvonly" | "inactive";
 
 /**
  * Provides information relating to supported header extensions. The list of
@@ -97,16 +97,16 @@ struct RtpHeaderExtensionDirection = 'sendrecv' | 'sendonly' | 'recvonly' | 'ina
  *
  * mediasoup does not currently support encrypted RTP header extensions. The
  * direction field is just present in mediasoup RTP capabilities (retrieved via
- * router.rtpCapabilities or mediasoup.getSupportedRtpCapabilities()). It's
- * ignored if present in endpoints' RTP capabilities.
+ * router.rtpCapabilities or mediasoup.getSupportedRtpCapabilities()). It"s
+ * ignored if present in endpoints" RTP capabilities.
  */
 struct RtpHeaderExtension =
 {
 	/**
-	 * Media kind. If empty string, it's valid for all kinds.
+	 * Media kind. If empty string, it"s valid for all kinds.
 	 * Default any media kind.
 	 */
-	kind?: MediaKind | '';
+	kind?: MediaKind | "";
 
 	/*
 	 * The URI of the RTP header extension, as defined in RFC 5285.
@@ -126,8 +126,8 @@ struct RtpHeaderExtension =
 	preferredEncrypt?: boolean;
 
 	/**
-	 * If 'sendrecv', mediasoup supports sending and receiving this RTP extension.
-	 * 'sendonly' means that mediasoup can send (but not receive) it. 'recvonly'
+	 * If "sendrecv", mediasoup supports sending and receiving this RTP extension.
+	 * "sendonly" means that mediasoup can send (but not receive) it. "recvonly"
 	 * means that mediasoup can receive (but not send) it.
 	 */
 	direction?: RtpHeaderExtensionDirection;
@@ -161,7 +161,7 @@ struct RtpHeaderExtension =
  * The RTP receive parameters will always have their ssrc values randomly
  * generated for all of its  encodings (and optional rtx: { ssrc: XXXX } if the
  * endpoint supports RTX), regardless of the original RTP send parameters in
- * the associated producer. This applies even if the producer's encodings have
+ * the associated producer. This applies even if the producer"s encodings have
  * rid set.
  */
 struct RtpParameters =
@@ -200,7 +200,7 @@ struct RtpParameters =
 struct RtpCodecParameters =
 {
 	/**
-	 * The codec MIME media type/subtype (e.g. 'audio/opus', 'video/VP8').
+	 * The codec MIME media type/subtype (e.g. "audio/opus", "video/VP8").
 	 */
 	mimeType: string;
 
@@ -222,7 +222,7 @@ struct RtpCodecParameters =
 
 	/**
 	 * Codec-specific parameters available for signaling. Some parameters (such
-	 * as 'packetization-mode' and 'profile-level-id' in H264 or 'profile-id' in
+	 * as "packetization-mode" and "profile-level-id" in H264 or "profile-id" in
 	 * VP9) are critical for codec matching.
 	 */
 	parameters?: any;
@@ -289,7 +289,7 @@ struct RtpEncodingParameters =
 	dtx?: boolean;
 
 	/**
-	 * Number of spatial and temporal layers in the RTP stream (e.g. 'L1T3').
+	 * Number of spatial and temporal layers in the RTP stream (e.g. "L1T3").
 	 * See webrtc-svc.
 	 */
 	scalabilityMode?: string;
@@ -335,7 +335,7 @@ struct RtpHeaderExtensionParameters =
 /**
  * Provides information on RTCP settings within the RTP parameters.
  *
- * If no cname is given in a producer's RTP parameters, the mediasoup transport
+ * If no cname is given in a producer"s RTP parameters, the mediasoup transport
  * will choose a random one that will be used into RTCP SDES messages sent to
  * all its associated consumers.
  *

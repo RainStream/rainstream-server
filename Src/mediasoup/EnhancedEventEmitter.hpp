@@ -28,7 +28,7 @@ public:
 		}
 		catch (error)
 		{
-			logger.error(
+			logger->error(
 				"safeEmit() | event listener threw an error [event:%s]:%o",
 				event, error);
 

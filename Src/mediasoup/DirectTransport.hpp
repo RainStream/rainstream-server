@@ -2,10 +2,10 @@
 
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import { UnsupportedError } from './errors';
-import { Transport, TransportTraceEventData } from './Transport';
-import { Producer, ProducerOptions } from './Producer';
-import { Consumer, ConsumerOptions } from './Consumer';
+import { UnsupportedError } from "./errors";
+import { Transport, TransportTraceEventData } from "./Transport";
+import { Producer, ProducerOptions } from "./Producer";
+import { Consumer, ConsumerOptions } from "./Consumer";
 
 struct DirectTransportOptions =
 {
@@ -48,9 +48,9 @@ struct DirectTransportStat =
 	maxIncomingBitrate?: number;
 }
 
-const logger = new Logger('DirectTransport');
+const Logger* logger = new Logger("DirectTransport");
 
-export class DirectTransport : public Transport
+class DirectTransport : public Transport
 {
 	// DirectTransport data.
 	protected readonly _data:
@@ -66,7 +66,7 @@ export class DirectTransport : public Transport
 	{
 		super(params);
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		const { data } = params;
 
@@ -127,9 +127,9 @@ export class DirectTransport : public Transport
 	 */
 	async getStats(): Promise<DirectTransportStat[]>
 	{
-		logger.debug('getStats()');
+		logger->debug("getStats()");
 
-		return this->_channel->request('transport.getStats', this->_internal);
+		return this->_channel->request("transport.getStats", this->_internal);
 	}
 
 	/**
@@ -139,7 +139,7 @@ export class DirectTransport : public Transport
 	 */
 	async connect(): Promise<void>
 	{
-		logger.debug('connect()');
+		logger->debug("connect()");
 	}
 
 	/**
@@ -149,7 +149,7 @@ export class DirectTransport : public Transport
 	async setMaxIncomingBitrate(bitrate: number): Promise<void>
 	{
 		throw new UnsupportedError(
-			'setMaxIncomingBitrate() not implemented in DirectTransport');
+			"setMaxIncomingBitrate() not implemented in DirectTransport");
 	}
 
 	/**
@@ -158,7 +158,7 @@ export class DirectTransport : public Transport
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	async produce(options: ProducerOptions): Promise<Producer>
 	{
-		throw new UnsupportedError('produce() not implemented in DirectTransport');
+		throw new UnsupportedError("produce() not implemented in DirectTransport");
 	}
 
 	/**
@@ -167,7 +167,7 @@ export class DirectTransport : public Transport
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	async consume(options: ConsumerOptions): Promise<Consumer>
 	{
-		throw new UnsupportedError('consume() not implemented in DirectTransport');
+		throw new UnsupportedError("consume() not implemented in DirectTransport");
 	}
 
 	private _handleWorkerNotifications(): void
@@ -176,21 +176,21 @@ export class DirectTransport : public Transport
 		{
 			switch (event)
 			{
-				case 'trace':
+				case "trace":
 				{
 					const trace = data as TransportTraceEventData;
 
-					this->safeEmit('trace', trace);
+					this->safeEmit("trace", trace);
 
 					// Emit observer event.
-					this->_observer.safeEmit('trace', trace);
+					this->_observer.safeEmit("trace", trace);
 
 					break;
 				}
 
 				default:
 				{
-					logger.error('ignoring unknown event "%s"', event);
+					logger->error("ignoring unknown event "%s"", event);
 				}
 			}
 		});

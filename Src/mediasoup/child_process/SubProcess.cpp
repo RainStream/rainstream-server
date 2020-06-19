@@ -28,7 +28,7 @@ namespace rs
 		{
 			spawnArgs.push_back((char*)parameters[i].c_str());
 		}
-		spawnArgs.push_back('\0');
+		spawnArgs.push_back("\0");
 
 		std::vector<uv_stdio_container_t> child_stdios;
 		
@@ -102,7 +102,7 @@ namespace rs
 		{
 			envs.push_back(env.data());
 		}
-		envs.push_back('\0');
+		envs.push_back("\0");
 
 		subProcess->options.args = spawnArgs.data();;
 		subProcess->options.env = envs.data();

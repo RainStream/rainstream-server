@@ -3,9 +3,9 @@
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
-import { MediaKind, RtpParameters } from './RtpParameters';
+#include "RtpParameters.hpp"
 
-struct ProducerOptions =
+struct ProducerOptions
 {
 	/**
 	 * Producer id (just for Router.pipeToRouter() method).
@@ -13,7 +13,7 @@ struct ProducerOptions =
 	id?: string;
 
 	/**
-	 * Media kind ('audio' or 'video').
+	 * Media kind ("audio" or "video").
 	 */
 	kind: MediaKind;
 
@@ -40,12 +40,12 @@ struct ProducerOptions =
 }
 
 /**
- * Valid types for 'trace' event.
+ * Valid types for "trace" event.
  */
-struct ProducerTraceEventType = 'rtp' | 'keyframe' | 'nack' | 'pli' | 'fir';
+struct ProducerTraceEventType = "rtp" | "keyframe" | "nack" | "pli" | "fir";
 
 /**
- * 'trace' event data.
+ * "trace" event data.
  */
 struct ProducerTraceEventData =
 {
@@ -62,7 +62,7 @@ struct ProducerTraceEventData =
 	/**
 	 * Event direction.
 	 */
-	direction: 'in' | 'out';
+	direction: "in" | "out";
 
 	/**
 	 * Per type information.
@@ -106,7 +106,7 @@ struct ProducerVideoOrientation =
 	rotation: number;
 }
 
-struct ProducerStat =
+struct ProducerStat
 {
 	// Common to all RtpStreams.
 	type: string;
@@ -138,11 +138,11 @@ struct ProducerStat =
 /**
  * Producer type.
  */
-struct ProducerType = 'simple' | 'simulcast' | 'svc';
+struct ProducerType = "simple" | "simulcast" | "svc";
 
-const logger = new Logger('Producer');
+const Logger* logger = new Logger("Producer");
 
-export class Producer : public EnhancedEventEmitter
+class Producer : public EnhancedEventEmitter
 {
 	// Internal data.
 	private readonly _internal:
@@ -206,7 +206,7 @@ export class Producer : public EnhancedEventEmitter
 	{
 		super();
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		this->_internal = internal;
 		this->_data = data;
@@ -296,7 +296,7 @@ export class Producer : public EnhancedEventEmitter
 	 */
 	set appData(appData: any) // eslint-disable-line no-unused-vars
 	{
-		throw new Error('cannot override appData object');
+		throw new Error("cannot override appData object");
 	}
 
 	/**
@@ -322,20 +322,20 @@ export class Producer : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('close()');
+		logger->debug("close()");
 
 		this->_closed = true;
 
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal.producerId);
 
-		this->_channel->request('producer.close', this->_internal)
+		this->_channel->request("producer.close", this->_internal)
 			.catch(() => {});
 
-		this->emit('@close');
+		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -348,17 +348,17 @@ export class Producer : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('transportClosed()');
+		logger->debug("transportClosed()");
 
 		this->_closed = true;
 
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal.producerId);
 
-		this->safeEmit('transportclose');
+		this->safeEmit("transportclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -366,9 +366,9 @@ export class Producer : public EnhancedEventEmitter
 	 */
 	async dump(): Promise<any>
 	{
-		logger.debug('dump()');
+		logger->debug("dump()");
 
-		return this->_channel->request('producer.dump', this->_internal);
+		return this->_channel->request("producer.dump", this->_internal);
 	}
 
 	/**
@@ -376,9 +376,9 @@ export class Producer : public EnhancedEventEmitter
 	 */
 	async getStats(): Promise<ProducerStat[]>
 	{
-		logger.debug('getStats()');
+		logger->debug("getStats()");
 
-		return this->_channel->request('producer.getStats', this->_internal);
+		return this->_channel->request("producer.getStats", this->_internal);
 	}
 
 	/**
@@ -386,17 +386,17 @@ export class Producer : public EnhancedEventEmitter
 	 */
 	async pause(): Promise<void>
 	{
-		logger.debug('pause()');
+		logger->debug("pause()");
 
 		const wasPaused = this->_paused;
 
-		await this->_channel->request('producer.pause', this->_internal);
+		await this->_channel->request("producer.pause", this->_internal);
 
 		this->_paused = true;
 
 		// Emit observer event.
 		if (!wasPaused)
-			this->_observer.safeEmit('pause');
+			this->_observer.safeEmit("pause");
 	}
 
 	/**
@@ -404,30 +404,30 @@ export class Producer : public EnhancedEventEmitter
 	 */
 	async resume(): Promise<void>
 	{
-		logger.debug('resume()');
+		logger->debug("resume()");
 
 		const wasPaused = this->_paused;
 
-		await this->_channel->request('producer.resume', this->_internal);
+		await this->_channel->request("producer.resume", this->_internal);
 
 		this->_paused = false;
 
 		// Emit observer event.
 		if (wasPaused)
-			this->_observer.safeEmit('resume');
+			this->_observer.safeEmit("resume");
 	}
 
 	/**
-	 * Enable 'trace' event.
+	 * Enable "trace" event.
 	 */
 	async enableTraceEvent(types: ProducerTraceEventType[] = []): Promise<void>
 	{
-		logger.debug('enableTraceEvent()');
+		logger->debug("enableTraceEvent()");
 
 		const reqData = { types };
 
 		await this->_channel->request(
-			'producer.enableTraceEvent', this->_internal, reqData);
+			"producer.enableTraceEvent", this->_internal, reqData);
 	}
 
 	private _handleWorkerNotifications(): void
@@ -436,47 +436,47 @@ export class Producer : public EnhancedEventEmitter
 		{
 			switch (event)
 			{
-				case 'score':
+				case "score":
 				{
 					const score = data as ProducerScore[];
 
 					this->_score = score;
 
-					this->safeEmit('score', score);
+					this->safeEmit("score", score);
 
 					// Emit observer event.
-					this->_observer.safeEmit('score', score);
+					this->_observer.safeEmit("score", score);
 
 					break;
 				}
 
-				case 'videoorientationchange':
+				case "videoorientationchange":
 				{
 					const videoOrientation = data as ProducerVideoOrientation;
 
-					this->safeEmit('videoorientationchange', videoOrientation);
+					this->safeEmit("videoorientationchange", videoOrientation);
 
 					// Emit observer event.
-					this->_observer.safeEmit('videoorientationchange', videoOrientation);
+					this->_observer.safeEmit("videoorientationchange", videoOrientation);
 
 					break;
 				}
 
-				case 'trace':
+				case "trace":
 				{
 					const trace = data as ProducerTraceEventData;
 
-					this->safeEmit('trace', trace);
+					this->safeEmit("trace", trace);
 
 					// Emit observer event.
-					this->_observer.safeEmit('trace', trace);
+					this->_observer.safeEmit("trace", trace);
 
 					break;
 				}
 
 				default:
 				{
-					logger.error('ignoring unknown event "%s"', event);
+					logger->error("ignoring unknown event "%s"", event);
 				}
 			}
 		});

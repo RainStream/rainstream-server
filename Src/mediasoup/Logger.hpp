@@ -1,19 +1,52 @@
 #pragma once
 
-#define GLOG_NO_ABBREVIATED_SEVERITIES 1
 
-#include "glog/logging.h"
+#define  APP_NAME "mediasoup"
 
-namespace rs
+class Logger
 {
-#define APP_NAME = "rainstream";
+// 	private readonly _debug : debug.Debugger;
+// 	private readonly _warn : debug.Debugger;
+// 	private readonly _error : debug.Debugger;
+public:
+	Logger(std::string prefix)
+	{
+// 		if (prefix)
+// 		{
+// 			this->_debug = debug(`${APP_NAME
+// 		}:${ prefix }`);
+// 			this->_warn = debug(`${APP_NAME
+// 	}:WARN:${ prefix }`);
+// 			this->_error = debug(`${APP_NAME
+// }:ERROR:${ prefix }`);
+// 		}
+// 		else
+// 		{
+// 		this->_debug = debug(APP_NAME);
+// 		this->_warn = debug(`${APP_NAME
+// }:WARN`);
+// this->_error = debug(`${APP_NAME}:ERROR`);
+// 		}
+// 
+// 		/* eslint-disable no-console */
+// 		this->_debug.log = console.info.bind(console);
+// 		this->_warn.log = console.warn.bind(console);
+// 		this->_error.log = console.error.bind(console);
+// 		/* eslint-enable no-console */
+	}
 
-#define RS_ABORT(desc, ...) \
-	do \
-	{ \
-		std::fprintf(stderr, "ABORT" desc , ##__VA_ARGS__); \
-		std::fflush(stderr); \
-		std::abort(); \
-	} \
-	while (false)
-}
+	void debug(const char * a_Format, ...)
+	{
+		//return this->_debug;
+	}
+
+	void warn(const char * a_Format, ...)
+	{
+		//return this->_warn;
+	}
+
+	void error(const char * a_Format, ...)
+	{
+		
+	}
+};

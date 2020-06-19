@@ -108,12 +108,12 @@ namespace rs
 
 		this->isClosing = true;
 
-		// Don't read more.
+		// Don"t read more.
 		err = uv_read_stop(reinterpret_cast<uv_stream_t*>(this->uvHandle));
 		if (err != 0)
 			RS_ABORT("uv_read_stop() failed: %s", uv_strerror(err));
 
-		// If there is no error and the peer didn't close its pipe side then close gracefully.
+		// If there is no error and the peer didn"t close its pipe side then close gracefully.
 		if (!this->hasError && !this->isClosedByPeer)
 		{
 			// Use uv_shutdown() so pending data to be written will be sent to the peer before closing.

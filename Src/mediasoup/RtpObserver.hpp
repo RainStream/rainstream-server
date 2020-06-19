@@ -3,12 +3,12 @@
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
-import { PayloadChannel } from './PayloadChannel';
-import { Producer } from './Producer';
+import { PayloadChannel } from "./PayloadChannel";
+#include "Producer.hpp"
 
-const logger = new Logger('RtpObserver');
+const Logger* logger = new Logger("RtpObserver");
 
-export class RtpObserver : public EnhancedEventEmitter
+class RtpObserver : public EnhancedEventEmitter
 {
 	// Internal data.
 	protected readonly _internal:
@@ -63,7 +63,7 @@ export class RtpObserver : public EnhancedEventEmitter
 	{
 		super();
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		this->_internal = internal;
 		this->_channel = channel;
@@ -109,7 +109,7 @@ export class RtpObserver : public EnhancedEventEmitter
 	 */
 	set appData(appData: any) // eslint-disable-line no-unused-vars
 	{
-		throw new Error('cannot override appData object');
+		throw new Error("cannot override appData object");
 	}
 
 	/**
@@ -134,20 +134,20 @@ export class RtpObserver : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('close()');
+		logger->debug("close()");
 
 		this->_closed = true;
 
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal.rtpObserverId);
 
-		this->_channel->request('rtpObserver.close', this->_internal)
+		this->_channel->request("rtpObserver.close", this->_internal)
 			.catch(() => {});
 
-		this->emit('@close');
+		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -160,17 +160,17 @@ export class RtpObserver : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('routerClosed()');
+		logger->debug("routerClosed()");
 
 		this->_closed = true;
 
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal.rtpObserverId);
 
-		this->safeEmit('routerclose');
+		this->safeEmit("routerclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -178,17 +178,17 @@ export class RtpObserver : public EnhancedEventEmitter
 	 */
 	async pause(): Promise<void>
 	{
-		logger.debug('pause()');
+		logger->debug("pause()");
 
 		const wasPaused = this->_paused;
 
-		await this->_channel->request('rtpObserver.pause', this->_internal);
+		await this->_channel->request("rtpObserver.pause", this->_internal);
 
 		this->_paused = true;
 
 		// Emit observer event.
 		if (!wasPaused)
-			this->_observer.safeEmit('pause');
+			this->_observer.safeEmit("pause");
 	}
 
 	/**
@@ -196,17 +196,17 @@ export class RtpObserver : public EnhancedEventEmitter
 	 */
 	async resume(): Promise<void>
 	{
-		logger.debug('resume()');
+		logger->debug("resume()");
 
 		const wasPaused = this->_paused;
 
-		await this->_channel->request('rtpObserver.resume', this->_internal);
+		await this->_channel->request("rtpObserver.resume", this->_internal);
 
 		this->_paused = false;
 
 		// Emit observer event.
 		if (wasPaused)
-			this->_observer.safeEmit('resume');
+			this->_observer.safeEmit("resume");
 	}
 
 	/**
@@ -214,15 +214,15 @@ export class RtpObserver : public EnhancedEventEmitter
 	 */
 	async addProducer({ producerId }: { producerId: string }): Promise<void>
 	{
-		logger.debug('addProducer()');
+		logger->debug("addProducer()");
 
 		const producer = this->_getProducerById(producerId);
 		const internal = { ...this->_internal, producerId };
 
-		await this->_channel->request('rtpObserver.addProducer', internal);
+		await this->_channel->request("rtpObserver.addProducer", internal);
 
 		// Emit observer event.
-		this->_observer.safeEmit('addproducer', producer);
+		this->_observer.safeEmit("addproducer", producer);
 	}
 
 	/**
@@ -230,14 +230,14 @@ export class RtpObserver : public EnhancedEventEmitter
 	 */
 	async removeProducer({ producerId }: { producerId: string }): Promise<void>
 	{
-		logger.debug('removeProducer()');
+		logger->debug("removeProducer()");
 
 		const producer = this->_getProducerById(producerId);
 		const internal = { ...this->_internal, producerId };
 
-		await this->_channel->request('rtpObserver.removeProducer', internal);
+		await this->_channel->request("rtpObserver.removeProducer", internal);
 
 		// Emit observer event.
-		this->_observer.safeEmit('removeproducer', producer);
+		this->_observer.safeEmit("removeproducer", producer);
 	}
 }

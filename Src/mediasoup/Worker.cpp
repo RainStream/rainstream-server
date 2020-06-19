@@ -91,12 +91,12 @@ namespace rs
 		// Kill the worker process.
 // 		if (this->_child)
 // 		{
-// 			// Remove event listeners but leave a fake 'error' hander to avoid
+// 			// Remove event listeners but leave a fake "error" hander to avoid
 // 			// propagation.
-// 			this->_child->removeAllListeners('exit');
-// 			this->_child->removeAllListeners('error');
-// 			this->_child->on('error', () = > {});
-// 			this->_child->kill('SIGTERM');
+// 			this->_child->removeAllListeners("exit");
+// 			this->_child->removeAllListeners("error");
+// 			this->_child->on("error", () = > {});
+// 			this->_child->kill("SIGTERM");
 // 			this->_child = undefined;
 // 		}
 
@@ -114,7 +114,7 @@ namespace rs
 // 		this->_routers.clear();
 // 
 // 		// Emit observer event.
-// 		this->_observer->safeEmit('close');
+// 		this->_observer->safeEmit("close");
 	}
 
 	std::future<json> Worker::dump()

@@ -3,8 +3,8 @@
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
-import { PayloadChannel } from './PayloadChannel';
-import { SctpStreamParameters } from './SctpParameters';
+import { PayloadChannel } from "./PayloadChannel";
+import { SctpStreamParameters } from "./SctpParameters";
 
 struct DataProducerOptions =
 {
@@ -48,11 +48,11 @@ struct DataProducerStat =
 /**
  * DataProducer type.
  */
-struct DataProducerType = 'sctp' | 'direct';
+struct DataProducerType = "sctp" | "direct";
 
-const logger = new Logger('DataProducer');
+const Logger* logger = new Logger("DataProducer");
 
-export class DataProducer : public EnhancedEventEmitter
+class DataProducer : public EnhancedEventEmitter
 {
 	// Internal data.
 	private readonly _internal:
@@ -110,7 +110,7 @@ export class DataProducer : public EnhancedEventEmitter
 	{
 		super();
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		this->_internal = internal;
 		this->_data = data;
@@ -182,7 +182,7 @@ export class DataProducer : public EnhancedEventEmitter
 	 */
 	set appData(appData: any) // eslint-disable-line no-unused-vars
 	{
-		throw new Error('cannot override appData object');
+		throw new Error("cannot override appData object");
 	}
 
 	/**
@@ -203,20 +203,20 @@ export class DataProducer : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('close()');
+		logger->debug("close()");
 
 		this->_closed = true;
 
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal.dataProducerId);
 
-		this->_channel->request('dataProducer.close', this->_internal)
+		this->_channel->request("dataProducer.close", this->_internal)
 			.catch(() => {});
 
-		this->emit('@close');
+		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -229,14 +229,14 @@ export class DataProducer : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('transportClosed()');
+		logger->debug("transportClosed()");
 
 		this->_closed = true;
 
-		this->safeEmit('transportclose');
+		this->safeEmit("transportclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -244,9 +244,9 @@ export class DataProducer : public EnhancedEventEmitter
 	 */
 	async dump(): Promise<any>
 	{
-		logger.debug('dump()');
+		logger->debug("dump()");
 
-		return this->_channel->request('dataProducer.dump', this->_internal);
+		return this->_channel->request("dataProducer.dump", this->_internal);
 	}
 
 	/**
@@ -254,9 +254,9 @@ export class DataProducer : public EnhancedEventEmitter
 	 */
 	async getStats(): Promise<DataProducerStat[]>
 	{
-		logger.debug('getStats()');
+		logger->debug("getStats()");
 
-		return this->_channel->request('dataProducer.getStats', this->_internal);
+		return this->_channel->request("dataProducer.getStats", this->_internal);
 	}
 
 	/**
@@ -264,11 +264,11 @@ export class DataProducer : public EnhancedEventEmitter
 	 */
 	send(message: string | Buffer, ppid?: number): void
 	{
-		logger.debug('send()');
+		logger->debug("send()");
 
-		if (typeof message !== 'string' && !Buffer.isBuffer(message))
+		if (typeof message !== "string" && !Buffer.isBuffer(message))
 		{
-			throw new TypeError('message must be a string or a Buffer');
+			throw new TypeError("message must be a string or a Buffer");
 		}
 
 		/*
@@ -287,23 +287,23 @@ export class DataProducer : public EnhancedEventEmitter
 		 * +-------------------------------+----------+
 		 */
 
-		if (typeof ppid !== 'number')
+		if (typeof ppid !== "number")
 		{
-			ppid = (typeof message === 'string')
+			ppid = (typeof message === "string")
 				? message.length > 0 ? 51 : 56
 				: message.length > 0 ? 53 : 57;
 		}
 
 		// Ensure we honor PPIDs.
 		if (ppid === 56)
-			message = ' ';
+			message = " ";
 		else if (ppid === 57)
 			message = Buffer.alloc(1);
 
 		const notifData = { ppid };
 
 		this->_payloadChannel.notify(
-			'dataProducer.send', this->_internal, notifData, message);
+			"dataProducer.send", this->_internal, notifData, message);
 	}
 
 	private _handleWorkerNotifications(): void

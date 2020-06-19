@@ -1,7 +1,7 @@
 #pragma once 
 
 const ScalabilityModeRegex =
-	new RegExp('^[LS]([1-9]\\d{0,1})T([1-9]\\d{0,1})(_KEY)?');
+	new RegExp("^[LS]([1-9]\\d{0,1})T([1-9]\\d{0,1})(_KEY)?");
 
 struct ScalabilityMode =
 {
@@ -12,7 +12,7 @@ struct ScalabilityMode =
 
 export function parse(scalabilityMode?: string): ScalabilityMode
 {
-	const match = ScalabilityModeRegex.exec(scalabilityMode || '');
+	const match = ScalabilityModeRegex.exec(scalabilityMode || "");
 
 	if (match)
 	{

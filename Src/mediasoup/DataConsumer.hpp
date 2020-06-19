@@ -3,8 +3,8 @@
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
-import { PayloadChannel } from './PayloadChannel';
-import { SctpStreamParameters } from './SctpParameters';
+import { PayloadChannel } from "./PayloadChannel";
+import { SctpStreamParameters } from "./SctpParameters";
 
 struct DataConsumerOptions =
 {
@@ -17,7 +17,7 @@ struct DataConsumerOptions =
 	 * Just if consuming over SCTP.
 	 * Whether data messages must be received in order. If true the messages will
 	 * be sent reliably. Defaults to the value in the DataProducer if it has type
-	 * 'sctp' or to true if it has type 'direct'.
+	 * "sctp" or to true if it has type "direct".
 	 */
 	ordered?: boolean;
 
@@ -25,7 +25,7 @@ struct DataConsumerOptions =
 	 * Just if consuming over SCTP.
 	 * When ordered is false indicates the time (in milliseconds) after which a
 	 * SCTP packet will stop being retransmitted. Defaults to the value in the
-	 * DataProducer if it has type 'sctp' or unset if it has type 'direct'.
+	 * DataProducer if it has type "sctp" or unset if it has type "direct".
 	 */
 	maxPacketLifeTime?: number;
 
@@ -33,7 +33,7 @@ struct DataConsumerOptions =
 	 * Just if consuming over SCTP.
 	 * When ordered is false indicates the maximum number of times a packet will
 	 * be retransmitted. Defaults to the value in the DataProducer if it has type
-	 * 'sctp' or unset if it has type 'direct'.
+	 * "sctp" or unset if it has type "direct".
 	 */
 	maxRetransmits?: number;
 
@@ -56,11 +56,11 @@ struct DataConsumerStat =
 /**
  * DataConsumer type.
  */
-struct DataConsumerType = 'sctp' | 'direct';
+struct DataConsumerType = "sctp" | "direct";
 
-const logger = new Logger('DataConsumer');
+const Logger* logger = new Logger("DataConsumer");
 
-export class DataConsumer : public EnhancedEventEmitter
+class DataConsumer : public EnhancedEventEmitter
 {
 	// Internal data.
 	private readonly _internal:
@@ -122,7 +122,7 @@ export class DataConsumer : public EnhancedEventEmitter
 	{
 		super();
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		this->_internal = internal;
 		this->_data = data;
@@ -202,7 +202,7 @@ export class DataConsumer : public EnhancedEventEmitter
 	 */
 	set appData(appData: any) // eslint-disable-line no-unused-vars
 	{
-		throw new Error('cannot override appData object');
+		throw new Error("cannot override appData object");
 	}
 
 	/**
@@ -223,20 +223,20 @@ export class DataConsumer : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('close()');
+		logger->debug("close()");
 
 		this->_closed = true;
 
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal.dataConsumerId);
 
-		this->_channel->request('dataConsumer.close', this->_internal)
+		this->_channel->request("dataConsumer.close", this->_internal)
 			.catch(() => {});
 
-		this->emit('@close');
+		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -249,17 +249,17 @@ export class DataConsumer : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('transportClosed()');
+		logger->debug("transportClosed()");
 
 		this->_closed = true;
 
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal.dataConsumerId);
 
-		this->safeEmit('transportclose');
+		this->safeEmit("transportclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -267,9 +267,9 @@ export class DataConsumer : public EnhancedEventEmitter
 	 */
 	async dump(): Promise<any>
 	{
-		logger.debug('dump()');
+		logger->debug("dump()");
 
-		return this->_channel->request('dataConsumer.dump', this->_internal);
+		return this->_channel->request("dataConsumer.dump", this->_internal);
 	}
 
 	/**
@@ -277,9 +277,9 @@ export class DataConsumer : public EnhancedEventEmitter
 	 */
 	async getStats(): Promise<DataConsumerStat[]>
 	{
-		logger.debug('getStats()');
+		logger->debug("getStats()");
 
-		return this->_channel->request('dataConsumer.getStats', this->_internal);
+		return this->_channel->request("dataConsumer.getStats", this->_internal);
 	}
 
 	private _handleWorkerNotifications(): void
@@ -288,7 +288,7 @@ export class DataConsumer : public EnhancedEventEmitter
 		{
 			switch (event)
 			{
-				case 'dataproducerclose':
+				case "dataproducerclose":
 				{
 					if (this->_closed)
 						break;
@@ -298,18 +298,18 @@ export class DataConsumer : public EnhancedEventEmitter
 					// Remove notification subscriptions.
 					this->_channel->removeAllListeners(this->_internal.dataConsumerId);
 
-					this->emit('@dataproducerclose');
-					this->safeEmit('dataproducerclose');
+					this->emit("@dataproducerclose");
+					this->safeEmit("dataproducerclose");
 
 					// Emit observer event.
-					this->_observer.safeEmit('close');
+					this->_observer.safeEmit("close");
 
 					break;
 				}
 
 				default:
 				{
-					logger.error('ignoring unknown event "%s"', event);
+					logger->error("ignoring unknown event "%s"", event);
 				}
 			}
 		});
@@ -320,7 +320,7 @@ export class DataConsumer : public EnhancedEventEmitter
 			{
 				switch (event)
 				{
-					case 'message':
+					case "message":
 					{
 						if (this->_closed)
 							break;
@@ -328,14 +328,14 @@ export class DataConsumer : public EnhancedEventEmitter
 						const ppid = data.ppid as number;
 						const message = payload;
 
-						this->safeEmit('message', message, ppid);
+						this->safeEmit("message", message, ppid);
 
 						break;
 					}
 
 					default:
 					{
-						logger.error('ignoring unknown event "%s"', event);
+						logger->error("ignoring unknown event "%s"", event);
 					}
 				}
 			});

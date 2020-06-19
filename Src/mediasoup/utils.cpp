@@ -16,7 +16,7 @@ namespace utils
 #define argsCopy args
 #endif
 #ifdef _MSC_VER
-		// MS CRT provides secure printf that doesn't behave like in the C99 standard
+		// MS CRT provides secure printf that doesn"t behave like in the C99 standard
 		if ((len = _vsnprintf_s(buffer, ARRAYCOUNT(buffer), _TRUNCATE, format, argsCopy)) != -1)
 #else  // _MSC_VER
 		if ((len = vsnprintf(buffer, ARRAYCOUNT(buffer), format, argsCopy)) < static_cast<int>(ARRAYCOUNT(buffer)))

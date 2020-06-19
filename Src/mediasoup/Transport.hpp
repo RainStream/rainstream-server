@@ -1,27 +1,27 @@
 
 #pragma once 
 
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import * as utils from './utils';
-import * as ortc from './ortc';
+import * as utils from "./utils";
+import * as ortc from "./ortc";
 #include "Channel.hpp"
-import { PayloadChannel } from './PayloadChannel';
-import { Producer, ProducerOptions } from './Producer';
-import { Consumer, ConsumerOptions } from './Consumer';
+import { PayloadChannel } from "./PayloadChannel";
+import { Producer, ProducerOptions } from "./Producer";
+import { Consumer, ConsumerOptions } from "./Consumer";
 import {
 	DataProducer,
 	DataProducerOptions,
 	DataProducerType
-} from './DataProducer';
+} from "./DataProducer";
 import {
 	DataConsumer,
 	DataConsumerOptions,
 	DataConsumerType
-} from './DataConsumer';
-import { RtpCapabilities } from './RtpParameters';
-import { SctpParameters, SctpStreamParameters } from './SctpParameters';
+} from "./DataConsumer";
+import { RtpCapabilities } from "./RtpParameters";
+import { SctpParameters, SctpStreamParameters } from "./SctpParameters";
 
 export interface TransportListenIp
 {
@@ -40,7 +40,7 @@ export interface TransportListenIp
 /**
  * Transport protocol.
  */
-struct TransportProtocol = 'udp' | 'tcp';
+struct TransportProtocol = "udp" | "tcp";
 
 export interface TransportTuple
 {
@@ -52,12 +52,12 @@ export interface TransportTuple
 }
 
 /**
- * Valid types for 'trace' event.
+ * Valid types for "trace" event.
  */
-struct TransportTraceEventType = 'probation' | 'bwe';
+struct TransportTraceEventType = "probation" | "bwe";
 
 /**
- * 'trace' event data.
+ * "trace" event data.
  */
 export interface TransportTraceEventData
 {
@@ -74,7 +74,7 @@ export interface TransportTraceEventData
 	/**
 	 * Event direction.
 	 */
-	direction: 'in' | 'out';
+	direction: "in" | "out";
 
 	/**
 	 * Per type information.
@@ -82,11 +82,11 @@ export interface TransportTraceEventData
 	info: any;
 }
 
-struct SctpState = 'new' | 'connecting' | 'connected' | 'failed' | 'closed';
+struct SctpState = "new" | "connecting" | "connected" | "failed" | "closed";
 
-const logger = new Logger('Transport');
+const Logger* logger = new Logger("Transport");
 
-export class Transport : public EnhancedEventEmitter
+class Transport : public EnhancedEventEmitter
 {
 	// Internal data.
 	protected readonly _internal:
@@ -138,7 +138,7 @@ export class Transport : public EnhancedEventEmitter
 	// RTCP CNAME for Producers.
 	private _cnameForProducers?: string;
 
-	// Next MID for Consumers. It's converted into string when used.
+	// Next MID for Consumers. It"s converted into string when used.
 	private _nextMidForConsumers = 0;
 
 	// Buffer with available SCTP stream ids.
@@ -185,7 +185,7 @@ export class Transport : public EnhancedEventEmitter
 	{
 		super();
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		this->_internal = internal;
 		this->_data = data;
@@ -226,7 +226,7 @@ export class Transport : public EnhancedEventEmitter
 	 */
 	set appData(appData: any) // eslint-disable-line no-unused-vars
 	{
-		throw new Error('cannot override appData object');
+		throw new Error("cannot override appData object");
 	}
 
 	/**
@@ -251,14 +251,14 @@ export class Transport : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('close()');
+		logger->debug("close()");
 
 		this->_closed = true;
 
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal.transportId);
 
-		this->_channel->request('transport.close', this->_internal)
+		this->_channel->request("transport.close", this->_internal)
 			.catch(() => {});
 
 		// Close every Producer.
@@ -267,7 +267,7 @@ export class Transport : public EnhancedEventEmitter
 			producer.transportClosed();
 
 			// Must tell the Router.
-			this->emit('@producerclose', producer);
+			this->emit("@producerclose", producer);
 		}
 		this->_producers.clear();
 
@@ -284,7 +284,7 @@ export class Transport : public EnhancedEventEmitter
 			dataProducer.transportClosed();
 
 			// Must tell the Router.
-			this->emit('@dataproducerclose', dataProducer);
+			this->emit("@dataproducerclose", dataProducer);
 		}
 		this->_dataProducers.clear();
 
@@ -295,10 +295,10 @@ export class Transport : public EnhancedEventEmitter
 		}
 		this->_dataConsumers.clear();
 
-		this->emit('@close');
+		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -312,7 +312,7 @@ export class Transport : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('routerClosed()');
+		logger->debug("routerClosed()");
 
 		this->_closed = true;
 
@@ -353,10 +353,10 @@ export class Transport : public EnhancedEventEmitter
 		}
 		this->_dataConsumers.clear();
 
-		this->safeEmit('routerclose');
+		this->safeEmit("routerclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -364,9 +364,9 @@ export class Transport : public EnhancedEventEmitter
 	 */
 	async dump(): Promise<any>
 	{
-		logger.debug('dump()');
+		logger->debug("dump()");
 
-		return this->_channel->request('transport.dump', this->_internal);
+		return this->_channel->request("transport.dump", this->_internal);
 	}
 
 	/**
@@ -377,7 +377,7 @@ export class Transport : public EnhancedEventEmitter
 	async getStats(): Promise<any[]>
 	{
 		// Should not happen.
-		throw new Error('method not implemented in the subclass');
+		throw new Error("method not implemented in the subclass");
 	}
 
 	/**
@@ -389,7 +389,7 @@ export class Transport : public EnhancedEventEmitter
 	async connect(params: any): Promise<void>
 	{
 		// Should not happen.
-		throw new Error('method not implemented in the subclass');
+		throw new Error("method not implemented in the subclass");
 	}
 
 	/**
@@ -397,12 +397,12 @@ export class Transport : public EnhancedEventEmitter
 	 */
 	async setMaxIncomingBitrate(bitrate: number): Promise<void>
 	{
-		logger.debug('setMaxIncomingBitrate() [bitrate:%s]', bitrate);
+		logger->debug("setMaxIncomingBitrate() [bitrate:%s]", bitrate);
 
 		const reqData = { bitrate };
 
 		await this->_channel->request(
-			'transport.setMaxIncomingBitrate', this->_internal, reqData);
+			"transport.setMaxIncomingBitrate", this->_internal, reqData);
 	}
 
 	/**
@@ -419,14 +419,14 @@ export class Transport : public EnhancedEventEmitter
 		}: ProducerOptions
 	): Promise<Producer>
 	{
-		logger.debug('produce()');
+		logger->debug("produce()");
 
 		if (id && this->_producers.has(id))
 			throw new TypeError(`a Producer with same id "${id}" already exists`);
-		else if (![ 'audio', 'video' ].includes(kind))
+		else if (![ "audio", "video" ].includes(kind))
 			throw new TypeError(`invalid kind "${kind}"`);
-		else if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+		else if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
 		ortc.validateRtpParameters(rtpParameters);
@@ -441,24 +441,24 @@ export class Transport : public EnhancedEventEmitter
 			rtpParameters.encodings = [ {} ];
 		}
 
-		// Don't do this in PipeTransports since there we must keep CNAME value in
+		// Don"t do this in PipeTransports since there we must keep CNAME value in
 		// each Producer.
-		if (this->constructor.name !== 'PipeTransport')
+		if (this->constructor.name !== "PipeTransport")
 		{
-			// If CNAME is given and we don't have yet a CNAME for Producers in this
+			// If CNAME is given and we don"t have yet a CNAME for Producers in this
 			// Transport, take it.
 			if (!this->_cnameForProducers && rtpParameters.rtcp && rtpParameters.rtcp.cname)
 			{
 				this->_cnameForProducers = rtpParameters.rtcp.cname;
 			}
-			// Otherwise if we don't have yet a CNAME for Producers and the RTP parameters
+			// Otherwise if we don"t have yet a CNAME for Producers and the RTP parameters
 			// do not include CNAME, create a random one.
 			else if (!this->_cnameForProducers)
 			{
 				this->_cnameForProducers = uuidv4().substr(0, 8);
 			}
 
-			// Override Producer's CNAME.
+			// Override Producer"s CNAME.
 			rtpParameters.rtcp = rtpParameters.rtcp || {};
 			rtpParameters.rtcp.cname = this->_cnameForProducers;
 		}
@@ -477,7 +477,7 @@ export class Transport : public EnhancedEventEmitter
 		const reqData = { kind, rtpParameters, rtpMapping, keyFrameRequestDelay, paused };
 
 		const status =
-			await this->_channel->request('transport.produce', internal, reqData);
+			await this->_channel->request("transport.produce", internal, reqData);
 
 		const data =
 		{
@@ -497,16 +497,16 @@ export class Transport : public EnhancedEventEmitter
 			});
 
 		this->_producers.set(producer.id, producer);
-		producer.on('@close', () =>
+		producer.on("@close", () =>
 		{
 			this->_producers.delete(producer.id);
-			this->emit('@producerclose', producer);
+			this->emit("@producerclose", producer);
 		});
 
-		this->emit('@newproducer', producer);
+		this->emit("@newproducer", producer);
 
 		// Emit observer event.
-		this->_observer.safeEmit('newproducer', producer);
+		this->_observer.safeEmit("newproducer", producer);
 
 		return producer;
 	}
@@ -526,12 +526,12 @@ export class Transport : public EnhancedEventEmitter
 		}: ConsumerOptions
 	): Promise<Consumer>
 	{
-		logger.debug('consume()');
+		logger->debug("consume()");
 
-		if (!producerId || typeof producerId !== 'string')
-			throw new TypeError('missing producerId');
-		else if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+		if (!producerId || typeof producerId !== "string")
+			throw new TypeError("missing producerId");
+		else if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
 		ortc.validateRtpCapabilities(rtpCapabilities!);
@@ -551,7 +551,7 @@ export class Transport : public EnhancedEventEmitter
 		// We use up to 8 bytes for MID (string).
 		if (this->_nextMidForConsumers === 100000000)
 		{
-			logger.error(
+			logger->error(
 				`consume() | reaching max MID value "${this->_nextMidForConsumers}"`);
 
 			this->_nextMidForConsumers = 0;
@@ -569,7 +569,7 @@ export class Transport : public EnhancedEventEmitter
 		};
 
 		const status =
-			await this->_channel->request('transport.consume', internal, reqData);
+			await this->_channel->request("transport.consume", internal, reqData);
 
 		const data = { kind: producer.kind, rtpParameters, type: producer.type };
 
@@ -586,11 +586,11 @@ export class Transport : public EnhancedEventEmitter
 			});
 
 		this->_consumers.set(consumer.id, consumer);
-		consumer.on('@close', () => this->_consumers.delete(consumer.id));
-		consumer.on('@producerclose', () => this->_consumers.delete(consumer.id));
+		consumer.on("@close", () => this->_consumers.delete(consumer.id));
+		consumer.on("@producerclose", () => this->_consumers.delete(consumer.id));
 
 		// Emit observer event.
-		this->_observer.safeEmit('newconsumer', consumer);
+		this->_observer.safeEmit("newconsumer", consumer);
 
 		return consumer;
 	}
@@ -602,25 +602,25 @@ export class Transport : public EnhancedEventEmitter
 		{
 			id = undefined,
 			sctpStreamParameters,
-			label = '',
-			protocol = '',
+			label = "",
+			protocol = "",
 			appData = {}
 		}: DataProducerOptions = {}
 	): Promise<DataProducer>
 	{
-		logger.debug('produceData()');
+		logger->debug("produceData()");
 
 		if (id && this->_dataProducers.has(id))
 			throw new TypeError(`a DataProducer with same id "${id}" already exists`);
-		else if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+		else if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
 		let type: DataProducerType;
 
 		// If this is not a DirectTransport, sctpStreamParameters are required.
-		if (this->constructor.name !== 'DirectTransport')
+		if (this->constructor.name !== "DirectTransport")
 		{
-			type = 'sctp';
+			type = "sctp";
 
 			// This may throw.
 			ortc.validateSctpStreamParameters(sctpStreamParameters!);
@@ -628,12 +628,12 @@ export class Transport : public EnhancedEventEmitter
 		// If this is a DirectTransport, sctpStreamParameters must not be given.
 		else
 		{
-			type = 'direct';
+			type = "direct";
 
 			if (sctpStreamParameters)
 			{
-				logger.warn(
-					'produceData() | sctpStreamParameters are ignored when producing data on a DirectTransport');
+				logger->warn(
+					"produceData() | sctpStreamParameters are ignored when producing data on a DirectTransport");
 			}
 		}
 
@@ -647,7 +647,7 @@ export class Transport : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request('transport.produceData', internal, reqData);
+			await this->_channel->request("transport.produceData", internal, reqData);
 
 		const dataProducer = new DataProducer(
 			{
@@ -659,16 +659,16 @@ export class Transport : public EnhancedEventEmitter
 			});
 
 		this->_dataProducers.set(dataProducer.id, dataProducer);
-		dataProducer.on('@close', () =>
+		dataProducer.on("@close", () =>
 		{
 			this->_dataProducers.delete(dataProducer.id);
-			this->emit('@dataproducerclose', dataProducer);
+			this->emit("@dataproducerclose", dataProducer);
 		});
 
-		this->emit('@newdataproducer', dataProducer);
+		this->emit("@newdataproducer", dataProducer);
 
 		// Emit observer event.
-		this->_observer.safeEmit('newdataproducer', dataProducer);
+		this->_observer.safeEmit("newdataproducer", dataProducer);
 
 		return dataProducer;
 	}
@@ -686,12 +686,12 @@ export class Transport : public EnhancedEventEmitter
 		}: DataConsumerOptions
 	): Promise<DataConsumer>
 	{
-		logger.debug('consumeData()');
+		logger->debug("consumeData()");
 
-		if (!dataProducerId || typeof dataProducerId !== 'string')
-			throw new TypeError('missing dataProducerId');
-		else if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+		if (!dataProducerId || typeof dataProducerId !== "string")
+			throw new TypeError("missing dataProducerId");
+		else if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
 		const dataProducer = this->_getDataProducerById(dataProducerId);
 
@@ -703,10 +703,10 @@ export class Transport : public EnhancedEventEmitter
 		let sctpStreamId: number;
 
 		// If this is not a DirectTransport, use sctpStreamParameters from the
-		// DataProducer (if type 'sctp') unless they are given in method parameters.
-		if (this->constructor.name !== 'DirectTransport')
+		// DataProducer (if type "sctp") unless they are given in method parameters.
+		if (this->constructor.name !== "DirectTransport")
 		{
-			type = 'sctp';
+			type = "sctp";
 			sctpStreamParameters =
 				utils.clone(dataProducer.sctpStreamParameters) as SctpStreamParameters;
 
@@ -729,7 +729,7 @@ export class Transport : public EnhancedEventEmitter
 		// If this is a DirectTransport, sctpStreamParameters must not be used.
 		else
 		{
-			type = 'direct';
+			type = "direct";
 
 			if (
 				ordered !== undefined ||
@@ -737,8 +737,8 @@ export class Transport : public EnhancedEventEmitter
 				maxRetransmits !== undefined
 			)
 			{
-				logger.warn(
-					'consumeData() | ordered, maxPacketLifeTime and maxRetransmits are ignored when consuming data on a DirectTransport');
+				logger->warn(
+					"consumeData() | ordered, maxPacketLifeTime and maxRetransmits are ignored when consuming data on a DirectTransport");
 			}
 		}
 
@@ -754,7 +754,7 @@ export class Transport : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request('transport.consumeData', internal, reqData);
+			await this->_channel->request("transport.consumeData", internal, reqData);
 
 		const dataConsumer = new DataConsumer(
 			{
@@ -766,14 +766,14 @@ export class Transport : public EnhancedEventEmitter
 			});
 
 		this->_dataConsumers.set(dataConsumer.id, dataConsumer);
-		dataConsumer.on('@close', () =>
+		dataConsumer.on("@close", () =>
 		{
 			this->_dataConsumers.delete(dataConsumer.id);
 
 			if (this->_sctpStreamIds)
 				this->_sctpStreamIds[sctpStreamId] = 0;
 		});
-		dataConsumer.on('@dataproducerclose', () =>
+		dataConsumer.on("@dataproducerclose", () =>
 		{
 			this->_dataConsumers.delete(dataConsumer.id);
 
@@ -782,32 +782,32 @@ export class Transport : public EnhancedEventEmitter
 		});
 
 		// Emit observer event.
-		this->_observer.safeEmit('newdataconsumer', dataConsumer);
+		this->_observer.safeEmit("newdataconsumer", dataConsumer);
 
 		return dataConsumer;
 	}
 
 	/**
-	 * Enable 'trace' event.
+	 * Enable "trace" event.
 	 */
 	async enableTraceEvent(types: TransportTraceEventType[] = []): Promise<void>
 	{
-		logger.debug('pause()');
+		logger->debug("pause()");
 
 		const reqData = { types };
 
 		await this->_channel->request(
-			'transport.enableTraceEvent', this->_internal, reqData);
+			"transport.enableTraceEvent", this->_internal, reqData);
 	}
 
 	private _getNextSctpStreamId(): number
 	{
 		if (
 			!this->_data.sctpParameters ||
-			typeof this->_data.sctpParameters.MIS !== 'number'
+			typeof this->_data.sctpParameters.MIS !== "number"
 		)
 		{
-			throw new TypeError('missing data.sctpParameters.MIS');
+			throw new TypeError("missing data.sctpParameters.MIS");
 		}
 
 		const numStreams = this->_data.sctpParameters.MIS;
@@ -829,6 +829,6 @@ export class Transport : public EnhancedEventEmitter
 			}
 		}
 
-		throw new Error('no sctpStreamId available');
+		throw new Error("no sctpStreamId available");
 	}
 }

@@ -1,10 +1,10 @@
 #pragma once 
 
-import * as h264 from 'h264-profile-level-id';
-import * as utils from './utils';
-import { UnsupportedError } from './errors';
-import { supportedRtpCapabilities } from './supportedRtpCapabilities';
-import { parse as parseScalabilityMode } from './scalabilityModes';
+import * as h264 from "h264-profile-level-id";
+import * as utils from "./utils";
+import { UnsupportedError } from "./errors";
+import { supportedRtpCapabilities } from "./supportedRtpCapabilities";
+import { parse as parseScalabilityMode } from "./scalabilityModes";
 import {
 	RtpCapabilities,
 	MediaKind,
@@ -16,13 +16,13 @@ import {
 	RtpEncodingParameters,
 	RtpHeaderExtensionParameters,
 	RtcpParameters
-} from './RtpParameters';
+} from "./RtpParameters";
 import {
 	SctpCapabilities,
 	NumSctpStreams,
 	SctpParameters,
 	SctpStreamParameters
-} from './SctpParameters';
+} from "./SctpParameters";
 
 type RtpMapping =
 {
@@ -55,12 +55,12 @@ const DynamicPayloadTypes =
  */
 export function validateRtpCapabilities(caps: RtpCapabilities): void
 {
-	if (typeof caps !== 'object')
-		throw new TypeError('caps is not an object');
+	if (typeof caps !== "object")
+		throw new TypeError("caps is not an object");
 
 	// codecs is optional. If unset, fill with an empty array.
 	if (caps.codecs && !Array.isArray(caps.codecs))
-		throw new TypeError('caps.codecs is not an array');
+		throw new TypeError("caps.codecs is not an array");
 	else if (!caps.codecs)
 		caps.codecs = [];
 
@@ -71,7 +71,7 @@ export function validateRtpCapabilities(caps: RtpCapabilities): void
 
 	// headerExtensions is optional. If unset, fill with an empty array.
 	if (caps.headerExtensions && !Array.isArray(caps.headerExtensions))
-		throw new TypeError('caps.headerExtensions is not an array');
+		throw new TypeError("caps.headerExtensions is not an array");
 	else if (!caps.headerExtensions)
 		caps.headerExtensions = [];
 
@@ -88,35 +88,35 @@ export function validateRtpCapabilities(caps: RtpCapabilities): void
  */
 export function validateRtpCodecCapability(codec: RtpCodecCapability): void
 {
-	const MimeTypeRegex = new RegExp('^(audio|video)/(.+)', 'i');
+	const MimeTypeRegex = new RegExp("^(audio|video)/(.+)", "i");
 
-	if (typeof codec !== 'object')
-		throw new TypeError('codec is not an object');
+	if (typeof codec !== "object")
+		throw new TypeError("codec is not an object");
 
 	// mimeType is mandatory.
-	if (!codec.mimeType || typeof codec.mimeType !== 'string')
-		throw new TypeError('missing codec.mimeType');
+	if (!codec.mimeType || typeof codec.mimeType !== "string")
+		throw new TypeError("missing codec.mimeType");
 
 	const mimeTypeMatch = MimeTypeRegex.exec(codec.mimeType);
 
 	if (!mimeTypeMatch)
-		throw new TypeError('invalid codec.mimeType');
+		throw new TypeError("invalid codec.mimeType");
 
 	// Just override kind with media component of mimeType.
 	codec.kind = mimeTypeMatch[1].toLowerCase() as MediaKind;
 
 	// preferredPayloadType is optional.
-	if (codec.preferredPayloadType && typeof codec.preferredPayloadType !== 'number')
-		throw new TypeError('invalid codec.preferredPayloadType');
+	if (codec.preferredPayloadType && typeof codec.preferredPayloadType !== "number")
+		throw new TypeError("invalid codec.preferredPayloadType");
 
 	// clockRate is mandatory.
-	if (typeof codec.clockRate !== 'number')
-		throw new TypeError('missing codec.clockRate');
+	if (typeof codec.clockRate !== "number")
+		throw new TypeError("missing codec.clockRate");
 
 	// channels is optional. If unset, set it to 1 (just if audio).
-	if (codec.kind === 'audio')
+	if (codec.kind === "audio")
 	{
-		if (typeof codec.channels !== 'number')
+		if (typeof codec.channels !== "number")
 			codec.channels = 1;
 	}
 	else
@@ -125,7 +125,7 @@ export function validateRtpCodecCapability(codec: RtpCodecCapability): void
 	}
 
 	// parameters is optional. If unset, set it to an empty object.
-	if (!codec.parameters || typeof codec.parameters !== 'object')
+	if (!codec.parameters || typeof codec.parameters !== "object")
 		codec.parameters = {};
 
 	for (const key of Object.keys(codec.parameters))
@@ -134,21 +134,21 @@ export function validateRtpCodecCapability(codec: RtpCodecCapability): void
 
 		if (value === undefined)
 		{
-			codec.parameters[key] = '';
-			value = '';
+			codec.parameters[key] = "";
+			value = "";
 		}
 
-		if (typeof value !== 'string' && typeof value !== 'number')
+		if (typeof value !== "string" && typeof value !== "number")
 		{
 			throw new TypeError(
 				`invalid codec parameter [key:${key}s, value:${value}]`);
 		}
 
 		// Specific parameters validation.
-		if (key === 'apt')
+		if (key === "apt")
 		{
-			if (typeof value !== 'number')
-				throw new TypeError('invalid codec apt parameter');
+			if (typeof value !== "number")
+				throw new TypeError("invalid codec apt parameter");
 		}
 	}
 
@@ -169,16 +169,16 @@ export function validateRtpCodecCapability(codec: RtpCodecCapability): void
  */
 export function validateRtcpFeedback(fb: RtcpFeedback): void
 {
-	if (typeof fb !== 'object')
-		throw new TypeError('fb is not an object');
+	if (typeof fb !== "object")
+		throw new TypeError("fb is not an object");
 
 	// type is mandatory.
-	if (!fb.type || typeof fb.type !== 'string')
-		throw new TypeError('missing fb.type');
+	if (!fb.type || typeof fb.type !== "string")
+		throw new TypeError("missing fb.type");
 
 	// parameter is optional. If unset set it to an empty string.
-	if (!fb.parameter || typeof fb.parameter !== 'string')
-		fb.parameter = '';
+	if (!fb.parameter || typeof fb.parameter !== "string")
+		fb.parameter = "";
 }
 
 /**
@@ -189,35 +189,35 @@ export function validateRtcpFeedback(fb: RtcpFeedback): void
 export function validateRtpHeaderExtension(ext: RtpHeaderExtension): void
 {
 
-	if (typeof ext !== 'object')
-		throw new TypeError('ext is not an object');
+	if (typeof ext !== "object")
+		throw new TypeError("ext is not an object");
 
 	// kind is optional. If unset set it to an empty string.
-	if (!ext.kind || typeof ext.kind !== 'string')
-		ext.kind = '';
+	if (!ext.kind || typeof ext.kind !== "string")
+		ext.kind = "";
 
-	if (ext.kind !== '' && ext.kind !== 'audio' && ext.kind !== 'video')
-		throw new TypeError('invalid ext.kind');
+	if (ext.kind !== "" && ext.kind !== "audio" && ext.kind !== "video")
+		throw new TypeError("invalid ext.kind");
 
 	// uri is mandatory.
-	if (!ext.uri || typeof ext.uri !== 'string')
-		throw new TypeError('missing ext.uri');
+	if (!ext.uri || typeof ext.uri !== "string")
+		throw new TypeError("missing ext.uri");
 
 	// preferredId is mandatory.
-	if (typeof ext.preferredId !== 'number')
-		throw new TypeError('missing ext.preferredId');
+	if (typeof ext.preferredId !== "number")
+		throw new TypeError("missing ext.preferredId");
 
 	// preferredEncrypt is optional. If unset set it to false.
-	if (ext.preferredEncrypt && typeof ext.preferredEncrypt !== 'boolean')
-		throw new TypeError('invalid ext.preferredEncrypt');
+	if (ext.preferredEncrypt && typeof ext.preferredEncrypt !== "boolean")
+		throw new TypeError("invalid ext.preferredEncrypt");
 	else if (!ext.preferredEncrypt)
 		ext.preferredEncrypt = false;
 
 	// direction is optional. If unset set it to sendrecv.
-	if (ext.direction && typeof ext.direction !== 'string')
-		throw new TypeError('invalid ext.direction');
+	if (ext.direction && typeof ext.direction !== "string")
+		throw new TypeError("invalid ext.direction");
 	else if (!ext.direction)
-		ext.direction = 'sendrecv';
+		ext.direction = "sendrecv";
 }
 
 /**
@@ -227,16 +227,16 @@ export function validateRtpHeaderExtension(ext: RtpHeaderExtension): void
  */
 export function validateRtpParameters(params: RtpParameters): void
 {
-	if (typeof params !== 'object')
-		throw new TypeError('params is not an object');
+	if (typeof params !== "object")
+		throw new TypeError("params is not an object");
 
 	// mid is optional.
-	if (params.mid && typeof params.mid !== 'string')
-		throw new TypeError('params.mid is not a string');
+	if (params.mid && typeof params.mid !== "string")
+		throw new TypeError("params.mid is not a string");
 
 	// codecs is mandatory.
 	if (!Array.isArray(params.codecs))
-		throw new TypeError('missing params.codecs');
+		throw new TypeError("missing params.codecs");
 
 	for (const codec of params.codecs)
 	{
@@ -245,7 +245,7 @@ export function validateRtpParameters(params: RtpParameters): void
 
 	// headerExtensions is optional. If unset, fill with an empty array.
 	if (params.headerExtensions && !Array.isArray(params.headerExtensions))
-		throw new TypeError('params.headerExtensions is not an array');
+		throw new TypeError("params.headerExtensions is not an array");
 	else if (!params.headerExtensions)
 		params.headerExtensions = [];
 
@@ -256,7 +256,7 @@ export function validateRtpParameters(params: RtpParameters): void
 
 	// encodings is optional. If unset, fill with an empty array.
 	if (params.encodings && !Array.isArray(params.encodings))
-		throw new TypeError('params.encodings is not an array');
+		throw new TypeError("params.encodings is not an array");
 	else if (!params.encodings)
 		params.encodings = [];
 
@@ -266,8 +266,8 @@ export function validateRtpParameters(params: RtpParameters): void
 	}
 
 	// rtcp is optional. If unset, fill with an empty object.
-	if (params.rtcp && typeof params.rtcp !== 'object')
-		throw new TypeError('params.rtcp is not an object');
+	if (params.rtcp && typeof params.rtcp !== "object")
+		throw new TypeError("params.rtcp is not an object");
 	else if (!params.rtcp)
 		params.rtcp = {};
 
@@ -281,34 +281,34 @@ export function validateRtpParameters(params: RtpParameters): void
  */
 export function validateRtpCodecParameters(codec: RtpCodecParameters): void
 {
-	const MimeTypeRegex = new RegExp('^(audio|video)/(.+)', 'i');
+	const MimeTypeRegex = new RegExp("^(audio|video)/(.+)", "i");
 
-	if (typeof codec !== 'object')
-		throw new TypeError('codec is not an object');
+	if (typeof codec !== "object")
+		throw new TypeError("codec is not an object");
 
 	// mimeType is mandatory.
-	if (!codec.mimeType || typeof codec.mimeType !== 'string')
-		throw new TypeError('missing codec.mimeType');
+	if (!codec.mimeType || typeof codec.mimeType !== "string")
+		throw new TypeError("missing codec.mimeType");
 
 	const mimeTypeMatch = MimeTypeRegex.exec(codec.mimeType);
 
 	if (!mimeTypeMatch)
-		throw new TypeError('invalid codec.mimeType');
+		throw new TypeError("invalid codec.mimeType");
 
 	// payloadType is mandatory.
-	if (typeof codec.payloadType !== 'number')
-		throw new TypeError('missing codec.payloadType');
+	if (typeof codec.payloadType !== "number")
+		throw new TypeError("missing codec.payloadType");
 
 	// clockRate is mandatory.
-	if (typeof codec.clockRate !== 'number')
-		throw new TypeError('missing codec.clockRate');
+	if (typeof codec.clockRate !== "number")
+		throw new TypeError("missing codec.clockRate");
 
 	const kind = mimeTypeMatch[1].toLowerCase() as MediaKind;
 
 	// channels is optional. If unset, set it to 1 (just if audio).
-	if (kind === 'audio')
+	if (kind === "audio")
 	{
-		if (typeof codec.channels !== 'number')
+		if (typeof codec.channels !== "number")
 			codec.channels = 1;
 	}
 	else
@@ -317,7 +317,7 @@ export function validateRtpCodecParameters(codec: RtpCodecParameters): void
 	}
 
 	// parameters is optional. If unset, set it to an empty object.
-	if (!codec.parameters || typeof codec.parameters !== 'object')
+	if (!codec.parameters || typeof codec.parameters !== "object")
 		codec.parameters = {};
 
 	for (const key of Object.keys(codec.parameters))
@@ -326,21 +326,21 @@ export function validateRtpCodecParameters(codec: RtpCodecParameters): void
 
 		if (value === undefined)
 		{
-			codec.parameters[key] = '';
-			value = '';
+			codec.parameters[key] = "";
+			value = "";
 		}
 
-		if (typeof value !== 'string' && typeof value !== 'number')
+		if (typeof value !== "string" && typeof value !== "number")
 		{
 			throw new TypeError(
 				`invalid codec parameter [key:${key}s, value:${value}]`);
 		}
 
 		// Specific parameters validation.
-		if (key === 'apt')
+		if (key === "apt")
 		{
-			if (typeof value !== 'number')
-				throw new TypeError('invalid codec apt parameter');
+			if (typeof value !== "number")
+				throw new TypeError("invalid codec apt parameter");
 		}
 	}
 
@@ -364,25 +364,25 @@ export function validateRtpHeaderExtensionParameters(
 ): void
 {
 
-	if (typeof ext !== 'object')
-		throw new TypeError('ext is not an object');
+	if (typeof ext !== "object")
+		throw new TypeError("ext is not an object");
 
 	// uri is mandatory.
-	if (!ext.uri || typeof ext.uri !== 'string')
-		throw new TypeError('missing ext.uri');
+	if (!ext.uri || typeof ext.uri !== "string")
+		throw new TypeError("missing ext.uri");
 
 	// id is mandatory.
-	if (typeof ext.id !== 'number')
-		throw new TypeError('missing ext.id');
+	if (typeof ext.id !== "number")
+		throw new TypeError("missing ext.id");
 
 	// encrypt is optional. If unset set it to false.
-	if (ext.encrypt && typeof ext.encrypt !== 'boolean')
-		throw new TypeError('invalid ext.encrypt');
+	if (ext.encrypt && typeof ext.encrypt !== "boolean")
+		throw new TypeError("invalid ext.encrypt");
 	else if (!ext.encrypt)
 		ext.encrypt = false;
 
 	// parameters is optional. If unset, set it to an empty object.
-	if (!ext.parameters || typeof ext.parameters !== 'object')
+	if (!ext.parameters || typeof ext.parameters !== "object")
 		ext.parameters = {};
 
 	for (const key of Object.keys(ext.parameters))
@@ -391,12 +391,12 @@ export function validateRtpHeaderExtensionParameters(
 
 		if (value === undefined)
 		{
-			ext.parameters[key] = '';
-			value = '';
+			ext.parameters[key] = "";
+			value = "";
 		}
 
-		if (typeof value !== 'string' && typeof value !== 'number')
-			throw new TypeError('invalid header extension parameter');
+		if (typeof value !== "string" && typeof value !== "number")
+			throw new TypeError("invalid header extension parameter");
 	}
 }
 
@@ -407,36 +407,36 @@ export function validateRtpHeaderExtensionParameters(
  */
 export function validateRtpEncodingParameters(encoding: RtpEncodingParameters): void
 {
-	if (typeof encoding !== 'object')
-		throw new TypeError('encoding is not an object');
+	if (typeof encoding !== "object")
+		throw new TypeError("encoding is not an object");
 
 	// ssrc is optional.
-	if (encoding.ssrc && typeof encoding.ssrc !== 'number')
-		throw new TypeError('invalid encoding.ssrc');
+	if (encoding.ssrc && typeof encoding.ssrc !== "number")
+		throw new TypeError("invalid encoding.ssrc");
 
 	// rid is optional.
-	if (encoding.rid && typeof encoding.rid !== 'string')
-		throw new TypeError('invalid encoding.rid');
+	if (encoding.rid && typeof encoding.rid !== "string")
+		throw new TypeError("invalid encoding.rid");
 
 	// rtx is optional.
-	if (encoding.rtx && typeof encoding.rtx !== 'object')
+	if (encoding.rtx && typeof encoding.rtx !== "object")
 	{
-		throw new TypeError('invalid encoding.rtx');
+		throw new TypeError("invalid encoding.rtx");
 	}
 	else if (encoding.rtx)
 	{
 		// RTX ssrc is mandatory if rtx is present.
-		if (typeof encoding.rtx.ssrc !== 'number')
-			throw new TypeError('missing encoding.rtx.ssrc');
+		if (typeof encoding.rtx.ssrc !== "number")
+			throw new TypeError("missing encoding.rtx.ssrc");
 	}
 
 	// dtx is optional. If unset set it to false.
-	if (!encoding.dtx || typeof encoding.dtx !== 'boolean')
+	if (!encoding.dtx || typeof encoding.dtx !== "boolean")
 		encoding.dtx = false;
 
 	// scalabilityMode is optional.
-	if (encoding.scalabilityMode && typeof encoding.scalabilityMode !== 'string')
-		throw new TypeError('invalid encoding.scalabilityMode');
+	if (encoding.scalabilityMode && typeof encoding.scalabilityMode !== "string")
+		throw new TypeError("invalid encoding.scalabilityMode");
 }
 
 /**
@@ -446,15 +446,15 @@ export function validateRtpEncodingParameters(encoding: RtpEncodingParameters): 
  */
 export function validateRtcpParameters(rtcp: RtcpParameters): void
 {
-	if (typeof rtcp !== 'object')
-		throw new TypeError('rtcp is not an object');
+	if (typeof rtcp !== "object")
+		throw new TypeError("rtcp is not an object");
 
 	// cname is optional.
-	if (rtcp.cname && typeof rtcp.cname !== 'string')
-		throw new TypeError('invalid rtcp.cname');
+	if (rtcp.cname && typeof rtcp.cname !== "string")
+		throw new TypeError("invalid rtcp.cname");
 
 	// reducedSize is optional. If unset set it to true.
-	if (!rtcp.reducedSize || typeof rtcp.reducedSize !== 'boolean')
+	if (!rtcp.reducedSize || typeof rtcp.reducedSize !== "boolean")
 		rtcp.reducedSize = true;
 }
 
@@ -465,12 +465,12 @@ export function validateRtcpParameters(rtcp: RtcpParameters): void
  */
 export function validateSctpCapabilities(caps: SctpCapabilities): void
 {
-	if (typeof caps !== 'object')
-		throw new TypeError('caps is not an object');
+	if (typeof caps !== "object")
+		throw new TypeError("caps is not an object");
 
 	// numStreams is mandatory.
-	if (!caps.numStreams || typeof caps.numStreams !== 'object')
-		throw new TypeError('missing caps.numStreams');
+	if (!caps.numStreams || typeof caps.numStreams !== "object")
+		throw new TypeError("missing caps.numStreams");
 
 	validateNumSctpStreams(caps.numStreams);
 }
@@ -482,16 +482,16 @@ export function validateSctpCapabilities(caps: SctpCapabilities): void
  */
 export function validateNumSctpStreams(numStreams: NumSctpStreams): void
 {
-	if (typeof numStreams !== 'object')
-		throw new TypeError('numStreams is not an object');
+	if (typeof numStreams !== "object")
+		throw new TypeError("numStreams is not an object");
 
 	// OS is mandatory.
-	if (typeof numStreams.OS !== 'number')
-		throw new TypeError('missing numStreams.OS');
+	if (typeof numStreams.OS !== "number")
+		throw new TypeError("missing numStreams.OS");
 
 	// MIS is mandatory.
-	if (typeof numStreams.MIS !== 'number')
-		throw new TypeError('missing numStreams.MIS');
+	if (typeof numStreams.MIS !== "number")
+		throw new TypeError("missing numStreams.MIS");
 }
 
 /**
@@ -501,24 +501,24 @@ export function validateNumSctpStreams(numStreams: NumSctpStreams): void
  */
 export function validateSctpParameters(params: SctpParameters): void
 {
-	if (typeof params !== 'object')
-		throw new TypeError('params is not an object');
+	if (typeof params !== "object")
+		throw new TypeError("params is not an object");
 
 	// port is mandatory.
-	if (typeof params.port !== 'number')
-		throw new TypeError('missing params.port');
+	if (typeof params.port !== "number")
+		throw new TypeError("missing params.port");
 
 	// OS is mandatory.
-	if (typeof params.OS !== 'number')
-		throw new TypeError('missing params.OS');
+	if (typeof params.OS !== "number")
+		throw new TypeError("missing params.OS");
 
 	// MIS is mandatory.
-	if (typeof params.MIS !== 'number')
-		throw new TypeError('missing params.MIS');
+	if (typeof params.MIS !== "number")
+		throw new TypeError("missing params.MIS");
 
 	// maxMessageSize is mandatory.
-	if (typeof params.maxMessageSize !== 'number')
-		throw new TypeError('missing params.maxMessageSize');
+	if (typeof params.maxMessageSize !== "number")
+		throw new TypeError("missing params.maxMessageSize");
 }
 
 /**
@@ -528,31 +528,31 @@ export function validateSctpParameters(params: SctpParameters): void
  */
 export function validateSctpStreamParameters(params: SctpStreamParameters): void
 {
-	if (typeof params !== 'object')
-		throw new TypeError('params is not an object');
+	if (typeof params !== "object")
+		throw new TypeError("params is not an object");
 
 	// streamId is mandatory.
-	if (typeof params.streamId !== 'number')
-		throw new TypeError('missing params.streamId');
+	if (typeof params.streamId !== "number")
+		throw new TypeError("missing params.streamId");
 
 	// ordered is optional.
 	let orderedGiven = false;
 
-	if (typeof params.ordered === 'boolean')
+	if (typeof params.ordered === "boolean")
 		orderedGiven = true;
 	else
 		params.ordered = true;
 
 	// maxPacketLifeTime is optional.
-	if (params.maxPacketLifeTime && typeof params.maxPacketLifeTime !== 'number')
-		throw new TypeError('invalid params.maxPacketLifeTime');
+	if (params.maxPacketLifeTime && typeof params.maxPacketLifeTime !== "number")
+		throw new TypeError("invalid params.maxPacketLifeTime");
 
 	// maxRetransmits is optional.
-	if (params.maxRetransmits && typeof params.maxRetransmits !== 'number')
-		throw new TypeError('invalid params.maxRetransmits');
+	if (params.maxRetransmits && typeof params.maxRetransmits !== "number")
+		throw new TypeError("invalid params.maxRetransmits");
 
 	if (params.maxPacketLifeTime && params.maxRetransmits)
-		throw new TypeError('cannot provide both maxPacketLifeTime and maxRetransmits');
+		throw new TypeError("cannot provide both maxPacketLifeTime and maxRetransmits");
 
 	if (
 		orderedGiven &&
@@ -560,7 +560,7 @@ export function validateSctpStreamParameters(params: SctpStreamParameters): void
 		(params.maxPacketLifeTime || params.maxRetransmits)
 	)
 	{
-		throw new TypeError('cannot be ordered with maxPacketLifeTime or maxRetransmits');
+		throw new TypeError("cannot be ordered with maxPacketLifeTime or maxRetransmits");
 	}
 	else if (!orderedGiven && (params.maxPacketLifeTime || params.maxRetransmits))
 	{
@@ -580,7 +580,7 @@ export function generateRouterRtpCapabilities(
 	validateRtpCapabilities(supportedRtpCapabilities);
 
 	if (!Array.isArray(mediaCodecs))
-		throw new TypeError('mediaCodecs must be an Array');
+		throw new TypeError("mediaCodecs must be an Array");
 
 	const clonedSupportedRtpCapabilities =
 		utils.clone(supportedRtpCapabilities) as RtpCapabilities;
@@ -612,7 +612,7 @@ export function generateRouterRtpCapabilities(
 		const codec = utils.clone(matchedSupportedCodec) as RtpCodecCapability;
 
 		// If the given media codec has preferredPayloadType, keep it.
-		if (typeof mediaCodec.preferredPayloadType === 'number')
+		if (typeof mediaCodec.preferredPayloadType === "number")
 		{
 			codec.preferredPayloadType = mediaCodec.preferredPayloadType;
 
@@ -623,9 +623,9 @@ export function generateRouterRtpCapabilities(
 				dynamicPayloadTypes.splice(idx, 1);
 		}
 		// Otherwise if the supported codec has preferredPayloadType, use it.
-		else if (typeof codec.preferredPayloadType === 'number')
+		else if (typeof codec.preferredPayloadType === "number")
 		{
-			// No need to remove it from the list since it's not a dynamic value.
+			// No need to remove it from the list since it"s not a dynamic value.
 		}
 		// Otherwise choose a dynamic one.
 		else
@@ -634,14 +634,14 @@ export function generateRouterRtpCapabilities(
 			const pt = dynamicPayloadTypes.shift();
 
 			if (!pt)
-				throw new Error('cannot allocate more dynamic codec payload types');
+				throw new Error("cannot allocate more dynamic codec payload types");
 
 			codec.preferredPayloadType = pt;
 		}
 
 		// Ensure there is not duplicated preferredPayloadType values.
 		if (caps.codecs!.some((c) => c.preferredPayloadType === codec.preferredPayloadType))
-			throw new TypeError('duplicated codec.preferredPayloadType');
+			throw new TypeError("duplicated codec.preferredPayloadType");
 
 		// Merge the media codec parameters.
 		codec.parameters = { ...codec.parameters, ...mediaCodec.parameters };
@@ -650,13 +650,13 @@ export function generateRouterRtpCapabilities(
 		caps.codecs!.push(codec);
 
 		// Add a RTX video codec if video.
-		if (codec.kind === 'video')
+		if (codec.kind === "video")
 		{
 			// Take the first available pt and remove it from the list.
 			const pt = dynamicPayloadTypes.shift();
 
 			if (!pt)
-				throw new Error('cannot allocate more dynamic codec payload types');
+				throw new Error("cannot allocate more dynamic codec payload types");
 
 			const rtxCodec: RtpCodecCapability =
 			{
@@ -855,7 +855,7 @@ export function getConsumableRtpParameters(
 		// Just take RTP header extension that can be used in Consumers.
 		if (
 			capExt.kind !== kind ||
-			(capExt.direction !== 'sendrecv' && capExt.direction !== 'sendonly')
+			(capExt.direction !== "sendrecv" && capExt.direction !== "sendonly")
 		)
 		{
 			continue;
@@ -872,7 +872,7 @@ export function getConsumableRtpParameters(
 		consumableParams.headerExtensions!.push(consumableExt);
 	}
 
-	// Clone Producer encodings since we'll mangle them.
+	// Clone Producer encodings since we"ll mangle them.
 	const consumableEncodings = utils.clone(params.encodings) as RtpEncodingParameters[];
 
 	for (let i = 0; i < consumableEncodings.length; ++i)
@@ -936,7 +936,7 @@ export function canConsume(
  * Generate RTP parameters for a specific Consumer.
  *
  * It reduces encodings to just one and takes into account given RTP capabilities
- * to reduce codecs, codecs' RTCP feedback and header extensions, and also enables
+ * to reduce codecs, codecs" RTCP feedback and header extensions, and also enables
  * or disabled RTX.
  */
 export function getConsumerRtpParameters(
@@ -981,7 +981,7 @@ export function getConsumerRtpParameters(
 	// Ensure there is at least one media codec.
 	if (consumerParams.codecs.length === 0 || isRtxCodec(consumerParams.codecs[0]))
 	{
-		throw new UnsupportedError('no compatible media codecs');
+		throw new UnsupportedError("no compatible media codecs");
 	}
 
 	consumerParams.headerExtensions = consumableParams.headerExtensions!
@@ -993,29 +993,29 @@ export function getConsumerRtpParameters(
 				))
 		));
 
-	// Reduce codecs' RTCP feedback. Use Transport-CC if available, REMB otherwise.
+	// Reduce codecs" RTCP feedback. Use Transport-CC if available, REMB otherwise.
 	if (
 		consumerParams.headerExtensions.some((ext) => (
-			ext.uri === 'http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01'
+			ext.uri === "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
 		))
 	)
 	{
 		for (const codec of consumerParams.codecs)
 		{
 			codec.rtcpFeedback = codec.rtcpFeedback!
-				.filter((fb) => fb.type !== 'goog-remb');
+				.filter((fb) => fb.type !== "goog-remb");
 		}
 	}
 	else if (
 		consumerParams.headerExtensions.some((ext) => (
-			ext.uri === 'http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time'
+			ext.uri === "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time"
 		))
 	)
 	{
 		for (const codec of consumerParams.codecs)
 		{
 			codec.rtcpFeedback = codec.rtcpFeedback!
-				.filter((fb) => fb.type !== 'transport-cc');
+				.filter((fb) => fb.type !== "transport-cc");
 		}
 	}
 	else
@@ -1024,8 +1024,8 @@ export function getConsumerRtpParameters(
 		{
 			codec.rtcpFeedback = codec.rtcpFeedback!
 				.filter((fb) => (
-					fb.type !== 'transport-cc' &&
-					fb.type !== 'goog-remb'
+					fb.type !== "transport-cc" &&
+					fb.type !== "goog-remb"
 				));
 		}
 	}
@@ -1058,7 +1058,7 @@ export function getConsumerRtpParameters(
 	if (scalabilityMode)
 		consumerEncoding.scalabilityMode = scalabilityMode;
 
-	// Use the maximum maxBitrate in any encoding and honor it in the Consumer's
+	// Use the maximum maxBitrate in any encoding and honor it in the Consumer"s
 	// encoding.
 	const maxEncodingMaxBitrate =
 		consumableParams.encodings!.reduce((maxBitrate, encoding) => (
@@ -1110,9 +1110,9 @@ export function getPipeConsumerRtpParameters(
 
 		codec.rtcpFeedback = codec.rtcpFeedback!
 			.filter((fb) => (
-				(fb.type === 'nack' && fb.parameter === 'pli') ||
-				(fb.type === 'ccm' && fb.parameter === 'fir') ||
-				(enableRtx && fb.type === 'nack' && !fb.parameter)
+				(fb.type === "nack" && fb.parameter === "pli") ||
+				(fb.type === "ccm" && fb.parameter === "fir") ||
+				(enableRtx && fb.type === "nack" && !fb.parameter)
 			));
 
 		consumerParams.codecs.push(codec);
@@ -1121,9 +1121,9 @@ export function getPipeConsumerRtpParameters(
 	// Reduce RTP extensions by disabling transport MID and BWE related ones.
 	consumerParams.headerExtensions = consumableParams.headerExtensions!
 		.filter((ext) => (
-			ext.uri !== 'urn:ietf:params:rtp-hdrext:sdes:mid' &&
-			ext.uri !== 'http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time' &&
-			ext.uri !== 'http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01'
+			ext.uri !== "urn:ietf:params:rtp-hdrext:sdes:mid" &&
+			ext.uri !== "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time" &&
+			ext.uri !== "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
 		));
 
 	const consumableEncodings =
@@ -1166,10 +1166,10 @@ function matchCodecs(
 	// Per codec special checks.
 	switch (aMimeType)
 	{
-		case 'video/h264':
+		case "video/h264":
 		{
-			const aPacketizationMode = aCodec.parameters['packetization-mode'] || 0;
-			const bPacketizationMode = bCodec.parameters['packetization-mode'] || 0;
+			const aPacketizationMode = aCodec.parameters["packetization-mode"] || 0;
+			const bPacketizationMode = bCodec.parameters["packetization-mode"] || 0;
 
 			if (aPacketizationMode !== bPacketizationMode)
 				return false;
@@ -1195,22 +1195,22 @@ function matchCodecs(
 				if (modify)
 				{
 					if (selectedProfileLevelId)
-						aCodec.parameters['profile-level-id'] = selectedProfileLevelId;
+						aCodec.parameters["profile-level-id"] = selectedProfileLevelId;
 					else
-						delete aCodec.parameters['profile-level-id'];
+						delete aCodec.parameters["profile-level-id"];
 				}
 			}
 
 			break;
 		}
 
-		case 'video/vp9':
+		case "video/vp9":
 		{
 			// If strict matching check profile-id.
 			if (strict)
 			{
-				const aProfileId = aCodec.parameters['profile-id'] || 0;
-				const bProfileId = bCodec.parameters['profile-id'] || 0;
+				const aProfileId = aCodec.parameters["profile-id"] || 0;
+				const bProfileId = bCodec.parameters["profile-id"] || 0;
 
 				if (aProfileId !== bProfileId)
 					return false;

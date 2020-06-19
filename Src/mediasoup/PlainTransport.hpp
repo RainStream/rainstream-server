@@ -8,9 +8,9 @@ import {
 	TransportTuple,
 	TransportTraceEventData,
 	SctpState
-} from './Transport';
-import { SctpParameters, NumSctpStreams } from './SctpParameters';
-import { SrtpParameters, SrtpCryptoSuite } from './SrtpParameters';
+} from "./Transport";
+import { SctpParameters, NumSctpStreams } from "./SctpParameters";
+import { SrtpParameters, SrtpCryptoSuite } from "./SrtpParameters";
 
 struct PlainTransportOptions =
 {
@@ -56,7 +56,7 @@ struct PlainTransportOptions =
 
 	/**
 	 * The SRTP crypto suite to be used if enableSrtp is set. Default
-	 * 'AES_CM_128_HMAC_SHA1_80'.
+	 * "AES_CM_128_HMAC_SHA1_80".
 	 */
 	srtpCryptoSuite?: SrtpCryptoSuite;
 
@@ -109,9 +109,9 @@ struct PlainTransportStat =
  */
 struct PlainRtpTransportStat = PlainTransportStat;
 
-const logger = new Logger('PlainTransport');
+const Logger* logger = new Logger("PlainTransport");
 
-export class PlainTransport : public Transport
+class PlainTransport : public Transport
 {
 	// PlainTransport data.
 	protected readonly _data:
@@ -136,7 +136,7 @@ export class PlainTransport : public Transport
 	{
 		super(params);
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		const { data } = params;
 
@@ -224,7 +224,7 @@ export class PlainTransport : public Transport
 			return;
 
 		if (this->_data.sctpState)
-			this->_data.sctpState = 'closed';
+			this->_data.sctpState = "closed";
 
 		super.close();
 	}
@@ -241,7 +241,7 @@ export class PlainTransport : public Transport
 			return;
 
 		if (this->_data.sctpState)
-			this->_data.sctpState = 'closed';
+			this->_data.sctpState = "closed";
 
 		super.routerClosed();
 	}
@@ -253,9 +253,9 @@ export class PlainTransport : public Transport
 	 */
 	async getStats(): Promise<PlainTransportStat[]>
 	{
-		logger.debug('getStats()');
+		logger->debug("getStats()");
 
-		return this->_channel->request('transport.getStats', this->_internal);
+		return this->_channel->request("transport.getStats", this->_internal);
 	}
 
 	/**
@@ -278,12 +278,12 @@ export class PlainTransport : public Transport
 		}
 	): Promise<void>
 	{
-		logger.debug('connect()');
+		logger->debug("connect()");
 
 		const reqData = { ip, port, rtcpPort, srtpParameters };
 
 		const data =
-			await this->_channel->request('transport.connect', this->_internal, reqData);
+			await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
 		if (data.tuple)
@@ -301,63 +301,63 @@ export class PlainTransport : public Transport
 		{
 			switch (event)
 			{
-				case 'tuple':
+				case "tuple":
 				{
 					const tuple = data.tuple as TransportTuple;
 
 					this->_data.tuple = tuple;
 
-					this->safeEmit('tuple', tuple);
+					this->safeEmit("tuple", tuple);
 
 					// Emit observer event.
-					this->_observer.safeEmit('tuple', tuple);
+					this->_observer.safeEmit("tuple", tuple);
 
 					break;
 				}
 
-				case 'rtcptuple':
+				case "rtcptuple":
 				{
 					const rtcpTuple = data.rtcpTuple as TransportTuple;
 
 					this->_data.rtcpTuple = rtcpTuple;
 
-					this->safeEmit('rtcptuple', rtcpTuple);
+					this->safeEmit("rtcptuple", rtcpTuple);
 
 					// Emit observer event.
-					this->_observer.safeEmit('rtcptuple', rtcpTuple);
+					this->_observer.safeEmit("rtcptuple", rtcpTuple);
 
 					break;
 				}
 
-				case 'sctpstatechange':
+				case "sctpstatechange":
 				{
 					const sctpState = data.sctpState as SctpState;
 
 					this->_data.sctpState = sctpState;
 
-					this->safeEmit('sctpstatechange', sctpState);
+					this->safeEmit("sctpstatechange", sctpState);
 
 					// Emit observer event.
-					this->_observer.safeEmit('sctpstatechange', sctpState);
+					this->_observer.safeEmit("sctpstatechange", sctpState);
 
 					break;
 				}
 
-				case 'trace':
+				case "trace":
 				{
 					const trace = data as TransportTraceEventData;
 
-					this->safeEmit('trace', trace);
+					this->safeEmit("trace", trace);
 
 					// Emit observer event.
-					this->_observer.safeEmit('trace', trace);
+					this->_observer.safeEmit("trace", trace);
 
 					break;
 				}
 
 				default:
 				{
-					logger.error('ignoring unknown event "%s"', event);
+					logger->error("ignoring unknown event "%s"", event);
 				}
 			}
 		});
@@ -367,7 +367,7 @@ export class PlainTransport : public Transport
 /**
  * DEPRECATED: Use PlainTransport.
  */
-export class PlainRtpTransport : public PlainTransport
+class PlainRtpTransport : public PlainTransport
 {
 	constructor(params: any)
 	{

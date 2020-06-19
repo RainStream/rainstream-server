@@ -1,19 +1,19 @@
 #pragma once 
 
-import { Duplex } from 'stream';
+import { Duplex } from "stream";
 // @ts-ignore
-import * as netstring from 'netstring';
+import * as netstring from "netstring";
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import { InvalidStateError } from './errors';
+import { InvalidStateError } from "./errors";
 
-const logger = new Logger('PayloadChannel');
+const Logger* logger = new Logger("PayloadChannel");
 
 // netstring length for a 4194304 bytes payload.
 const NS_MESSAGE_MAX_LEN = 4194313;
 const NS_PAYLOAD_MAX_LEN = 4194304;
 
-export class PayloadChannel : public EnhancedEventEmitter
+class PayloadChannel : public EnhancedEventEmitter
 {
 	// Closed flag.
 	private _closed = false;
@@ -45,13 +45,13 @@ export class PayloadChannel : public EnhancedEventEmitter
 	{
 		super();
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		this->_producerSocket = producerSocket as Duplex;
 		this->_consumerSocket = consumerSocket as Duplex;
 
 		// Read PayloadChannel notifications from the worker.
-		this->_consumerSocket.on('data', (buffer) =>
+		this->_consumerSocket.on("data", (buffer) =>
 		{
 			if (!this->_recvBuffer)
 			{
@@ -66,7 +66,7 @@ export class PayloadChannel : public EnhancedEventEmitter
 
 			if (this->_recvBuffer!.length > NS_PAYLOAD_MAX_LEN)
 			{
-				logger.error('receiving buffer is full, discarding all data into it');
+				logger->error("receiving buffer is full, discarding all data into it");
 
 				// Reset the buffer and exit.
 				this->_recvBuffer = undefined;
@@ -84,8 +84,8 @@ export class PayloadChannel : public EnhancedEventEmitter
 				}
 				catch (error)
 				{
-					logger.error(
-						'invalid netstring data received from the worker process: %s',
+					logger->error(
+						"invalid netstring data received from the worker process: %s",
 						String(error));
 
 					// Reset the buffer and exit.
@@ -113,20 +113,20 @@ export class PayloadChannel : public EnhancedEventEmitter
 			}
 		});
 
-		this->_consumerSocket.on('end', () => (
-			logger.debug('Consumer PayloadChannel ended by the worker process')
+		this->_consumerSocket.on("end", () => (
+			logger->debug("Consumer PayloadChannel ended by the worker process")
 		));
 
-		this->_consumerSocket.on('error', (error) => (
-			logger.error('Consumer PayloadChannel error: %s', String(error))
+		this->_consumerSocket.on("error", (error) => (
+			logger->error("Consumer PayloadChannel error: %s", String(error))
 		));
 
-		this->_producerSocket.on('end', () => (
-			logger.debug('Producer PayloadChannel ended by the worker process')
+		this->_producerSocket.on("end", () => (
+			logger->debug("Producer PayloadChannel ended by the worker process")
 		));
 
-		this->_producerSocket.on('error', (error) => (
-			logger.error('Producer PayloadChannel error: %s', String(error))
+		this->_producerSocket.on("error", (error) => (
+			logger->error("Producer PayloadChannel error: %s", String(error))
 		));
 	}
 
@@ -138,19 +138,19 @@ export class PayloadChannel : public EnhancedEventEmitter
 		if (this->_closed)
 			return;
 
-		logger.debug('close()');
+		logger->debug("close()");
 
 		this->_closed = true;
 
-		// Remove event listeners but leave a fake 'error' hander to avoid
+		// Remove event listeners but leave a fake "error" hander to avoid
 		// propagation.
-		this->_consumerSocket.removeAllListeners('end');
-		this->_consumerSocket.removeAllListeners('error');
-		this->_consumerSocket.on('error', () => {});
+		this->_consumerSocket.removeAllListeners("end");
+		this->_consumerSocket.removeAllListeners("error");
+		this->_consumerSocket.on("error", () => {});
 
-		this->_producerSocket.removeAllListeners('end');
-		this->_producerSocket.removeAllListeners('error');
-		this->_producerSocket.on('error', () => {});
+		this->_producerSocket.removeAllListeners("end");
+		this->_producerSocket.removeAllListeners("error");
+		this->_producerSocket.on("error", () => {});
 
 		// Destroy the socket after a while to allow pending incoming messages.
 		setTimeout(() =>
@@ -172,19 +172,19 @@ export class PayloadChannel : public EnhancedEventEmitter
 		payload: string | Buffer
 	): void
 	{
-		logger.debug('notify() [event:%s]', event);
+		logger->debug("notify() [event:%s]", event);
 
 		if (this->_closed)
-			throw new InvalidStateError('PayloadChannel closed');
+			throw new InvalidStateError("PayloadChannel closed");
 
 		const notification = { event, internal, data };
 		const ns1 = netstring.nsWrite(JSON.stringify(notification));
 		const ns2 = netstring.nsWrite(payload);
 
 		if (Buffer.byteLength(ns1) > NS_MESSAGE_MAX_LEN)
-			throw new Error('PayloadChannel notification too big');
+			throw new Error("PayloadChannel notification too big");
 		else if (Buffer.byteLength(ns2) > NS_MESSAGE_MAX_LEN)
-			throw new Error('PayloadChannel payload too big');
+			throw new Error("PayloadChannel payload too big");
 
 		try
 		{
@@ -193,7 +193,7 @@ export class PayloadChannel : public EnhancedEventEmitter
 		}
 		catch (error)
 		{
-			logger.warn('notify() | sending notification failed: %s', String(error));
+			logger->warn("notify() | sending notification failed: %s", String(error));
 
 			return;
 		}
@@ -205,7 +205,7 @@ export class PayloadChannel : public EnhancedEventEmitter
 		}
 		catch (error)
 		{
-			logger.warn('notify() | sending payload failed: %s', String(error));
+			logger->warn("notify() | sending payload failed: %s", String(error));
 
 			return;
 		}
@@ -219,12 +219,12 @@ export class PayloadChannel : public EnhancedEventEmitter
 
 			try
 			{
-				msg = JSON.parse(data.toString('utf8'));
+				msg = JSON.parse(data.toString("utf8"));
 			}
 			catch (error)
 			{
-				logger.error(
-					'received invalid data from the worker process: %s',
+				logger->error(
+					"received invalid data from the worker process: %s",
 					String(error));
 
 				return;
@@ -232,7 +232,7 @@ export class PayloadChannel : public EnhancedEventEmitter
 
 			if (!msg.targetId || !msg.event)
 			{
-				logger.error('received message is not a notification');
+				logger->error("received message is not a notification");
 
 				return;
 			}

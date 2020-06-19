@@ -1,21 +1,14 @@
 #pragma once 
 
-import { v4 as uuidv4 } from 'uuid';
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import * as ortc from './ortc';
-import {
-	Transport,
-	TransportListenIp,
-	TransportTuple,
-	TransportTraceEventData,
-	SctpState
-} from './Transport';
-import { Consumer, ConsumerOptions } from './Consumer';
-import { SctpParameters, NumSctpStreams } from './SctpParameters';
-import { SrtpParameters } from './SrtpParameters';
+#include "ortc.hpp"
+#include "Transport.hpp"
+#include "Consumer.hpp"
+#include "SctpParameters.hpp"
+#include "SrtpParameters.hpp"
 
-struct PipeTransportOptions =
+struct PipeTransportOptions
 {
 	/**
 	 * Listening IP address.
@@ -56,9 +49,9 @@ struct PipeTransportOptions =
 	 * Custom application data.
 	 */
 	appData?: any;
-}
+};
 
-struct PipeTransportStat =
+struct PipeTransportStat
 {
 	// Common to all Transports.
 	type: string;
@@ -88,9 +81,9 @@ struct PipeTransportStat =
 	tuple: TransportTuple;
 }
 
-const logger = new Logger('PipeTransport');
+const Logger* logger = new Logger("PipeTransport");
 
-export class PipeTransport : public Transport
+class PipeTransport : public Transport
 {
 	// PipeTransport data.
 	protected readonly _data:
@@ -111,7 +104,7 @@ export class PipeTransport : public Transport
 	{
 		super(params);
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		const { data } = params;
 
@@ -187,7 +180,7 @@ export class PipeTransport : public Transport
 			return;
 
 		if (this->_data.sctpState)
-			this->_data.sctpState = 'closed';
+			this->_data.sctpState = "closed";
 
 		super.close();
 	}
@@ -204,7 +197,7 @@ export class PipeTransport : public Transport
 			return;
 
 		if (this->_data.sctpState)
-			this->_data.sctpState = 'closed';
+			this->_data.sctpState = "closed";
 
 		super.routerClosed();
 	}
@@ -216,9 +209,9 @@ export class PipeTransport : public Transport
 	 */
 	async getStats(): Promise<PipeTransportStat[]>
 	{
-		logger.debug('getStats()');
+		logger->debug("getStats()");
 
-		return this->_channel->request('transport.getStats', this->_internal);
+		return this->_channel->request("transport.getStats", this->_internal);
 	}
 
 	/**
@@ -239,12 +232,12 @@ export class PipeTransport : public Transport
 		}
 	): Promise<void>
 	{
-		logger.debug('connect()');
+		logger->debug("connect()");
 
 		const reqData = { ip, port, srtpParameters };
 
 		const data =
-			await this->_channel->request('transport.connect', this->_internal, reqData);
+			await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
 		this->_data.tuple = data.tuple;
@@ -257,12 +250,12 @@ export class PipeTransport : public Transport
 	 */
 	async consume({ producerId, appData = {} }: ConsumerOptions): Promise<Consumer>
 	{
-		logger.debug('consume()');
+		logger->debug("consume()");
 
-		if (!producerId || typeof producerId !== 'string')
-			throw new TypeError('missing producerId');
-		else if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+		if (!producerId || typeof producerId !== "string")
+			throw new TypeError("missing producerId");
+		else if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
 		const producer = this->_getProducerById(producerId);
 
@@ -278,14 +271,14 @@ export class PipeTransport : public Transport
 		{
 			kind                   : producer.kind,
 			rtpParameters,
-			type                   : 'pipe',
+			type                   : "pipe",
 			consumableRtpEncodings : producer.consumableRtpParameters.encodings
 		};
 
 		const status =
-			await this->_channel->request('transport.consume', internal, reqData);
+			await this->_channel->request("transport.consume", internal, reqData);
 
-		const data = { kind: producer.kind, rtpParameters, type: 'pipe' };
+		const data = { kind: producer.kind, rtpParameters, type: "pipe" };
 
 		const consumer = new Consumer(
 			{
@@ -298,11 +291,11 @@ export class PipeTransport : public Transport
 			});
 
 		this->_consumers.set(consumer.id, consumer);
-		consumer.on('@close', () => this->_consumers.delete(consumer.id));
-		consumer.on('@producerclose', () => this->_consumers.delete(consumer.id));
+		consumer.on("@close", () => this->_consumers.delete(consumer.id));
+		consumer.on("@producerclose", () => this->_consumers.delete(consumer.id));
 
 		// Emit observer event.
-		this->_observer.safeEmit('newconsumer', consumer);
+		this->_observer.safeEmit("newconsumer", consumer);
 
 		return consumer;
 	}
@@ -313,35 +306,35 @@ export class PipeTransport : public Transport
 		{
 			switch (event)
 			{
-				case 'sctpstatechange':
+				case "sctpstatechange":
 				{
 					const sctpState = data.sctpState as SctpState;
 
 					this->_data.sctpState = sctpState;
 
-					this->safeEmit('sctpstatechange', sctpState);
+					this->safeEmit("sctpstatechange", sctpState);
 
 					// Emit observer event.
-					this->_observer.safeEmit('sctpstatechange', sctpState);
+					this->_observer.safeEmit("sctpstatechange", sctpState);
 
 					break;
 				}
 
-				case 'trace':
+				case "trace":
 				{
 					const trace = data as TransportTraceEventData;
 
-					this->safeEmit('trace', trace);
+					this->safeEmit("trace", trace);
 
 					// Emit observer event.
-					this->_observer.safeEmit('trace', trace);
+					this->_observer.safeEmit("trace", trace);
 
 					break;
 				}
 
 				default:
 				{
-					logger.error('ignoring unknown event "%s"', event);
+					logger->error("ignoring unknown event "%s"", event);
 				}
 			}
 		});

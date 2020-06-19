@@ -1,28 +1,29 @@
 #pragma once 
 
-import { v4 as uuidv4 } from 'uuid';
-import { AwaitQueue } from 'awaitqueue';
+// import { v4 as uuidv4 } from "uuid";
+// import { AwaitQueue } from "awaitqueue";
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import * as ortc from './ortc';
-import { InvalidStateError } from './errors';
+#include "ortc.hpp"
+#include "errors.hpp"
 #include "Channel.hpp"
-import { PayloadChannel } from './PayloadChannel';
-import { Transport, TransportListenIp } from './Transport';
-import { WebRtcTransport, WebRtcTransportOptions } from './WebRtcTransport';
-import { PlainTransport, PlainTransportOptions } from './PlainTransport';
-import { PipeTransport, PipeTransportOptions } from './PipeTransport';
-import { DirectTransport, DirectTransportOptions } from './DirectTransport';
-import { Producer } from './Producer';
-import { Consumer } from './Consumer';
-import { DataProducer } from './DataProducer';
-import { DataConsumer } from './DataConsumer';
-import { RtpObserver } from './RtpObserver';
-import { AudioLevelObserver, AudioLevelObserverOptions } from './AudioLevelObserver';
-import { RtpCapabilities, RtpCodecCapability } from './RtpParameters';
-import { NumSctpStreams } from './SctpParameters';
+#include "PayloadChannel.hpp"
+#include "Transport.hpp"
+#include "WebRtcTransport.hpp"
+#include "PlainTransport.hpp"
+#include "PipeTransport.hpp"
+#include "DirectTransport.hpp"
+#include "Producer.hpp"
+#include "Consumer.hpp"
+#include "DataProducer.hpp"
+#include "DataConsumer.hpp"
+#include "RtpObserver.hpp"
+#include "AudioLevelObserver.hpp"
+#include "RtpParameters.hpp"
+#include "SctpParameters.hpp"
 
-struct RouterOptions =
+
+struct RouterOptions
 {
 	/**
 	 * Router media codecs.
@@ -33,9 +34,9 @@ struct RouterOptions =
 	 * Custom application data.
 	 */
 	appData?: any;
-}
+};
 
-struct PipeToRouterOptions =
+struct PipeToRouterOptions
 {
 	/**
 	 * The id of the Producer to consume.
@@ -53,7 +54,7 @@ struct PipeToRouterOptions =
 	router: Router;
 
 	/**
-	 * IP used in the PipeTransport pair. Default '127.0.0.1'.
+	 * IP used in the PipeTransport pair. Default "127.0.0.1".
 	 */
 	listenIp?: TransportListenIp | string;
 
@@ -76,9 +77,9 @@ struct PipeToRouterOptions =
 	 * Enable SRTP.
 	 */
 	enableSrtp?: boolean;
-}
+};
 
-struct PipeToRouterResult =
+struct PipeToRouterResult
 {
 	/**
 	 * The Consumer created in the current Router.
@@ -99,11 +100,11 @@ struct PipeToRouterResult =
 	 * The DataProducer created in the target Router.
 	 */
 	pipeDataProducer?: DataProducer;
-}
+};
 
-const logger = new Logger('Router');
+const Logger* logger = new Logger("Router");
 
-export class Router : public EnhancedEventEmitter
+class Router : public EnhancedEventEmitter
 {
 	// Internal data.
 	private readonly _internal:
@@ -156,7 +157,7 @@ export class Router : public EnhancedEventEmitter
 	 * @emits workerclose
 	 * @emits @close
 	 */
-	constructor(
+	Router(
 		{
 			internal,
 			data,
@@ -175,7 +176,7 @@ export class Router : public EnhancedEventEmitter
 	{
 		super();
 
-		logger.debug('constructor()');
+		logger->debug("constructor()");
 
 		this->_internal = internal;
 		this->_data = data;
@@ -187,7 +188,7 @@ export class Router : public EnhancedEventEmitter
 	/**
 	 * Router id.
 	 */
-	get id(): string
+	std::string id()
 	{
 		return this->_internal.routerId;
 	}
@@ -195,7 +196,7 @@ export class Router : public EnhancedEventEmitter
 	/**
 	 * Whether the Router is closed.
 	 */
-	get closed(): boolean
+	bool closed()
 	{
 		return this->_closed;
 	}
@@ -203,7 +204,7 @@ export class Router : public EnhancedEventEmitter
 	/**
 	 * RTC capabilities of the Router.
 	 */
-	get rtpCapabilities(): RtpCapabilities
+	RtpCapabilities rtpCapabilities()
 	{
 		return this->_data.rtpCapabilities;
 	}
@@ -211,7 +212,7 @@ export class Router : public EnhancedEventEmitter
 	/**
 	 * App custom data.
 	 */
-	get appData(): any
+	json appData()
 	{
 		return this->_appData;
 	}
@@ -219,9 +220,9 @@ export class Router : public EnhancedEventEmitter
 	/**
 	 * Invalid setter.
 	 */
-	set appData(appData: any) // eslint-disable-line no-unused-vars
+	set appData(json appData) // eslint-disable-line no-unused-vars
 	{
-		throw new Error('cannot override appData object');
+		throw new Error("cannot override appData object");
 	}
 
 	/**
@@ -231,7 +232,7 @@ export class Router : public EnhancedEventEmitter
 	 * @emits newtransport - (transport: Transport)
 	 * @emits newrtpobserver - (rtpObserver: RtpObserver)
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -239,20 +240,20 @@ export class Router : public EnhancedEventEmitter
 	/**
 	 * Close the Router.
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;
 
-		logger.debug('close()');
+		logger->debug("close()");
 
 		this->_closed = true;
 
-		this->_channel->request('router.close', this->_internal)
+		this->_channel->request("router.close", this->_internal)
 			.catch(() => {});
 
 		// Close every Transport.
-		for (const transport of this->_transports.values())
+		for (const transport : this->_transports.values())
 		{
 			transport.routerClosed();
 		}
@@ -262,7 +263,7 @@ export class Router : public EnhancedEventEmitter
 		this->_producers.clear();
 
 		// Close every RtpObserver.
-		for (const rtpObserver of this->_rtpObservers.values())
+		for (const rtpObserver : this->_rtpObservers.values())
 		{
 			rtpObserver.routerClosed();
 		}
@@ -277,10 +278,10 @@ export class Router : public EnhancedEventEmitter
 		// Close the pipeToRouter AwaitQueue instance.
 		this->_pipeToRouterQueue.close();
 
-		this->emit('@close');
+		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -288,12 +289,12 @@ export class Router : public EnhancedEventEmitter
 	 *
 	 * @private
 	 */
-	workerClosed(): void
+	void workerClosed()
 	{
 		if (this->_closed)
 			return;
 
-		logger.debug('workerClosed()');
+		logger->debug("workerClosed()");
 
 		this->_closed = true;
 
@@ -320,10 +321,10 @@ export class Router : public EnhancedEventEmitter
 		// Clear map of Router/PipeTransports.
 		this->_mapRouterPipeTransports.clear();
 
-		this->safeEmit('workerclose');
+		this->safeEmit("workerclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit('close');
+		this->_observer.safeEmit("close");
 	}
 
 	/**
@@ -331,9 +332,9 @@ export class Router : public EnhancedEventEmitter
 	 */
 	async dump(): Promise<any>
 	{
-		logger.debug('dump()');
+		logger->debug("dump()");
 
-		return this->_channel->request('router.dump', this->_internal);
+		return this->_channel->request("router.dump", this->_internal);
 	}
 
 	/**
@@ -354,20 +355,20 @@ export class Router : public EnhancedEventEmitter
 		}: WebRtcTransportOptions
 	): Promise<WebRtcTransport>
 	{
-		logger.debug('createWebRtcTransport()');
+		logger->debug("createWebRtcTransport()");
 
 		if (!Array.isArray(listenIps))
-			throw new TypeError('missing listenIps');
-		else if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+			throw new TypeError("missing listenIps");
+		else if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
 		listenIps = listenIps.map((listenIp) =>
 		{
-			if (typeof listenIp === 'string' && listenIp)
+			if (typeof listenIp === "string" && listenIp)
 			{
 				return { ip: listenIp };
 			}
-			else if (typeof listenIp === 'object')
+			else if (typeof listenIp === "object")
 			{
 				return {
 					ip          : listenIp.ip,
@@ -376,7 +377,7 @@ export class Router : public EnhancedEventEmitter
 			}
 			else
 			{
-				throw new TypeError('wrong listenIp');
+				throw new TypeError("wrong listenIp");
 			}
 		});
 
@@ -395,7 +396,7 @@ export class Router : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request('router.createWebRtcTransport', internal, reqData);
+			await this->_channel->request("router.createWebRtcTransport", internal, reqData);
 
 		const transport = new WebRtcTransport(
 			{
@@ -414,18 +415,18 @@ export class Router : public EnhancedEventEmitter
 			});
 
 		this->_transports.set(transport.id, transport);
-		transport.on('@close', () => this->_transports.delete(transport.id));
-		transport.on('@newproducer', (producer: Producer) => this->_producers.set(producer.id, producer));
-		transport.on('@producerclose', (producer: Producer) => this->_producers.delete(producer.id));
-		transport.on('@newdataproducer', (dataProducer: DataProducer) => (
+		transport.on("@close", () => this->_transports.delete(transport.id));
+		transport.on("@newproducer", (producer: Producer) => this->_producers.set(producer.id, producer));
+		transport.on("@producerclose", (producer: Producer) => this->_producers.delete(producer.id));
+		transport.on("@newdataproducer", (dataProducer: DataProducer) => (
 			this->_dataProducers.set(dataProducer.id, dataProducer)
 		));
-		transport.on('@dataproducerclose', (dataProducer: DataProducer) => (
+		transport.on("@dataproducerclose", (dataProducer: DataProducer) => (
 			this->_dataProducers.delete(dataProducer.id)
 		));
 
 		// Emit observer event.
-		this->_observer.safeEmit('newtransport', transport);
+		this->_observer.safeEmit("newtransport", transport);
 
 		return transport;
 	}
@@ -442,23 +443,23 @@ export class Router : public EnhancedEventEmitter
 			numSctpStreams = { OS: 1024, MIS: 1024 },
 			maxSctpMessageSize = 262144,
 			enableSrtp = false,
-			srtpCryptoSuite = 'AES_CM_128_HMAC_SHA1_80',
+			srtpCryptoSuite = "AES_CM_128_HMAC_SHA1_80",
 			appData = {}
 		}: PlainTransportOptions
 	): Promise<PlainTransport>
 	{
-		logger.debug('createPlainTransport()');
+		logger->debug("createPlainTransport()");
 
 		if (!listenIp)
-			throw new TypeError('missing listenIp');
-		else if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+			throw new TypeError("missing listenIp");
+		else if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
-		if (typeof listenIp === 'string' && listenIp)
+		if (typeof listenIp === "string" && listenIp)
 		{
 			listenIp = { ip: listenIp };
 		}
-		else if (typeof listenIp === 'object')
+		else if (typeof listenIp === "object")
 		{
 			listenIp =
 			{
@@ -468,7 +469,7 @@ export class Router : public EnhancedEventEmitter
 		}
 		else
 		{
-			throw new TypeError('wrong listenIp');
+			throw new TypeError("wrong listenIp");
 		}
 
 		const internal = { ...this->_internal, transportId: uuidv4() };
@@ -485,7 +486,7 @@ export class Router : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request('router.createPlainTransport', internal, reqData);
+			await this->_channel->request("router.createPlainTransport", internal, reqData);
 
 		const transport = new PlainTransport(
 			{
@@ -504,18 +505,18 @@ export class Router : public EnhancedEventEmitter
 			});
 
 		this->_transports.set(transport.id, transport);
-		transport.on('@close', () => this->_transports.delete(transport.id));
-		transport.on('@newproducer', (producer: Producer) => this->_producers.set(producer.id, producer));
-		transport.on('@producerclose', (producer: Producer) => this->_producers.delete(producer.id));
-		transport.on('@newdataproducer', (dataProducer: DataProducer) => (
+		transport.on("@close", () => this->_transports.delete(transport.id));
+		transport.on("@newproducer", (producer: Producer) => this->_producers.set(producer.id, producer));
+		transport.on("@producerclose", (producer: Producer) => this->_producers.delete(producer.id));
+		transport.on("@newdataproducer", (dataProducer: DataProducer) => (
 			this->_dataProducers.set(dataProducer.id, dataProducer)
 		));
-		transport.on('@dataproducerclose', (dataProducer: DataProducer) => (
+		transport.on("@dataproducerclose", (dataProducer: DataProducer) => (
 			this->_dataProducers.delete(dataProducer.id)
 		));
 
 		// Emit observer event.
-		this->_observer.safeEmit('newtransport', transport);
+		this->_observer.safeEmit("newtransport", transport);
 
 		return transport;
 	}
@@ -527,8 +528,8 @@ export class Router : public EnhancedEventEmitter
 		options: PlainTransportOptions
 	): Promise<PlainTransport>
 	{
-		logger.warn(
-			'createPlainRtpTransport() is DEPRECATED, use createPlainTransport()');
+		logger->warn(
+			"createPlainRtpTransport() is DEPRECATED, use createPlainTransport()");
 
 		return this->createPlainTransport(options);
 	}
@@ -548,18 +549,18 @@ export class Router : public EnhancedEventEmitter
 		}: PipeTransportOptions
 	): Promise<PipeTransport>
 	{
-		logger.debug('createPipeTransport()');
+		logger->debug("createPipeTransport()");
 
 		if (!listenIp)
-			throw new TypeError('missing listenIp');
-		else if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+			throw new TypeError("missing listenIp");
+		else if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
-		if (typeof listenIp === 'string' && listenIp)
+		if (typeof listenIp === "string" && listenIp)
 		{
 			listenIp = { ip: listenIp };
 		}
-		else if (typeof listenIp === 'object')
+		else if (typeof listenIp === "object")
 		{
 			listenIp =
 			{
@@ -569,7 +570,7 @@ export class Router : public EnhancedEventEmitter
 		}
 		else
 		{
-			throw new TypeError('wrong listenIp');
+			throw new TypeError("wrong listenIp");
 		}
 
 		const internal = { ...this->_internal, transportId: uuidv4() };
@@ -584,7 +585,7 @@ export class Router : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request('router.createPipeTransport', internal, reqData);
+			await this->_channel->request("router.createPipeTransport", internal, reqData);
 
 		const transport = new PipeTransport(
 			{
@@ -603,18 +604,18 @@ export class Router : public EnhancedEventEmitter
 			});
 
 		this->_transports.set(transport.id, transport);
-		transport.on('@close', () => this->_transports.delete(transport.id));
-		transport.on('@newproducer', (producer: Producer) => this->_producers.set(producer.id, producer));
-		transport.on('@producerclose', (producer: Producer) => this->_producers.delete(producer.id));
-		transport.on('@newdataproducer', (dataProducer: DataProducer) => (
+		transport.on("@close", () => this->_transports.delete(transport.id));
+		transport.on("@newproducer", (producer: Producer) => this->_producers.set(producer.id, producer));
+		transport.on("@producerclose", (producer: Producer) => this->_producers.delete(producer.id));
+		transport.on("@newdataproducer", (dataProducer: DataProducer) => (
 			this->_dataProducers.set(dataProducer.id, dataProducer)
 		));
-		transport.on('@dataproducerclose', (dataProducer: DataProducer) => (
+		transport.on("@dataproducerclose", (dataProducer: DataProducer) => (
 			this->_dataProducers.delete(dataProducer.id)
 		));
 
 		// Emit observer event.
-		this->_observer.safeEmit('newtransport', transport);
+		this->_observer.safeEmit("newtransport", transport);
 
 		return transport;
 	}
@@ -632,13 +633,13 @@ export class Router : public EnhancedEventEmitter
 		}
 	): Promise<DirectTransport>
 	{
-		logger.debug('createDirectTransport()');
+		logger->debug("createDirectTransport()");
 
 		const internal = { ...this->_internal, transportId: uuidv4() };
 		const reqData = { direct: true, maxMessageSize };
 
 		const data =
-			await this->_channel->request('router.createDirectTransport', internal, reqData);
+			await this->_channel->request("router.createDirectTransport", internal, reqData);
 
 		const transport = new DirectTransport(
 			{
@@ -657,18 +658,18 @@ export class Router : public EnhancedEventEmitter
 			});
 
 		this->_transports.set(transport.id, transport);
-		transport.on('@close', () => this->_transports.delete(transport.id));
-		transport.on('@newproducer', (producer: Producer) => this->_producers.set(producer.id, producer));
-		transport.on('@producerclose', (producer: Producer) => this->_producers.delete(producer.id));
-		transport.on('@newdataproducer', (dataProducer: DataProducer) => (
+		transport.on("@close", () => this->_transports.delete(transport.id));
+		transport.on("@newproducer", (producer: Producer) => this->_producers.set(producer.id, producer));
+		transport.on("@producerclose", (producer: Producer) => this->_producers.delete(producer.id));
+		transport.on("@newdataproducer", (dataProducer: DataProducer) => (
 			this->_dataProducers.set(dataProducer.id, dataProducer)
 		));
-		transport.on('@dataproducerclose', (dataProducer: DataProducer) => (
+		transport.on("@dataproducerclose", (dataProducer: DataProducer) => (
 			this->_dataProducers.delete(dataProducer.id)
 		));
 
 		// Emit observer event.
-		this->_observer.safeEmit('newtransport', transport);
+		this->_observer.safeEmit("newtransport", transport);
 
 		return transport;
 	}
@@ -681,7 +682,7 @@ export class Router : public EnhancedEventEmitter
 			producerId,
 			dataProducerId,
 			router,
-			listenIp = '127.0.0.1',
+			listenIp = "127.0.0.1",
 			enableSctp = true,
 			numSctpStreams = { OS: 1024, MIS: 1024 },
 			enableRtx = false,
@@ -690,13 +691,13 @@ export class Router : public EnhancedEventEmitter
 	): Promise<PipeToRouterResult>
 	{
 		if (!producerId && !dataProducerId)
-			throw new TypeError('missing producerId or dataProducerId');
+			throw new TypeError("missing producerId or dataProducerId");
 		else if (producerId && dataProducerId)
-			throw new TypeError('just producerId or dataProducerId can be given');
+			throw new TypeError("just producerId or dataProducerId can be given");
 		else if (!router)
-			throw new TypeError('Router not found');
+			throw new TypeError("Router not found");
 		else if (router === this)
-			throw new TypeError('cannot use this Router as destination');
+			throw new TypeError("cannot use this Router as destination");
 
 		let producer: Producer | undefined;
 		let dataProducer: DataProducer | undefined;
@@ -706,21 +707,21 @@ export class Router : public EnhancedEventEmitter
 			producer = this->_producers.get(producerId);
 
 			if (!producer)
-				throw new TypeError('Producer not found');
+				throw new TypeError("Producer not found");
 		}
 		else if (dataProducerId)
 		{
 			dataProducer = this->_dataProducers.get(dataProducerId);
 
 			if (!dataProducer)
-				throw new TypeError('DataProducer not found');
+				throw new TypeError("DataProducer not found");
 		}
 
 		// Here we may have to create a new PipeTransport pair to connect source and
 		// destination Routers. We just want to keep a PipeTransport pair for each
 		// pair of Routers. Since this operation is async, it may happen that two
 		// simultaneous calls to router1.pipeToRouter({ producerId: xxx, router: router2 })
-		// would end up generating two pairs of PipeTranports. To prevent that, let's
+		// would end up generating two pairs of PipeTranports. To prevent that, let"s
 		// use an async queue.
 
 		let localPipeTransport: PipeTransport | undefined;
@@ -768,13 +769,13 @@ export class Router : public EnhancedEventEmitter
 								})
 						]);
 
-					localPipeTransport.observer.on('close', () =>
+					localPipeTransport.observer.on("close", () =>
 					{
 						remotePipeTransport!.close();
 						this->_mapRouterPipeTransports.delete(router);
 					});
 
-					remotePipeTransport.observer.on('close', () =>
+					remotePipeTransport.observer.on("close", () =>
 					{
 						localPipeTransport!.close();
 						this->_mapRouterPipeTransports.delete(router);
@@ -785,8 +786,8 @@ export class Router : public EnhancedEventEmitter
 				}
 				catch (error)
 				{
-					logger.error(
-						'pipeToRouter() | error creating PipeTransport pair:%o',
+					logger->error(
+						"pipeToRouter() | error creating PipeTransport pair:%o",
 						error);
 
 					if (localPipeTransport)
@@ -822,19 +823,19 @@ export class Router : public EnhancedEventEmitter
 					});
 
 				// Pipe events from the pipe Consumer to the pipe Producer.
-				pipeConsumer!.observer.on('close', () => pipeProducer!.close());
-				pipeConsumer!.observer.on('pause', () => pipeProducer!.pause());
-				pipeConsumer!.observer.on('resume', () => pipeProducer!.resume());
+				pipeConsumer!.observer.on("close", () => pipeProducer!.close());
+				pipeConsumer!.observer.on("pause", () => pipeProducer!.pause());
+				pipeConsumer!.observer.on("resume", () => pipeProducer!.resume());
 
 				// Pipe events from the pipe Producer to the pipe Consumer.
-				pipeProducer.observer.on('close', () => pipeConsumer!.close());
+				pipeProducer.observer.on("close", () => pipeConsumer!.close());
 
 				return { pipeConsumer, pipeProducer };
 			}
 			catch (error)
 			{
-				logger.error(
-					'pipeToRouter() | error creating pipe Consumer/Producer pair:%o',
+				logger->error(
+					"pipeToRouter() | error creating pipe Consumer/Producer pair:%o",
 					error);
 
 				if (pipeConsumer)
@@ -868,17 +869,17 @@ export class Router : public EnhancedEventEmitter
 					});
 
 				// Pipe events from the pipe DataConsumer to the pipe DataProducer.
-				pipeDataConsumer!.observer.on('close', () => pipeDataProducer!.close());
+				pipeDataConsumer!.observer.on("close", () => pipeDataProducer!.close());
 
 				// Pipe events from the pipe DataProducer to the pipe DataConsumer.
-				pipeDataProducer.observer.on('close', () => pipeDataConsumer!.close());
+				pipeDataProducer.observer.on("close", () => pipeDataConsumer!.close());
 
 				return { pipeDataConsumer, pipeDataProducer };
 			}
 			catch (error)
 			{
-				logger.error(
-					'pipeToRouter() | error creating pipe DataConsumer/DataProducer pair:%o',
+				logger->error(
+					"pipeToRouter() | error creating pipe DataConsumer/DataProducer pair:%o",
 					error);
 
 				if (pipeDataConsumer)
@@ -892,7 +893,7 @@ export class Router : public EnhancedEventEmitter
 		}
 		else
 		{
-			throw new Error('internal error');
+			throw new Error("internal error");
 		}
 	}
 
@@ -908,15 +909,15 @@ export class Router : public EnhancedEventEmitter
 		}: AudioLevelObserverOptions = {}
 	): Promise<AudioLevelObserver>
 	{
-		logger.debug('createAudioLevelObserver()');
+		logger->debug("createAudioLevelObserver()");
 
-		if (appData && typeof appData !== 'object')
-			throw new TypeError('if given, appData must be an object');
+		if (appData && typeof appData !== "object")
+			throw new TypeError("if given, appData must be an object");
 
 		const internal = { ...this->_internal, rtpObserverId: uuidv4() };
 		const reqData = { maxEntries, threshold, interval };
 
-		await this->_channel->request('router.createAudioLevelObserver', internal, reqData);
+		await this->_channel->request("router.createAudioLevelObserver", internal, reqData);
 
 		const audioLevelObserver = new AudioLevelObserver(
 			{
@@ -930,13 +931,13 @@ export class Router : public EnhancedEventEmitter
 			});
 
 		this->_rtpObservers.set(audioLevelObserver.id, audioLevelObserver);
-		audioLevelObserver.on('@close', () =>
+		audioLevelObserver.on("@close", () =>
 		{
 			this->_rtpObservers.delete(audioLevelObserver.id);
 		});
 
 		// Emit observer event.
-		this->_observer.safeEmit('newrtpobserver', audioLevelObserver);
+		this->_observer.safeEmit("newrtpobserver", audioLevelObserver);
 
 		return audioLevelObserver;
 	}
@@ -944,7 +945,7 @@ export class Router : public EnhancedEventEmitter
 	/**
 	 * Check whether the given RTP capabilities can consume the given Producer.
 	 */
-	canConsume(
+	bool canConsume(
 		{
 			producerId,
 			rtpCapabilities
@@ -953,14 +954,14 @@ export class Router : public EnhancedEventEmitter
 			producerId: string;
 			rtpCapabilities: RtpCapabilities;
 		}
-	): boolean
+	)
 	{
 		const producer = this->_producers.get(producerId);
 
 		if (!producer)
 		{
-			logger.error(
-				'canConsume() | Producer with id "%s" not found', producerId);
+			logger->error(
+				"canConsume() | Producer with id "%s" not found", producerId);
 
 			return false;
 		}
@@ -971,9 +972,9 @@ export class Router : public EnhancedEventEmitter
 		}
 		catch (error)
 		{
-			logger.error('canConsume() | unexpected error: %s', String(error));
+			logger->error("canConsume() | unexpected error: %s", String(error));
 
 			return false;
 		}
 	}
-}
+};

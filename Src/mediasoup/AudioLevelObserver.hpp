@@ -2,19 +2,19 @@
 #pragma once 
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import { RtpObserver } from './RtpObserver';
-import { Producer } from './Producer';
+import { RtpObserver } from "./RtpObserver";
+#include "Producer.hpp"
 
 export interface AudioLevelObserverOptions
 {
 	/**
-	 * Maximum number of entries in the 'volumes”' event. Default 1.
+	 * Maximum number of entries in the "volumes”" event. Default 1.
 	 */
 	maxEntries?: number;
 
 	/**
 	 * Minimum average volume (in dBvo from -127 to 0) for entries in the
-	 * 'volumes' event.	Default -80.
+	 * "volumes" event.	Default -80.
 	 */
 	threshold?: number;
 
@@ -43,9 +43,9 @@ export interface AudioLevelObserverVolume
 	volume: number;
 }
 
-const logger = new Logger('AudioLevelObserver');
+const Logger* logger = new Logger("AudioLevelObserver");
 
-export class AudioLevelObserver : public RtpObserver
+class AudioLevelObserver : public RtpObserver
 {
 	/**
 	 * @private
@@ -81,7 +81,7 @@ export class AudioLevelObserver : public RtpObserver
 		{
 			switch (event)
 			{
-				case 'volumes':
+				case "volumes":
 				{
 					// Get the corresponding Producer instance and remove entries with
 					// no Producer (it may have been closed in the meanwhile).
@@ -96,28 +96,28 @@ export class AudioLevelObserver : public RtpObserver
 
 					if (volumes.length > 0)
 					{
-						this->safeEmit('volumes', volumes);
+						this->safeEmit("volumes", volumes);
 
 						// Emit observer event.
-						this->_observer.safeEmit('volumes', volumes);
+						this->_observer.safeEmit("volumes", volumes);
 					}
 
 					break;
 				}
 
-				case 'silence':
+				case "silence":
 				{
-					this->safeEmit('silence');
+					this->safeEmit("silence");
 
 					// Emit observer event.
-					this->_observer.safeEmit('silence');
+					this->_observer.safeEmit("silence");
 
 					break;
 				}
 
 				default:
 				{
-					logger.error('ignoring unknown event "%s"', event);
+					logger->error("ignoring unknown event "%s"", event);
 				}
 			}
 		});
