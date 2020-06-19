@@ -3,12 +3,13 @@
 #include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import { UnsupportedError } from "./errors";
-import { Transport, TransportTraceEventData } from "./Transport";
-import { Producer, ProducerOptions } from "./Producer";
-import { Consumer, ConsumerOptions } from "./Consumer";
+#include "errors.hpp"
+#include "Transport.hpp"
+#include "Producer.hpp"
+#include "Consumer.hpp"
 
-struct DirectTransportOptions =
+
+struct DirectTransportOptions
 {
 	/**
 	 * Maximum allowed size for direct messages sent from DataProducers.
@@ -20,7 +21,7 @@ struct DirectTransportOptions =
 	 * Custom application data.
 	 */
 	appData?: any;
-}
+};
 
 struct DirectTransportStat =
 {
@@ -47,7 +48,7 @@ struct DirectTransportStat =
 	availableOutgoingBitrate?: uint32_t;
 	availableIncomingBitrate?: uint32_t;
 	maxIncomingBitrate?: uint32_t;
-}
+};
 
 const Logger* logger = new Logger("DirectTransport");
 
@@ -196,4 +197,4 @@ class DirectTransport : public Transport
 			}
 		});
 	}
-}
+};

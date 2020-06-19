@@ -3,7 +3,7 @@
 /**
  * SRTP parameters.
  */
-struct SrtpParameters =
+struct SrtpParameters
 {
 	/**
 	 * Encryption and authentication transforms to be used.
@@ -14,7 +14,7 @@ struct SrtpParameters =
 	 * SRTP keying material (master key and salt) in Base64.
 	 */
 	keyBase64: string;
-}
+};
 
 /**
  * SRTP crypto suite.

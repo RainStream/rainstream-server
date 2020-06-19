@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "common.hpp"
 #include "RtpParameters.hpp"
 
 const supportedRtpCapabilities : RtpCapabilities =

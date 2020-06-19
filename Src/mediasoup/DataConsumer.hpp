@@ -4,15 +4,15 @@
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
-import { PayloadChannel } from "./PayloadChannel";
-import { SctpStreamParameters } from "./SctpParameters";
+#include "PayloadChannel.hpp"
+#include "SctpParameters.hpp"
 
-struct DataConsumerOptions =
+struct DataConsumerOptions
 {
 	/**
 	 * The id of the DataProducer to consume.
 	 */
-	dataProducerId: string;
+	std::string dataProducerId;
 
 	/**
 	 * Just if consuming over SCTP.
@@ -20,7 +20,7 @@ struct DataConsumerOptions =
 	 * be sent reliably. Defaults to the value in the DataProducer if it has type
 	 * "sctp" or to true if it has type "direct".
 	 */
-	ordered?: bool;
+	bool ordered;
 
 	/**
 	 * Just if consuming over SCTP.
@@ -28,7 +28,7 @@ struct DataConsumerOptions =
 	 * SCTP packet will stop being retransmitted. Defaults to the value in the
 	 * DataProducer if it has type "sctp" or unset if it has type "direct".
 	 */
-	maxPacketLifeTime?: uint32_t;
+	uint32_t maxPacketLifeTime;
 
 	/**
 	 * Just if consuming over SCTP.
@@ -36,23 +36,23 @@ struct DataConsumerOptions =
 	 * be retransmitted. Defaults to the value in the DataProducer if it has type
 	 * "sctp" or unset if it has type "direct".
 	 */
-	maxRetransmits?: uint32_t;
+	uint32_t maxRetransmits;
 
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
-}
+	json appData;
+};
 
-struct DataConsumerStat =
+struct DataConsumerStat
 {
-	type: string;
-	timestamp: uint32_t;
-	label: string;
-	protocol: string;
-	messagesSent: uint32_t;
-	bytesSent: uint32_t;
-}
+	std::string type;
+	uint32_t timestamp;
+	std::string label;
+	std::string protocol;
+	uint32_t messagesSent;
+	uint32_t bytesSent;
+};
 
 /**
  * DataConsumer type.
@@ -104,7 +104,7 @@ class DataConsumer : public EnhancedEventEmitter
 	 * @emits @close
 	 * @emits @dataproducerclose
 	 */
-	constructor(
+	DataConsumer(
 		{
 			internal,
 			data,
@@ -341,4 +341,5 @@ class DataConsumer : public EnhancedEventEmitter
 				}
 			});
 	}
-}
+};
+

@@ -3,6 +3,7 @@
 extern "C" {
 #include <netstring.h>
 }
+#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "errors.hpp"

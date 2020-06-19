@@ -4,10 +4,10 @@
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
-import { PayloadChannel } from "./PayloadChannel";
-import { SctpStreamParameters } from "./SctpParameters";
+#include "PayloadChannel.hpp"
+#include "SctpParameters.hpp"
 
-struct DataProducerOptions =
+struct DataProducerOptions
 {
 	/**
 	 * DataProducer id (just for Router.pipeToRouter() method).
@@ -34,7 +34,7 @@ struct DataProducerOptions =
 	 * Custom application data.
 	 */
 	appData?: any;
-}
+};
 
 struct DataProducerStat =
 {
@@ -44,7 +44,7 @@ struct DataProducerStat =
 	protocol: string;
 	messagesReceived: uint32_t;
 	bytesReceived: uint32_t;
-}
+};
 
 /**
  * DataProducer type.
@@ -92,7 +92,7 @@ class DataProducer : public EnhancedEventEmitter
 	 * @emits transportclose
 	 * @emits @close
 	 */
-	constructor(
+	DataProducer(
 		{
 			internal,
 			data,
@@ -311,4 +311,4 @@ class DataProducer : public EnhancedEventEmitter
 	{
 		// No need to subscribe to any event.
 	}
-}
+};

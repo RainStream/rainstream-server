@@ -1,6 +1,7 @@
 
 #pragma once 
 
+#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "utils.hpp"

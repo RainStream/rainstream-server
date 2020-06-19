@@ -1,9 +1,11 @@
 #pragma once 
 
-struct SctpCapabilities =
+#include "common.hpp"
+
+struct SctpCapabilities
 {
   numStreams: NumSctpStreams;
-}
+};
 
 /**
  * Both OS and MIS are part of the SCTP INIT+ACK handshake. OS refers to the
@@ -27,7 +29,7 @@ struct SctpCapabilities =
  * mediasoup-client provides specific per browser/version OS and MIS values via
  * the device.sctpCapabilities getter.
  */
-struct NumSctpStreams =
+struct NumSctpStreams
 {
 	/**
 	 * Initially requested uint32_t of outgoing SCTP streams.
@@ -38,9 +40,9 @@ struct NumSctpStreams =
 	 * Maximum uint32_t of incoming SCTP streams.
 	 */
 	MIS: uint32_t;
-}
+};
 
-struct SctpParameters =
+struct SctpParameters
 {
 	/**
 	 * Must always equal 5000.
@@ -61,7 +63,7 @@ struct SctpParameters =
 	 * Maximum allowed size for SCTP messages.
 	 */
 	maxMessageSize: uint32_t;
-}
+};
 
 /**
  * SCTP stream parameters describe the reliability of a certain SCTP stream.
@@ -70,7 +72,7 @@ struct SctpParameters =
  * If ordered if false, only one of maxPacketLifeTime or maxRetransmits
  * can be true.
  */
-struct SctpStreamParameters =
+struct SctpStreamParameters
 {
 	/**
 	 * SCTP stream id.
@@ -94,4 +96,4 @@ struct SctpStreamParameters =
 	 * be retransmitted.
 	 */
 	maxRetransmits?: uint32_t;
-}
+};

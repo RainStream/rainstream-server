@@ -2,6 +2,7 @@
 
 // import { v4 as uuidv4 } from "uuid";
 // import { AwaitQueue } from "awaitqueue";
+#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "ortc.hpp"
