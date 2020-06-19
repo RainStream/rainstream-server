@@ -294,7 +294,7 @@ class WebRtcTransport : public Transport
 	 *
 	 * @override
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;
@@ -354,7 +354,7 @@ class WebRtcTransport : public Transport
 		const reqData = { dtlsParameters };
 
 		const data =
-			await this->_channel->request("transport.connect", this->_internal, reqData);
+			co_await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
 		this->_data.dtlsParameters.role = data.dtlsLocalRole;
@@ -368,7 +368,7 @@ class WebRtcTransport : public Transport
 		logger->debug("restartIce()");
 
 		const data =
-			await this->_channel->request("transport.restartIce", this->_internal);
+			co_await this->_channel->request("transport.restartIce", this->_internal);
 
 		const { iceParameters } = data;
 

@@ -3,52 +3,48 @@
 #include <future>
 #include "utils.hpp"
 #include "common.hpp"
-#include "EventEmitter.hpp"
+#include "EnhancedEventEmitter.hpp"
 
-class EnhancedEventEmitter;
 
-namespace rs
+class Router;
+class Channel;
+class Request;
+class SubProcess;
+
+class Worker : public EnhancedEventEmitter
 {
-	class Router;
-	class Channel;
-	class Request;
-	class SubProcess;
+public:
+	Worker(json settings);
 
-	class Worker : public EventEmitter
-	{
-	public:
-		Worker(json settings);
+	void close();
 
-		void close();
+	std::future<json> dump();
 
-		std::future<json> dump();
+	//Defer updateSettings(json& options);
 
-		//Defer updateSettings(json& options);
-
-		/**
-		 * Create a Room instance.
-		 *
-		 * @return {Room}
-		 */
-		//Router* createRouter(const json& data);
+	/**
+	 * Create a Room instance.
+	 *
+	 * @return {Room}
+	 */
+	 //Router* createRouter(const json& data);
 
 
-	private:
-		SubProcess* _child{ nullptr };
+private:
+	SubProcess* _child{ nullptr };
 
-		uint32_t _pid{ 0 };
+	uint32_t _pid{ 0 };
 
-		Channel* _channel{ nullptr };
+	Channel* _channel{ nullptr };
 
-		Channel* _payloadChannel{ nullptr };
+	Channel* _payloadChannel{ nullptr };
 
-		json _appData{ json() };
+	json _appData{ json() };
 
-		bool _closed = false;
+	bool _closed = false;
 
-		// Set of Room instances.
-		std::set<Router*> _routers;
+	// Set of Room instances.
+	std::set<Router*> _routers;
 
-		EnhancedEventEmitter* _observer{ nullptr };
-	};
-}
+	EnhancedEventEmitter* _observer{ nullptr };
+};

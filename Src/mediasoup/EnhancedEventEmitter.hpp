@@ -1,8 +1,7 @@
 #pragma once 
 
-#include <EventEmitter.hpp>
 #include "Logger.hpp"
-
+#include <EventEmitter.hpp>
 
 
 class EnhancedEventEmitter : public EventEmitter
@@ -10,8 +9,7 @@ class EnhancedEventEmitter : public EventEmitter
 public:
 
 	EnhancedEventEmitter()
-		: EventEmitter()
-		, logger(new Logger("EnhancedEventEmitter"))
+		: logger(new Logger("EnhancedEventEmitter"))
 	{
 		
 	}
@@ -42,6 +40,13 @@ public:
 // 			this->safeEmit(event, ...args, resolve, reject)
 // 		));
 // 	}
+
+	void removeAllListeners(std::string event)
+	{
+		std::unique_lock<std::mutex> locker(_events_mtx);
+
+		events.erase(event);
+	}
 
 protected:
 	Logger* logger;

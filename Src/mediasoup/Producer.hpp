@@ -37,7 +37,7 @@ struct ProducerOptions
 	 * Custom application data.
 	 */
 	appData?: any;
-}
+};
 
 /**
  * Valid types for "trace" event.
@@ -68,7 +68,7 @@ struct ProducerTraceEventData =
 	 * Per type information.
 	 */
 	info: any;
-}
+};
 
 struct ProducerScore =
 {
@@ -86,7 +86,7 @@ struct ProducerScore =
 	 * The score of the RTP stream.
 	 */
 	score: number;
-}
+};
 
 struct ProducerVideoOrientation =
 {
@@ -104,7 +104,7 @@ struct ProducerVideoOrientation =
 	 * Rotation degrees (0, 90, 180 or 270).
 	 */
 	rotation: number;
-}
+};
 
 struct ProducerStat
 {
@@ -133,7 +133,7 @@ struct ProducerStat
 	// RtpStreamRecv specific.
 	jitter: number;
 	bitrateByLayer?: any;
-}
+};
 
 /**
  * Producer type.
@@ -145,7 +145,7 @@ const Logger* logger = new Logger("Producer");
 class Producer : public EnhancedEventEmitter
 {
 	// Internal data.
-	private readonly _internal:
+	private json _internal:
 	{
 		routerId: string;
 		transportId: string;
@@ -187,7 +187,7 @@ class Producer : public EnhancedEventEmitter
 	 * @emits trace - (trace: ProducerTraceEventData)
 	 * @emits @close
 	 */
-	constructor(
+	Producer(
 		{
 			internal,
 			data,
@@ -220,7 +220,7 @@ class Producer : public EnhancedEventEmitter
 	/**
 	 * Producer id.
 	 */
-	get id(): string
+	std::string id()
 	{
 		return this->_internal.producerId;
 	}
@@ -228,7 +228,7 @@ class Producer : public EnhancedEventEmitter
 	/**
 	 * Whether the Producer is closed.
 	 */
-	get closed(): boolean
+	bool closed()
 	{
 		return this->_closed;
 	}
@@ -244,7 +244,7 @@ class Producer : public EnhancedEventEmitter
 	/**
 	 * RTP parameters.
 	 */
-	get rtpParameters(): RtpParameters
+	RtpParameters rtpParameters()
 	{
 		return this->_data.rtpParameters;
 	}
@@ -252,7 +252,7 @@ class Producer : public EnhancedEventEmitter
 	/**
 	 * Producer type.
 	 */
-	get type(): ProducerType
+	ProducerType type()
 	{
 		return this->_data.type;
 	}
@@ -262,7 +262,7 @@ class Producer : public EnhancedEventEmitter
 	 *
 	 * @private
 	 */
-	get consumableRtpParameters(): RtpParameters
+	RtpParameters consumableRtpParameters()
 	{
 		return this->_data.consumableRtpParameters;
 	}
@@ -270,7 +270,7 @@ class Producer : public EnhancedEventEmitter
 	/**
 	 * Whether the Producer is paused.
 	 */
-	get paused(): boolean
+	bool paused()
 	{
 		return this->_paused;
 	}
@@ -286,7 +286,7 @@ class Producer : public EnhancedEventEmitter
 	/**
 	 * App custom data.
 	 */
-	get appData(): any
+	json appData()
 	{
 		return this->_appData;
 	}
@@ -294,7 +294,7 @@ class Producer : public EnhancedEventEmitter
 	/**
 	 * Invalid setter.
 	 */
-	set appData(appData: any) // eslint-disable-line no-unused-vars
+	set appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -317,7 +317,7 @@ class Producer : public EnhancedEventEmitter
 	/**
 	 * Close the Producer.
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;
@@ -343,7 +343,7 @@ class Producer : public EnhancedEventEmitter
 	 *
 	 * @private
 	 */
-	transportClosed(): void
+	void transportClosed()
 	{
 		if (this->_closed)
 			return;
@@ -390,7 +390,7 @@ class Producer : public EnhancedEventEmitter
 
 		const wasPaused = this->_paused;
 
-		await this->_channel->request("producer.pause", this->_internal);
+		co_await this->_channel->request("producer.pause", this->_internal);
 
 		this->_paused = true;
 
@@ -408,7 +408,7 @@ class Producer : public EnhancedEventEmitter
 
 		const wasPaused = this->_paused;
 
-		await this->_channel->request("producer.resume", this->_internal);
+		co_await this->_channel->request("producer.resume", this->_internal);
 
 		this->_paused = false;
 
@@ -426,7 +426,7 @@ class Producer : public EnhancedEventEmitter
 
 		const reqData = { types };
 
-		await this->_channel->request(
+		co_await this->_channel->request(
 			"producer.enableTraceEvent", this->_internal, reqData);
 	}
 
@@ -481,4 +481,5 @@ class Producer : public EnhancedEventEmitter
 			}
 		});
 	}
-}
+};
+

@@ -116,7 +116,7 @@ protected:
      */
     std::map<std::string, std::vector<EventListener>> events;
     
-private:
+protected:
     /**
      *  @brief Mutex for events
      */

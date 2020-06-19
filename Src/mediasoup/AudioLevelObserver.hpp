@@ -2,10 +2,10 @@
 #pragma once 
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import { RtpObserver } from "./RtpObserver";
+#include "RtpObserver.hpp"
 #include "Producer.hpp"
 
-export interface AudioLevelObserverOptions
+struct AudioLevelObserverOptions
 {
 	/**
 	 * Maximum number of entries in the "volumes”" event. Default 1.
@@ -29,7 +29,7 @@ export interface AudioLevelObserverOptions
 	appData?: any;
 }
 
-export interface AudioLevelObserverVolume
+struct AudioLevelObserverVolume
 {
 	/**
 	 * The audio producer instance.
@@ -52,10 +52,9 @@ class AudioLevelObserver : public RtpObserver
 	 * @emits volumes - (volumes: AudioLevelObserverVolume[])
 	 * @emits silence
 	 */
-	constructor(params: any)
+	AudioLevelObserver(json params: any)
+		: RtpObserver(params)
 	{
-		super(params);
-
 		this->_handleWorkerNotifications();
 	}
 
@@ -70,14 +69,15 @@ class AudioLevelObserver : public RtpObserver
 	 * @emits volumes - (volumes: AudioLevelObserverVolume[])
 	 * @emits silence
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
 
-	private _handleWorkerNotifications(): void
+private:
+	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.rtpObserverId, (event: string, data?: any) =>
+		this->_channel->on(this->_internal.value("rtpObserverId",""), (event: string, data?: any) =>
 		{
 			switch (event)
 			{

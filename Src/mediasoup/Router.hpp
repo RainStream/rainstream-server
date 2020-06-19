@@ -396,7 +396,7 @@ class Router : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request("router.createWebRtcTransport", internal, reqData);
+			co_await this->_channel->request("router.createWebRtcTransport", internal, reqData);
 
 		const transport = new WebRtcTransport(
 			{
@@ -486,7 +486,7 @@ class Router : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request("router.createPlainTransport", internal, reqData);
+			co_await this->_channel->request("router.createPlainTransport", internal, reqData);
 
 		const transport = new PlainTransport(
 			{
@@ -584,10 +584,10 @@ class Router : public EnhancedEventEmitter
 			enableSrtp
 		};
 
-		const data =
-			await this->_channel->request("router.createPipeTransport", internal, reqData);
+		json data =
+			co_await this->_channel->request("router.createPipeTransport", internal, reqData);
 
-		const transport = new PipeTransport(
+		PipeTransport* transport = new PipeTransport(
 			{
 				internal,
 				data,
@@ -639,7 +639,7 @@ class Router : public EnhancedEventEmitter
 		const reqData = { direct: true, maxMessageSize };
 
 		const data =
-			await this->_channel->request("router.createDirectTransport", internal, reqData);
+			co_await this->_channel->request("router.createDirectTransport", internal, reqData);
 
 		const transport = new DirectTransport(
 			{
@@ -727,7 +727,7 @@ class Router : public EnhancedEventEmitter
 		let localPipeTransport: PipeTransport | undefined;
 		let remotePipeTransport: PipeTransport | undefined;
 
-		await this->_pipeToRouterQueue.push(async () =>
+		co_await this->_pipeToRouterQueue.push(async () =>
 		{
 			let pipeTransportPair = this->_mapRouterPipeTransports.get(router);
 
@@ -740,7 +740,7 @@ class Router : public EnhancedEventEmitter
 			{
 				try
 				{
-					pipeTransportPair = await Promise.all(
+					pipeTransportPair = co_await Promise.all(
 						[
 							this->createPipeTransport(
 								{ listenIp, enableSctp, numSctpStreams, enableRtx, enableSrtp }),
@@ -752,7 +752,7 @@ class Router : public EnhancedEventEmitter
 					localPipeTransport = pipeTransportPair[0];
 					remotePipeTransport = pipeTransportPair[1];
 
-					await Promise.all(
+					co_await Promise.all(
 						[
 							localPipeTransport.connect(
 								{
@@ -808,12 +808,12 @@ class Router : public EnhancedEventEmitter
 
 			try
 			{
-				pipeConsumer = await localPipeTransport!.consume(
+				pipeConsumer = co_await localPipeTransport!.consume(
 					{
 						producerId : producerId!
 					});
 
-				pipeProducer = await remotePipeTransport!.produce(
+				pipeProducer = co_await remotePipeTransport!.produce(
 					{
 						id            : producer.id,
 						kind          : pipeConsumer!.kind,
@@ -854,12 +854,12 @@ class Router : public EnhancedEventEmitter
 
 			try
 			{
-				pipeDataConsumer = await localPipeTransport!.consumeData(
+				pipeDataConsumer = co_await localPipeTransport!.consumeData(
 					{
 						dataProducerId : dataProducerId!
 					});
 
-				pipeDataProducer = await remotePipeTransport!.produceData(
+				pipeDataProducer = co_await remotePipeTransport!.produceData(
 					{
 						id                   : dataProducer.id,
 						sctpStreamParameters : pipeDataConsumer!.sctpStreamParameters,
@@ -917,7 +917,7 @@ class Router : public EnhancedEventEmitter
 		const internal = { ...this->_internal, rtpObserverId: uuidv4() };
 		const reqData = { maxEntries, threshold, interval };
 
-		await this->_channel->request("router.createAudioLevelObserver", internal, reqData);
+		co_await this->_channel->request("router.createAudioLevelObserver", internal, reqData);
 
 		const audioLevelObserver = new AudioLevelObserver(
 			{

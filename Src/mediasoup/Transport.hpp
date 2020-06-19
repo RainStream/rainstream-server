@@ -1,27 +1,18 @@
 
 #pragma once 
 
-import { v4 as uuidv4 } from "uuid";
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-import * as utils from "./utils";
-import * as ortc from "./ortc";
+#include "utils.hpp"
+#include "ortc.hpp"
 #include "Channel.hpp"
-import { PayloadChannel } from "./PayloadChannel";
-import { Producer, ProducerOptions } from "./Producer";
-import { Consumer, ConsumerOptions } from "./Consumer";
-import {
-	DataProducer,
-	DataProducerOptions,
-	DataProducerType
-} from "./DataProducer";
-import {
-	DataConsumer,
-	DataConsumerOptions,
-	DataConsumerType
-} from "./DataConsumer";
-import { RtpCapabilities } from "./RtpParameters";
-import { SctpParameters, SctpStreamParameters } from "./SctpParameters";
+#include "PayloadChannel.hpp"
+#include "Producer.hpp"
+#include "Consumer.hpp"
+#include "DataProducer.hpp"
+#include "DataConsumer.hpp"
+#include "RtpParameters.hpp"
+#include "SctpParameters.hpp"
 
 export interface TransportListenIp
 {
@@ -35,7 +26,7 @@ export interface TransportListenIp
 	 * private IP).
 	 */
 	announcedIp?: string;
-}
+}£»
 
 /**
  * Transport protocol.
@@ -49,7 +40,7 @@ export interface TransportTuple
 	remoteIp?: string;
 	remotePort?: number;
 	protocol: TransportProtocol;
-}
+}£»
 
 /**
  * Valid types for "trace" event.
@@ -80,7 +71,7 @@ export interface TransportTraceEventData
 	 * Per type information.
 	 */
 	info: any;
-}
+}£»
 
 struct SctpState = "new" | "connecting" | "connected" | "failed" | "closed";
 
@@ -89,66 +80,70 @@ const Logger* logger = new Logger("Transport");
 class Transport : public EnhancedEventEmitter
 {
 	// Internal data.
-	protected readonly _internal:
+protected:
+	json _internal:
 	{
 		routerId: string;
 		transportId: string;
 	};
 
 	// Transport data. This is set by the subclass.
-	protected readonly _data:
+	json _data:
 	{
 		sctpParameters?: SctpParameters;
 		sctpState?: SctpState;
 	};
 
 	// Channel instance.
-	protected readonly _channel: Channel;
+	Channel* _channel;
 
 	// PayloadChannel instance.
-	protected readonly _payloadChannel: PayloadChannel;
+	PayloadChannel* _payloadChannel;
 
 	// Close flag.
-	protected _closed = false;
+	bool _closed = false;
 
 	// Custom app data.
-	private readonly _appData?: any;
+private:
+	json _appData;
 
 	// Method to retrieve Router RTP capabilities.
-	protected readonly _getRouterRtpCapabilities: () => RtpCapabilities;
+	readonly _getRouterRtpCapabilities: () => RtpCapabilities;
 
 	// Method to retrieve a Producer.
-	protected readonly _getProducerById: (producerId: string) => Producer;
+	readonly _getProducerById: (producerId: string) => Producer;
 
 	// Method to retrieve a DataProducer.
-	protected readonly _getDataProducerById: (dataProducerId: string) => DataProducer;
+	readonly _getDataProducerById: (dataProducerId: string) => DataProducer;
 
 	// Producers map.
-	protected readonly _producers: Map<string, Producer> = new Map();
+	std::map<std::string, Producer*> _producers;
 
 	// Consumers map.
-	protected readonly _consumers: Map<string, Consumer> = new Map();
+	std::map<std::string, Consumer*> _consumers;
 
 	// DataProducers map.
-	protected readonly _dataProducers: Map<string, DataProducer> = new Map();
+	std::map<std::string, DataProducer*> _dataProducers;
 
 	// DataConsumers map.
-	protected readonly _dataConsumers: Map<string, DataConsumer> = new Map();
+	std::map<std::string, DataConsumer*> _dataConsumers;
 
 	// RTCP CNAME for Producers.
-	private _cnameForProducers?: string;
+private:
+	std::string _cnameForProducers;
 
 	// Next MID for Consumers. It"s converted into string when used.
-	private _nextMidForConsumers = 0;
+	uint32_t _nextMidForConsumers = 0;
 
 	// Buffer with available SCTP stream ids.
 	private _sctpStreamIds?: Buffer;
 
 	// Next SCTP stream id.
-	private _nextSctpStreamId = 0;
+	uint32_t _nextSctpStreamId = 0;
 
 	// Observer instance.
-	protected readonly _observer = new EnhancedEventEmitter();
+protected:
+	EnhancedEventEmitter* _observer;
 
 	/**
 	 * @private
@@ -160,7 +155,7 @@ class Transport : public EnhancedEventEmitter
 	 * @emits @newdataproducer - (dataProducer: DataProducer)
 	 * @emits @dataproducerclose - (dataProducer: DataProducer)
 	 */
-	constructor(
+	Transport(
 		{
 			internal,
 			data,
@@ -176,7 +171,7 @@ class Transport : public EnhancedEventEmitter
 			data: any;
 			channel: Channel;
 			payloadChannel: PayloadChannel;
-			appData: any;
+			json appData;
 			getRouterRtpCapabilities: () => RtpCapabilities;
 			getProducerById: (producerId: string) => Producer;
 			getDataProducerById: (dataProducerId: string) => DataProducer;
@@ -208,7 +203,7 @@ class Transport : public EnhancedEventEmitter
 	/**
 	 * Whether the Transport is closed.
 	 */
-	get closed(): boolean
+	bool closed()
 	{
 		return this->_closed;
 	}
@@ -216,7 +211,7 @@ class Transport : public EnhancedEventEmitter
 	/**
 	 * App custom data.
 	 */
-	get appData(): any
+	json appData()
 	{
 		return this->_appData;
 	}
@@ -224,7 +219,7 @@ class Transport : public EnhancedEventEmitter
 	/**
 	 * Invalid setter.
 	 */
-	set appData(appData: any) // eslint-disable-line no-unused-vars
+	set appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -246,7 +241,7 @@ class Transport : public EnhancedEventEmitter
 	/**
 	 * Close the Transport.
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;
@@ -401,7 +396,7 @@ class Transport : public EnhancedEventEmitter
 
 		const reqData = { bitrate };
 
-		await this->_channel->request(
+		co_await this->_channel->request(
 			"transport.setMaxIncomingBitrate", this->_internal, reqData);
 	}
 
@@ -477,7 +472,7 @@ class Transport : public EnhancedEventEmitter
 		const reqData = { kind, rtpParameters, rtpMapping, keyFrameRequestDelay, paused };
 
 		const status =
-			await this->_channel->request("transport.produce", internal, reqData);
+			co_await this->_channel->request("transport.produce", internal, reqData);
 
 		const data =
 		{
@@ -569,7 +564,7 @@ class Transport : public EnhancedEventEmitter
 		};
 
 		const status =
-			await this->_channel->request("transport.consume", internal, reqData);
+			co_await this->_channel->request("transport.consume", internal, reqData);
 
 		const data = { kind: producer.kind, rtpParameters, type: producer.type };
 
@@ -647,7 +642,7 @@ class Transport : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request("transport.produceData", internal, reqData);
+			co_await this->_channel->request("transport.produceData", internal, reqData);
 
 		const dataProducer = new DataProducer(
 			{
@@ -754,7 +749,7 @@ class Transport : public EnhancedEventEmitter
 		};
 
 		const data =
-			await this->_channel->request("transport.consumeData", internal, reqData);
+			co_await this->_channel->request("transport.consumeData", internal, reqData);
 
 		const dataConsumer = new DataConsumer(
 			{
@@ -796,7 +791,7 @@ class Transport : public EnhancedEventEmitter
 
 		const reqData = { types };
 
-		await this->_channel->request(
+		co_await this->_channel->request(
 			"transport.enableTraceEvent", this->_internal, reqData);
 	}
 

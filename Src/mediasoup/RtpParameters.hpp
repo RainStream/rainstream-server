@@ -4,22 +4,22 @@
  * The RTP capabilities define what mediasoup or an endpoint can receive at
  * media level.
  */
-struct RtpCapabilities =
+struct RtpCapabilities
 {
 	/**
 	 * Supported media and RTX codecs.
 	 */
-	codecs?: RtpCodecCapability[];
+	std::vector<RtpCodecCapability> codecs;
 
 	/**
 	 * Supported RTP header extensions.
 	 */
-	headerExtensions?: RtpHeaderExtension[];
+	std::vector<RtpHeaderExtension> headerExtensions;
 
 	/**
 	 * Supported FEC mechanisms.
 	 */
-	fecMechanisms?: string[];
+	std::vector<std::string> fecMechanisms;;
 }
 
 /**
@@ -44,7 +44,7 @@ struct MediaKind = "audio" | "video";
  * require preferredPayloadType field (if unset, mediasoup will choose a random
  * one). If given, make sure it"s in the 96-127 range.
  */
-struct RtpCodecCapability =
+struct RtpCodecCapability
 {
 	/**
 	 * Media kind.
@@ -54,36 +54,36 @@ struct RtpCodecCapability =
 	/**
 	 * The codec MIME media type/subtype (e.g. "audio/opus", "video/VP8").
 	 */
-	mimeType: string;
+	std::string mimeType;
 
 	/**
 	 * The preferred RTP payload type.
 	 */
-	preferredPayloadType?: number;
+	uint32_t preferredPayloadType;
 
 	/**
 	 * Codec clock rate expressed in Hertz.
 	 */
-	clockRate: number;
+	uint32_t clockRate;
 
 	/**
 	 * The number of channels supported (e.g. two for stereo). Just for audio.
 	 * Default 1.
 	 */
-	channels?: number;
+	uint32_t channels;
 
 	/**
 	 * Codec specific parameters. Some parameters (such as "packetization-mode"
 	 * and "profile-level-id" in H264 or "profile-id" in VP9) are critical for
 	 * codec matching.
 	 */
-	parameters?: any;
+	json parameters;
 
 	/**
 	 * Transport layer and codec-specific feedback messages for this codec.
 	 */
-	rtcpFeedback?: RtcpFeedback[];
-}
+	std::vector<RtcpFeedback> rtcpFeedback;
+};
 
 /**
  * Direction of RTP header extension.
@@ -100,7 +100,7 @@ struct RtpHeaderExtensionDirection = "sendrecv" | "sendonly" | "recvonly" | "ina
  * router.rtpCapabilities or mediasoup.getSupportedRtpCapabilities()). It"s
  * ignored if present in endpoints" RTP capabilities.
  */
-struct RtpHeaderExtension =
+struct RtpHeaderExtension
 {
 	/**
 	 * Media kind. If empty string, it"s valid for all kinds.
@@ -111,19 +111,19 @@ struct RtpHeaderExtension =
 	/*
 	 * The URI of the RTP header extension, as defined in RFC 5285.
 	 */
-	uri: string;
+	std::string uri;
 
 	/**
 	 * The preferred numeric identifier that goes in the RTP packet. Must be
 	 * unique.
 	 */
-	preferredId: number;
+	uint32_t preferredId;
 
 	/**
 	 * If true, it is preferred that the value in the header be encrypted as per
 	 * RFC 6904. Default false.
 	 */
-	preferredEncrypt?: boolean;
+	bool preferredEncrypt;
 
 	/**
 	 * If "sendrecv", mediasoup supports sending and receiving this RTP extension.
@@ -207,25 +207,25 @@ struct RtpCodecParameters =
 	/**
 	 * The value that goes in the RTP Payload Type Field. Must be unique.
 	 */
-	payloadType: number;
+	uint32_t payloadType;
 
 	/**
 	 * Codec clock rate expressed in Hertz.
 	 */
-	clockRate: number;
+	uint32_t clockRate;
 
 	/**
 	 * The number of channels supported (e.g. two for stereo). Just for audio.
 	 * Default 1.
 	 */
-	channels?: number;
+	uint32_t channels;
 
 	/**
 	 * Codec-specific parameters available for signaling. Some parameters (such
 	 * as "packetization-mode" and "profile-level-id" in H264 or "profile-id" in
 	 * VP9) are critical for codec matching.
 	 */
-	parameters?: any;
+	json parameters;
 
 	/**
 	 * Transport layer and codec-specific feedback messages for this codec.
@@ -261,18 +261,18 @@ struct RtpEncodingParameters =
 	/**
 	 * The media SSRC.
 	 */
-	ssrc?: number;
+	uint32_t ssrc;
 
 	/**
 	 * The RID RTP extension value. Must be unique.
 	 */
-	rid?: string;
+	std::string rid;
 
 	/**
 	 * Codec payload type this encoding affects. If unset, first media codec is
 	 * chosen.
 	 */
-	codecPayloadType?: number;
+	uint32_t codecPayloadType;
 
 	/**
 	 * RTX stream information. It must contain a numeric ssrc field indicating
@@ -286,20 +286,20 @@ struct RtpEncodingParameters =
 	 * static content is being transmitted, this option disables the RTP
 	 * inactivity checks in mediasoup). Default false.
 	 */
-	dtx?: boolean;
+	bool dtx;
 
 	/**
 	 * Number of spatial and temporal layers in the RTP stream (e.g. "L1T3").
 	 * See webrtc-svc.
 	 */
-	scalabilityMode?: string;
+	std::string scalabilityMode;
 
 	/**
 	 * Others.
 	 */
-	scaleResolutionDownBy?: number;
-	maxBitrate?: number;
-}
+	uint32_t scaleResolutionDownBy;
+	uint32_t maxBitrate;
+};
 
 /**
  * Defines a RTP header extension within the RTP parameters. The list of RTP
@@ -314,22 +314,22 @@ struct RtpHeaderExtensionParameters =
 	/**
 	 * The URI of the RTP header extension, as defined in RFC 5285.
 	 */
-	uri: string;
+	std::string uri;
 
 	/**
 	 * The numeric identifier that goes in the RTP packet. Must be unique.
 	 */
-	id: number;
+	uint32_t id;
 
 	/**
 	 * If true, the value in the header is encrypted as per RFC 6904. Default false.
 	 */
-	encrypt?: boolean;
+	bool encrypt;
 
 	/**
 	 * Configuration parameters for the header extension.
 	 */
-	parameters?: any;
+	json parameters;
 }
 
 /**
@@ -346,16 +346,16 @@ struct RtcpParameters =
 	/**
 	 * The Canonical Name (CNAME) used by RTCP (e.g. in SDES messages).
 	 */
-	cname?: string;
+	std::string cname;
 
 	/**
 	 * Whether reduced size RTCP RFC 5506 is configured (if true) or compound RTCP
 	 * as specified in RFC 3550 (if false). Default true.
 	 */
-	reducedSize?: boolean;
+	bool reducedSize;
 
 	/**
 	 * Whether RTCP-mux is used. Default true.
 	 */
-	mux?: boolean;
-}
+	bool mux;
+};

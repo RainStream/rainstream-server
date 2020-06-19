@@ -174,7 +174,7 @@ class PipeTransport : public Transport
 	 *
 	 * @override
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;
@@ -237,7 +237,7 @@ class PipeTransport : public Transport
 		const reqData = { ip, port, srtpParameters };
 
 		const data =
-			await this->_channel->request("transport.connect", this->_internal, reqData);
+			co_await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
 		this->_data.tuple = data.tuple;
@@ -276,7 +276,7 @@ class PipeTransport : public Transport
 		};
 
 		const status =
-			await this->_channel->request("transport.consume", internal, reqData);
+			co_await this->_channel->request("transport.consume", internal, reqData);
 
 		const data = { kind: producer.kind, rtpParameters, type: "pipe" };
 

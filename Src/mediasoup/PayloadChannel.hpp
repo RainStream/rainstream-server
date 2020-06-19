@@ -133,7 +133,7 @@ class PayloadChannel : public EnhancedEventEmitter
 	/**
 	 * @private
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;

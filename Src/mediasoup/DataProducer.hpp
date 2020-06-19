@@ -104,7 +104,7 @@ class DataProducer : public EnhancedEventEmitter
 			data: any;
 			channel: Channel;
 			payloadChannel: PayloadChannel;
-			appData: any;
+			json appData;
 		}
 	)
 	{
@@ -132,7 +132,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * Whether the DataProducer is closed.
 	 */
-	get closed(): boolean
+	bool closed()
 	{
 		return this->_closed;
 	}
@@ -172,7 +172,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * App custom data.
 	 */
-	get appData(): any
+	json appData()
 	{
 		return this->_appData;
 	}
@@ -180,7 +180,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * Invalid setter.
 	 */
-	set appData(appData: any) // eslint-disable-line no-unused-vars
+	set appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -198,7 +198,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * Close the DataProducer.
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;

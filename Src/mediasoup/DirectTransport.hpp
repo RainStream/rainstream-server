@@ -98,7 +98,7 @@ class DirectTransport : public Transport
 	 *
 	 * @override
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;

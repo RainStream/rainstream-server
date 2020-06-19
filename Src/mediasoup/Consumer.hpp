@@ -65,17 +65,17 @@ struct ConsumerTraceEventData
 	/**
 	 * Event timestamp.
 	 */
-	timestamp: number;
+	uint32_t timestamp;
 
 	/**
 	 * Event direction.
 	 */
-	direction: "in" | "out";
+	std::string direction: "in" | "out";
 
 	/**
 	 * Per type information.
 	 */
-	info: any;
+	json info;
 };
 
 struct ConsumerScore
@@ -83,32 +83,32 @@ struct ConsumerScore
 	/**
 	 * The score of the RTP stream of the consumer.
 	 */
-	score: number;
+	uint32_t score;
 
 	/**
 	 * The score of the currently selected RTP stream of the producer.
 	 */
-	producerScore: number;
+	uint32_t producerScore;
 
 	/**
 	 * The scores of all RTP streams in the producer ordered by encoding (just
 	 * useful when the producer uses simulcast).
 	 */
-	producerScores: number[];
-}
+	std::vector<uint32_t> producerScores;
+};
 
 struct ConsumerLayers
 {
 	/**
 	 * The spatial layer index (from 0 to N).
 	 */
-	spatialLayer: number;
+	uint32_t spatialLayer;
 
 	/**
 	 * The temporal layer index (from 0 to N).
 	 */
-	temporalLayer?: number;
-}
+	uint32_t temporalLayer;
+};
 
 struct ConsumerStat
 {
@@ -168,28 +168,29 @@ class Consumer : public EnhancedEventEmitter
 	bool _closed = false;
 
 	// Custom app data.
-	private readonly _appData?: any;
+private:
+	json _appData;
 
 	// Paused flag.
-	private _paused = false;
+	bool _paused = false;
 
 	// Associated Producer paused flag.
-	private _producerPaused = false;
+	bool _producerPaused = false;
 
 	// Current priority.
-	private _priority = 1;
+	uint32_t _priority = 1;
 
 	// Current score.
-	private _score: ConsumerScore;
+	ConsumerScore _score;
 
 	// Preferred layers.
-	private _preferredLayers?: ConsumerLayers;
+	ConsumerLayers _preferredLayers;
 
 	// Curent layers.
-	private _currentLayers?: ConsumerLayers;
+	ConsumerLayers _currentLayers;
 
 	// Observer instance.
-	private readonly _observer = new EnhancedEventEmitter();
+	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
 	/**
 	 * @private
@@ -244,7 +245,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Consumer id.
 	 */
-	get id(): string
+	std::string id()
 	{
 		return this->_internal.consumerId;
 	}
@@ -268,7 +269,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Media kind.
 	 */
-	get kind(): MediaKind
+	MediaKind kind()
 	{
 		return this->_data.kind;
 	}
@@ -276,7 +277,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * RTP parameters.
 	 */
-	get rtpParameters(): RtpParameters
+	RtpParameters rtpParameters()
 	{
 		return this->_data.rtpParameters;
 	}
@@ -284,7 +285,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Consumer type.
 	 */
-	get type(): ConsumerType
+	ConsumerType type()
 	{
 		return this->_data.type;
 	}
@@ -292,7 +293,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Whether the Consumer is paused.
 	 */
-	get paused(): boolean
+	bool paused()
 	{
 		return this->_paused;
 	}
@@ -300,7 +301,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Whether the associate Producer is paused.
 	 */
-	get producerPaused(): boolean
+	bool producerPaused()
 	{
 		return this->_producerPaused;
 	}
@@ -308,7 +309,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Current priority.
 	 */
-	get priority(): number
+	int priority()
 	{
 		return this->_priority;
 	}
@@ -316,7 +317,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Consumer score.
 	 */
-	get score(): ConsumerScore
+	ConsumerScore score()
 	{
 		return this->_score;
 	}
@@ -340,7 +341,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * App custom data.
 	 */
-	get appData(): any
+	json appData()
 	{
 		return this->_appData;
 	}
@@ -363,7 +364,7 @@ class Consumer : public EnhancedEventEmitter
 	 * @emits layerschange - (layers: ConsumerLayers | undefined)
 	 * @emits trace - (trace: ConsumerTraceEventData)
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -371,7 +372,7 @@ class Consumer : public EnhancedEventEmitter
 	/**
 	 * Close the Consumer.
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;
@@ -397,7 +398,7 @@ class Consumer : public EnhancedEventEmitter
 	 *
 	 * @private
 	 */
-	transportClosed(): void
+	void transportClosed()
 	{
 		if (this->_closed)
 			return;
@@ -444,7 +445,7 @@ class Consumer : public EnhancedEventEmitter
 
 		const wasPaused = this->_paused || this->_producerPaused;
 
-		await this->_channel->request("consumer.pause", this->_internal);
+		co_await this->_channel->request("consumer.pause", this->_internal);
 
 		this->_paused = true;
 
@@ -462,7 +463,7 @@ class Consumer : public EnhancedEventEmitter
 
 		const wasPaused = this->_paused || this->_producerPaused;
 
-		await this->_channel->request("consumer.resume", this->_internal);
+		co_await this->_channel->request("consumer.resume", this->_internal);
 
 		this->_paused = false;
 
@@ -485,7 +486,7 @@ class Consumer : public EnhancedEventEmitter
 
 		const reqData = { spatialLayer, temporalLayer };
 
-		const data = await this->_channel->request(
+		const data = co_await this->_channel->request(
 			"consumer.setPreferredLayers", this->_internal, reqData);
 
 		this->_preferredLayers = data || undefined;
@@ -500,7 +501,7 @@ class Consumer : public EnhancedEventEmitter
 
 		const reqData = { priority };
 
-		const data = await this->_channel->request(
+		const data = co_await this->_channel->request(
 			"consumer.setPriority", this->_internal, reqData);
 
 		this->_priority = data.priority;
@@ -515,7 +516,7 @@ class Consumer : public EnhancedEventEmitter
 
 		const reqData = { priority: 1 };
 
-		const data = await this->_channel->request(
+		const data = co_await this->_channel->request(
 			"consumer.setPriority", this->_internal, reqData);
 
 		this->_priority = data.priority;
@@ -528,7 +529,7 @@ class Consumer : public EnhancedEventEmitter
 	{
 		logger->debug("requestKeyFrame()");
 
-		await this->_channel->request("consumer.requestKeyFrame", this->_internal);
+		co_await this->_channel->request("consumer.requestKeyFrame", this->_internal);
 	}
 
 	/**
@@ -540,13 +541,13 @@ class Consumer : public EnhancedEventEmitter
 
 		const reqData = { types };
 
-		await this->_channel->request(
+		co_await this->_channel->request(
 			"consumer.enableTraceEvent", this->_internal, reqData);
 	}
 
 	private _handleWorkerNotifications(): void
 	{
-		this->_channel->on(this->_internal.consumerId, (event: string, data?: any) =>
+		this->_channel->on(this->_internal.consumerId, (std::string event, json data) =>
 		{
 			switch (event)
 			{
@@ -652,4 +653,5 @@ class Consumer : public EnhancedEventEmitter
 			}
 		});
 	}
-}
+};
+

@@ -345,4 +345,3 @@ const supportedRtpCapabilities : RtpCapabilities =
 	]
 };
 
-export { supportedRtpCapabilities };

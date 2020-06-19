@@ -3,7 +3,7 @@
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
-import { PayloadChannel } from "./PayloadChannel";
+#include "PayloadChannel.hpp"
 #include "Producer.hpp"
 
 const Logger* logger = new Logger("RtpObserver");
@@ -11,23 +11,24 @@ const Logger* logger = new Logger("RtpObserver");
 class RtpObserver : public EnhancedEventEmitter
 {
 	// Internal data.
-	protected readonly _internal:
+protected:
+	json _internal:
 	{
 		routerId: string;
 		rtpObserverId: string;
 	};
 
 	// Channel instance.
-	protected readonly _channel: Channel;
+	Channel* _channel;
 
 	// PayloadChannel instance.
-	protected readonly _payloadChannel: PayloadChannel;
+	PayloadChannel* _payloadChannel;
 
 	// Closed flag.
-	protected _closed = false;
+	bool _closed = false;
 
 	// Paused flag.
-	protected _paused = false;
+	bool _paused = false;
 
 	// Custom app data.
 	private readonly _appData?: any;
@@ -44,7 +45,7 @@ class RtpObserver : public EnhancedEventEmitter
 	 * @emits routerclose
 	 * @emits @close
 	 */
-	constructor(
+	RtpObserver(
 		{
 			internal,
 			channel,
@@ -56,7 +57,7 @@ class RtpObserver : public EnhancedEventEmitter
 			internal: any;
 			channel: Channel;
 			payloadChannel: PayloadChannel;
-			appData: any;
+			json appData;
 			getProducerById: (producerId: string) => Producer;
 		}
 	)
@@ -83,7 +84,7 @@ class RtpObserver : public EnhancedEventEmitter
 	/**
 	 * Whether the RtpObserver is closed.
 	 */
-	get closed(): boolean
+	bool closed()
 	{
 		return this->_closed;
 	}
@@ -91,7 +92,7 @@ class RtpObserver : public EnhancedEventEmitter
 	/**
 	 * Whether the RtpObserver is paused.
 	 */
-	get paused(): boolean
+	bool paused()
 	{
 		return this->_paused;
 	}
@@ -99,7 +100,7 @@ class RtpObserver : public EnhancedEventEmitter
 	/**
 	 * App custom data.
 	 */
-	get appData(): any
+	json appData()
 	{
 		return this->_appData;
 	}
@@ -107,7 +108,7 @@ class RtpObserver : public EnhancedEventEmitter
 	/**
 	 * Invalid setter.
 	 */
-	set appData(appData: any) // eslint-disable-line no-unused-vars
+	set appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -129,7 +130,7 @@ class RtpObserver : public EnhancedEventEmitter
 	/**
 	 * Close the RtpObserver.
 	 */
-	close(): void
+	void close()
 	{
 		if (this->_closed)
 			return;
@@ -155,7 +156,7 @@ class RtpObserver : public EnhancedEventEmitter
 	 *
 	 * @private
 	 */
-	routerClosed(): void
+	void routerClosed()
 	{
 		if (this->_closed)
 			return;
@@ -182,7 +183,7 @@ class RtpObserver : public EnhancedEventEmitter
 
 		const wasPaused = this->_paused;
 
-		await this->_channel->request("rtpObserver.pause", this->_internal);
+		co_await this->_channel->request("rtpObserver.pause", this->_internal);
 
 		this->_paused = true;
 
@@ -200,7 +201,7 @@ class RtpObserver : public EnhancedEventEmitter
 
 		const wasPaused = this->_paused;
 
-		await this->_channel->request("rtpObserver.resume", this->_internal);
+		co_await this->_channel->request("rtpObserver.resume", this->_internal);
 
 		this->_paused = false;
 
@@ -219,7 +220,7 @@ class RtpObserver : public EnhancedEventEmitter
 		const producer = this->_getProducerById(producerId);
 		const internal = { ...this->_internal, producerId };
 
-		await this->_channel->request("rtpObserver.addProducer", internal);
+		co_await this->_channel->request("rtpObserver.addProducer", internal);
 
 		// Emit observer event.
 		this->_observer.safeEmit("addproducer", producer);
@@ -235,7 +236,7 @@ class RtpObserver : public EnhancedEventEmitter
 		const producer = this->_getProducerById(producerId);
 		const internal = { ...this->_internal, producerId };
 
-		await this->_channel->request("rtpObserver.removeProducer", internal);
+		co_await this->_channel->request("rtpObserver.removeProducer", internal);
 
 		// Emit observer event.
 		this->_observer.safeEmit("removeproducer", producer);
