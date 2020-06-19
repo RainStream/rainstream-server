@@ -108,28 +108,29 @@ const Logger* logger = new Logger("Router");
 class Router : public EnhancedEventEmitter
 {
 	// Internal data.
-	private readonly _internal:
+private:
+	readonly _internal:
 	{
 		routerId: std::string;
 	};
 
 	// Router data.
-	private readonly _data:
+	readonly _data:
 	{
 		rtpCapabilities: RtpCapabilities;
 	}
 
 	// Channel instance.
-	private readonly _channel: Channel;
+	Channel* _channel;
 
 	// PayloadChannel instance.
-	private readonly _payloadChannel: PayloadChannel;
+	PayloadChannel* _payloadChannel;
 
 	// Closed flag.
-	private _closed = false;
+	bool _closed = false;
 
 	// Custom app data.
-	private readonly _appData?: any;
+	json _appData;
 
 	// Transports map.
 	std::map<std::string, Transport*> _transports;
@@ -264,7 +265,7 @@ class Router : public EnhancedEventEmitter
 		this->_producers.clear();
 
 		// Close every RtpObserver.
-		for (const rtpObserver : this->_rtpObservers.values())
+		for (const rtpObserver : this->_rtpObservers)
 		{
 			rtpObserver.routerClosed();
 		}
@@ -946,16 +947,7 @@ class Router : public EnhancedEventEmitter
 	/**
 	 * Check whether the given RTP capabilities can consume the given Producer.
 	 */
-	bool canConsume(
-		{
-			producerId,
-			rtpCapabilities
-		}:
-		{
-			producerId: std::string;
-			rtpCapabilities: RtpCapabilities;
-		}
-	)
+	bool canConsume(std::string producerId, RtpCapabilities rtpCapabilities)
 	{
 		const producer = this->_producers.get(producerId);
 
