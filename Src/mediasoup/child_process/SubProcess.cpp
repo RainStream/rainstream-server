@@ -115,7 +115,7 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 	int err = uv_spawn(uv_default_loop(), &subProcess->req, &subProcess->options);
 	if (err != 0)
 	{
-		LOG(ERROR) << "uv_spawn() failed: " << uv_strerror(err);
+		subProcess->logger->error("uv_spawn() failed: ", uv_strerror(err));
 
 		delete subProcess;
 		subProcess = nullptr;
@@ -128,6 +128,7 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 }
 
 SubProcess::SubProcess()
+	: logger(new Logger("Socket"))
 {
 
 }
@@ -141,8 +142,7 @@ void SubProcess::Close(std::string error)
 {
 	if (this->closed)
 	{
-		LOG(ERROR) << "already closed";
-
+		logger->error("already closed");
 		return;
 	}
 
@@ -179,7 +179,6 @@ void SubProcess::OnUvReqClosed(int64_t exit_status, int term_signal)
 
 	emit("exit", exit_status, term_signal);
 
-	LOG(ERROR) << "child process exited "
-		<< " code:" << exit_status
-		<< " signal:" << term_signal;
+	logger->error("child process exited code:%d, signal:%d",
+		exit_status, term_signal);
 }

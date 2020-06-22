@@ -4,7 +4,8 @@
 #include "Channel.hpp"
 #include "Logger.hpp"
 #include "utils.hpp"
-#include "PayloadChannel.hpp"
+#include "Router.hpp"
+//#include "PayloadChannel.hpp"
 #include "child_process/SubProcess.hpp"
 
 #define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
@@ -73,8 +74,8 @@ Worker::Worker(json settings)
 		this->_child->stdio()[4],
 		this->_pid);
 
-	this->_payloadChannel = new PayloadChannel(this->_child->stdio()[5],
-		this->_child->stdio()[6]);
+// 	this->_payloadChannel = new PayloadChannel(this->_child->stdio()[5],
+// 		this->_child->stdio()[6]);
 
 	this->_appData = settings.value("appData", json());
 
@@ -132,9 +133,9 @@ Worker::Worker(json settings)
 		}
 	});
 
-	this->_child->on("error", (Error error)
+	this->_child->on("error", [=,&spawnDone](Error error)
 	{
-		this->_child = undefined;
+		this->_child = nullptr;
 		this->close();
 
 		if (!spawnDone)
@@ -142,14 +143,14 @@ Worker::Worker(json settings)
 			spawnDone = true;
 
 			logger->error(
-				"worker process failed [pid:%s]: %s", this->_pid, error.message);
+				"worker process failed [pid:%s]: %s", this->_pid, error.ToString().c_str());
 
 			this->emit("@failure", error);
 		}
 		else
 		{
 			logger->error(
-				"worker process error [pid:%s]: %s", this->_pid, error.message);
+				"worker process error [pid:%s]: %s", this->_pid, error.ToString().c_str());
 
 			this->safeEmit("died", error);
 		}
@@ -201,7 +202,7 @@ void Worker::close()
 	this->_channel->close();
 
 	// Close the PayloadChannel instance.
-	this->_payloadChannel->close();
+//	this->_payloadChannel->close();
 
 	// Close every Router.
 	for (Router* router : this->_routers)

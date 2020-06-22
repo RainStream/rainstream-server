@@ -3,7 +3,6 @@
 #include "PipeStreamSocket.hpp"
 #include <EventEmitter.hpp>
 
-
 class Socket : public PipeStreamSocket, public EventEmitter
 {
 public:
@@ -36,4 +35,6 @@ private:
 	// Others.
 	size_t msgStart{ 0 }; // Where the latest message starts.
 	bool closed{ false };
+
+	Logger* logger;
 };

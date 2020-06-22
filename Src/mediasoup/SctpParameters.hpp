@@ -2,9 +2,22 @@
 
 #include "common.hpp"
 
+struct NumSctpStreams
+{
+	/**
+	 * Initially requested uint32_t of outgoing SCTP streams.
+	 */
+	uint32_t OS;
+
+	/**
+	 * Maximum uint32_t of incoming SCTP streams.
+	 */
+	uint32_t MIS;
+};
+
 struct SctpCapabilities
 {
-  numStreams: NumSctpStreams;
+	NumSctpStreams numStreams;
 };
 
 /**
@@ -29,40 +42,29 @@ struct SctpCapabilities
  * mediasoup-client provides specific per browser/version OS and MIS values via
  * the device.sctpCapabilities getter.
  */
-struct NumSctpStreams
-{
-	/**
-	 * Initially requested uint32_t of outgoing SCTP streams.
-	 */
-	OS: uint32_t;
 
-	/**
-	 * Maximum uint32_t of incoming SCTP streams.
-	 */
-	MIS: uint32_t;
-};
 
 struct SctpParameters
 {
 	/**
 	 * Must always equal 5000.
 	 */
-	port: uint32_t;
+	uint32_t port;
 
 	/**
 	 * Initially requested uint32_t of outgoing SCTP streams.
 	 */
-	OS: uint32_t;
+	uint32_t OS;
 
 	/**
 	 * Maximum uint32_t of incoming SCTP streams.
 	 */
-	MIS: uint32_t;
+	uint32_t MIS;
 
 	/**
 	 * Maximum allowed size for SCTP messages.
 	 */
-	maxMessageSize: uint32_t;
+	uint32_t maxMessageSize;
 };
 
 /**
@@ -77,23 +79,23 @@ struct SctpStreamParameters
 	/**
 	 * SCTP stream id.
 	 */
-	streamId: uint32_t;
+	uint32_t streamId;
 
 	/**
 	 * Whether data messages must be received in order. If true the messages will
 	 * be sent reliably. Default true.
 	 */
-	ordered?: bool;
+	bool ordered;
 
 	/**
 	 * When ordered is false indicates the time (in milliseconds) after which a
 	 * SCTP packet will stop being retransmitted.
 	 */
-	maxPacketLifeTime?: uint32_t;
+	uint32_t maxPacketLifeTime;
 
 	/**
 	 * When ordered is false indicates the maximum uint32_t of times a packet will
 	 * be retransmitted.
 	 */
-	maxRetransmits?: uint32_t;
+	uint32_t maxRetransmits;
 };

@@ -42,6 +42,12 @@
     <ClCompile Include="utils.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="ortc.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="scalabilityModes.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="child_process\PipeStreamSocket.hpp">
@@ -113,9 +119,6 @@
     <ClInclude Include="RtpParameters.hpp">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="scalabilityModes.hpp">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="SctpParameters.hpp">
       <Filter>include</Filter>
     </ClInclude>
@@ -129,6 +132,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="WebRtcTransport.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="scalabilityModes.hpp">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

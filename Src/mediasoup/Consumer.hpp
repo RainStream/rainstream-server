@@ -51,7 +51,7 @@ struct ConsumerOptions
 /**
  * Valid types for "trace" event.
  */
-struct ConsumerTraceEventType = "rtp" | "keyframe" | "nack" | "pli" | "fir";
+using ConsumerTraceEventType = std::string;// = "rtp" | "keyframe" | "nack" | "pli" | "fir";
 
 /**
  * "trace" event data.
@@ -71,7 +71,7 @@ struct ConsumerTraceEventData
 	/**
 	 * Event direction.
 	 */
-	std::string direction: "in" | "out";
+	std::string direction;// : "in" | "out";
 
 	/**
 	 * Per type information.

@@ -41,7 +41,7 @@ private:
 
 	Channel* _channel{ nullptr };
 
-	PayloadChannel* _payloadChannel{ nullptr };
+	//PayloadChannel* _payloadChannel{ nullptr };
 
 	bool _closed = false;
 

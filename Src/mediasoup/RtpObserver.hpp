@@ -4,7 +4,7 @@
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
-#include "PayloadChannel.hpp"
+//#include "PayloadChannel.hpp"
 #include "Producer.hpp"
 
 const Logger* logger = new Logger("RtpObserver");

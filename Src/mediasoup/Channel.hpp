@@ -6,7 +6,6 @@
 #include "errors.hpp"
 #include "EnhancedEventEmitter.hpp"
 
-
 class Socket;
 
 class Channel : public EnhancedEventEmitter
@@ -34,5 +33,7 @@ private:
 
 	// Next id for messages sent to the worker process.
 	int32_t _nextId = 0;
+
+	Logger* logger;
 
 };

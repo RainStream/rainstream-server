@@ -164,6 +164,11 @@
     <ClCompile Include="child_process\SubProcess.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="common.cpp" />
+    <ClCompile Include="ortc.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="scalabilityModes.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="Worker.cpp" />
   </ItemGroup>

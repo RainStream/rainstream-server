@@ -11,39 +11,39 @@ struct ProducerOptions
 	/**
 	 * Producer id (just for Router.pipeToRouter() method).
 	 */
-	id?: string;
+	std::string id;
 
 	/**
 	 * Media kind ("audio" or "video").
 	 */
-	kind: MediaKind;
+	std::string kind;
 
 	/**
 	 * RTP parameters defining what the endpoint is sending.
 	 */
-	rtpParameters: RtpParameters;
+	RtpParameters rtpParameters;
 
 	/**
 	 * Whether the producer must start in paused mode. Default false.
 	 */
-	paused?: bool;
+	bool paused;
 
 	/**
 	 * Just for video. Time (in ms) before asking the sender for a new key frame
 	 * after having asked a previous one. Default 0.
 	 */
-	keyFrameRequestDelay?;
+	uint32_t keyFrameRequestDelay;
 
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
+	json appData;
 };
 
 /**
  * Valid types for "trace" event.
  */
-struct ProducerTraceEventType = "rtp" | "keyframe" | "nack" | "pli" | "fir";
+using ProducerTraceEventType = std::string ;// = "rtp" | "keyframe" | "nack" | "pli" | "fir";
 
 /**
  * "trace" event data.
@@ -63,7 +63,7 @@ struct ProducerTraceEventData
 	/**
 	 * Event direction.
 	 */
-	direction: "in" | "out";
+	std::string direction;// "in" | "out";
 
 	/**
 	 * Per type information.
@@ -81,7 +81,7 @@ struct ProducerScore
 	/**
 	 * RID of the RTP stream.
 	 */
-	rid?: string;
+	std::string rid;
 
 	/**
 	 * The score of the RTP stream.
@@ -139,20 +139,20 @@ struct ProducerStat
 /**
  * Producer type.
  */
-struct ProducerType = "simple" | "simulcast" | "svc";
+using ProducerType = std::string; // = "simple" | "simulcast" | "svc";
 
-const Logger* logger = new Logger("Producer");
 
 class Producer : public EnhancedEventEmitter
 {
+	Logger* logger;
 	// Internal data.
 private:
-	json _internal:
+	json _internal/*:
 	{
 		routerId: string;
 		transportId: string;
 		producerId: string;
-	};
+	}*/;
 
 	// Producer data.
 	readonly _data:
@@ -196,7 +196,9 @@ private:
 			channel,
 			appData,
 			paused
-		}:
+		}
+		: logger(new Logger("Producer"))
+
 		{
 			internal: any;
 			data: any;

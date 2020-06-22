@@ -12,8 +12,9 @@ const int  NS_PAYLOAD_MAX_LEN = 4194304;
 static uint8_t WriteBuffer[NS_MESSAGE_MAX_LEN];
 
 Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
+	: logger(new Logger("Channel"))
 {
-	DLOG(INFO) << "constructor()";
+	logger->debug("constructor()");
 
 	this->_producerSocket = producerSocket;
 	this->_consumerSocket = consumerSocket;
@@ -34,54 +35,53 @@ Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 
 				// 68 = "D" (a debug log).
 			case 68:
-				DLOG(INFO) << nsPayload.substr(1);
+				logger->debug(nsPayload.substr(1).c_str());
 				break;
 
 				// 87 = "W" (a warning log).
 			case 87:
-				LOG(WARNING) << nsPayload.substr(1);
+				logger->warn(nsPayload.substr(1).c_str());
 				break;
 
 				// 69 = "E" (an error log).
 			case 69:
-				LOG(ERROR) << nsPayload.substr(1);
+				logger->error(nsPayload.substr(1).c_str());
 				break;
 				// 88 = "X" (a dump log).
 			case 88:
 				// eslint-disable-next-line no-console
-				DLOG(INFO) << nsPayload.substr(1);
+				logger->debug(nsPayload.substr(1).c_str());
 				break;
 
 			default:
-				LOG(ERROR) <<
-					"unexpected data: %s", nsPayload;
+				logger->error("unexpected data: %s", nsPayload.c_str());
 			}
 		}
 		catch (std::exception error)
 		{
-			LOG(ERROR) << "received invalid message:" << error.what();
+			logger->error("received invalid message : " , error.what());
 		}
 
 	});
 
 	this->_consumerSocket->on("end", [=](json data)
 	{
-		DLOG(INFO) << "Consumer channel ended by the other side";
+		logger->debug("Consumer channel ended by the other side");
 	});
 
 	this->_consumerSocket->on("error", [=](json data)
 	{
-		LOG(ERROR) << "Consumer channel error:" << data.dump();
+		logger->error("Consumer channel error:", data.dump().c_str());
 	});
 
 	this->_producerSocket->on("end", [=](json data)
 	{
-		DLOG(INFO) << "Producer channel ended by the other side";
+		logger->debug("Producer channel ended by the other side");
 	});
 
 	this->_producerSocket->on("error", [=](json data)
 	{
-		LOG(ERROR) << "Producer channel error:" << data.dump();
+		logger->error("Producer channel error:", data.dump().c_str());
 	});
 
 	_consumerSocket->Start();
@@ -94,7 +94,7 @@ void Channel::close()
 	if (this->_closed)
 		return;
 
-	DLOG(INFO) << "close()";
+	logger->debug("close()");
 
 	this->_closed = true;
 
@@ -130,7 +130,7 @@ std::future<json> Channel::request(std::string method, const json& internal, con
 
 	uint32_t id = this->_nextId;
 
-	DLOG(INFO) << "request() [method" << method << ", id:" << id << "]";
+	logger->debug("request() [method\"%s\", id:\"%d\"]", method.c_str(), id);
 
 	if (this->_closed)
 		throw new InvalidStateError("Channel closed");
@@ -171,15 +171,14 @@ void Channel::_processMessage(const json& msg)
 		uint32_t id = msg["id"].get<uint32_t>();
 
 		if (msg.count("accepted") && msg["accepted"].get<bool>())
-			DLOG(INFO) << "request succeeded [id:" << id << "]";
+			logger->debug("request succeeded [id:\"%d\"]",id);
 		else
-			LOG(ERROR) << "request failed [id:" << id <<
-			" reason:" << msg["reason"].get<std::string>() << "]";
+			logger->error("request failed [id:\"%d\"] reason:%s]", 
+				id, msg["reason"].get<std::string>().c_str());
 
 		if (!this->_sents.count(id))
 		{
-			LOG(ERROR) << "received Response does not match any sent Request";
-
+			logger->error("received Response does not match any sent Request");
 			return;
 		}
 
@@ -202,7 +201,7 @@ void Channel::_processMessage(const json& msg)
 	// Otherwise unexpected message.
 	else
 	{
-		LOG(ERROR) << "received message is not a Response nor a Notification";
+		logger->error("received message is not a Response nor a Notification");
 	}
 }
 
@@ -219,16 +218,16 @@ std::string Channel::_makePayload(const json& msg)
 	if (nsPayloadLen == 0)
 	{
 		nsNumLen = 1;
-		WriteBuffer[0] = "0";
-		WriteBuffer[1] = ":";
-		WriteBuffer[2] = ",";
+		WriteBuffer[0] = '0';
+		WriteBuffer[1] = ':';
+		WriteBuffer[2] = ',';
 	}
 	else
 	{
 		nsNumLen = static_cast<size_t>(std::ceil(std::log10(static_cast<double>(nsPayloadLen) + 1)));
 		std::sprintf(reinterpret_cast<char*>(WriteBuffer), "%zu:", nsPayloadLen);
 		std::memcpy(WriteBuffer + nsNumLen + 1, nsPayload.c_str(), nsPayloadLen);
-		WriteBuffer[nsNumLen + nsPayloadLen + 1] = ",";
+		WriteBuffer[nsNumLen + nsPayloadLen + 1] = ',';
 	}
 
 	nsLen = nsNumLen + nsPayloadLen + 2;
