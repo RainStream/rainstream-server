@@ -203,7 +203,7 @@ class PlainTransport : public Transport
 	 * @emits sctpstatechange - (sctpState: SctpState)
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -305,7 +305,7 @@ class PlainTransport : public Transport
 					this->safeEmit("tuple", tuple);
 
 					// Emit observer event.
-					this->_observer.safeEmit("tuple", tuple);
+					this->_observer->safeEmit("tuple", tuple);
 
 					break;
 				}
@@ -319,7 +319,7 @@ class PlainTransport : public Transport
 					this->safeEmit("rtcptuple", rtcpTuple);
 
 					// Emit observer event.
-					this->_observer.safeEmit("rtcptuple", rtcpTuple);
+					this->_observer->safeEmit("rtcptuple", rtcpTuple);
 
 					break;
 				}
@@ -333,7 +333,7 @@ class PlainTransport : public Transport
 					this->safeEmit("sctpstatechange", sctpState);
 
 					// Emit observer event.
-					this->_observer.safeEmit("sctpstatechange", sctpState);
+					this->_observer->safeEmit("sctpstatechange", sctpState);
 
 					break;
 				}
@@ -345,7 +345,7 @@ class PlainTransport : public Transport
 					this->safeEmit("trace", trace);
 
 					// Emit observer event.
-					this->_observer.safeEmit("trace", trace);
+					this->_observer->safeEmit("trace", trace);
 
 					break;
 				}

@@ -38,7 +38,7 @@ protected:
 	protected readonly _getProducerById: (producerId: string) => Producer;
 
 	// Observer instance.
-	protected readonly _observer = new EnhancedEventEmitter();
+	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
 	/**
 	 * @private
@@ -123,7 +123,7 @@ protected:
 	 * @emits addproducer - (producer: Producer)
 	 * @emits removeproducer - (producer: Producer)
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -149,7 +149,7 @@ protected:
 		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -172,7 +172,7 @@ protected:
 		this->safeEmit("routerclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -190,7 +190,7 @@ protected:
 
 		// Emit observer event.
 		if (!wasPaused)
-			this->_observer.safeEmit("pause");
+			this->_observer->safeEmit("pause");
 	}
 
 	/**
@@ -208,7 +208,7 @@ protected:
 
 		// Emit observer event.
 		if (wasPaused)
-			this->_observer.safeEmit("resume");
+			this->_observer->safeEmit("resume");
 	}
 
 	/**
@@ -224,7 +224,7 @@ protected:
 		co_await this->_channel->request("rtpObserver.addProducer", internal);
 
 		// Emit observer event.
-		this->_observer.safeEmit("addproducer", producer);
+		this->_observer->safeEmit("addproducer", producer);
 	}
 
 	/**
@@ -240,6 +240,6 @@ protected:
 		co_await this->_channel->request("rtpObserver.removeProducer", internal);
 
 		// Emit observer event.
-		this->_observer.safeEmit("removeproducer", producer);
+		this->_observer->safeEmit("removeproducer", producer);
 	}
 }

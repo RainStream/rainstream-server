@@ -10,92 +10,96 @@
 //#include "PayloadChannel.hpp"
 #include "Producer.hpp"
 #include "Consumer.hpp"
-#include "DataProducer.hpp"
-#include "DataConsumer.hpp"
+//#include "DataProducer.hpp"
+//#include "DataConsumer.hpp"
 #include "RtpParameters.hpp"
-#include "SctpParameters.hpp"
+//#include "SctpParameters.hpp"
 
-export interface TransportListenIp
+struct TransportListenIp
 {
 	/**
 	 * Listening IPv4 or IPv6.
 	 */
-	ip: string;
+	std::string ip;
 
 	/**
 	 * Announced IPv4 or IPv6 (useful when running mediasoup behind NAT with
 	 * private IP).
 	 */
-	announcedIp?: string;
-}£»
+	std::string announcedIp;
+};
 
 /**
  * Transport protocol.
  */
-struct TransportProtocol = "udp" | "tcp";
+using TransportProtocol = std::string;// = "udp" | "tcp";
 
-export interface TransportTuple
+struct TransportTuple
 {
-	localIp: string;
-	localPort: uint32_t;
-	remoteIp?: string;
-	remotePort?: uint32_t;
-	protocol: TransportProtocol;
-}£»
+	std::string localIp;
+	uint32_t localPort;
+	std::string remoteIp;
+	uint32_t remotePort;
+	TransportProtocol protocol;
+};
 
 /**
  * Valid types for "trace" event.
  */
-struct TransportTraceEventType = "probation" | "bwe";
+using TransportTraceEventType = std::string;// "probation" | "bwe";
 
 /**
  * "trace" event data.
  */
-export interface TransportTraceEventData
+struct TransportTraceEventData
 {
 	/**
 	 * Trace type.
 	 */
-	type: TransportTraceEventType;
+	TransportTraceEventType type;
 
 	/**
 	 * Event timestamp.
 	 */
-	timestamp: uint32_t;
+	uint32_t timestamp;
 
 	/**
 	 * Event direction.
 	 */
-	direction: "in" | "out";
+	std::string direction;// "in" | "out";
 
 	/**
 	 * Per type information.
 	 */
-	info: any;
-}£»
+	json info;
+};
 
-struct SctpState = "new" | "connecting" | "connected" | "failed" | "closed";
+using SctpState = std::string;//  "new" | "connecting" | "connected" | "failed" | "closed";
 
-const Logger* logger = new Logger("Transport");
+class Producer;
+class Consumer;
+class DataProducer;
+class DataConsumer;
 
 class Transport : public EnhancedEventEmitter
 {
+	Logger* logger;
 	// Internal data.
 protected:
-	json _internal:
-	{
-		routerId: string;
-		transportId: string;
-	};
+	json _internal;
+	// 	{
+	// 		routerId: string;
+	// 		transportId: string;
+	// 	};
 
-	// Transport data. This is set by the subclass.
-	json _data:
-	{
-		sctpParameters?: SctpParameters;
-		sctpState?: SctpState;
-	};
+		// Transport data. This is set by the subclass.
+	json _data;
+	// 	{
+	// 		sctpParameters?: SctpParameters;
+	// 		sctpState?: SctpState;
+	// 	};
 
-	// Channel instance.
+		// Channel instance.
 	Channel* _channel;
 
 	// PayloadChannel instance.
@@ -109,13 +113,13 @@ private:
 	json _appData;
 
 	// Method to retrieve Router RTP capabilities.
-	readonly _getRouterRtpCapabilities: () => RtpCapabilities;
+	readonly _getRouterRtpCapabilities : () = > RtpCapabilities;
 
 	// Method to retrieve a Producer.
-	readonly _getProducerById: (producerId: string) => Producer;
+	readonly _getProducerById : (producerId: string) = > Producer;
 
 	// Method to retrieve a DataProducer.
-	readonly _getDataProducerById: (dataProducerId: string) => DataProducer;
+	readonly _getDataProducerById : (dataProducerId: string) = > DataProducer;
 
 	// Producers map.
 	std::map<std::string, Producer*> _producers;
@@ -137,7 +141,7 @@ private:
 	uint32_t _nextMidForConsumers = 0;
 
 	// Buffer with available SCTP stream ids.
-	private _sctpStreamIds?: Buffer;
+	private _sctpStreamIds ? : Buffer;
 
 	// Next SCTP stream id.
 	uint32_t _nextSctpStreamId = 0;
@@ -157,27 +161,16 @@ protected:
 	 * @emits @dataproducerclose - (dataProducer: DataProducer)
 	 */
 	Transport(
-		{
-			internal,
-			data,
-			channel,
-			payloadChannel,
-			appData,
-			getRouterRtpCapabilities,
-			getProducerById,
-			getDataProducerById
-		}:
-		{
-			internal: any;
-			data: any;
-			channel: Channel;
-			payloadChannel: PayloadChannel;
-			json appData;
-			getRouterRtpCapabilities: () => RtpCapabilities;
-			getProducerById: (producerId: string) => Producer;
-			getDataProducerById: (dataProducerId: string) => DataProducer;
-		}
-	)
+		json internal,
+		json data,
+		Channel* channel,
+		Channel* payloadChannel,
+		json appData,
+		getRouterRtpCapabilities,
+		getProducerById,
+		getDataProducerById
+)
+	: logger( new Logger("Transport"))
 	{
 		super();
 
@@ -196,9 +189,9 @@ protected:
 	/**
 	 * Transport id.
 	 */
-	get id(): string
+	std::string id()
 	{
-		return this->_internal.transportId;
+		return this->_internal["transportId"];
 	}
 
 	/**
@@ -234,7 +227,7 @@ protected:
 	 * @emits newdataproducer - (dataProducer: DataProducer)
 	 * @emits newdataconsumer - (dataProducer: DataProducer)
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -252,15 +245,15 @@ protected:
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.transportId);
+		this->_channel->removeAllListeners(this->_internal["transportId"]);
 
 		this->_channel->request("transport.close", this->_internal)
 			.catch(() => {});
 
 		// Close every Producer.
-		for (const producer of this->_producers.values())
+		for (const producer : this->_producers.values())
 		{
-			producer.transportClosed();
+			producer->transportClosed();
 
 			// Must tell the Router.
 			this->emit("@producerclose", producer);
@@ -268,16 +261,16 @@ protected:
 		this->_producers.clear();
 
 		// Close every Consumer.
-		for (const consumer of this->_consumers.values())
+		for (const consumer : this->_consumers.values())
 		{
-			consumer.transportClosed();
+			consumer->transportClosed();
 		}
 		this->_consumers.clear();
 
 		// Close every DataProducer.
-		for (const dataProducer of this->_dataProducers.values())
+		for (const dataProducer : this->_dataProducers.values())
 		{
-			dataProducer.transportClosed();
+			dataProducer->transportClosed();
 
 			// Must tell the Router.
 			this->emit("@dataproducerclose", dataProducer);
@@ -285,16 +278,16 @@ protected:
 		this->_dataProducers.clear();
 
 		// Close every DataConsumer.
-		for (const dataConsumer of this->_dataConsumers.values())
+		for (const dataConsumer : this->_dataConsumers.values())
 		{
-			dataConsumer.transportClosed();
+			dataConsumer->transportClosed();
 		}
 		this->_dataConsumers.clear();
 
 		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -303,7 +296,7 @@ protected:
 	 * @private
 	 * @virtual
 	 */
-	routerClosed(): void
+	void routerClosed()
 	{
 		if (this->_closed)
 			return;
@@ -313,12 +306,12 @@ protected:
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.transportId);
+		this->_channel->removeAllListeners(this->_internal["transportId"]);
 
 		// Close every Producer.
 		for (const producer of this->_producers.values())
 		{
-			producer.transportClosed();
+			producer->transportClosed();
 
 			// NOTE: No need to tell the Router since it already knows (it has
 			// been closed in fact).
@@ -328,14 +321,14 @@ protected:
 		// Close every Consumer.
 		for (const consumer of this->_consumers.values())
 		{
-			consumer.transportClosed();
+			consumer->transportClosed();
 		}
 		this->_consumers.clear();
 
 		// Close every DataProducer.
 		for (const dataProducer of this->_dataProducers.values())
 		{
-			dataProducer.transportClosed();
+			dataProducer->transportClosed();
 
 			// NOTE: No need to tell the Router since it already knows (it has
 			// been closed in fact).
@@ -345,14 +338,14 @@ protected:
 		// Close every DataConsumer.
 		for (const dataConsumer of this->_dataConsumers.values())
 		{
-			dataConsumer.transportClosed();
+			dataConsumer->transportClosed();
 		}
 		this->_dataConsumers.clear();
 
 		this->safeEmit("routerclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -425,7 +418,7 @@ protected:
 			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
-		ortc.validateRtpParameters(rtpParameters);
+		ortc::validateRtpParameters(rtpParameters);
 
 		// If missing or empty encodings, add one.
 		if (
@@ -462,11 +455,11 @@ protected:
 		const routerRtpCapabilities = this->_getRouterRtpCapabilities();
 
 		// This may throw.
-		const rtpMapping = ortc.getProducerRtpParametersMapping(
+		const rtpMapping = ortc::getProducerRtpParametersMapping(
 			rtpParameters, routerRtpCapabilities);
 
 		// This may throw.
-		const consumableRtpParameters = ortc.getConsumableRtpParameters(
+		const consumableRtpParameters = ortc::getConsumableRtpParameters(
 			kind, rtpParameters, routerRtpCapabilities, rtpMapping);
 
 		const internal = { ...this->_internal, producerId: id || uuidv4() };
@@ -492,17 +485,17 @@ protected:
 				paused
 			});
 
-		this->_producers.set(producer.id, producer);
-		producer.on("@close", () =>
+		this->_producers.set(producer->id, producer);
+		producer->on("@close", () =>
 		{
-			this->_producers.delete(producer.id);
+			this->_producers.delete(producer->id);
 			this->emit("@producerclose", producer);
 		});
 
 		this->emit("@newproducer", producer);
 
 		// Emit observer event.
-		this->_observer.safeEmit("newproducer", producer);
+		this->_observer->safeEmit("newproducer", producer);
 
 		return producer;
 	}
@@ -530,7 +523,7 @@ protected:
 			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
-		ortc.validateRtpCapabilities(rtpCapabilities!);
+		ortc::validateRtpCapabilities(rtpCapabilities!);
 
 		const producer = this->_getProducerById(producerId);
 
@@ -538,8 +531,8 @@ protected:
 			throw Error(`Producer with id "${producerId}" not found`);
 
 		// This may throw.
-		const rtpParameters = ortc.getConsumerRtpParameters(
-			producer.consumableRtpParameters, rtpCapabilities!);
+		const rtpParameters = ortc::getConsumerRtpParameters(
+			producer->consumableRtpParameters, rtpCapabilities!);
 
 		// Set MID.
 		rtpParameters.mid = `${this->_nextMidForConsumers++}`;
@@ -556,10 +549,10 @@ protected:
 		const internal = { ...this->_internal, consumerId: uuidv4(), producerId };
 		const reqData =
 		{
-			kind                   : producer.kind,
+			kind                   : producer->kind,
 			rtpParameters,
-			type                   : producer.type,
-			consumableRtpEncodings : producer.consumableRtpParameters.encodings,
+			type                   : producer->type,
+			consumableRtpEncodings : producer->consumableRtpParameters.encodings,
 			paused,
 			preferredLayers
 		};
@@ -567,7 +560,7 @@ protected:
 		const status =
 			co_await this->_channel->request("transport.consume", internal, reqData);
 
-		const data = { kind: producer.kind, rtpParameters, type: producer.type };
+		const data = { kind: producer->kind, rtpParameters, type: producer->type };
 
 		const consumer = new Consumer(
 			{
@@ -581,12 +574,12 @@ protected:
 				preferredLayers : status.preferredLayers
 			});
 
-		this->_consumers.set(consumer.id, consumer);
-		consumer.on("@close", () => this->_consumers.delete(consumer.id));
-		consumer.on("@producerclose", () => this->_consumers.delete(consumer.id));
+		this->_consumers.set(consumer->id, consumer);
+		consumer->on("@close", () => this->_consumers.delete(consumer->id));
+		consumer->on("@producerclose", () => this->_consumers.delete(consumer->id));
 
 		// Emit observer event.
-		this->_observer.safeEmit("newconsumer", consumer);
+		this->_observer->safeEmit("newconsumer", consumer);
 
 		return consumer;
 	}
@@ -619,7 +612,7 @@ protected:
 			type = "sctp";
 
 			// This may throw.
-			ortc.validateSctpStreamParameters(sctpStreamParameters!);
+			ortc::validateSctpStreamParameters(sctpStreamParameters!);
 		}
 		// If this is a DirectTransport, sctpStreamParameters must not be given.
 		else
@@ -654,17 +647,17 @@ protected:
 				appData
 			});
 
-		this->_dataProducers.set(dataProducer.id, dataProducer);
-		dataProducer.on("@close", () =>
+		this->_dataProducers.set(dataProducer->id, dataProducer);
+		dataProducer->on("@close", () =>
 		{
-			this->_dataProducers.delete(dataProducer.id);
+			this->_dataProducers.delete(dataProducer->id);
 			this->emit("@dataproducerclose", dataProducer);
 		});
 
 		this->emit("@newdataproducer", dataProducer);
 
 		// Emit observer event.
-		this->_observer.safeEmit("newdataproducer", dataProducer);
+		this->_observer->safeEmit("newdataproducer", dataProducer);
 
 		return dataProducer;
 	}
@@ -704,7 +697,7 @@ protected:
 		{
 			type = "sctp";
 			sctpStreamParameters =
-				utils.clone(dataProducer.sctpStreamParameters) as SctpStreamParameters;
+				utils.clone(dataProducer->sctpStreamParameters) as SctpStreamParameters;
 
 			// Override if given.
 			if (ordered !== undefined)
@@ -761,24 +754,24 @@ protected:
 				appData
 			});
 
-		this->_dataConsumers.set(dataConsumer.id, dataConsumer);
-		dataConsumer.on("@close", () =>
+		this->_dataConsumers.set(dataConsumer->id, dataConsumer);
+		dataConsumer->on("@close", () =>
 		{
-			this->_dataConsumers.delete(dataConsumer.id);
+			this->_dataConsumers.delete(dataConsumer->id);
 
 			if (this->_sctpStreamIds)
 				this->_sctpStreamIds[sctpStreamId] = 0;
 		});
-		dataConsumer.on("@dataproducerclose", () =>
+		dataConsumer->on("@dataproducerclose", () =>
 		{
-			this->_dataConsumers.delete(dataConsumer.id);
+			this->_dataConsumers.delete(dataConsumer->id);
 
 			if (this->_sctpStreamIds)
 				this->_sctpStreamIds[sctpStreamId] = 0;
 		});
 
 		// Emit observer event.
-		this->_observer.safeEmit("newdataconsumer", dataConsumer);
+		this->_observer->safeEmit("newdataconsumer", dataConsumer);
 
 		return dataConsumer;
 	}
@@ -796,7 +789,7 @@ protected:
 			"transport.enableTraceEvent", this->_internal, reqData);
 	}
 
-	private _getNextSctpStreamId(): uint32_t
+	uint32_t _getNextSctpStreamId()
 	{
 		if (
 			!this->_data.sctpParameters ||
@@ -827,4 +820,4 @@ protected:
 
 		throw new Error("no sctpStreamId available");
 	}
-}
+};

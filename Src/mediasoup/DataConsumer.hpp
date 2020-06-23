@@ -94,7 +94,7 @@ class DataConsumer : public EnhancedEventEmitter
 	private readonly _appData?: any;
 
 	// Observer instance.
-	private readonly _observer = new EnhancedEventEmitter();
+	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
 	/**
 	 * @private
@@ -211,7 +211,7 @@ class DataConsumer : public EnhancedEventEmitter
 	 *
 	 * @emits close
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -237,7 +237,7 @@ class DataConsumer : public EnhancedEventEmitter
 		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -260,7 +260,7 @@ class DataConsumer : public EnhancedEventEmitter
 		this->safeEmit("transportclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -303,7 +303,7 @@ class DataConsumer : public EnhancedEventEmitter
 					this->safeEmit("dataproducerclose");
 
 					// Emit observer event.
-					this->_observer.safeEmit("close");
+					this->_observer->safeEmit("close");
 
 					break;
 				}

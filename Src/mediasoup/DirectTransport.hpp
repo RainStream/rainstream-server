@@ -90,7 +90,7 @@ class DirectTransport : public Transport
 	 * @emits newdataconsumer - (dataProducer: DataProducer)
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -158,7 +158,7 @@ class DirectTransport : public Transport
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async produce(options: ProducerOptions): Promise<Producer>
+	async produce(ProducerOptions& options): Promise<Producer>
 	{
 		throw new UnsupportedError("produce() not implemented in DirectTransport");
 	}
@@ -185,7 +185,7 @@ class DirectTransport : public Transport
 					this->safeEmit("trace", trace);
 
 					// Emit observer event.
-					this->_observer.safeEmit("trace", trace);
+					this->_observer->safeEmit("trace", trace);
 
 					break;
 				}

@@ -165,7 +165,7 @@ class PipeTransport : public Transport
 	 * @emits sctpstatechange - (sctpState: SctpState)
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -264,7 +264,7 @@ class PipeTransport : public Transport
 			throw Error(`Producer with id "${producerId}" not found`);
 
 		// This may throw.
-		const rtpParameters = ortc.getPipeConsumerRtpParameters(
+		const rtpParameters = ortc::getPipeConsumerRtpParameters(
 			producer.consumableRtpParameters, this->_data.rtx);
 
 		const internal = { ...this->_internal, consumerId: uuidv4(), producerId };
@@ -296,7 +296,7 @@ class PipeTransport : public Transport
 		consumer.on("@producerclose", () => this->_consumers.delete(consumer.id));
 
 		// Emit observer event.
-		this->_observer.safeEmit("newconsumer", consumer);
+		this->_observer->safeEmit("newconsumer", consumer);
 
 		return consumer;
 	}
@@ -316,7 +316,7 @@ class PipeTransport : public Transport
 					this->safeEmit("sctpstatechange", sctpState);
 
 					// Emit observer event.
-					this->_observer.safeEmit("sctpstatechange", sctpState);
+					this->_observer->safeEmit("sctpstatechange", sctpState);
 
 					break;
 				}
@@ -328,7 +328,7 @@ class PipeTransport : public Transport
 					this->safeEmit("trace", trace);
 
 					// Emit observer event.
-					this->_observer.safeEmit("trace", trace);
+					this->_observer->safeEmit("trace", trace);
 
 					break;
 				}

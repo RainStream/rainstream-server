@@ -21,7 +21,7 @@ struct ProducerOptions
 	/**
 	 * RTP parameters defining what the endpoint is sending.
 	 */
-	RtpParameters rtpParameters;
+	json rtpParameters;
 
 	/**
 	 * Whether the producer must start in paused mode. Default false.
@@ -144,9 +144,10 @@ using ProducerType = std::string; // = "simple" | "simulcast" | "svc";
 
 class Producer : public EnhancedEventEmitter
 {
+private:
 	Logger* logger;
 	// Internal data.
-private:
+
 	json _internal/*:
 	{
 		routerId: string;
@@ -155,13 +156,13 @@ private:
 	}*/;
 
 	// Producer data.
-	readonly _data:
-	{
-		kind: MediaKind;
-		rtpParameters: RtpParameters;
-		type: ProducerType;
-		consumableRtpParameters: RtpParameters;
-	};
+	json _data;
+// 	{
+// 		std::string kind;
+// 		json rtpParameters;
+// 		ProducerType type;
+// 		json consumableRtpParameters;
+// 	};
 
 	// Channel instance.
 	Channel* _channel;
@@ -170,13 +171,13 @@ private:
 	bool _closed = false;
 
 	// Custom app data.
-	readonly _appData?: any;
+	json _appData = json();
 
 	// Paused flag.
 	bool _paused = false;
 
 	// Current score.
-	_score: ProducerScore[] = [];
+	std::vector<ProducerScore> _score;
 
 	// Observer instance.
 	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
@@ -189,27 +190,15 @@ private:
 	 * @emits trace - (trace: ProducerTraceEventData)
 	 * @emits @close
 	 */
-	Producer(
-		{
-			internal,
-			data,
-			channel,
-			appData,
-			paused
-		}
-		: logger(new Logger("Producer"))
-
-		{
-			internal: any;
-			data: any;
-			channel: Channel;
-			appData?: any;
-			paused: bool;
-		}
+	Producer(json internal,
+		json data,
+		Channel* channel,
+		json appData,
+		bool paused
 	)
+		: EnhancedEventEmitter()
+		, logger(new Logger("Producer"))
 	{
-		super();
-
 		logger->debug("constructor()");
 
 		this->_internal = internal;
@@ -226,7 +215,7 @@ private:
 	 */
 	std::string id()
 	{
-		return this->_internal.producerId;
+		return this->_internal["producerId"];
 	}
 
 	/**
@@ -240,17 +229,17 @@ private:
 	/**
 	 * Media kind.
 	 */
-	get kind(): MediaKind
+	std::string kind()
 	{
-		return this->_data.kind;
+		return this->_data["kind"];
 	}
 
 	/**
 	 * RTP parameters.
 	 */
-	RtpParameters rtpParameters()
+	json rtpParameters()
 	{
-		return this->_data.rtpParameters;
+		return this->_data["rtpParameters"];
 	}
 
 	/**
@@ -258,7 +247,7 @@ private:
 	 */
 	ProducerType type()
 	{
-		return this->_data.type;
+		return this->_data["type"];
 	}
 
 	/**
@@ -266,9 +255,9 @@ private:
 	 *
 	 * @private
 	 */
-	RtpParameters consumableRtpParameters()
+	json consumableRtpParameters()
 	{
-		return this->_data.consumableRtpParameters;
+		return this->_data["consumableRtpParameters"];
 	}
 
 	/**
@@ -282,7 +271,7 @@ private:
 	/**
 	 * Producer score list.
 	 */
-	get score(): ProducerScore[]
+	std::vector<ProducerScore> score()
 	{
 		return this->_score;
 	}
@@ -298,7 +287,7 @@ private:
 	/**
 	 * Invalid setter.
 	 */
-	set appData(json appData) // eslint-disable-line no-unused-vars
+	void appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -313,7 +302,7 @@ private:
 	 * @emits videoorientationchange - (videoOrientation: ProducerVideoOrientation)
 	 * @emits trace - (trace: ProducerTraceEventData)
 	 */
-	get observer(): EnhancedEventEmitter
+	EnhancedEventEmitter* observer()
 	{
 		return this->_observer;
 	}
@@ -331,15 +320,21 @@ private:
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.producerId);
+		this->_channel->removeAllListeners(this->_internal["producerId"]);
 
-		this->_channel->request("producer.close", this->_internal)
-			.catch(() => {});
+		try
+		{
+			this->_channel->request("producer.close", this->_internal);
+		}
+		catch (const std::exception&)
+		{
+
+		}
 
 		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -357,42 +352,42 @@ private:
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.producerId);
+		this->_channel->removeAllListeners(this->_internal["producerId"]);
 
 		this->safeEmit("transportclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
 	 * Dump Producer.
 	 */
-	async dump(): Promise<any>
+	std::future<json> dump()
 	{
 		logger->debug("dump()");
 
-		return this->_channel->request("producer.dump", this->_internal);
+		co_return this->_channel->request("producer.dump", this->_internal);
 	}
 
 	/**
 	 * Get Producer stats.
 	 */
-	async getStats(): Promise<ProducerStat[]>
-	{
-		logger->debug("getStats()");
-
-		return this->_channel->request("producer.getStats", this->_internal);
-	}
+// 	std::future<ProducerStat[]>  getStats()
+// 	{
+// 		logger->debug("getStats()");
+// 
+// 		return this->_channel->request("producer.getStats", this->_internal);
+// 	}
 
 	/**
 	 * Pause the Producer.
 	 */
-	async pause(): Promise<void>
+	std::future<void> pause()
 	{
 		logger->debug("pause()");
 
-		const wasPaused = this->_paused;
+		bool wasPaused = this->_paused;
 
 		co_await this->_channel->request("producer.pause", this->_internal);
 
@@ -400,17 +395,17 @@ private:
 
 		// Emit observer event.
 		if (!wasPaused)
-			this->_observer.safeEmit("pause");
+			this->_observer->safeEmit("pause");
 	}
 
 	/**
 	 * Resume the Producer.
 	 */
-	async resume(): Promise<void>
+	std::future<void> resume()
 	{
 		logger->debug("resume()");
 
-		const wasPaused = this->_paused;
+		bool wasPaused = this->_paused;
 
 		co_await this->_channel->request("producer.resume", this->_internal);
 
@@ -418,71 +413,61 @@ private:
 
 		// Emit observer event.
 		if (wasPaused)
-			this->_observer.safeEmit("resume");
+			this->_observer->safeEmit("resume");
 	}
 
 	/**
 	 * Enable "trace" event.
 	 */
-	async enableTraceEvent(types: ProducerTraceEventType[] = []): Promise<void>
+	std::future<void> enableTraceEvent(std::vector<ProducerTraceEventType> types)
 	{
 		logger->debug("enableTraceEvent()");
 
-		const reqData = { types };
+		json reqData = { {"types", types } };
 
 		co_await this->_channel->request(
 			"producer.enableTraceEvent", this->_internal, reqData);
 	}
 
-	private _handleWorkerNotifications(): void
+private:
+	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.producerId, (event: string, data?: any) =>
+		this->_channel->on(this->_internal["producerId"].get<std::string>(), [=](std::string event, json& data = json::object())
 		{
-			switch (event)
+			if (event == "score")
 			{
-				case "score":
-				{
-					const score = data as ProducerScore[];
-
-					this->_score = score;
-
-					this->safeEmit("score", score);
-
-					// Emit observer event.
-					this->_observer.safeEmit("score", score);
-
-					break;
-				}
-
-				case "videoorientationchange":
-				{
-					const videoOrientation = data as ProducerVideoOrientation;
-
-					this->safeEmit("videoorientationchange", videoOrientation);
-
-					// Emit observer event.
-					this->_observer.safeEmit("videoorientationchange", videoOrientation);
-
-					break;
-				}
-
-				case "trace":
-				{
-					const trace = data as ProducerTraceEventData;
-
-					this->safeEmit("trace", trace);
-
-					// Emit observer event.
-					this->_observer.safeEmit("trace", trace);
-
-					break;
-				}
-
-				default:
-				{
-					logger->error("ignoring unknown event \"%s\"", event);
-				}
+// 				const score = data as ProducerScore[];
+// 
+// 				this->_score = score;
+// 
+// 				this->safeEmit("score", score);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("score", score);
 			}
+			else if (event == "videoorientationchange")
+			{
+// 				const videoOrientation = data as ProducerVideoOrientation;
+// 
+// 				this->safeEmit("videoorientationchange", videoOrientation);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("videoorientationchange", videoOrientation);
+			}
+			else if (event == "trace")
+			{
+// 				const trace = data as ProducerTraceEventData;
+// 
+// 				this->safeEmit("trace", trace);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("trace", trace);
+			}
+			else
+			{
+				logger->error("ignoring unknown event \"%s\"", event);
+			}
+			
 		});
 	}
 };

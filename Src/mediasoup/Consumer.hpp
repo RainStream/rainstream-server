@@ -18,7 +18,7 @@ struct ConsumerOptions
 	/**
 	 * RTP capabilities of the consuming endpoint.
 	 */
-	RtpCapabilities rtpCapabilities;
+	json rtpCapabilities;
 
 	/**
 	 * Whether the Consumer must start in paused mode. Default false.
@@ -134,33 +134,33 @@ struct ConsumerStat
 	uint32_t byteCount;
 	uint32_t bitrate;
 	uint32_t roundTripTime;
-}
+};
 
 /**
  * Consumer type.
  */
-struct ConsumerType = "simple" | "simulcast" | "svc" | "pipe";
+using ConsumerType = std::string;// "simple" | "simulcast" | "svc" | "pipe";
 
-const Logger* logger = new Logger("Consumer");
 
 class Consumer : public EnhancedEventEmitter
 {
+	Logger* logger;
 	// Internal data.
-	private readonly _internal:
-	{
-		routerId: string;
-		transportId: string;
-		consumerId: string;
-		producerId: string;
-	};
+	json _internal;
+// 	{
+// 		routerId: string;
+// 		transportId: string;
+// 		consumerId: string;
+// 		producerId: string;
+// 	};
 
 	// Consumer data.
-	private readonly _data:
-	{
-		kind: MediaKind;
-		rtpParameters: RtpParameters;
-		type: ConsumerType;
-	};
+	json _data;
+// 	{
+// 		kind: MediaKind;
+// 		rtpParameters: RtpParameters;
+// 		type: ConsumerType;
+// 	};
 
 	// Channel instance.
 	Channel* _channel;
@@ -206,29 +206,17 @@ private:
 	 * @emits @producerclose
 	 */
 	Consumer(
-		{
-			internal,
-			data,
-			channel,
-			appData,
-			paused,
-			producerPaused,
-			score = { score: 10, producerScore: 10, producerScores: [] },
-			preferredLayers
-		}:
-		{
-			internal: any;
-			data: any;
-			channel: Channel;
-			appData?: any;
-			paused: bool;
-			producerPaused: bool;
-			score?: ConsumerScore;
-			preferredLayers?: ConsumerLayers;
-		})
+		json internal,
+		json data,
+		Channel* channel,
+		json appData,
+		bool paused,
+		bool producerPaused,
+		ConsumerScore score,
+		ConsumerLayers preferredLayers)
+		: EnhancedEventEmitter(),
+		logger(new Logger("Consumer"))
 	{
-		super();
-
 		logger->debug("constructor()");
 
 		this->_internal = internal;
@@ -248,7 +236,7 @@ private:
 	 */
 	std::string id()
 	{
-		return this->_internal.consumerId;
+		return this->_internal["consumerId"];
 	}
 
 	/**
@@ -256,7 +244,7 @@ private:
 	 */
 	std::string producerId()
 	{
-		return this->_internal.producerId;
+		return this->_internal["producerId"];
 	}
 
 	/**
@@ -270,17 +258,17 @@ private:
 	/**
 	 * Media kind.
 	 */
-	MediaKind kind()
+	std::string kind()
 	{
-		return this->_data.kind;
+		return this->_data["kind"];
 	}
 
 	/**
 	 * RTP parameters.
 	 */
-	RtpParameters rtpParameters()
+	json rtpParameters()
 	{
-		return this->_data.rtpParameters;
+		return this->_data["rtpParameters"];
 	}
 
 	/**
@@ -288,7 +276,7 @@ private:
 	 */
 	ConsumerType type()
 	{
-		return this->_data.type;
+		return this->_data["type"];
 	}
 
 	/**
@@ -326,7 +314,7 @@ private:
 	/**
 	 * Preferred video layers.
 	 */
-	get preferredLayers(): ConsumerLayers | undefined
+	ConsumerLayers preferredLayers()
 	{
 		return this->_preferredLayers;
 	}
@@ -334,7 +322,7 @@ private:
 	/**
 	 * Current video layers.
 	 */
-	get currentLayers(): ConsumerLayers | undefined
+	ConsumerLayers currentLayers()
 	{
 		return this->_currentLayers;
 	}
@@ -350,7 +338,7 @@ private:
 	/**
 	 * Invalid setter.
 	 */
-	set appData(appData) // eslint-disable-line no-unused-vars
+	void appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -383,15 +371,21 @@ private:
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.consumerId);
+		this->_channel->removeAllListeners(this->_internal["consumerId"]);
 
-		this->_channel->request("consumer.close", this->_internal)
-			.catch(() => {});
+		try
+		{
+			this->_channel->request("consumer.close", this->_internal);
+		}
+		catch (const std::exception&)
+		{
+
+		}
 
 		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -409,12 +403,12 @@ private:
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.consumerId);
+		this->_channel->removeAllListeners(this->_internal["consumerId"]);
 
 		this->safeEmit("transportclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -424,7 +418,7 @@ private:
 	{
 		logger->debug("dump()");
 
-		return this->_channel->request("consumer.dump", this->_internal);
+		co_return this->_channel->request("consumer.dump", this->_internal);
 	}
 
 	/**
@@ -452,7 +446,7 @@ private:
 
 		// Emit observer event.
 		if (!wasPaused)
-			this->_observer.safeEmit("pause");
+			this->_observer->safeEmit("pause");
 	}
 
 	/**
@@ -470,7 +464,7 @@ private:
 
 		// Emit observer event.
 		if (wasPaused && !this->_producerPaused)
-			this->_observer.safeEmit("resume");
+			this->_observer->safeEmit("resume");
 	}
 
 	/**
@@ -548,7 +542,7 @@ private:
 
 	private _handleWorkerNotifications(): void
 	{
-		this->_channel->on(this->_internal.consumerId, (std::string event, json data) =>
+		this->_channel->on(this->_internal["consumerId"], (std::string event, json data) =>
 		{
 			switch (event)
 			{
@@ -560,13 +554,13 @@ private:
 					this->_closed = true;
 
 					// Remove notification subscriptions.
-					this->_channel->removeAllListeners(this->_internal.consumerId);
+					this->_channel->removeAllListeners(this->_internal["consumerId"]);
 
 					this->emit("@producerclose");
 					this->safeEmit("producerclose");
 
 					// Emit observer event.
-					this->_observer.safeEmit("close");
+					this->_observer->safeEmit("close");
 
 					break;
 				}
@@ -584,7 +578,7 @@ private:
 
 					// Emit observer event.
 					if (!wasPaused)
-						this->_observer.safeEmit("pause");
+						this->_observer->safeEmit("pause");
 
 					break;
 				}
@@ -602,7 +596,7 @@ private:
 
 					// Emit observer event.
 					if (wasPaused && !this->_paused)
-						this->_observer.safeEmit("resume");
+						this->_observer->safeEmit("resume");
 
 					break;
 				}
@@ -616,7 +610,7 @@ private:
 					this->safeEmit("score", score);
 
 					// Emit observer event.
-					this->_observer.safeEmit("score", score);
+					this->_observer->safeEmit("score", score);
 
 					break;
 				}
@@ -630,7 +624,7 @@ private:
 					this->safeEmit("layerschange", layers);
 
 					// Emit observer event.
-					this->_observer.safeEmit("layerschange", layers);
+					this->_observer->safeEmit("layerschange", layers);
 
 					break;
 				}
@@ -642,7 +636,7 @@ private:
 					this->safeEmit("trace", trace);
 
 					// Emit observer event.
-					this->_observer.safeEmit("trace", trace);
+					this->_observer->safeEmit("trace", trace);
 
 					break;
 				}

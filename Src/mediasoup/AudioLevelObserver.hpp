@@ -100,7 +100,7 @@ private:
 						this->safeEmit("volumes", volumes);
 
 						// Emit observer event.
-						this->_observer.safeEmit("volumes", volumes);
+						this->_observer->safeEmit("volumes", volumes);
 					}
 
 					break;
@@ -111,7 +111,7 @@ private:
 					this->safeEmit("silence");
 
 					// Emit observer event.
-					this->_observer.safeEmit("silence");
+					this->_observer->safeEmit("silence");
 
 					break;
 				}

@@ -13,7 +13,7 @@
 #include "WebRtcTransport.hpp"
 #include "PlainTransport.hpp"
 #include "PipeTransport.hpp"
-#include "DirectTransport.hpp"
+//#include "DirectTransport.hpp"
 #include "Producer.hpp"
 #include "Consumer.hpp"
 // #include "DataProducer.hpp"
@@ -283,7 +283,7 @@ private:
 		this->emit("@close");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -326,7 +326,7 @@ private:
 		this->safeEmit("workerclose");
 
 		// Emit observer event.
-		this->_observer.safeEmit("close");
+		this->_observer->safeEmit("close");
 	}
 
 	/**
@@ -428,7 +428,7 @@ private:
 		));
 
 		// Emit observer event.
-		this->_observer.safeEmit("newtransport", transport);
+		this->_observer->safeEmit("newtransport", transport);
 
 		return transport;
 	}
@@ -518,7 +518,7 @@ private:
 		));
 
 		// Emit observer event.
-		this->_observer.safeEmit("newtransport", transport);
+		this->_observer->safeEmit("newtransport", transport);
 
 		return transport;
 	}
@@ -617,7 +617,7 @@ private:
 		));
 
 		// Emit observer event.
-		this->_observer.safeEmit("newtransport", transport);
+		this->_observer->safeEmit("newtransport", transport);
 
 		return transport;
 	}
@@ -671,7 +671,7 @@ private:
 		));
 
 		// Emit observer event.
-		this->_observer.safeEmit("newtransport", transport);
+		this->_observer->safeEmit("newtransport", transport);
 
 		return transport;
 	}
@@ -939,7 +939,7 @@ private:
 		});
 
 		// Emit observer event.
-		this->_observer.safeEmit("newrtpobserver", audioLevelObserver);
+		this->_observer->safeEmit("newrtpobserver", audioLevelObserver);
 
 		return audioLevelObserver;
 	}
@@ -961,7 +961,7 @@ private:
 
 		try
 		{
-			return ortc.canConsume(producer.consumableRtpParameters, rtpCapabilities);
+			return ortc::canConsume(producer.consumableRtpParameters, rtpCapabilities);
 		}
 		catch (error)
 		{
