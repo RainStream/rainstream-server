@@ -120,11 +120,11 @@ public:
 
 		this->_data =
 		{
-			tuple          : data.tuple,
-			sctpParameters : data.sctpParameters,
-			sctpState      : data.sctpState,
-			rtx            : data.rtx,
-			srtpParameters : data.srtpParameters
+			{ "tuple"          , data["tuple"] },
+			{ "sctpParameters" , data["sctpParameters"] },
+			{ "sctpState"      , data["sctpState"] },
+			{ "rtx"            , data["rtx"] },
+			{ "srtpParameters" , data["srtpParameters"] }
 		};
 
 		this->_handleWorkerNotifications();
@@ -237,7 +237,11 @@ public:
 	{
 		logger->debug("connect()");
 
-		json reqData = { ip, port, srtpParameters };
+		json reqData = {
+			{ "ip", ip },
+			{ "port", port },
+			{ "srtpParameters", srtpParameters }
+		};
 
 		json data =
 			co_await this->_channel->request("transport.connect", this->_internal, reqData);
@@ -251,7 +255,7 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<Consumer*> consume( std::string producerId, json appData = json() )
+	std::future<Consumer*> consume(std::string producerId, json appData = json())
 	{
 		logger->debug("consume()");
 
@@ -269,33 +273,39 @@ public:
 		json rtpParameters = ortc::getPipeConsumerRtpParameters(
 			producer->consumableRtpParameters(), this->_data["rtx"]);
 
-		json internal = { ...this->_internal, consumerId: uuidv4(), producerId };
+		json internal = this->_internal;
+		internal["consumerId"] = uuidv4();
+		internal["producerId"] = producerId;
+
 		json reqData =
 		{
-			kind                   : producer.kind,
-			rtpParameters,
-			type                   : "pipe",
-			consumableRtpEncodings : producer.consumableRtpParameters.encodings
+			{ "kind"                   , producer->kind() },
+			{ "rtpParameters"          , rtpParameters },
+			{ "type"                   , "pipe" },
+			{ "consumableRtpEncodings" , producer->consumableRtpParameters()["encodings"] }
 		};
 
 		json status =
 			co_await this->_channel->request("transport.consume", internal, reqData);
 
-		json data = { kind: producer.kind, rtpParameters, type: "pipe" };
+		json data = { 
+			{ "kind", producer->kind() },
+			{ "rtpParameters", rtpParameters },
+			{ "type" , "pipe" }
+		};
 
 		Consumer* consumer = new Consumer(
-			{
 				internal,
 				data,
-				channel        : this->_channel,
+				this->_channel,
 				appData,
-				paused         : status.paused,
-				producerPaused : status.producerPaused
-			});
+				status["paused"],
+				status["producerPaused"]
+			);
 
-		this->_consumers.set(consumer->id, consumer);
-		consumer->on("@close", () => this->_consumers.delete(consumer->id));
-		consumer->on("@producerclose", () => this->_consumers.delete(consumer->id));
+		this->_consumers.insert(std::make_pair(consumer->id(), consumer));
+		consumer->on("@close", [=]() { this->_consumers.erase(consumer->id()); } );
+		consumer->on("@producerclose", [=]() { this->_consumers.erase(consumer->id()); });
 
 		// Emit observer event.
 		this->_observer->safeEmit("newconsumer", consumer);
@@ -310,23 +320,23 @@ private:
 		{
 			if (event == "sctpstatechange")
 			{
-				const sctpState = data.sctpState as SctpState;
-
-				this->_data.sctpState = sctpState;
-
-				this->safeEmit("sctpstatechange", sctpState);
-
-				// Emit observer event.
-				this->_observer->safeEmit("sctpstatechange", sctpState);
+// 				const sctpState = data.sctpState as SctpState;
+// 
+// 				this->_data.sctpState = sctpState;
+// 
+// 				this->safeEmit("sctpstatechange", sctpState);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("sctpstatechange", sctpState);
 			}
 			else if (event == "trace")
 			{
-				const trace = data as TransportTraceEventData;
-
-				this->safeEmit("trace", trace);
-
-				// Emit observer event.
-				this->_observer->safeEmit("trace", trace);
+// 				const trace = data as TransportTraceEventData;
+// 
+// 				this->safeEmit("trace", trace);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("trace", trace);
 			}
 			else
 			{
