@@ -99,11 +99,11 @@ struct DtlsFingerprint
 	std::string value;
 };
 
-struct IceState = "new" | "connected" | "completed" | "disconnected" | "closed";
+using IceState = std::string;// "new" | "connected" | "completed" | "disconnected" | "closed";
 
-struct DtlsRole = "auto" | "client" | "server";
+using DtlsRole = std::string;//"auto" | "client" | "server";
 
-struct DtlsState = "new" | "connecting" | "connected" | "failed" | "closed";
+using DtlsState = std::string;//"new" | "connecting" | "connected" | "failed" | "closed";
 
 struct WebRtcTransportStat
 {
@@ -152,7 +152,7 @@ class WebRtcTransport : public Transport
 		iceSelectedTuple?: TransportTuple;
 		dtlsParameters: DtlsParameters;
 		dtlsState: DtlsState;
-		std::string dtlsRemoteCert?;
+		std::string dtlsRemoteCert;
 		sctpParameters?: SctpParameters;
 		sctpState?: SctpState;
 	};

@@ -12,7 +12,7 @@ struct DataProducerOptions
 	/**
 	 * DataProducer id (just for Router.pipeToRouter() method).
 	 */
-	std::string id?;
+	std::string id;
 
 	/**
 	 * SCTP parameters defining how the endpoint is sending the data.
@@ -23,12 +23,12 @@ struct DataProducerOptions
 	/**
 	 * A label which can be used to distinguish this DataChannel from others.
 	 */
-	std::string label?;
+	std::string label;
 
 	/**
 	 * Name of the sub-protocol used by this DataChannel.
 	 */
-	std::string protocol?;
+	std::string protocol;
 
 	/**
 	 * Custom application data.

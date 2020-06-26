@@ -19,9 +19,9 @@
 // 
 // 	encodings:
 // 	{
-// 			uint32_t ssrc?;
-// 		std::string rid?;
-// 		std::string scalabilityMode?;
+// 			uint32_t ssrc;
+// 		std::string rid;
+// 		std::string scalabilityMode;
 // 			uint32_t mappedSsrc;
 // 	}[];
 // };

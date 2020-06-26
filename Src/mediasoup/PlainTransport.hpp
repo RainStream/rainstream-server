@@ -41,7 +41,7 @@ struct PlainTransportOptions
 	 * Maximum allowed size for SCTP messages sent by DataProducers.
 	 * Default 262144.
 	 */
-	maxSctpMessageSize?;
+	maxSctpMessageSize;
 
 	/**
 	 * Enable SRTP. For this to work, connect() must be called
@@ -89,9 +89,9 @@ struct PlainTransportStat =
 	uint32_t probationRecvBitrate;
 	uint32_t probationBytesSent;
 	uint32_t probationSendBitrate;
-	uint32_t availableOutgoingBitrate?;
-	uint32_t availableIncomingBitrate?;
-	uint32_t maxIncomingBitrate?;
+	uint32_t availableOutgoingBitrate;
+	uint32_t availableIncomingBitrate;
+	uint32_t maxIncomingBitrate;
 	// PlainTransport specific.
 	rtcpMux: bool;
 	comedia: bool;
@@ -266,9 +266,9 @@ class PlainTransport : public Transport
 			srtpParameters
 		}:
 		{
-			ip?;
-			uint32_t port?;
-			uint32_t rtcpPort?;
+			ip;
+			uint32_t port;
+			uint32_t rtcpPort;
 			srtpParameters?: SrtpParameters;
 		}
 	)

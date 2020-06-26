@@ -171,7 +171,7 @@
 // 	/**
 // 	 * The MID RTP extension value as defined in the BUNDLE specification.
 // 	 */
-// 	std::string mid?;
+// 	std::string mid;
 // 
 // 	/**
 // 	 * Media and RTX codecs in use.
@@ -251,7 +251,7 @@
 // 	/**
 // 	 * RTCP feedback parameter.
 // 	 */
-// 	std::string parameter?;
+// 	std::string parameter;
 // }
 // 
 // /**

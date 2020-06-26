@@ -45,9 +45,9 @@ struct DirectTransportStat =
 	uint32_t probationRecvBitrate;
 	uint32_t probationBytesSent;
 	uint32_t probationSendBitrate;
-	uint32_t availableOutgoingBitrate?;
-	uint32_t availableIncomingBitrate?;
-	uint32_t maxIncomingBitrate?;
+	uint32_t availableOutgoingBitrate;
+	uint32_t availableIncomingBitrate;
+	uint32_t maxIncomingBitrate;
 };
 
 const Logger* logger = new Logger("DirectTransport");
