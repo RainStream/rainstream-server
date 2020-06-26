@@ -408,7 +408,7 @@ public:
 		std::string kind,
 		json rtpParameters,
 		bool paused = false,
-		bool keyFrameRequestDelay,
+		bool keyFrameRequestDelay = 0,
 		json appData = json()
 	)
 	{
