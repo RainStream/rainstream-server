@@ -257,7 +257,7 @@ public:
 
 		if (!producerId || typeof producerId != "string")
 			throw new TypeError("missing producerId");
-		else if (appData && typeof appData != "object")
+		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
 		const producer = this->_getProducerById(producerId);

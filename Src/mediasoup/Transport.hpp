@@ -404,23 +404,21 @@ public:
 	 * Create a Producer.
 	 */
 	std::future<Producer*> produce(
-		{
-			id = undefined,
-			kind,
-			rtpParameters,
-			paused = false,
-			keyFrameRequestDelay,
-			appData = {}
-		}: ProducerOptions
+		std::string id,
+		std::string kind,
+		json rtpParameters,
+		bool paused = false,
+		bool keyFrameRequestDelay,
+		json appData = json()
 	)
 	{
 		logger->debug("produce()");
 
-		if (id && this->_producers.count(id))
-			throw new TypeError(utils::Printf("a Producer with same id \"${ id }\" already exists",id));
+		if (!id.empty() && this->_producers.count(id))
+			throw new TypeError(utils::Printf("a Producer with same id \"${ %s }\" already exists",id.c_str()));
 		else if (![ "audio", "video" ].includes(kind))
-			throw new TypeError(utils::Printf("invalid kind \"${kind}\"", kind));
-		else if (appData && typeof appData != "object")
+			throw new TypeError(utils::Printf("invalid kind \"${%s}\"", kind.c_str()));
+		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
@@ -458,7 +456,7 @@ public:
 			rtpParameters.rtcp.cname = this->_cnameForProducers;
 		}
 
-		const routerRtpCapabilities = this->_getRouterRtpCapabilities();
+		json routerRtpCapabilities = this->_getRouterRtpCapabilities();
 
 		// This may throw.
 		json rtpMapping = ortc::getProducerRtpParametersMapping(
@@ -471,7 +469,7 @@ public:
 		json internal = { ...this->_internal, producerId: id || uuidv4() };
 		json reqData = { kind, rtpParameters, rtpMapping, keyFrameRequestDelay, paused };
 
-		const status =
+		json status =
 			co_await this->_channel->request("transport.produce", internal, reqData);
 
 		json data =
@@ -511,29 +509,25 @@ public:
 	 * @virtual
 	 */
 	std::future<Consumer*> consume(
-		{
-			producerId,
-			rtpCapabilities,
-			paused = false,
-			preferredLayers,
-			appData = {}
-		}: ConsumerOptions
+		std::string producerId,
+		json rtpCapabilities,
+		bool paused = false,
+		json preferredLayers,
+		json appData = json()
 	)
 	{
 		logger->debug("consume()");
 
-		if (!producerId || typeof producerId != "string")
-			throw new TypeError("missing producerId");
-		else if (appData && typeof appData != "object")
+		if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
 		ortc::validateRtpCapabilities(rtpCapabilities!);
 
-		const producer = this->_getProducerById(producerId);
+		Producer* producer = this->_getProducerById(producerId);
 
 		if (!producer)
-			throw Error(utils::Printf("Producer with id \"${producerId}\" not found", producerId));
+			throw Error(utils::Printf("Producer with id \"${%s}\" not found", producerId.c_str()));
 
 		// This may throw.
 		const rtpParameters = ortc::getConsumerRtpParameters(
@@ -606,7 +600,7 @@ public:
 // 
 // 		if (id && this->_dataProducers.has(id))
 // 			throw new TypeError(`a DataProducer with same id "${id}" already exists`);
-// 		else if (appData && typeof appData != "object")
+// 		else if (!appData.is_null() && !appData.is_object())
 // 			throw new TypeError("if given, appData must be an object");
 // 
 // 		let type: DataProducerType;
@@ -684,7 +678,7 @@ public:
 // 
 // 		if (!dataProducerId || typeof dataProducerId != "string")
 // 			throw new TypeError("missing dataProducerId");
-// 		else if (appData && typeof appData != "object")
+// 		else if (!appData.is_null() && !appData.is_object())
 // 			throw new TypeError("if given, appData must be an object");
 // 
 // 		const dataProducer = this->_getDataProducerById(dataProducerId);

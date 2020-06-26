@@ -455,7 +455,7 @@ public:
 			rtcpMux = true,
 			comedia = false,
 			enableSctp = false,
-			numSctpStreams = { OS: 1024, MIS: 1024 },
+			json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
 			maxSctpMessageSize = 262144,
 			enableSrtp = false,
 			srtpCryptoSuite = "AES_CM_128_HMAC_SHA1_80",
@@ -467,7 +467,7 @@ public:
 
 		if (!listenIp)
 			throw new TypeError("missing listenIp");
-		else if (appData && typeof appData != "object")
+		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
 		if (typeof listenIp == "std::string" && listenIp)
@@ -557,23 +557,21 @@ public:
 	/**
 	 * Create a PipeTransport.
 	 */
-	std::future<PipeTransport*> createPipeTransport(
-		{
-			listenIp,
+	std::future<PipeTransport*> createPipeTransport(		
+			json listenIp,
 			enableSctp = false,
-			numSctpStreams = { OS: 1024, MIS: 1024 },
+			json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
 			maxSctpMessageSize = 1073741823,
 			enableRtx = false,
 			enableSrtp = false,
-			appData = {}
-		}: PipeTransportOptions
+			json appData = json()
 	)
 	{
 		logger->debug("createPipeTransport()");
 
 		if (!listenIp)
 			throw new TypeError("missing listenIp");
-		else if (appData && typeof appData != "object")
+		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
 		if (typeof listenIp == "std::string" && listenIp)
@@ -942,7 +940,7 @@ public:
 // 	{
 // 		logger->debug("createAudioLevelObserver()");
 // 
-// 		if (appData && typeof appData != "object")
+// 		if (!appData.is_null() && !appData.is_object())
 // 			throw new TypeError("if given, appData must be an object");
 // 
 // 		json internal = { ...this->_internal, rtpObserverId: uuidv4() };
