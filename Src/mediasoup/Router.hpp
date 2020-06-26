@@ -18,7 +18,7 @@
 // #include "DataProducer.hpp"
 // #include "DataConsumer.hpp"
 // #include "RtpObserver.hpp"
-#include "AudioLevelObserver.hpp"
+//#include "AudioLevelObserver.hpp"
 #include "RtpParameters.hpp"
 #include "SctpParameters.hpp"
 
@@ -208,7 +208,7 @@ public:
 	 */
 	json rtpCapabilities()
 	{
-		return this->_data["rtpCapabilities"];
+		return this->_data["rtpCapabilities"];;
 	}
 
 	/**
@@ -262,7 +262,7 @@ public:
 			
 
 		// Close every Transport.
-		for (Transport* transport : this->_transports)
+		for (auto &[key, transport] : this->_transports)
 		{
 			transport->routerClosed();
 		}
@@ -308,7 +308,7 @@ public:
 		this->_closed = true;
 
 		// Close every Transport.
-		for (Transport* transport : this->_transports)
+		for (auto &[key, transport] : this->_transports)
 		{
 			transport->routerClosed();
 		}
@@ -370,24 +370,24 @@ public:
 		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
-		listenIps = listenIps.map((listenIp)
-		{
-			if (typeof listenIp == "std::string" && listenIp)
-			{
-				return { ip: listenIp };
-			}
-			else if (typeof listenIp == "object")
-			{
-				return {
-					ip          : listenIp.ip,
-					announcedIp : listenIp.announcedIp || undefined
-				};
-			}
-			else
-			{
-				throw new TypeError("wrong listenIp");
-			}
-		});
+// 		listenIps = listenIps.map((listenIp)
+// 		{
+// 			if (typeof listenIp == "std::string" && listenIp)
+// 			{
+// 				return { ip: listenIp };
+// 			}
+// 			else if (typeof listenIp == "object")
+// 			{
+// 				return {
+// 					ip          : listenIp.ip,
+// 					announcedIp : listenIp.announcedIp || undefined
+// 				};
+// 			}
+// 			else
+// 			{
+// 				throw new TypeError("wrong listenIp");
+// 			}
+// 		});
 
 		json internal = this->_internal;
 		internal["transportId"] = uuidv4();
@@ -414,14 +414,14 @@ public:
 			this->_channel,
 			this->_payloadChannel,
 			appData,
-			[=]() { return this->_data["rtpCapabilities"] },
-			[=](std::string producerId) {
+			[=]() { return this->_data["rtpCapabilities"]; },
+			[=](std::string producerId) ->Producer* {
 			if (this->_producers.count(producerId))
 				return this->_producers.at(producerId);
 			else
 				return nullptr;
 			},
-			[=](std::string dataProducerId) {
+			[=](std::string dataProducerId) -> DataProducer* {
 				if (this->_dataProducers.count(dataProducerId))
 					return this->_dataProducers.at(dataProducerId);
 				else
@@ -433,12 +433,12 @@ public:
 		transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
 		transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
 		transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
-		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
-			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
-		});
-		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
-			this->_dataProducers.erase(dataProducer->id());
-		});
+// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+// 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+// 		});
+// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+// 			this->_dataProducers.erase(dataProducer->id());
+// 		});
 
 		// Emit observer event.
 		this->_observer->safeEmit("newtransport", transport);
@@ -450,17 +450,15 @@ public:
 	 * Create a PlainTransport.
 	 */
 	std::future<PlainTransport*> createPlainTransport(
-		{
-			listenIp,
-			rtcpMux = true,
-			comedia = false,
-			enableSctp = false,
-			json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
-			maxSctpMessageSize = 262144,
-			enableSrtp = false,
-			srtpCryptoSuite = "AES_CM_128_HMAC_SHA1_80",
-			appData = {}
-		}: PlainTransportOptions
+		json listenIp,
+		bool rtcpMux = true,
+		bool comedia = false,
+		bool enableSctp = false,
+		json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
+		uint32_t maxSctpMessageSize = 262144,
+		bool enableSrtp = false,
+		std::string srtpCryptoSuite = "AES_CM_128_HMAC_SHA1_80",
+		json appData = json::object()
 	)
 	{
 		logger->debug("createPlainTransport()");
@@ -470,34 +468,36 @@ public:
 		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
-		if (typeof listenIp == "std::string" && listenIp)
-		{
-			listenIp = { ip: listenIp };
-		}
-		else if (typeof listenIp == "object")
-		{
-			listenIp =
-			{
-				ip          : listenIp.ip,
-				announcedIp : listenIp.announcedIp || undefined
-			};
-		}
-		else
-		{
-			throw new TypeError("wrong listenIp");
-		}
+// 		if (typeof listenIp == "std::string" && listenIp)
+// 		{
+// 			listenIp = { ip: listenIp };
+// 		}
+// 		else if (typeof listenIp == "object")
+// 		{
+// 			listenIp =
+// 			{
+// 				ip          : listenIp.ip,
+// 				announcedIp : listenIp.announcedIp || undefined
+// 			};
+// 		}
+// 		else
+// 		{
+// 			throw new TypeError("wrong listenIp");
+// 		}
 
-		json internal = { ...this->_internal, transportId: uuidv4() };
+		json internal = this->_internal;
+		internal["transportId"] = uuidv4();
+
 		json reqData = {
-			listenIp,
-			rtcpMux,
-			comedia,
-			enableSctp,
-			numSctpStreams,
-			maxSctpMessageSize,
-			isDataChannel : false,
-			enableSrtp,
-			srtpCryptoSuite
+			{ "listenIp" , listenIp},
+			{ "rtcpMux", rtcpMux },
+			{ "comedia", comedia },
+			{ "enableSctp", enableSctp },
+			{ "numSctpStreams", numSctpStreams },
+			{ "maxSctpMessageSize", maxSctpMessageSize },
+			{ "isDataChannel", false},
+			{ "enableSrtp", enableSrtp},
+			{ "srtpCryptoSuite", srtpCryptoSuite }
 		};
 
 		json data =
@@ -506,17 +506,17 @@ public:
 		PlainTransport* transport = new PlainTransport(
 				internal,
 				data,
-				channel                  : this->_channel,
-				payloadChannel           : this->_payloadChannel,
+				this->_channel,
+				this->_payloadChannel,
 				appData,
-				[=]() { return this->_data["rtpCapabilities"] },
-				[=](std::string producerId) {
-				if (this->_producers.count(producerId))
-					return this->_producers.at(producerId);
-				else
-					return nullptr;
+				[=]() { return this->_data["rtpCapabilities"]; },
+				[=](std::string producerId)  -> Producer* {
+					if (this->_producers.count(producerId))
+						return this->_producers.at(producerId);
+					else
+						return nullptr;
 				},
-				[=](std::string dataProducerId) {
+				[=](std::string dataProducerId) -> DataProducer* {
 					if (this->_dataProducers.count(dataProducerId))
 						return this->_dataProducers.at(dataProducerId);
 					else
@@ -524,16 +524,16 @@ public:
 				}
 			);
 
-		this->_transports.set(transport->id(), transport);
-		transport->on("@close", () => this->_transports.delete(transport->id()));
-		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer->id(), producer));
-		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer->id()));
-		transport->on("@newdataproducer", (dataProducer: DataProducer) => (
-			this->_dataProducers.set(dataProducer->id(), dataProducer)
-		));
-		transport->on("@dataproducerclose", (dataProducer: DataProducer) => (
-			this->_dataProducers.delete(dataProducer->id())
-		));
+		this->_transports.insert(std::make_pair(transport->id(), transport));
+		transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+		transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
+		transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
+// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+// 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+// 		});
+// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+// 			this->_dataProducers.erase(dataProducer->id());
+// 		});
 
 		// Emit observer event.
 		this->_observer->safeEmit("newtransport", transport);
@@ -545,7 +545,7 @@ public:
 	 * DEPRECATED: Use createPlainTransport().
 	 */
 	std::future<PlainTransport*> createPlainRtpTransport(
-		options: PlainTransportOptions
+		PlainTransportOptions options
 	)
 	{
 		logger->warn(
@@ -558,13 +558,13 @@ public:
 	 * Create a PipeTransport.
 	 */
 	std::future<PipeTransport*> createPipeTransport(		
-			json listenIp,
-			enableSctp = false,
-			json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
-			maxSctpMessageSize = 1073741823,
-			enableRtx = false,
-			enableSrtp = false,
-			json appData = json()
+		json listenIp,
+		bool enableSctp = false,
+		json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
+		uint32_t maxSctpMessageSize = 1073741823,
+		bool enableRtx = false,
+		bool enableSrtp = false,
+		json appData = json()
 	)
 	{
 		logger->debug("createPipeTransport()");
@@ -591,16 +591,19 @@ public:
 			throw new TypeError("wrong listenIp");
 		}
 
-		json internal = { ...this->_internal, transportId: uuidv4() };
+		json internal = this->_internal;
+		internal["transportId"] = uuidv4();
+
 		json reqData = {
-			listenIp,
-			enableSctp,
-			numSctpStreams,
-			maxSctpMessageSize,
-			isDataChannel : false,
-			enableRtx,
-			enableSrtp
+			{ "listenIp" , listenIp },
+			{ "enableSctp", enableSctp },
+			{ "numSctpStreams", numSctpStreams },
+			{ "maxSctpMessageSize", maxSctpMessageSize },
+			{ "isDataChannel", false},
+			{ "enableRtx", enableRtx },
+			{ "enableSrtp", enableSrtp}
 		};
+
 
 		json data =
 			co_await this->_channel->request("router.createPipeTransport", internal, reqData);
@@ -608,17 +611,17 @@ public:
 		PipeTransport* transport = new PipeTransport(
 				internal,
 				data,
-				channel                  : this->_channel,
-				payloadChannel           : this->_payloadChannel,
+				this->_channel,
+				this->_payloadChannel,
 				appData,
-				[=]() { return this->_data["rtpCapabilities"] },
-				[=](std::string producerId) {
+				[=]() { return this->_data["rtpCapabilities"]; },
+				[=](std::string producerId) -> Producer* {
 					if (this->_producers.count(producerId))
 						return this->_producers.at(producerId);
 					else
 						return nullptr;
 				},
-				[=](std::string dataProducerId) {
+				[=](std::string dataProducerId) -> DataProducer* {
 					if (this->_dataProducers.count(dataProducerId))
 						return this->_dataProducers.at(dataProducerId);
 					else
@@ -626,17 +629,16 @@ public:
 				}
 			);
 
-		this->_transports.set(transport->id(), transport);
-		transport->on("@close", () => this->_transports.delete(transport->id()));
-		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer->id(), producer));
-		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer->id()));
-		transport->on("@newdataproducer", (dataProducer: DataProducer) => (
-			this->_dataProducers.set(dataProducer->id(), dataProducer)
-		));
-		transport->on("@dataproducerclose", (dataProducer: DataProducer) => (
-			this->_dataProducers.delete(dataProducer->id())
-		));
-
+		this->_transports.insert(std::make_pair(transport->id(), transport));
+		transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+		transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
+		transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
+// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+// 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+// 		});
+// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+// 			this->_dataProducers.erase(dataProducer->id());
+// 		});
 		// Emit observer event.
 		this->_observer->safeEmit("newtransport", transport);
 
@@ -647,13 +649,8 @@ public:
 	 * Create a DirectTransport.
 	 */
 	std::future<DirectTransport*> createDirectTransport(
-		{
-			maxMessageSize = 262144,
-			appData = {}
-		}: DirectTransportOptions =
-		{
-			maxMessageSize : 262144
-		}
+		uint32_t maxMessageSize = 262144,
+		json appData = json::object()
 	)
 	{
 		logger->debug("createDirectTransport()");
@@ -668,17 +665,17 @@ public:
 			{
 				internal,
 				data,
-				channel                  : this->_channel,
-				payloadChannel           : this->_payloadChannel,
+				this->_channel,
+				this->_payloadChannel,
 				appData,
-				[=]() { return this->_data["rtpCapabilities"] },
-				[=](std::string producerId) {
+				[=]() { return this->_data["rtpCapabilities"]; },
+				[=](std::string producerId) -> Producer* {
 					if (this->_producers.count(producerId))
 						return this->_producers.at(producerId);
 					else
 						return nullptr;
 				},
-				[=](std::string dataProducerId) {
+				[=](std::string dataProducerId) -> DataProducer* {
 					if (this->_dataProducers.count(dataProducerId))
 						return this->_dataProducers.at(dataProducerId);
 					else
@@ -686,16 +683,16 @@ public:
 				}
 			});
 
-		this->_transports.set(transport->id(), transport);
-		transport->on("@close", () => this->_transports.delete(transport->id()));
-		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer->id(), producer));
-		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer->id()));
-		transport->on("@newdataproducer", (dataProducer: DataProducer) => (
-			this->_dataProducers.set(dataProducer->id(), dataProducer)
-		));
-		transport->on("@dataproducerclose", (dataProducer: DataProducer) => (
-			this->_dataProducers.delete(dataProducer->id())
-		));
+		this->_transports.insert(std::make_pair(transport->id(), transport));
+		transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+		transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
+		transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
+// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+// 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+// 		});
+// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+// 			this->_dataProducers.erase(dataProducer->id());
+// 		});
 
 		// Emit observer event.
 		this->_observer->safeEmit("newtransport", transport);

@@ -53,7 +53,7 @@ public:
 	 * @emits volumes - (volumes: AudioLevelObserverVolume[])
 	 * @emits silence
 	 */
-	AudioLevelObserver(json params /*= json()*/)
+	AudioLevelObserver(const json& params /*= json()*/)
 		: RtpObserver(params)
 		, logger(new Logger("AudioLevelObserver"))
 	{

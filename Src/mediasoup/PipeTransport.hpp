@@ -247,7 +247,7 @@ public:
 			co_await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
-		this->_data.tuple = data.tuple;
+		this->_data["tuple"] = data["tuple"];
 	}
 
 	/**

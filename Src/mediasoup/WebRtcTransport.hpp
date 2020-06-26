@@ -84,6 +84,23 @@ struct WebRtcTransportOptions
 
 struct IceParameters
 {
+	IceParameters()
+		: iceLite(true)
+	{
+
+	}
+
+	IceParameters(const json& data)
+		: iceLite(true)
+	{
+		if (data.is_object())
+		{
+			usernameFragment = data.value("usernameFragment","");
+			password = data.value("password", "");
+			iceLite = data.value("iceLite", true);
+		}
+	}
+
 	std::string usernameFragment;
 	std::string password;
 	bool iceLite;

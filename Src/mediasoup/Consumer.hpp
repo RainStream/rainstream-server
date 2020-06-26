@@ -16,15 +16,13 @@ struct ConsumerLayers
 
 	}
 
-	ConsumerLayers &operator = (const json& data)
+	ConsumerLayers(const json& data)
 	{
 		if (data.is_object())
 		{
 			this->spatialLayer = data.value("spatialLayer", 0);
 			this->temporalLayer = data.value("temporalLayer", 0);
 		}
-
-		return *this;
 	}
 
 	operator json() const
@@ -120,6 +118,26 @@ struct ConsumerTraceEventData
 
 struct ConsumerScore
 {
+	ConsumerScore()
+		: score(0)
+		, producerScore(0)
+	{
+
+	}
+
+	ConsumerScore(const json& data)
+	{
+		if (data.is_object())
+		{
+			this->score = data.value("score", 0);
+			this->producerScore = data.value("producerScore", 0);
+			for (auto &item : data["producerScores"])
+			{
+				producerScores.push_back(item);
+			}
+		}
+	}
+
 	/**
 	 * The score of the RTP stream of the consumer.
 	 */

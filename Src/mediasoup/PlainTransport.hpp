@@ -275,19 +275,24 @@ protected:
 	{
 		logger->debug("connect()");
 
-		json reqData = { ip, port, rtcpPort, srtpParameters };
+		json reqData = { 
+			{ "ip", ip },
+			{ "port", port },
+			{ "rtcpPort", rtcpPort },
+			{ "srtpParameters", srtpParameters }
+		};
 
 		json data =
 			co_await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
-		if (data.tuple)
-			this->_data.tuple = data.tuple;
+		if (data.count("tuple"))
+			this->_data["tuple"] = data["tuple"];
 
 		if (data.rtcpTuple)
-			this->_data.rtcpTuple = data.rtcpTuple;
+			this->_data["rtcpTuple"] = data["rtcpTuple"];
 
-		this->_data.srtpParameters = data.srtpParameters;
+		this->_data["srtpParameters"] = data["srtpParameters"];
 	}
 
 private:
@@ -351,7 +356,7 @@ private:
 class PlainRtpTransport : public PlainTransport
 {
 public:
-	PlainRtpTransport(json params)
+	PlainRtpTransport(const json& params)
 		: PlainTransport(params)
 	{
 
