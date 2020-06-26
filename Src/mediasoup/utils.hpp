@@ -50,3 +50,6 @@ namespace utils
 
 uint32_t setInterval(std::function<void(void)> func, int interval);
 void clearInterval(uint32_t identifier);
+
+std::string uuidv4();
+

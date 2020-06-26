@@ -143,20 +143,22 @@ class WebRtcTransport : public Transport
 {
 	Logger* logger;
 	// WebRtcTransport data.
-	protected readonly _data:
-	{
-		iceRole: "controlled";
-		iceParameters: IceParameters;
-		iceCandidates: IceCandidate[];
-		iceState: IceState;
-		iceSelectedTuple?: TransportTuple;
-		dtlsParameters: DtlsParameters;
-		dtlsState: DtlsState;
-		std::string dtlsRemoteCert;
-		sctpParameters?: SctpParameters;
-		sctpState?: SctpState;
-	};
+protected:
+	json _data;
+// 	{
+// 		iceRole: "controlled";
+// 		iceParameters: IceParameters;
+// 		iceCandidates: IceCandidate[];
+// 		iceState: IceState;
+// 		iceSelectedTuple?: TransportTuple;
+// 		dtlsParameters: DtlsParameters;
+// 		dtlsState: DtlsState;
+// 		std::string dtlsRemoteCert;
+// 		sctpParameters?: SctpParameters;
+// 		sctpState?: SctpState;
+// 	};
 
+public:
 	/**
 	 * @private
 	 * @emits icestatechange - (iceState: IceState)
@@ -200,9 +202,9 @@ class WebRtcTransport : public Transport
 	/**
 	 * ICE role.
 	 */
-	get iceRole(): "controlled"
+	std::string iceRole()
 	{
-		return this->_data.iceRole;
+		return this->_data["iceRole"];
 	}
 
 	/**
@@ -210,7 +212,7 @@ class WebRtcTransport : public Transport
 	 */
 	IceParameters iceParameters()
 	{
-		return this->_data.iceParameters;
+		return this->_data["iceParameters"];
 	}
 
 	/**
@@ -218,7 +220,7 @@ class WebRtcTransport : public Transport
 	 */
 	IceCandidate[] iceCandidates()
 	{
-		return this->_data.iceCandidates;
+		return this->_data["iceCandidates"];
 	}
 
 	/**
@@ -226,15 +228,15 @@ class WebRtcTransport : public Transport
 	 */
 	IceState iceState()
 	{
-		return this->_data.iceState;
+		return this->_data["iceState"];
 	}
 
 	/**
 	 * ICE selected tuple.
 	 */
-	get iceSelectedTuple(): TransportTuple | undefined
+	TransportTuple iceSelectedTuple()
 	{
-		return this->_data.iceSelectedTuple;
+		return this->_data["iceSelectedTuple"];
 	}
 
 	/**
@@ -242,7 +244,7 @@ class WebRtcTransport : public Transport
 	 */
 	DtlsParameters dtlsParameters()
 	{
-		return this->_data.dtlsParameters;
+		return this->_data["dtlsParameters"];
 	}
 
 	/**
@@ -250,31 +252,31 @@ class WebRtcTransport : public Transport
 	 */
 	DtlsState dtlsState()
 	{
-		return this->_data.dtlsState;
+		return this->_data["dtlsState"];
 	}
 
 	/**
 	 * Remote certificate in PEM format.
 	 */
-	std::string  dtlsRemoteCert() | undefined
+	std::string dtlsRemoteCert()
 	{
-		return this->_data.dtlsRemoteCert;
+		return this->_data["dtlsRemoteCert"];
 	}
 
 	/**
 	 * SCTP parameters.
 	 */
-	get sctpParameters(): SctpParameters | undefined
+	SctpParameters sctpParameters()
 	{
-		return this->_data.sctpParameters;
+		return this->_data["sctpParameters"];
 	}
 
 	/**
 	 * SCTP state.
 	 */
-	get sctpState(): SctpState | undefined
+	SctpState sctpState()
 	{
-		return this->_data.sctpState;
+		return this->_data["sctpState"];
 	}
 
 	/**
@@ -314,7 +316,7 @@ class WebRtcTransport : public Transport
 		if (this->_data.sctpState)
 			this->_data.sctpState = "closed";
 
-		super.close();
+		Transport::close();
 	}
 
 	/**
@@ -335,7 +337,7 @@ class WebRtcTransport : public Transport
 		if (this->_data.sctpState)
 			this->_data.sctpState = "closed";
 
-		super.routerClosed();
+		Transport::routerClosed();
 	}
 
 	/**
@@ -343,7 +345,7 @@ class WebRtcTransport : public Transport
 	 *
 	 * @override
 	 */
-	async getStats(): Promise<WebRtcTransportStat[]>
+	std::future<json> getStats()
 	{
 		logger->debug("getStats()");
 
@@ -371,7 +373,7 @@ class WebRtcTransport : public Transport
 	/**
 	 * Restart ICE.
 	 */
-	async restartIce(): Promise<IceParameters>
+	std::future<IceParameters> restartIce()
 	{
 		logger->debug("restartIce()");
 

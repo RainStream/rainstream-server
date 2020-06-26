@@ -1,6 +1,5 @@
 #pragma once 
 
-// import { v4 as uuidv4 } from "uuid";
 // import { AwaitQueue } from "awaitqueue";
 #include "common.hpp"
 #include "Logger.hpp"
@@ -29,13 +28,16 @@ class Producer;
 class Consumer;
 class DataProducer;
 class DataConsumer;
+class RtpObserver;
+class PayloadChannel;
+class DirectTransport;
 
 struct RouterOptions
 {
 	/**
 	 * Router media codecs.
 	 */
-	std::vector<RtpCodecCapability> mediaCodecs;
+	std::vector<json> mediaCodecs;
 
 	/**
 	 * Custom application data.
@@ -160,6 +162,7 @@ private:
 	// Observer instance.
 	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
+public:
 	/**
 	 * @private
 	 * @emits workerclose
@@ -248,8 +251,15 @@ private:
 
 		this->_closed = true;
 
-		this->_channel->request("router.close", this->_internal)
-			.catch(() => {});
+		try
+		{
+			this->_channel->request("router.close", this->_internal);
+		}
+		catch (const std::exception&)
+		{
+
+		}
+			
 
 		// Close every Transport.
 		for (Transport* transport : this->_transports)
@@ -262,11 +272,11 @@ private:
 		this->_producers.clear();
 
 		// Close every RtpObserver.
-		for (RtpObserver* rtpObserver : this->_rtpObservers)
-		{
-			rtpObserver->routerClosed();
-		}
-		this->_rtpObservers.clear();
+// 		for (RtpObserver* rtpObserver : this->_rtpObservers)
+// 		{
+// 			rtpObserver->routerClosed();
+// 		}
+//		this->_rtpObservers.clear();
 
 		// Clear the DataProducers map.
 		this->_dataProducers.clear();
@@ -298,7 +308,7 @@ private:
 		this->_closed = true;
 
 		// Close every Transport.
-		for (Transport* transport : this->_transports.values())
+		for (Transport* transport : this->_transports)
 		{
 			transport->routerClosed();
 		}
@@ -308,10 +318,11 @@ private:
 		this->_producers.clear();
 
 		// Close every RtpObserver.
-		for (RtpObserver* rtpObserver : this->_rtpObservers.values())
-		{
-			rtpObserver->routerClosed();
-		}
+// 		for (auto& [key, rtpObserver]: this->_rtpObservers)
+// 		{
+// 			rtpObserver->routerClosed();
+// 		}
+
 		this->_rtpObservers.clear();
 
 		// Clear the DataProducers map.
@@ -340,28 +351,26 @@ private:
 	 * Create a WebRtcTransport.
 	 */
 	std::future<WebRtcTransport*> createWebRtcTransport(
-		{
-			listenIps,
-			enableUdp = true,
-			enableTcp = false,
-			preferUdp = false,
-			preferTcp = false,
-			initialAvailableOutgoingBitrate = 600000,
-			enableSctp = false,
-			numSctpStreams = { OS: 1024, MIS: 1024 },
-			maxSctpMessageSize = 262144,
-			appData = {}
-		}: WebRtcTransportOptions
-	): 
+		json listenIps,
+		bool enableUdp = true,
+		bool enableTcp = false,
+		bool preferUdp = false,
+		bool preferTcp = false,
+		uint32_t initialAvailableOutgoingBitrate = 600000,
+		bool enableSctp = false,
+		json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
+		uint32_t maxSctpMessageSize = 262144,
+		json appData = json()
+	)
 	{
 		logger->debug("createWebRtcTransport()");
 
-		if (!Array.isArray(listenIps))
+		if (!listenIps.is_array())
 			throw new TypeError("missing listenIps");
-		else if (appData && typeof appData != "object")
+		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
-		listenIps = listenIps.map((listenIp) =>
+		listenIps = listenIps.map((listenIp)
 		{
 			if (typeof listenIp == "std::string" && listenIp)
 			{
@@ -380,38 +389,45 @@ private:
 			}
 		});
 
-		json internal = { ...this->_internal, transportId: uuidv4() };
+		json internal = this->_internal;
+		internal["transportId"] = uuidv4();
+
 		json reqData = {
-			listenIps,
-			enableUdp,
-			enableTcp,
-			preferUdp,
-			preferTcp,
-			initialAvailableOutgoingBitrate,
-			enableSctp,
-			numSctpStreams,
-			maxSctpMessageSize,
-			isDataChannel : true
+			{ "listenIps" , listenIps},
+			{ "enableUdp", enableUdp },
+			{ "enableTcp", enableTcp },
+			{ "preferUdp", preferUdp },
+			{ "preferTcp", preferTcp },
+			{ "initialAvailableOutgoingBitrate", initialAvailableOutgoingBitrate },
+			{ "enableSctp", enableSctp },
+			{ "numSctpStreams", numSctpStreams },
+			{ "maxSctpMessageSize", maxSctpMessageSize },
+			{ "isDataChannel", true}
 		};
 
 		json data =
 			co_await this->_channel->request("router.createWebRtcTransport", internal, reqData);
 
 		WebRtcTransport* transport = new WebRtcTransport(
-			{
-				internal,
-				data,
-				channel                  : this->_channel,
-				payloadChannel           : this->_payloadChannel,
-				appData,
-				getRouterRtpCapabilities : (): RtpCapabilities => this->_data["rtpCapabilities"],
-				getProducerById          : (std::string producerId): Producer | undefined => (
-					this->_producers.get(producerId)
-				),
-				getDataProducerById : (dataProducerId: std::string): DataProducer | undefined => (
-					this->_dataProducers.get(dataProducerId)
-				)
-			});
+			internal,
+			data,
+			this->_channel,
+			this->_payloadChannel,
+			appData,
+			[=]() { return this->_data["rtpCapabilities"] },
+			[=](std::string producerId) {
+			if (this->_producers.count(producerId))
+				return this->_producers.at(producerId);
+			else
+				return nullptr;
+			},
+			[=](std::string dataProducerId) {
+				if (this->_dataProducers.count(dataProducerId))
+					return this->_dataProducers.at(dataProducerId);
+				else
+					return nullptr;
+			}
+		);
 
 		this->_transports.set(transport->id, transport);
 		transport->on("@close", () => this->_transports.delete(transport->id));
@@ -488,20 +504,25 @@ private:
 			co_await this->_channel->request("router.createPlainTransport", internal, reqData);
 
 		PlainTransport* transport = new PlainTransport(
-			{
 				internal,
 				data,
 				channel                  : this->_channel,
 				payloadChannel           : this->_payloadChannel,
 				appData,
-				getRouterRtpCapabilities : (): RtpCapabilities => this->_data["rtpCapabilities"],
-				getProducerById          : (std::string producerId): Producer | undefined => (
-					this->_producers.get(producerId)
-				),
-				getDataProducerById : (dataProducerId: std::string): DataProducer | undefined => (
-					this->_dataProducers.get(dataProducerId)
-				)
-			});
+				[=]() { return this->_data["rtpCapabilities"] },
+				[=](std::string producerId) {
+				if (this->_producers.count(producerId))
+					return this->_producers.at(producerId);
+				else
+					return nullptr;
+				},
+				[=](std::string dataProducerId) {
+					if (this->_dataProducers.count(dataProducerId))
+						return this->_dataProducers.at(dataProducerId);
+					else
+						return nullptr;
+				}
+			);
 
 		this->_transports.set(transport->id, transport);
 		transport->on("@close", () => this->_transports.delete(transport->id));
@@ -587,20 +608,25 @@ private:
 			co_await this->_channel->request("router.createPipeTransport", internal, reqData);
 
 		PipeTransport* transport = new PipeTransport(
-			{
 				internal,
 				data,
 				channel                  : this->_channel,
 				payloadChannel           : this->_payloadChannel,
 				appData,
-				getRouterRtpCapabilities : (): RtpCapabilities => this->_data["rtpCapabilities"],
-				getProducerById          : (std::string producerId): Producer | undefined => (
-					this->_producers.get(producerId)
-				),
-				getDataProducerById : (dataProducerId: std::string): DataProducer | undefined => (
-					this->_dataProducers.get(dataProducerId)
-				)
-			});
+				[=]() { return this->_data["rtpCapabilities"] },
+				[=](std::string producerId) {
+					if (this->_producers.count(producerId))
+						return this->_producers.at(producerId);
+					else
+						return nullptr;
+				},
+				[=](std::string dataProducerId) {
+					if (this->_dataProducers.count(dataProducerId))
+						return this->_dataProducers.at(dataProducerId);
+					else
+						return nullptr;
+				}
+			);
 
 		this->_transports.set(transport->id, transport);
 		transport->on("@close", () => this->_transports.delete(transport->id));
@@ -647,13 +673,19 @@ private:
 				channel                  : this->_channel,
 				payloadChannel           : this->_payloadChannel,
 				appData,
-				getRouterRtpCapabilities : (): RtpCapabilities => this->_data["rtpCapabilities"],
-				getProducerById          : (std::string producerId): Producer | undefined => (
-					this->_producers.get(producerId)
-				),
-				getDataProducerById : (dataProducerId: std::string): DataProducer | undefined => (
-					this->_dataProducers.get(dataProducerId)
-				)
+				[=]() { return this->_data["rtpCapabilities"] },
+				[=](std::string producerId) {
+					if (this->_producers.count(producerId))
+						return this->_producers.at(producerId);
+					else
+						return nullptr;
+				},
+				[=](std::string dataProducerId) {
+					if (this->_dataProducers.count(dataProducerId))
+						return this->_dataProducers.at(dataProducerId);
+					else
+						return nullptr;
+				}
 			});
 
 		this->_transports.set(transport->id, transport);
