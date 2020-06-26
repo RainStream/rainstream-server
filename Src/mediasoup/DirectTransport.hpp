@@ -20,10 +20,10 @@ struct DirectTransportOptions
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
+	json appData;
 };
 
-struct DirectTransportStat =
+struct DirectTransportStat
 {
 	// Common to all Transports.
 	std::string type;
@@ -50,33 +50,40 @@ struct DirectTransportStat =
 	uint32_t maxIncomingBitrate;
 };
 
-const Logger* logger = new Logger("DirectTransport");
+class PayloadChannel;
 
 class DirectTransport : public Transport
 {
+	Logger* logger;
 	// DirectTransport data.
-	protected readonly _data:
-	{
-		// TODO
-	};
+protected:
+	json _data;
+// 	{
+// 		// TODO
+// 	};
 
+public:
 	/**
 	 * @private
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	constructor(params: any)
+	DirectTransport(const json& internal,
+		const json& data,
+		Channel* channel,
+		PayloadChannel* payloadChannel,
+		const json& appData,
+		GetRouterRtpCapabilities getRouterRtpCapabilities,
+		GetProducerById getProducerById,
+		GetDataProducerById getDataProducerById)
+		: Transport(internal, data, channel, payloadChannel,
+			appData, getRouterRtpCapabilities,
+			getProducerById, getDataProducerById)
+		, logger(new Logger("DirectTransport"))
 	{
-		super(params);
-
 		logger->debug("constructor()");
-
-		const { data } = params;
 
 		// TODO
 		this->_data = data;
-		// {
-		//
-		// };
 
 		this->_handleWorkerNotifications();
 	}
@@ -105,7 +112,7 @@ class DirectTransport : public Transport
 		if (this->_closed)
 			return;
 
-		super.close();
+		Transport::close();
 	}
 
 	/**
@@ -114,12 +121,12 @@ class DirectTransport : public Transport
 	 * @private
 	 * @override
 	 */
-	routerClosed(): void
+	void routerClosed()
 	{
 		if (this->_closed)
 			return;
 
-		super.routerClosed();
+		Transport::routerClosed();
 	}
 
 	/**
@@ -127,7 +134,7 @@ class DirectTransport : public Transport
 	 *
 	 * @override
 	 */
-	async getStats(): Promise<DirectTransportStat[]>
+	std::future<json> getStats()
 	{
 		logger->debug("getStats()");
 
@@ -139,7 +146,7 @@ class DirectTransport : public Transport
 	 *
 	 * @override
 	 */
-		std::future<void> connect()
+	std::future<void> connect()
 	{
 		logger->debug("connect()");
 	}
@@ -158,7 +165,7 @@ class DirectTransport : public Transport
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async produce(ProducerOptions& options): Promise<Producer>
+	std::future<Producer*> produce(ProducerOptions& options)
 	{
 		throw new UnsupportedError("produce() not implemented in DirectTransport");
 	}
@@ -167,33 +174,28 @@ class DirectTransport : public Transport
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async consume(options: ConsumerOptions): Promise<Consumer>
+	std::future<Consumer*> consume(options: ConsumerOptions)
 	{
 		throw new UnsupportedError("consume() not implemented in DirectTransport");
 	}
 
-	private _handleWorkerNotifications(): void
+private:
+	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.transportId, [=](std::string event, json data)
+		this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
 		{
-			switch (event)
+			if (event == "trace")
 			{
-				case "trace":
-				{
-					const trace = data as TransportTraceEventData;
+				const trace = data as TransportTraceEventData;
 
-					this->safeEmit("trace", trace);
+				this->safeEmit("trace", trace);
 
-					// Emit observer event.
-					this->_observer->safeEmit("trace", trace);
-
-					break;
-				}
-
-				default:
-				{
-					logger->error("ignoring unknown event \"%s\"", event);
-				}
+				// Emit observer event.
+				this->_observer->safeEmit("trace", trace);
+			}
+			else
+			{
+				logger->error("ignoring unknown event \"%s\"", event);
 			}
 		});
 	}

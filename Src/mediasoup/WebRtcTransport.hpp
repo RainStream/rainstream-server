@@ -165,13 +165,20 @@ class WebRtcTransport : public Transport
 	 * @emits sctpstatechange - (sctpState: SctpState)
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	WebRtcTransport(const json& params)
-		: Transport(params)
+	WebRtcTransport(const json& internal,
+		const json& data,
+		Channel* channel,
+		PayloadChannel* payloadChannel,
+		const json& appData,
+		GetRouterRtpCapabilities getRouterRtpCapabilities,
+		GetProducerById getProducerById,
+		GetDataProducerById getDataProducerById)
+		: Transport(internal, data, channel, payloadChannel, 
+			appData, getRouterRtpCapabilities, 
+			getProducerById, getDataProducerById)
 		, logger(new Logger("WebRtcTransport"))
 	{
 		logger->debug("constructor()");
-
-		const { data } = params;
 
 		this->_data =
 		{
@@ -381,73 +388,70 @@ class WebRtcTransport : public Transport
 private:
 	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.transportId, [=](std::string event, json data)
+		this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
 		{
-			switch (event)
+			if (event == "icestatechange")
 			{
-				if(event == "icestatechange")
-				{
-					const iceState = data.iceState as IceState;
+				const iceState = data.iceState as IceState;
 
-					this->_data.iceState = iceState;
+				this->_data.iceState = iceState;
 
-					this->safeEmit("icestatechange", iceState);
+				this->safeEmit("icestatechange", iceState);
 
-					// Emit observer event.
-					this->_observer->safeEmit("icestatechange", iceState);
-				}
-				else if (event == "iceselectedtuplechange")
-				{
-					const iceSelectedTuple = data.iceSelectedTuple as TransportTuple;
+				// Emit observer event.
+				this->_observer->safeEmit("icestatechange", iceState);
+			}
+			else if (event == "iceselectedtuplechange")
+			{
+				const iceSelectedTuple = data.iceSelectedTuple as TransportTuple;
 
-					this->_data.iceSelectedTuple = iceSelectedTuple;
+				this->_data.iceSelectedTuple = iceSelectedTuple;
 
-					this->safeEmit("iceselectedtuplechange", iceSelectedTuple);
+				this->safeEmit("iceselectedtuplechange", iceSelectedTuple);
 
-					// Emit observer event.
-					this->_observer->safeEmit("iceselectedtuplechange", iceSelectedTuple);
-				}
-				else if (event == "dtlsstatechange")
-				{
-					const dtlsState = data.dtlsState as DtlsState;
-					const dtlsRemoteCert = data.dtlsRemoteCert as string;
+				// Emit observer event.
+				this->_observer->safeEmit("iceselectedtuplechange", iceSelectedTuple);
+			}
+			else if (event == "dtlsstatechange")
+			{
+				const dtlsState = data.dtlsState as DtlsState;
+				const dtlsRemoteCert = data.dtlsRemoteCert as string;
 
-					this->_data.dtlsState = dtlsState;
+				this->_data.dtlsState = dtlsState;
 
-					if (dtlsState == "connected")
-						this->_data.dtlsRemoteCert = dtlsRemoteCert;
+				if (dtlsState == "connected")
+					this->_data.dtlsRemoteCert = dtlsRemoteCert;
 
-					this->safeEmit("dtlsstatechange", dtlsState);
+				this->safeEmit("dtlsstatechange", dtlsState);
 
-					// Emit observer event.
-					this->_observer->safeEmit("dtlsstatechange", dtlsState);
-				}
-				else if (event == "sctpstatechange")
-				{
-					const sctpState = data.sctpState as SctpState;
+				// Emit observer event.
+				this->_observer->safeEmit("dtlsstatechange", dtlsState);
+			}
+			else if (event == "sctpstatechange")
+			{
+				const sctpState = data.sctpState as SctpState;
 
-					this->_data.sctpState = sctpState;
+				this->_data.sctpState = sctpState;
 
-					this->safeEmit("sctpstatechange", sctpState);
+				this->safeEmit("sctpstatechange", sctpState);
 
-					// Emit observer event.
-					this->_observer->safeEmit("sctpstatechange", sctpState);
+				// Emit observer event.
+				this->_observer->safeEmit("sctpstatechange", sctpState);
 
-					break;
-				}
-				else if (event == "trace")
-				{
-					const trace = data as TransportTraceEventData;
+				break;
+			}
+			else if (event == "trace")
+			{
+				const trace = data as TransportTraceEventData;
 
-					this->safeEmit("trace", trace);
+				this->safeEmit("trace", trace);
 
-					// Emit observer event.
-					this->_observer->safeEmit("trace", trace);
-				}
-				else
-				{
-					logger->error("ignoring unknown event \"%s\"", event);
-				}
+				// Emit observer event.
+				this->_observer->safeEmit("trace", trace);
+			}
+			else
+			{
+				logger->error("ignoring unknown event \"%s\"", event);
 			}
 		});
 	}

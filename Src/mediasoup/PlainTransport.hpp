@@ -12,12 +12,12 @@ struct PlainTransportOptions
 	/**
 	 * Listening IP address.
 	 */
-	listenIp: TransportListenIp | string;
+	TransportListenIp listenIp;
 
 	/**
 	 * Use RTCP-mux (RTP and RTCP in the same port). Default true.
 	 */
-	rtcpMux?: bool;
+	bool rtcpMux;
 
 	/**
 	 * Whether remote IP:port should be auto-detected based on first RTP/RTCP
@@ -25,54 +25,54 @@ struct PlainTransportOptions
 	 * SRTP is enabled. If so, it must be called with just remote SRTP parameters.
 	 * Default false.
 	 */
-	comedia?: bool;
+	bool comedia;
 
 	/**
 	 * Create a SCTP association. Default false.
 	 */
-	enableSctp?: bool;
+	bool enableSctp;
 
 	/**
 	 * SCTP streams uint32_t.
 	 */
-	numSctpStreams?: NumSctpStreams;
+	NumSctpStreams numSctpStreams;
 
 	/**
 	 * Maximum allowed size for SCTP messages sent by DataProducers.
 	 * Default 262144.
 	 */
-	maxSctpMessageSize;
+	uint32_t maxSctpMessageSize;
 
 	/**
 	 * Enable SRTP. For this to work, connect() must be called
 	 * with remote SRTP parameters. Default false.
 	 */
-	enableSrtp?: bool;
+	bool enableSrtp;
 
 	/**
 	 * The SRTP crypto suite to be used if enableSrtp is set. Default
 	 * "AES_CM_128_HMAC_SHA1_80".
 	 */
-	srtpCryptoSuite?: SrtpCryptoSuite;
+	SrtpCryptoSuite srtpCryptoSuite;
 
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
-}
+	json appData;
+};
 
 /**
  * DEPRECATED: Use PlainTransportOptions.
  */
-struct PlainRtpTransportOptions = PlainTransportOptions;
+using PlainRtpTransportOptions = PlainTransportOptions;
 
-struct PlainTransportStat =
+struct PlainTransportStat
 {
 	// Common to all Transports.
 	std::string type;
 	std::string transportId;
 	uint32_t timestamp;
-	uint32_t sctpState?: SctpState;
+	SctpState sctpState;
 	uint32_t bytesReceived;
 	uint32_t recvBitrate;
 	uint32_t bytesSent;
@@ -93,32 +93,33 @@ struct PlainTransportStat =
 	uint32_t availableIncomingBitrate;
 	uint32_t maxIncomingBitrate;
 	// PlainTransport specific.
-	rtcpMux: bool;
-	comedia: bool;
-	tuple: TransportTuple;
-	rtcpTuple?: TransportTuple;
-}
+	bool rtcpMux;
+	bool comedia;
+	TransportTuple tuple;
+	TransportTuple rtcpTuple;
+};
 
 /**
  * DEPRECATED: Use PlainTransportStat.
  */
-struct PlainRtpTransportStat = PlainTransportStat;
+using PlainRtpTransportStat = PlainTransportStat;
 
-const Logger* logger = new Logger("PlainTransport");
 
 class PlainTransport : public Transport
 {
+	Logger* logger;
 	// PlainTransport data.
-	protected readonly _data:
-	{
-		rtcpMux?: bool;
-		comedia?: bool;
-		tuple: TransportTuple;
-		rtcpTuple?: TransportTuple;
-		sctpParameters?: SctpParameters;
-		sctpState?: SctpState;
-		srtpParameters?: SrtpParameters;
-	};
+protected:
+	json _data;
+// 	{
+// 		rtcpMux?: bool;
+// 		comedia?: bool;
+// 		tuple: TransportTuple;
+// 		rtcpTuple?: TransportTuple;
+// 		sctpParameters?: SctpParameters;
+// 		sctpState?: SctpState;
+// 		srtpParameters?: SrtpParameters;
+// 	};
 
 	/**
 	 * @private
@@ -127,13 +128,20 @@ class PlainTransport : public Transport
 	 * @emits sctpstatechange - (sctpState: SctpState)
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	constructor(params: any)
+	PlainTransport(const json& internal,
+		const json& data,
+		Channel* channel,
+		PayloadChannel* payloadChannel,
+		const json& appData,
+		GetRouterRtpCapabilities getRouterRtpCapabilities,
+		GetProducerById getProducerById,
+		GetDataProducerById getDataProducerById)
+		: Transport(internal, data, channel, payloadChannel,
+			appData, getRouterRtpCapabilities,
+			getProducerById, getDataProducerById)
+		, logger(new Logger("PlainTransport"))
 	{
-		super(params);
-
 		logger->debug("constructor()");
-
-		const { data } = params;
 
 		this->_data =
 		{
@@ -152,41 +160,41 @@ class PlainTransport : public Transport
 	/**
 	 * Transport tuple.
 	 */
-	get tuple(): TransportTuple
+	TransportTuple tuple()
 	{
-		return this->_data.tuple;
+		return this->_data["tuple"];
 	}
 
 	/**
 	 * Transport RTCP tuple.
 	 */
-	get rtcpTuple(): TransportTuple | undefined
+	TransportTuple rtcpTuple()
 	{
-		return this->_data.rtcpTuple;
+		return this->_data["rtcpTuple"];
 	}
 
 	/**
 	 * SCTP parameters.
 	 */
-	get sctpParameters(): SctpParameters | undefined
+	SctpParameters sctpParameters()
 	{
-		return this->_data.sctpParameters;
+		return this->_data["sctpParameters"];
 	}
 
 	/**
 	 * SCTP state.
 	 */
-	get sctpState(): SctpState | undefined
+	SctpState sctpState()
 	{
-		return this->_data.sctpState;
+		return this->_data["sctpState"];
 	}
 
 	/**
 	 * SRTP parameters.
 	 */
-	get srtpParameters(): SrtpParameters | undefined
+	SrtpParameters srtpParameters()
 	{
-		return this->_data.srtpParameters;
+		return this->_data["srtpParameters"];
 	}
 
 	/**
@@ -221,7 +229,7 @@ class PlainTransport : public Transport
 		if (this->_data.sctpState)
 			this->_data.sctpState = "closed";
 
-		super.close();
+		Transport::close();
 	}
 
 	/**
@@ -230,7 +238,7 @@ class PlainTransport : public Transport
 	 * @private
 	 * @override
 	 */
-	routerClosed(): void
+	void routerClosed()
 	{
 		if (this->_closed)
 			return;
@@ -238,7 +246,7 @@ class PlainTransport : public Transport
 		if (this->_data.sctpState)
 			this->_data.sctpState = "closed";
 
-		super.routerClosed();
+		Transport::routerClosed();
 	}
 
 	/**
@@ -246,7 +254,7 @@ class PlainTransport : public Transport
 	 *
 	 * @override
 	 */
-	async getStats(): Promise<PlainTransportStat[]>
+	std::future<json> getStats()
 	{
 		logger->debug("getStats()");
 
@@ -293,8 +301,8 @@ class PlainTransport : public Transport
 private:
 	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.transportId, [=](std::string event, json data)
-		{		
+		this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
+		{
 			if(event == "tuple")
 			{
 // 				const tuple = data.tuple as TransportTuple;

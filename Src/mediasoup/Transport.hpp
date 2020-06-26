@@ -81,6 +81,12 @@ class Consumer;
 class DataProducer;
 class DataConsumer;
 
+
+using GetRouterRtpCapabilities = std::function<json(void)>;
+using GetProducerById = std::function<Producer*(std::string)>;
+using GetDataProducerById =std::function<DataProducer*(std::string)>;
+
+
 class Transport : public EnhancedEventEmitter
 {
 	Logger* logger;
@@ -113,13 +119,13 @@ private:
 	json _appData;
 
 	// Method to retrieve Router RTP capabilities.
-	json _getRouterRtpCapabilities();
+	GetRouterRtpCapabilities _getRouterRtpCapabilities;
 
 	// Method to retrieve a Producer.
-	Producer* _getProducerById(std::string producerId);
+	GetProducerById _getProducerById;
 
 	// Method to retrieve a DataProducer.
-	DataProducer* _getDataProducerById(std::string dataProducerIdring);
+	GetDataProducerById _getDataProducerById;
 
 	// Producers map.
 	std::map<std::string, Producer*> _producers;
@@ -141,7 +147,7 @@ private:
 	uint32_t _nextMidForConsumers = 0;
 
 	// Buffer with available SCTP stream ids.
-	Buffer _sctpStreamIds;
+	//Buffer _sctpStreamIds;
 
 	// Next SCTP stream id.
 	uint32_t _nextSctpStreamId = 0;
@@ -162,14 +168,14 @@ public:
 	 * @emits @dataproducerclose - (dataProducer: DataProducer)
 	 */
 	Transport(
-		json internal,
-		json data,
+		const json& internal,
+		const json& data,
 		Channel* channel,
-		Channel* payloadChannel,
-		json appData,
-		getRouterRtpCapabilities,
-		getProducerById,
-		getDataProducerById
+		PayloadChannel* payloadChannel,
+		const json& appData,
+		GetRouterRtpCapabilities getRouterRtpCapabilities,
+		GetProducerById getProducerById,
+		GetDataProducerById getDataProducerById
 	)
 		: EnhancedEventEmitter()
 		, logger( new Logger("Transport"))

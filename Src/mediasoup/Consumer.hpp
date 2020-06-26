@@ -7,18 +7,18 @@
 #include "Producer.hpp"
 #include "RtpParameters.hpp"
 
-struct ConsumerLayers
-{
-	/**
-	 * The spatial layer index (from 0 to N).
-	 */
-	uint32_t spatialLayer;
-
-	/**
-	 * The temporal layer index (from 0 to N).
-	 */
-	uint32_t temporalLayer;
-};
+using ConsumerLayers = json;
+// {
+// 	/**
+// 	 * The spatial layer index (from 0 to N).
+// 	 */
+// 	uint32_t spatialLayer;
+// 
+// 	/**
+// 	 * The temporal layer index (from 0 to N).
+// 	 */
+// 	uint32_t temporalLayer;
+// };
 
 struct ConsumerOptions
 {

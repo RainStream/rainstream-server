@@ -640,7 +640,7 @@ private:
 		json data =
 			co_await this->_channel->request("router.createDirectTransport", internal, reqData);
 
-		const transport = new DirectTransport(
+		DirectTransport* transport = new DirectTransport(
 			{
 				internal,
 				data,
@@ -946,7 +946,7 @@ private:
 	 */
 	bool canConsume(std::string producerId, json rtpCapabilities)
 	{
-		const producer = this->_producers.get(producerId);
+		Producer* producer = this->_producers.get(producerId);
 
 		if (!producer)
 		{
@@ -958,7 +958,7 @@ private:
 
 		try
 		{
-			return ortc::canConsume(producer.consumableRtpParameters, rtpCapabilities);
+			return ortc::canConsume(producer->consumableRtpParameters, rtpCapabilities);
 		}
 		catch (error)
 		{

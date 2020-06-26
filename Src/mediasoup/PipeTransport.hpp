@@ -82,32 +82,41 @@ struct PipeTransportStat
 	TransportTuple tuple;
 };
 
-const Logger* logger = new Logger("PipeTransport");
 
 class PipeTransport : public Transport
 {
+	Logger* logger;
 	// PipeTransport data.
-	protected readonly _data:
-	{
-		tuple: TransportTuple;
-		sctpParameters?: SctpParameters;
-		sctpState?: SctpState;
-		rtx: bool;
-		srtpParameters?: SrtpParameters;
-	};
+protected:
+	json _data;
+// 	{
+// 		tuple: TransportTuple;
+// 		sctpParameters?: SctpParameters;
+// 		sctpState?: SctpState;
+// 		rtx: bool;
+// 		srtpParameters?: SrtpParameters;
+// 	};
 
+public:
 	/**
 	 * @private
 	 * @emits sctpstatechange - (sctpState: SctpState)
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	constructor(params: any)
+	PipeTransport(const json& internal,
+		const json& data,
+		Channel* channel,
+		PayloadChannel* payloadChannel,
+		const json& appData,
+		GetRouterRtpCapabilities getRouterRtpCapabilities,
+		GetProducerById getProducerById,
+		GetDataProducerById getDataProducerById)
+		: Transport(internal, data, channel, payloadChannel,
+			appData, getRouterRtpCapabilities,
+			getProducerById, getDataProducerById)
+		, logger(new Logger("PipeTransport"))
 	{
-		super(params);
-
 		logger->debug("constructor()");
-
-		const { data } = params;
 
 		this->_data =
 		{
@@ -124,33 +133,33 @@ class PipeTransport : public Transport
 	/**
 	 * Transport tuple.
 	 */
-	get tuple(): TransportTuple
+	TransportTuple tuple()
 	{
-		return this->_data.tuple;
+		return this->_data["tuple"];
 	}
 
 	/**
 	 * SCTP parameters.
 	 */
-	get sctpParameters(): SctpParameters | undefined
+	SctpParameters sctpParameters()
 	{
-		return this->_data.sctpParameters;
+		return this->_data["sctpParameters"];
 	}
 
 	/**
 	 * SCTP state.
 	 */
-	get sctpState(): SctpState | undefined
+	SctpState sctpState()
 	{
-		return this->_data.sctpState;
+		return this->_data["sctpState"];
 	}
 
 	/**
 	 * SRTP parameters.
 	 */
-	get srtpParameters(): SrtpParameters | undefined
+	SrtpParameters srtpParameters()
 	{
-		return this->_data.srtpParameters;
+		return this->_data["srtpParameters"];
 	}
 
 	/**
@@ -180,10 +189,10 @@ class PipeTransport : public Transport
 		if (this->_closed)
 			return;
 
-		if (this->_data.sctpState)
-			this->_data.sctpState = "closed";
+		if (this->_data.contains("sctpState"))
+			this->_data["sctpState"] = "closed";
 
-		super.close();
+		Transport::close();
 	}
 
 	/**
@@ -192,15 +201,15 @@ class PipeTransport : public Transport
 	 * @private
 	 * @override
 	 */
-	routerClosed(): void
+	void routerClosed()
 	{
 		if (this->_closed)
 			return;
 
-		if (this->_data.sctpState)
-			this->_data.sctpState = "closed";
+		if (this->_data.contains("sctpState"))
+			this->_data["sctpState"] = "closed";
 
-		super.routerClosed();
+		Transport::routerClosed();
 	}
 
 	/**
@@ -208,7 +217,7 @@ class PipeTransport : public Transport
 	 *
 	 * @override
 	 */
-	async getStats(): Promise<PipeTransportStat[]>
+	std::future<json> getStats()
 	{
 		logger->debug("getStats()");
 
@@ -220,17 +229,10 @@ class PipeTransport : public Transport
 	 *
 	 * @override
 	 */
-		std::future<void> connect(
-		{
-			ip,
-			port,
-			srtpParameters
-		}:
-		{
-			std::string ip;
-			uint32_t port;
-			srtpParameters?: SrtpParameters;
-		}
+	std::future<void> connect(
+		std::string ip,
+		uint32_t port,
+		SrtpParameters srtpParameters
 	)
 	{
 		logger->debug("connect()");
@@ -249,7 +251,7 @@ class PipeTransport : public Transport
 	 *
 	 * @override
 	 */
-	async consume({ producerId, appData = {} }: ConsumerOptions): Promise<Consumer>
+	std::future<Consumer*> consume({ producerId, appData = {} }: ConsumerOptions)
 	{
 		logger->debug("consume()");
 
@@ -276,12 +278,12 @@ class PipeTransport : public Transport
 			consumableRtpEncodings : producer.consumableRtpParameters.encodings
 		};
 
-		const status =
+		json status =
 			co_await this->_channel->request("transport.consume", internal, reqData);
 
 		json data = { kind: producer.kind, rtpParameters, type: "pipe" };
 
-		const consumer = new Consumer(
+		Consumer* consumer = new Consumer(
 			{
 				internal,
 				data,
@@ -291,9 +293,9 @@ class PipeTransport : public Transport
 				producerPaused : status.producerPaused
 			});
 
-		this->_consumers.set(consumer.id, consumer);
-		consumer.on("@close", () => this->_consumers.delete(consumer.id));
-		consumer.on("@producerclose", () => this->_consumers.delete(consumer.id));
+		this->_consumers.set(consumer->id, consumer);
+		consumer->on("@close", () => this->_consumers.delete(consumer->id));
+		consumer->on("@producerclose", () => this->_consumers.delete(consumer->id));
 
 		// Emit observer event.
 		this->_observer->safeEmit("newconsumer", consumer);
@@ -301,36 +303,34 @@ class PipeTransport : public Transport
 		return consumer;
 	}
 
-	private _handleWorkerNotifications(): void
+private:
+	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.transportId, [=](std::string event, json data)
+		this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
 		{
-			switch (event)
+			if (event == "sctpstatechange")
 			{
-				if(event == "sctpstatechange")
-				{
-					const sctpState = data.sctpState as SctpState;
+				const sctpState = data.sctpState as SctpState;
 
-					this->_data.sctpState = sctpState;
+				this->_data.sctpState = sctpState;
 
-					this->safeEmit("sctpstatechange", sctpState);
+				this->safeEmit("sctpstatechange", sctpState);
 
-					// Emit observer event.
-					this->_observer->safeEmit("sctpstatechange", sctpState);
-				}
-				else if (event == "trace")
-				{
-					const trace = data as TransportTraceEventData;
+				// Emit observer event.
+				this->_observer->safeEmit("sctpstatechange", sctpState);
+			}
+			else if (event == "trace")
+			{
+				const trace = data as TransportTraceEventData;
 
-					this->safeEmit("trace", trace);
+				this->safeEmit("trace", trace);
 
-					// Emit observer event.
-					this->_observer->safeEmit("trace", trace);
-				}
-				else
-				{
-					logger->error("ignoring unknown event \"%s\"", event);
-				}
+				// Emit observer event.
+				this->_observer->safeEmit("trace", trace);
+			}
+			else
+			{
+				logger->error("ignoring unknown event \"%s\"", event);
 			}
 		});
 	}
