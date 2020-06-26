@@ -251,23 +251,23 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<Consumer*> consume({ producerId, appData = {} }: ConsumerOptions)
+	std::future<Consumer*> consume( std::string producerId, json appData = json() )
 	{
 		logger->debug("consume()");
 
-		if (!producerId || typeof producerId != "string")
+		if (producerId.empty())
 			throw new TypeError("missing producerId");
 		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
-		const producer = this->_getProducerById(producerId);
+		Producer* producer = this->_getProducerById(producerId);
 
 		if (!producer)
 			throw Error(utils::Printf("Producer with id \"${producerId}\" not found", producerId));
 
 		// This may throw.
-		const rtpParameters = ortc::getPipeConsumerRtpParameters(
-			producer.consumableRtpParameters, this->_data.rtx);
+		json rtpParameters = ortc::getPipeConsumerRtpParameters(
+			producer->consumableRtpParameters(), this->_data["rtx"]);
 
 		json internal = { ...this->_internal, consumerId: uuidv4(), producerId };
 		json reqData =

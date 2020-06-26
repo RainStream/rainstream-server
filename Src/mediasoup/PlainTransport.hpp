@@ -267,18 +267,10 @@ protected:
 	 * @override
 	 */
 	std::future<void> connect(
-		{
-			ip,
-			port,
-			rtcpPort,
-			srtpParameters
-		}:
-		{
-			ip;
-			uint32_t port;
-			uint32_t rtcpPort;
-			srtpParameters?: SrtpParameters;
-		}
+		std::string ip,
+		uint32_t port,
+		uint32_t rtcpPort,
+		SrtpParameters srtpParameters
 	)
 	{
 		logger->debug("connect()");

@@ -115,7 +115,7 @@ protected:
 	bool _closed = false;
 
 	// Custom app data.
-private:
+protected:
 	json _appData;
 
 	// Method to retrieve Router RTP capabilities.
@@ -138,9 +138,8 @@ private:
 
 	// DataConsumers map.
 	std::map<std::string, DataConsumer*> _dataConsumers;
-
-	// RTCP CNAME for Producers.
 private:
+	// RTCP CNAME for Producers.
 	std::string _cnameForProducers;
 
 	// Next MID for Consumers. It"s converted into string when used.
@@ -253,11 +252,17 @@ public:
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal["transportId"]);
 
-		this->_channel->request("transport.close", this->_internal)
-			.catch(() => {});
+		try
+		{
+			this->_channel->request("transport.close", this->_internal);
+		}
+		catch (const std::exception&)
+		{
+
+		}
 
 		// Close every Producer.
-		for (Producer* producer : this->_producers)
+		for (auto &[key, producer] : this->_producers)
 		{
 			producer->transportClosed();
 
@@ -267,7 +272,7 @@ public:
 		this->_producers.clear();
 
 		// Close every Consumer.
-		for (Consumer* consumer : this->_consumers)
+		for (auto &[key, consumer] : this->_consumers)
 		{
 			consumer->transportClosed();
 		}
@@ -315,7 +320,7 @@ public:
 		this->_channel->removeAllListeners(this->_internal["transportId"]);
 
 		// Close every Producer.
-		for (Producer* producer : this->_producers)
+		for (auto &[key, producer] : this->_producers)
 		{
 			producer->transportClosed();
 
@@ -325,7 +330,7 @@ public:
 		this->_producers.clear();
 
 		// Close every Consumer.
-		for (Consumer* consumer : this->_consumers)
+		for (auto &[key, consumer] : this->_consumers)
 		{
 			consumer->transportClosed();
 		}
@@ -412,11 +417,13 @@ public:
 		json appData = json()
 	)
 	{
+		static std::set<std::string> kinds = {"audio","video"};
+
 		logger->debug("produce()");
 
 		if (!id.empty() && this->_producers.count(id))
 			throw new TypeError(utils::Printf("a Producer with same id \"${ %s }\" already exists",id.c_str()));
-		else if (![ "audio", "video" ].includes(kind))
+		else if (!kinds.count(kind))
 			throw new TypeError(utils::Printf("invalid kind \"${%s}\"", kind.c_str()));
 		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
@@ -426,12 +433,12 @@ public:
 
 		// If missing or empty encodings, add one.
 		if (
-			!rtpParameters.encodings ||
-			!Array.isArray(rtpParameters.encodings) ||
-			rtpParameters.encodings.length == 0
+			!rtpParameters.count("encodings") ||
+			!rtpParameters["encodings"].is_array() ||
+			rtpParameters["encodings"].size() == 0
 		)
 		{
-			rtpParameters.encodings = [ {} ];
+			rtpParameters["encodings"] = json::array();
 		}
 
 		// Don"t do this in PipeTransports since there we must keep CNAME value in
@@ -440,20 +447,20 @@ public:
 		{
 			// If CNAME is given and we don"t have yet a CNAME for Producers in this
 			// Transport, take it.
-			if (!this->_cnameForProducers && rtpParameters.rtcp && rtpParameters.rtcp.cname)
+			if (this->_cnameForProducers.empty() && rtpParameters.count("rtcp") && rtpParameters["rtcp"].count("cname"))
 			{
-				this->_cnameForProducers = rtpParameters.rtcp.cname;
+				this->_cnameForProducers = rtpParameters["rtcp"].value("cname", uuidv4().substr(0, 8));
 			}
 			// Otherwise if we don"t have yet a CNAME for Producers and the RTP parameters
 			// do not include CNAME, create a random one.
-			else if (!this->_cnameForProducers)
+			else if (this->_cnameForProducers.empty())
 			{
 				this->_cnameForProducers = uuidv4().substr(0, 8);
 			}
 
 			// Override Producer"s CNAME.
-			rtpParameters.rtcp = rtpParameters.rtcp || {};
-			rtpParameters.rtcp.cname = this->_cnameForProducers;
+			rtpParameters["rtcp"] = rtpParameters.value("rtcp", json::object());
+			rtpParameters["rtcp"]["cname"] = this->_cnameForProducers;
 		}
 
 		json routerRtpCapabilities = this->_getRouterRtpCapabilities();
@@ -466,18 +473,26 @@ public:
 		json consumableRtpParameters = ortc::getConsumableRtpParameters(
 			kind, rtpParameters, routerRtpCapabilities, rtpMapping);
 
-		json internal = { ...this->_internal, producerId: id || uuidv4() };
-		json reqData = { kind, rtpParameters, rtpMapping, keyFrameRequestDelay, paused };
+		json internal = this->_internal;
+		internal["producerId"] = id.empty() ? uuidv4() : id;
+
+		json reqData = { 
+			{ "kind", kind },
+			{ "rtpParameters", rtpParameters },
+			{ "rtpMapping", rtpMapping },
+			{ "keyFrameRequestDelay", keyFrameRequestDelay },
+			{ "paused", paused },
+		};
 
 		json status =
 			co_await this->_channel->request("transport.produce", internal, reqData);
 
 		json data =
 		{
-			kind,
-			rtpParameters,
-			type : status.type,
-			consumableRtpParameters
+			{ "kind", kind },
+			{ "rtpParameters", rtpParameters },
+			{ "type", status["type"] },
+			{ "consumableRtpParameters", consumableRtpParameters }
 		};
 
 		Producer* producer = new Producer(
@@ -488,10 +503,10 @@ public:
 			paused
 			);
 
-		this->_producers.set(producer->id, producer);
+		this->_producers.insert(std::make_pair(producer->id(), producer));
 		producer->on("@close", [=]()
 		{
-			this->_producers.delete(producer->id);
+			this->_producers.erase(producer->id());
 			this->emit("@producerclose", producer);
 		});
 
@@ -512,7 +527,7 @@ public:
 		std::string producerId,
 		json rtpCapabilities,
 		bool paused = false,
-		json preferredLayers,
+		ConsumerLayers preferredLayers = ConsumerLayers(),
 		json appData = json()
 	)
 	{
@@ -522,7 +537,7 @@ public:
 			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
-		ortc::validateRtpCapabilities(rtpCapabilities!);
+		ortc::validateRtpCapabilities(rtpCapabilities);
 
 		Producer* producer = this->_getProducerById(producerId);
 
@@ -530,52 +545,58 @@ public:
 			throw Error(utils::Printf("Producer with id \"${%s}\" not found", producerId.c_str()));
 
 		// This may throw.
-		const rtpParameters = ortc::getConsumerRtpParameters(
-			producer->consumableRtpParameters, rtpCapabilities!);
+		json rtpParameters = ortc::getConsumerRtpParameters(
+			producer->consumableRtpParameters(), rtpCapabilities);
 
 		// Set MID.
-		rtpParameters.mid = utils::Printf("%ud", this->_nextMidForConsumers++);
+		rtpParameters["mid"] = utils::Printf("%ud", this->_nextMidForConsumers++);
 
 		// We use up to 8 bytes for MID (string).
 		if (this->_nextMidForConsumers == 100000000)
 		{
-			logger->error(
-				utils::Printf("consume() | reaching max MID value \"${this->_nextMidForConsumers}\"", this->_nextMidForConsumers));
+			logger->error("consume() | reaching max MID value \"${%ud}\"", this->_nextMidForConsumers);
 
 			this->_nextMidForConsumers = 0;
 		}
 
-		json internal = { ...this->_internal, consumerId: uuidv4(), producerId };
+		json internal = this->_internal;
+		internal["consumerId"] = uuidv4();
+		internal["producerId"] = producerId;
+
+
 		json reqData =
 		{
-			kind                   : producer->kind,
-			rtpParameters,
-			type                   : producer->type,
-			consumableRtpEncodings : producer->consumableRtpParameters.encodings,
-			paused,
-			preferredLayers
+			{ "kind", producer->kind() },
+			{ "rtpParameters", rtpParameters },
+			{ "type", producer->type() },
+			{ "consumableRtpEncodings", producer->consumableRtpParameters()["encodings"] },
+			{ "paused", paused},
+			{ "preferredLayers", preferredLayers }
 		};
 
-		const status =
+		json status =
 			co_await this->_channel->request("transport.consume", internal, reqData);
 
-		json data = { kind: producer->kind, rtpParameters, type: producer->type };
+		json data = { 
+			{ "kind", producer->kind() },
+			{ "rtpParameters", rtpParameters }, 
+			{ "type", producer->type() }
+		};
 
-		const consumer = new Consumer(
-			{
+		Consumer* consumer = new Consumer(
 				internal,
 				data,
-				channel         : this->_channel,
+				this->_channel,
 				appData,
-				paused          : status.paused,
-				producerPaused  : status.producerPaused,
-				score           : status.score,
-				preferredLayers : status.preferredLayers
-			});
+				status["paused"],
+				status["producerPaused"],
+				status["score"],
+				status["preferredLayers"]
+			);
 
-		this->_consumers.set(consumer->id, consumer);
-		consumer->on("@close", () => this->_consumers.delete(consumer->id));
-		consumer->on("@producerclose", () => this->_consumers.delete(consumer->id));
+		this->_consumers.insert(std::make_pair(consumer->id(), consumer));
+		consumer->on("@close", [=]() { this->_consumers.erase(consumer->id()); });
+		consumer->on("@producerclose", [=]() { this->_consumers.erase(consumer->id()); });
 
 		// Emit observer event.
 		this->_observer->safeEmit("newconsumer", consumer);
@@ -646,10 +667,10 @@ public:
 // 				appData
 // 			});
 // 
-// 		this->_dataProducers.set(dataProducer->id, dataProducer);
+// 		this->_dataProducers.set(dataproducer->id(), dataProducer);
 // 		dataProducer->on("@close", () =>
 // 		{
-// 			this->_dataProducers.delete(dataProducer->id);
+// 			this->_dataProducers.delete(dataproducer->id());
 // 			this->emit("@dataproducerclose", dataProducer);
 // 		});
 // 
@@ -753,17 +774,17 @@ public:
 // 				appData
 // 			});
 // 
-// 		this->_dataConsumers.set(dataConsumer->id, dataConsumer);
+// 		this->_dataConsumers.set(dataconsumer->id(), dataConsumer);
 // 		dataConsumer->on("@close", () =>
 // 		{
-// 			this->_dataConsumers.delete(dataConsumer->id);
+// 			this->_dataConsumers.delete(dataconsumer->id());
 // 
 // 			if (this->_sctpStreamIds)
 // 				this->_sctpStreamIds[sctpStreamId] = 0;
 // 		});
 // 		dataConsumer->on("@dataproducerclose", () =>
 // 		{
-// 			this->_dataConsumers.delete(dataConsumer->id);
+// 			this->_dataConsumers.delete(dataconsumer->id());
 // 
 // 			if (this->_sctpStreamIds)
 // 				this->_sctpStreamIds[sctpStreamId] = 0;
@@ -788,35 +809,35 @@ public:
 			"transport.enableTraceEvent", this->_internal, reqData);
 	}
 
-	uint32_t _getNextSctpStreamId()
-	{
-		if (
-			!this->_data.sctpParameters ||
-			typeof this->_data.sctpParameters.MIS != "uint32_t"
-		)
-		{
-			throw new TypeError("missing data.sctpParameters.MIS");
-		}
-
-		const numStreams = this->_data.sctpParameters.MIS;
-
-		if (!this->_sctpStreamIds)
-			this->_sctpStreamIds = Buffer.alloc(numStreams, 0);
-
-		let sctpStreamId;
-
-		for (let idx = 0; idx < this->_sctpStreamIds.length; ++idx)
-		{
-			sctpStreamId = (this->_nextSctpStreamId + idx) % this->_sctpStreamIds.length;
-
-			if (!this->_sctpStreamIds[sctpStreamId])
-			{
-				this->_nextSctpStreamId = sctpStreamId + 1;
-
-				return sctpStreamId;
-			}
-		}
-
-		throw new Error("no sctpStreamId available");
-	}
+// 	uint32_t _getNextSctpStreamId()
+// 	{
+// 		if (
+// 			!this->_data.count("sctpParameters") ||
+// 			!this->_data["sctpParameters"]["MIS"].is_number()
+// 		)
+// 		{
+// 			throw new TypeError("missing data.sctpParameters.MIS");
+// 		}
+// 
+// 		uint32_t numStreams = this->_data["sctpParameters"].value("MIS", 0);
+// 
+// 		if (!this->_sctpStreamIds)
+// 			this->_sctpStreamIds = Buffer.alloc(numStreams, 0);
+// 
+// 		uint32_t sctpStreamId;
+// 
+// 		for (uint32_t idx = 0; idx < this->_sctpStreamIds.length; ++idx)
+// 		{
+// 			sctpStreamId = (this->_nextSctpStreamId + idx) % this->_sctpStreamIds.length;
+// 
+// 			if (!this->_sctpStreamIds[sctpStreamId])
+// 			{
+// 				this->_nextSctpStreamId = sctpStreamId + 1;
+// 
+// 				return sctpStreamId;
+// 			}
+// 		}
+// 
+// 		throw new Error("no sctpStreamId available");
+// 	}
 };

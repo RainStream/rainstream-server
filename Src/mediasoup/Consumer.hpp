@@ -7,18 +7,45 @@
 #include "Producer.hpp"
 #include "RtpParameters.hpp"
 
-using ConsumerLayers = json;
-// {
-// 	/**
-// 	 * The spatial layer index (from 0 to N).
-// 	 */
-// 	uint32_t spatialLayer;
-// 
-// 	/**
-// 	 * The temporal layer index (from 0 to N).
-// 	 */
-// 	uint32_t temporalLayer;
-// };
+struct ConsumerLayers
+{
+	ConsumerLayers()
+		: spatialLayer(0)
+		, temporalLayer(0)
+	{
+
+	}
+
+	ConsumerLayers &operator = (const json& data)
+	{
+		if (data.is_object())
+		{
+			this->spatialLayer = data.value("spatialLayer", 0);
+			this->temporalLayer = data.value("temporalLayer", 0);
+		}
+
+		return *this;
+	}
+
+	operator json() const
+	{
+		json data = {
+			{ "spatialLayer", spatialLayer },
+			{ "temporalLayer", temporalLayer }
+		};
+
+		return data;
+	}
+ 	/**
+ 	 * The spatial layer index (from 0 to N).
+ 	 */
+ 	uint32_t spatialLayer;
+ 
+ 	/**
+ 	 * The temporal layer index (from 0 to N).
+ 	 */
+ 	uint32_t temporalLayer;
+};
 
 struct ConsumerOptions
 {
@@ -184,7 +211,7 @@ private:
 	ConsumerScore _score;
 
 	// Preferred layers.
-	json _preferredLayers;
+	ConsumerLayers _preferredLayers;
 
 	// Curent layers.
 	ConsumerLayers _currentLayers;
@@ -192,6 +219,7 @@ private:
 	// Observer instance.
 	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
+public:
 	/**
 	 * @private
 	 * @emits transportclose

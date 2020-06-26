@@ -7,6 +7,25 @@
 #include "Transport.hpp"
 #include "SctpParameters.hpp"
 
+using IceState = std::string;// "new" | "connected" | "completed" | "disconnected" | "closed";
+
+using DtlsRole = std::string;//"auto" | "client" | "server";
+
+using DtlsState = std::string;//"new" | "connecting" | "connected" | "failed" | "closed";
+
+
+/**
+ * The hash function algorithm (as defined in the "Hash function Textual Names"
+ * registry initially specified in RFC 4572 Section 8) and its corresponding
+ * certificate fingerprint value (in lowercase hex string as expressed utilizing
+ * the syntax of "fingerprint" in RFC 4572 Section 5).
+ */
+struct DtlsFingerprint
+{
+	std::string algorithm;
+	std::string value;
+};
+
 
 struct WebRtcTransportOptions
 {
@@ -78,7 +97,7 @@ struct IceCandidate
 	TransportProtocol protocol;
 	uint32_t port;
 	std::string type = "host";
-	std::string tcpType = "passive" | undefined;
+	std::string tcpType = "passive";
 };
 
 struct DtlsParameters
@@ -87,23 +106,7 @@ struct DtlsParameters
 	std::vector<DtlsFingerprint> fingerprints;
 };
 
-/**
- * The hash function algorithm (as defined in the "Hash function Textual Names"
- * registry initially specified in RFC 4572 Section 8) and its corresponding
- * certificate fingerprint value (in lowercase hex string as expressed utilizing
- * the syntax of "fingerprint" in RFC 4572 Section 5).
- */
-struct DtlsFingerprint
-{
-	std::string algorithm;
-	std::string value;
-};
 
-using IceState = std::string;// "new" | "connected" | "completed" | "disconnected" | "closed";
-
-using DtlsRole = std::string;//"auto" | "client" | "server";
-
-using DtlsState = std::string;//"new" | "connecting" | "connected" | "failed" | "closed";
 
 struct WebRtcTransportStat
 {
@@ -184,16 +187,16 @@ public:
 
 		this->_data =
 		{
-			iceRole          : data.iceRole,
-			iceParameters    : data.iceParameters,
-			iceCandidates    : data.iceCandidates,
-			iceState         : data.iceState,
-			iceSelectedTuple : data.iceSelectedTuple,
-			dtlsParameters   : data.dtlsParameters,
-			dtlsState        : data.dtlsState,
-			dtlsRemoteCert   : data.dtlsRemoteCert,
-			sctpParameters   : data.sctpParameters,
-			sctpState        : data.sctpState
+			{ "iceRole"          , data["iceRole"] },
+			{ "iceParameters"    , data["iceParameters"] },
+			{ "iceCandidates"    , data["iceCandidates"] },
+			{ "iceState"         , data["iceState"] },
+			{ "iceSelectedTuple" , data["iceSelectedTuple"] },
+			{ "dtlsParameters"   , data["dtlsParameters"] },
+			{ "dtlsState"        , data["dtlsState"] },
+			{ "dtlsRemoteCert"   , data["dtlsRemoteCert"] },
+			{ "sctpParameters"   , data["sctpParameters"] },
+			{ "sctpState"        , data["sctpState"] }
 		};
 
 		this->_handleWorkerNotifications();
@@ -218,7 +221,7 @@ public:
 	/**
 	 * ICE candidates.
 	 */
-	IceCandidate[] iceCandidates()
+	std::vector<IceCandidate> iceCandidates()
 	{
 		return this->_data["iceCandidates"];
 	}
@@ -357,17 +360,17 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<void> connect({ dtlsParameters }: { dtlsParameters: DtlsParameters })
+	std::future<void> connect(DtlsParameters dtlsParameters)
 	{
 		logger->debug("connect()");
 
-		json reqData = { dtlsParameters };
+		json reqData = { { "dtlsParameters", dtlsParameters } };
 
 		json data =
 			co_await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
-		this->_data.dtlsParameters.role = data.dtlsLocalRole;
+		this->_data["dtlsParameters"]["role"] = data["dtlsLocalRole"];
 	}
 
 	/**
@@ -380,9 +383,9 @@ public:
 		json data =
 			co_await this->_channel->request("transport.restartIce", this->_internal);
 
-		const { iceParameters } = data;
+		json iceParameters = data["iceParameters"];
 
-		this->_data.iceParameters = iceParameters;
+		this->_data["iceParameters"] = iceParameters;
 
 		return iceParameters;
 	}
@@ -394,62 +397,60 @@ private:
 		{
 			if (event == "icestatechange")
 			{
-				const iceState = data.iceState as IceState;
-
-				this->_data.iceState = iceState;
-
-				this->safeEmit("icestatechange", iceState);
-
-				// Emit observer event.
-				this->_observer->safeEmit("icestatechange", iceState);
+// 				const iceState = data.iceState as IceState;
+// 
+// 				this->_data.iceState = iceState;
+// 
+// 				this->safeEmit("icestatechange", iceState);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("icestatechange", iceState);
 			}
 			else if (event == "iceselectedtuplechange")
 			{
-				const iceSelectedTuple = data.iceSelectedTuple as TransportTuple;
-
-				this->_data.iceSelectedTuple = iceSelectedTuple;
-
-				this->safeEmit("iceselectedtuplechange", iceSelectedTuple);
-
-				// Emit observer event.
-				this->_observer->safeEmit("iceselectedtuplechange", iceSelectedTuple);
+// 				const iceSelectedTuple = data.iceSelectedTuple as TransportTuple;
+// 
+// 				this->_data.iceSelectedTuple = iceSelectedTuple;
+// 
+// 				this->safeEmit("iceselectedtuplechange", iceSelectedTuple);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("iceselectedtuplechange", iceSelectedTuple);
 			}
 			else if (event == "dtlsstatechange")
 			{
-				const dtlsState = data.dtlsState as DtlsState;
-				const dtlsRemoteCert = data.dtlsRemoteCert as string;
-
-				this->_data.dtlsState = dtlsState;
-
-				if (dtlsState == "connected")
-					this->_data.dtlsRemoteCert = dtlsRemoteCert;
-
-				this->safeEmit("dtlsstatechange", dtlsState);
-
-				// Emit observer event.
-				this->_observer->safeEmit("dtlsstatechange", dtlsState);
+// 				const dtlsState = data.dtlsState as DtlsState;
+// 				const dtlsRemoteCert = data.dtlsRemoteCert as string;
+// 
+// 				this->_data.dtlsState = dtlsState;
+// 
+// 				if (dtlsState == "connected")
+// 					this->_data.dtlsRemoteCert = dtlsRemoteCert;
+// 
+// 				this->safeEmit("dtlsstatechange", dtlsState);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("dtlsstatechange", dtlsState);
 			}
 			else if (event == "sctpstatechange")
 			{
-				const sctpState = data.sctpState as SctpState;
-
-				this->_data.sctpState = sctpState;
-
-				this->safeEmit("sctpstatechange", sctpState);
-
-				// Emit observer event.
-				this->_observer->safeEmit("sctpstatechange", sctpState);
-
-				break;
+// 				const sctpState = data.sctpState as SctpState;
+// 
+// 				this->_data.sctpState = sctpState;
+// 
+// 				this->safeEmit("sctpstatechange", sctpState);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("sctpstatechange", sctpState);
 			}
 			else if (event == "trace")
 			{
-				const trace = data as TransportTraceEventData;
-
-				this->safeEmit("trace", trace);
-
-				// Emit observer event.
-				this->_observer->safeEmit("trace", trace);
+// 				const trace = data as TransportTraceEventData;
+// 
+// 				this->safeEmit("trace", trace);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("trace", trace);
 			}
 			else
 			{

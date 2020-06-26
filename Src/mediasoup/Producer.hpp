@@ -182,6 +182,7 @@ private:
 	// Observer instance.
 	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
+public:
 	/**
 	 * @private
 	 * @emits transportclose
