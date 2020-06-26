@@ -13,7 +13,7 @@ struct SrtpParameters
 	/**
 	 * SRTP keying material (master key and salt) in Base64.
 	 */
-	keyBase64: string;
+	std::string keyBase64;
 };
 
 /**

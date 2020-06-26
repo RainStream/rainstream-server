@@ -150,9 +150,9 @@ private:
 
 	json _internal/*:
 	{
-		routerId: string;
-		transportId: string;
-		producerId: string;
+		std::string routerId;
+		std::string transportId;
+		std::string producerId;
 	}*/;
 
 	// Producer data.
@@ -377,7 +377,7 @@ private:
 // 	{
 // 		logger->debug("getStats()");
 // 
-// 		return this->_channel->request("producer.getStats", this->_internal);
+// 		co_return this->_channel->request("producer.getStats", this->_internal);
 // 	}
 
 	/**

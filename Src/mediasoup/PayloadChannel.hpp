@@ -35,7 +35,7 @@ private:
 	_recvBuffer ? : Buffer;
 
 	// Ongoing notification (waiting for its payload).
-	json _ongoingNotification : { targetId: string; event: string; data ? : any };
+	json _ongoingNotification : { targetId; event; data ? : any };
 
 public:
 	/**
@@ -167,10 +167,10 @@ public:
 	 * @private
 	 */
 	void notify(
-		event: string,
-internal: object,
+		std::string event,
+		json internal,
 		data : any | undefined,
-		payload : string | Buffer
+		std::string payload  | Buffer
 	)
 	{
 		logger->debug("notify() [event:%s]", event);

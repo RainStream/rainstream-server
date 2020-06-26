@@ -11,50 +11,51 @@ struct AudioLevelObserverOptions
 	/**
 	 * Maximum uint32_t of entries in the "volumes”" event. Default 1.
 	 */
-	maxEntries?: uint32_t;
+	uint32_t maxEntries;
 
 	/**
 	 * Minimum average volume (in dBvo from -127 to 0) for entries in the
 	 * "volumes" event.	Default -80.
 	 */
-	threshold?: uint32_t;
+	uint32_t threshold;
 
 	/**
 	 * Interval in ms for checking audio volumes. Default 1000.
 	 */
-	interval?: uint32_t;
+	uint32_t interval;
 
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
-}
+	json appData;
+};
 
 struct AudioLevelObserverVolume
 {
 	/**
 	 * The audio producer instance.
 	 */
-	producer: Producer;
+	Producer* producer;
 
 	/**
 	 * The average volume (in dBvo from -127 to 0) of the audio producer in the
 	 * last interval.
 	 */
-	volume: uint32_t;
-}
-
-const Logger* logger = new Logger("AudioLevelObserver");
+	uint32_t volume;
+};
 
 class AudioLevelObserver : public RtpObserver
 {
+	Logger* logger;
+public:
 	/**
 	 * @private
 	 * @emits volumes - (volumes: AudioLevelObserverVolume[])
 	 * @emits silence
 	 */
-	AudioLevelObserver(json params: any)
+	AudioLevelObserver(json params /*= json()*/)
 		: RtpObserver(params)
+		, logger(new Logger("AudioLevelObserver"))
 	{
 		this->_handleWorkerNotifications();
 	}
@@ -78,49 +79,44 @@ class AudioLevelObserver : public RtpObserver
 private:
 	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.value("rtpObserverId",""), (event: string, data?: any) =>
+		this->_channel->on(this->_internal.value("rtpObserverId",""), [=](std::string event, json data)
 		{
-			switch (event)
+		
+			if(event == "volumes")
 			{
-				case "volumes":
+				/*
+				// Get the corresponding Producer instance and remove entries with
+				// no Producer (it may have been closed in the meanwhile).
+				const volumes: AudioLevelObserverVolume[] = data
+					.map(({ producerId, volume }: { producerId; volume }) => (
+						{
+							producer : this->_getProducerById(producerId),
+							volume
+						}
+					))
+					.filter(({ producer }: { producer: Producer }) => producer);
+
+				if (volumes.length > 0)
 				{
-					// Get the corresponding Producer instance and remove entries with
-					// no Producer (it may have been closed in the meanwhile).
-					const volumes: AudioLevelObserverVolume[] = data
-						.map(({ producerId, volume }: { producerId: string; volume: uint32_t }) => (
-							{
-								producer : this->_getProducerById(producerId),
-								volume
-							}
-						))
-						.filter(({ producer }: { producer: Producer }) => producer);
-
-					if (volumes.length > 0)
-					{
-						this->safeEmit("volumes", volumes);
-
-						// Emit observer event.
-						this->_observer->safeEmit("volumes", volumes);
-					}
-
-					break;
-				}
-
-				case "silence":
-				{
-					this->safeEmit("silence");
+					this->safeEmit("volumes", volumes);
 
 					// Emit observer event.
-					this->_observer->safeEmit("silence");
-
-					break;
+					this->_observer->safeEmit("volumes", volumes);
 				}
-
-				default:
-				{
-					logger->error("ignoring unknown event \"%s\"", event);
-				}
+				*/
 			}
+			else if (event == "silence")
+			{
+				this->safeEmit("silence");
+
+				// Emit observer event.
+				this->_observer->safeEmit("silence");
+			}
+			else
+			{
+				logger->error("ignoring unknown event \"%s\"", event);
+			}
+			
 		});
 	}
-}
+};

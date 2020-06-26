@@ -59,39 +59,39 @@ struct DataConsumerStat
  */
 struct DataConsumerType = "sctp" | "direct";
 
-const Logger* logger = new Logger("DataConsumer");
-
 class DataConsumer : public EnhancedEventEmitter
 {
+	Logger* logger;
 	// Internal data.
-	private readonly _internal:
-	{
-		routerId: string;
-		transportId: string;
-		dataProducerId: string;
-		dataConsumerId: string;
-	};
+private:
+	json _internal;
+// 	{
+//		std::string routerId;
+// 		std::string transportId;
+// 		std::string dataProducerId;
+// 		std::string dataConsumerId;
+// 	};
 
 	// DataConsumer data.
-	private readonly _data:
-	{
-		type: DataConsumerType;
-		sctpStreamParameters?: SctpStreamParameters;
-		label: string;
-		protocol: string;
-	};
+	json _data;
+// 	{
+// 		type: DataConsumerType;
+// 		sctpStreamParameters?: SctpStreamParameters;
+// 		std::string label;
+// 		std::string protocol;
+// 	};
 
 	// Channel instance.
-	private readonly _channel: Channel;
+	Channel* _channel;
 
 	// PayloadChannel instance.
-	private readonly _payloadChannel: PayloadChannel;
+	PayloadChannel* _payloadChannel;
 
 	// Closed flag.
-	private _closed = false;
+	bool _closed = false;
 
 	// Custom app data.
-	private readonly _appData?: any;
+	json _appData;
 
 	// Observer instance.
 	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
@@ -100,29 +100,20 @@ class DataConsumer : public EnhancedEventEmitter
 	 * @private
 	 * @emits transportclose
 	 * @emits dataproducerclose
-	 * @emits message - (message: Buffer, ppid: uint32_t)
+	 * @emits message - (message: Buffer, ppid)
 	 * @emits @close
 	 * @emits @dataproducerclose
 	 */
 	DataConsumer(
-		{
-			internal,
-			data,
-			channel,
-			payloadChannel,
-			appData
-		}:
-		{
-			internal: any;
-			data: any;
-			channel: Channel;
-			payloadChannel: PayloadChannel;
-			json appData;
-		}
+		json internal,
+		json data,
+		Channel* channel,
+		PayloadChannel* payloadChannel,
+		json appData
 	)
+		: EnhancedEventEmitter()
+		, logger(new Logger("DataConsumer"))
 	{
-		super();
-
 		logger->debug("constructor()");
 
 		this->_internal = internal;
@@ -137,15 +128,15 @@ class DataConsumer : public EnhancedEventEmitter
 	/**
 	 * DataConsumer id.
 	 */
-	get id(): string
+	std::string id()
 	{
-		return this->_internal.dataConsumerId;
+		return this->_internal["dataConsumerId"];
 	}
 
 	/**
 	 * Associated DataProducer id.
 	 */
-	get dataProducerId(): string
+	std::string dataProducerId()
 	{
 		return this->_internal.dataProducerId;
 	}
@@ -161,33 +152,33 @@ class DataConsumer : public EnhancedEventEmitter
 	/**
 	 * DataConsumer type.
 	 */
-	get type(): DataConsumerType
+	DataConsumerType type()
 	{
-		return this->_data.type;
+		return this->_data["type"];
 	}
 
 	/**
 	 * SCTP stream parameters.
 	 */
-	get sctpStreamParameters(): SctpStreamParameters | undefined
+	SctpStreamParameters sctpStreamParameters()
 	{
-		return this->_data.sctpStreamParameters;
+		return this->_data["sctpStreamParameters"];
 	}
 
 	/**
 	 * DataChannel label.
 	 */
-	get label(): string
+	std::string label()
 	{
-		return this->_data.label;
+		return this->_data["label"];
 	}
 
 	/**
 	 * DataChannel protocol.
 	 */
-	get protocol(): string
+	std::string protocol()
 	{
-		return this->_data.protocol;
+		return this->_data["protocol"];
 	}
 
 	/**
@@ -201,7 +192,7 @@ class DataConsumer : public EnhancedEventEmitter
 	/**
 	 * Invalid setter.
 	 */
-	set appData(json appData) // eslint-disable-line no-unused-vars
+	void appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -229,7 +220,7 @@ class DataConsumer : public EnhancedEventEmitter
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.dataConsumerId);
+		this->_channel->removeAllListeners(this->_internal["dataConsumerId"]);
 
 		this->_channel->request("dataConsumer.close", this->_internal)
 			.catch(() => {});
@@ -245,7 +236,7 @@ class DataConsumer : public EnhancedEventEmitter
 	 *
 	 * @private
 	 */
-	transportClosed(): void
+	void transportClosed()
 	{
 		if (this->_closed)
 			return;
@@ -255,7 +246,7 @@ class DataConsumer : public EnhancedEventEmitter
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.dataConsumerId);
+		this->_channel->removeAllListeners(this->_internal["dataConsumerId"]);
 
 		this->safeEmit("transportclose");
 
@@ -266,11 +257,11 @@ class DataConsumer : public EnhancedEventEmitter
 	/**
 	 * Dump DataConsumer.
 	 */
-	async dump(): Promise<any>
+	std::future<json> dump()
 	{
 		logger->debug("dump()");
 
-		return this->_channel->request("dataConsumer.dump", this->_internal);
+		co_return this->_channel->request("dataConsumer.dump", this->_internal);
 	}
 
 	/**
@@ -280,65 +271,55 @@ class DataConsumer : public EnhancedEventEmitter
 	{
 		logger->debug("getStats()");
 
-		return this->_channel->request("dataConsumer.getStats", this->_internal);
+		co_return this->_channel->request("dataConsumer.getStats", this->_internal);
 	}
 
 	private _handleWorkerNotifications(): void
 	{
-		this->_channel->on(this->_internal.dataConsumerId, (event: string) =>
-		{
-			switch (event)
+		this->_channel->on(this->_internal["dataConsumerId"], [=](std::string event)
+		{	
+			if(event == "dataproducerclose")
 			{
-				case "dataproducerclose":
-				{
-					if (this->_closed)
-						break;
+				if (this->_closed)
+					return;
 
-					this->_closed = true;
+				this->_closed = true;
 
-					// Remove notification subscriptions.
-					this->_channel->removeAllListeners(this->_internal.dataConsumerId);
+				// Remove notification subscriptions.
+				this->_channel->removeAllListeners(this->_internal["dataConsumerId"]);
 
-					this->emit("@dataproducerclose");
-					this->safeEmit("dataproducerclose");
+				this->emit("@dataproducerclose");
+				this->safeEmit("dataproducerclose");
 
-					// Emit observer event.
-					this->_observer->safeEmit("close");
-
-					break;
-				}
-
-				default:
-				{
-					logger->error("ignoring unknown event \"%s\"", event);
-				}
+				// Emit observer event.
+				this->_observer->safeEmit("close");
 			}
+			else
+			{
+				logger->error("ignoring unknown event \"%s\"", event);
+			}			
 		});
 
-		this->_payloadChannel.on(
-			this->_internal.dataConsumerId,
-			(event: string, data: any | undefined, payload: Buffer) =>
+		this->_payloadChannel->on(
+			this->_internal["dataConsumerId"],
+			[=](std::string event, data: any | undefined, payload: Buffer)
 			{
-				switch (event)
-				{
-					case "message":
-					{
-						if (this->_closed)
-							break;
+		
+			if (event == "message")
+			{
+				if (this->_closed)
+					return;
 
-						const ppid = data.ppid as uint32_t;
-						const message = payload;
+				const ppid = data.ppid as uint32_t;
+				const message = payload;
 
-						this->safeEmit("message", message, ppid);
-
-						break;
-					}
-
-					default:
-					{
-						logger->error("ignoring unknown event \"%s\"", event);
-					}
-				}
+				this->safeEmit("message", message, ppid);
+			}
+			else
+			{
+				logger->error("ignoring unknown event \"%s\"", event);
+			}
+				
 			});
 	}
 };

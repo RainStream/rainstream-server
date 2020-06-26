@@ -171,7 +171,7 @@
 // 	/**
 // 	 * The MID RTP extension value as defined in the BUNDLE specification.
 // 	 */
-// 	mid?: string;
+// 	std::string mid?;
 // 
 // 	/**
 // 	 * Media and RTX codecs in use.
@@ -204,7 +204,7 @@
 // 	/**
 // 	 * The codec MIME media type/subtype (e.g. "audio/opus", "video/VP8").
 // 	 */
-// 	mimeType: string;
+// 	std::string mimeType;
 // 
 // 	/**
 // 	 * The value that goes in the RTP Payload Type Field. Must be unique.
@@ -246,12 +246,12 @@
 // 	/**
 // 	 * RTCP feedback type.
 // 	 */
-// 	type: string;
+// 	std::string type;
 // 
 // 	/**
 // 	 * RTCP feedback parameter.
 // 	 */
-// 	parameter?: string;
+// 	std::string parameter?;
 // }
 // 
 // /**
@@ -280,7 +280,7 @@
 // 	 * RTX stream information. It must contain a numeric ssrc field indicating
 // 	 * the RTX SSRC.
 // 	 */
-// 	rtx?: { ssrc: uint32_t };
+// 	rtx?: { 	uint32_t ssrc };
 // 
 // 	/**
 // 	 * It indicates whether discontinuous RTP transmission will be used. Useful

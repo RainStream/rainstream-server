@@ -14,77 +14,77 @@ struct WebRtcTransportOptions
 	 * Listening IP address or addresses in order of preference (first one is the
 	 * preferred one).
 	 */
-	listenIps: (TransportListenIp | string)[];
+	TransportListenIp listenIps;
 
 	/**
 	 * Listen in UDP. Default true.
 	 */
-	enableUdp?: bool;
+	bool enableUdp;
 
 	/**
 	 * Listen in TCP. Default false.
 	 */
-	enableTcp?: bool;
+	bool enableTcp;
 
 	/**
 	 * Prefer UDP. Default false.
 	 */
-	preferUdp?: bool;
+	bool preferUdp;
 
 	/**
 	 * Prefer TCP. Default false.
 	 */
-	preferTcp?: bool;
+	bool preferTcp;
 
 	/**
 	 * Initial available outgoing bitrate (in bps). Default 600000.
 	 */
-	initialAvailableOutgoingBitrate?: uint32_t;
+	uint32_t initialAvailableOutgoingBitrate;
 
 	/**
 	 * Create a SCTP association. Default false.
 	 */
-	enableSctp?: bool;
+	bool enableSctp;
 
 	/**
 	 * SCTP streams uint32_t.
 	 */
-	numSctpStreams?: NumSctpStreams;
+	NumSctpStreams numSctpStreams;
 
 	/**
 	 * Maximum allowed size for SCTP messages sent by DataProducers.
 	 * Default 262144.
 	 */
-	maxSctpMessageSize?: uint32_t;
+	uint32_t maxSctpMessageSize;
 
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
+	json appData;
 };
 
 struct IceParameters
 {
-	usernameFragment: string;
-	password: string;
-	iceLite?: bool;
+	std::string usernameFragment;
+	std::string password;
+	bool iceLite;
 };
 
 struct IceCandidate
 {
-	foundation: string;
-	priority: uint32_t;
-	ip: string;
-	protocol: TransportProtocol;
-	port: uint32_t;
-	type: "host";
-	tcpType: "passive" | undefined;
+	std::string foundation;
+	uint32_t priority;
+	std::string ip;
+	TransportProtocol protocol;
+	uint32_t port;
+	std::string type = "host";
+	std::string tcpType = "passive" | undefined;
 };
 
 struct DtlsParameters
 {
-	role?: DtlsRole;
-	fingerprints: DtlsFingerprint[];
+	DtlsRole role;
+	std::vector<DtlsFingerprint> fingerprints;
 };
 
 /**
@@ -95,8 +95,8 @@ struct DtlsParameters
  */
 struct DtlsFingerprint
 {
-	algorithm: string;
-	value: string;
+	std::string algorithm;
+	std::string value;
 };
 
 struct IceState = "new" | "connected" | "completed" | "disconnected" | "closed";
@@ -105,43 +105,43 @@ struct DtlsRole = "auto" | "client" | "server";
 
 struct DtlsState = "new" | "connecting" | "connected" | "failed" | "closed";
 
-struct WebRtcTransportStat =
+struct WebRtcTransportStat
 {
 	// Common to all Transports.
-	type: string;
-	transportId: string;
-	timestamp: uint32_t;
-	sctpState?: SctpState;
-	bytesReceived: uint32_t;
-	recvBitrate: uint32_t;
-	bytesSent: uint32_t;
-	sendBitrate: uint32_t;
-	rtpBytesReceived: uint32_t;
-	rtpRecvBitrate: uint32_t;
-	rtpBytesSent: uint32_t;
-	rtpSendBitrate: uint32_t;
-	rtxBytesReceived: uint32_t;
-	rtxRecvBitrate: uint32_t;
-	rtxBytesSent: uint32_t;
-	rtxSendBitrate: uint32_t;
-	probationBytesReceived: uint32_t;
-	probationRecvBitrate: uint32_t;
-	probationBytesSent: uint32_t;
-	probationSendBitrate: uint32_t;
-	availableOutgoingBitrate?: uint32_t;
-	availableIncomingBitrate?: uint32_t;
-	maxIncomingBitrate?: uint32_t;
+	std::string type;
+	std::string transportId;
+	uint32_t timestamp;
+	SctpState sctpState;
+	uint32_t bytesReceived;
+	uint32_t recvBitrate;
+	uint32_t bytesSent;
+	uint32_t sendBitrate;
+	uint32_t rtpBytesReceived;
+	uint32_t rtpRecvBitrate;
+	uint32_t rtpBytesSent;
+	uint32_t rtpSendBitrate;
+	uint32_t rtxBytesReceived;
+	uint32_t rtxRecvBitrate;
+	uint32_t rtxBytesSent;
+	uint32_t rtxSendBitrate;
+	uint32_t probationBytesReceived;
+	uint32_t probationRecvBitrate;
+	uint32_t probationBytesSent;
+	uint32_t probationSendBitrate;
+	uint32_t availableOutgoingBitrate;
+	uint32_t availableIncomingBitrate;
+	uint32_t maxIncomingBitrate;
 	// WebRtcTransport specific.
-	iceRole: string;
-	iceState: IceState;
-	iceSelectedTuple?: TransportTuple;
-	dtlsState: DtlsState;
+	std::string iceRole;
+	IceState iceState;
+	TransportTuple iceSelectedTuple;
+	DtlsState dtlsState;
 };
 
-const Logger* logger = new Logger("WebRtcTransport");
 
 class WebRtcTransport : public Transport
 {
+	Logger* logger;
 	// WebRtcTransport data.
 	protected readonly _data:
 	{
@@ -152,7 +152,7 @@ class WebRtcTransport : public Transport
 		iceSelectedTuple?: TransportTuple;
 		dtlsParameters: DtlsParameters;
 		dtlsState: DtlsState;
-		dtlsRemoteCert?: string;
+		std::string dtlsRemoteCert?;
 		sctpParameters?: SctpParameters;
 		sctpState?: SctpState;
 	};
@@ -166,9 +166,9 @@ class WebRtcTransport : public Transport
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
 	WebRtcTransport(const json& params)
+		: Transport(params)
+		, logger(new Logger("WebRtcTransport"))
 	{
-		super(params);
-
 		logger->debug("constructor()");
 
 		const { data } = params;
@@ -249,7 +249,7 @@ class WebRtcTransport : public Transport
 	/**
 	 * Remote certificate in PEM format.
 	 */
-	get dtlsRemoteCert(): string | undefined
+	std::string  dtlsRemoteCert() | undefined
 	{
 		return this->_data.dtlsRemoteCert;
 	}
@@ -340,7 +340,7 @@ class WebRtcTransport : public Transport
 	{
 		logger->debug("getStats()");
 
-		return this->_channel->request("transport.getStats", this->_internal);
+		co_return this->_channel->request("transport.getStats", this->_internal);
 	}
 
 	/**
@@ -348,13 +348,13 @@ class WebRtcTransport : public Transport
 	 *
 	 * @override
 	 */
-	async connect({ dtlsParameters }: { dtlsParameters: DtlsParameters }): Promise<void>
+	std::future<void> connect({ dtlsParameters }: { dtlsParameters: DtlsParameters })
 	{
 		logger->debug("connect()");
 
-		const reqData = { dtlsParameters };
+		json reqData = { dtlsParameters };
 
-		const data =
+		json data =
 			co_await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
@@ -368,7 +368,7 @@ class WebRtcTransport : public Transport
 	{
 		logger->debug("restartIce()");
 
-		const data =
+		json data =
 			co_await this->_channel->request("transport.restartIce", this->_internal);
 
 		const { iceParameters } = data;
@@ -378,13 +378,14 @@ class WebRtcTransport : public Transport
 		return iceParameters;
 	}
 
-	private _handleWorkerNotifications(): void
+private:
+	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.transportId, (event: string, data?: any) =>
+		this->_channel->on(this->_internal.transportId, [=](std::string event, json data)
 		{
 			switch (event)
 			{
-				case "icestatechange":
+				if(event == "icestatechange")
 				{
 					const iceState = data.iceState as IceState;
 
@@ -394,11 +395,8 @@ class WebRtcTransport : public Transport
 
 					// Emit observer event.
 					this->_observer->safeEmit("icestatechange", iceState);
-
-					break;
 				}
-
-				case "iceselectedtuplechange":
+				else if (event == "iceselectedtuplechange")
 				{
 					const iceSelectedTuple = data.iceSelectedTuple as TransportTuple;
 
@@ -408,29 +406,23 @@ class WebRtcTransport : public Transport
 
 					// Emit observer event.
 					this->_observer->safeEmit("iceselectedtuplechange", iceSelectedTuple);
-
-					break;
 				}
-
-				case "dtlsstatechange":
+				else if (event == "dtlsstatechange")
 				{
 					const dtlsState = data.dtlsState as DtlsState;
 					const dtlsRemoteCert = data.dtlsRemoteCert as string;
 
 					this->_data.dtlsState = dtlsState;
 
-					if (dtlsState === "connected")
+					if (dtlsState == "connected")
 						this->_data.dtlsRemoteCert = dtlsRemoteCert;
 
 					this->safeEmit("dtlsstatechange", dtlsState);
 
 					// Emit observer event.
 					this->_observer->safeEmit("dtlsstatechange", dtlsState);
-
-					break;
 				}
-
-				case "sctpstatechange":
+				else if (event == "sctpstatechange")
 				{
 					const sctpState = data.sctpState as SctpState;
 
@@ -443,8 +435,7 @@ class WebRtcTransport : public Transport
 
 					break;
 				}
-
-				case "trace":
+				else if (event == "trace")
 				{
 					const trace = data as TransportTraceEventData;
 
@@ -452,11 +443,8 @@ class WebRtcTransport : public Transport
 
 					// Emit observer event.
 					this->_observer->safeEmit("trace", trace);
-
-					break;
 				}
-
-				default:
+				else
 				{
 					logger->error("ignoring unknown event \"%s\"", event);
 				}

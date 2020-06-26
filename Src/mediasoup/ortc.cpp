@@ -13,16 +13,16 @@
 // {
 // 	codecs:
 // 	{
-// 		payloadType: uint32_t;
-// 		mappedPayloadType: uint32_t;
+// 			uint32_t payloadType;
+// 			uint32_t mappedPayloadType;
 // 	}[];
 // 
 // 	encodings:
 // 	{
-// 		ssrc?: uint32_t;
-// 		rid?: string;
-// 		scalabilityMode?: string;
-// 		mappedSsrc: uint32_t;
+// 			uint32_t ssrc?;
+// 		std::string rid?;
+// 		std::string scalabilityMode?;
+// 			uint32_t mappedSsrc;
 // 	}[];
 // };
 namespace ortc
@@ -751,7 +751,7 @@ namespace ortc
 			if (!matchedSupportedCodec)
 			{
 				throw new UnsupportedError(
-					`media codec not supported[mimeType:${ mediaCodec.mimeType }]`);
+					utils::Printf("media codec not supported[mimeType:${ mediaCodec.mimeType }]"));
 			}
 
 			// Clone the supported codec.

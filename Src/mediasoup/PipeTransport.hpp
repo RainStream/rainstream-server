@@ -14,73 +14,73 @@ struct PipeTransportOptions
 	/**
 	 * Listening IP address.
 	 */
-	listenIp: TransportListenIp | string;
+	TransportListenIp listenIp;
 
 	/**
 	 * Create a SCTP association. Default false.
 	 */
-	enableSctp?: bool;
+	bool enableSctp;
 
 	/**
 	 * SCTP streams uint32_t.
 	 */
-	numSctpStreams?: NumSctpStreams;
+	NumSctpStreams numSctpStreams;
 
 	/**
 	 * Maximum allowed size for SCTP messages sent by DataProducers.
 	 * Default 1073741823.
 	 */
-	maxSctpMessageSize?: uint32_t;
+	uint32_t maxSctpMessageSize;
 
 	/**
 	 * Enable RTX and NACK for RTP retransmission. Useful if both Routers are
 	 * located in different hosts and there is packet lost in the link. For this
 	 * to work, both PipeTransports must enable this setting. Default false.
 	 */
-	enableRtx?: bool;
+	bool enableRtx;
 
 	/**
 	 * Enable SRTP. Useful to protect the RTP and RTCP traffic if both Routers
 	 * are located in different hosts. For this to work, connect() must be called
 	 * with remote SRTP parameters. Default false.
 	 */
-	enableSrtp?: bool;
+	bool enableSrtp;
 
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
+	json appData;
 };
 
 struct PipeTransportStat
 {
 	// Common to all Transports.
-	type: string;
-	transportId: string;
-	timestamp: uint32_t;
-	sctpState?: SctpState;
-	bytesReceived: uint32_t;
-	recvBitrate: uint32_t;
-	bytesSent: uint32_t;
-	sendBitrate: uint32_t;
-	rtpBytesReceived: uint32_t;
-	rtpRecvBitrate: uint32_t;
-	rtpBytesSent: uint32_t;
-	rtpSendBitrate: uint32_t;
-	rtxBytesReceived: uint32_t;
-	rtxRecvBitrate: uint32_t;
-	rtxBytesSent: uint32_t;
-	rtxSendBitrate: uint32_t;
-	probationBytesReceived: uint32_t;
-	probationRecvBitrate: uint32_t;
-	probationBytesSent: uint32_t;
-	probationSendBitrate: uint32_t;
-	availableOutgoingBitrate?: uint32_t;
-	availableIncomingBitrate?: uint32_t;
-	maxIncomingBitrate?: uint32_t;
+	std::string type;
+	std::string transportId;
+	uint32_t timestamp;
+	SctpState sctpState;
+	uint32_t bytesReceived;
+	uint32_t recvBitrate;
+	uint32_t bytesSent;
+	uint32_t sendBitrate;
+	uint32_t rtpBytesReceived;
+	uint32_t rtpRecvBitrate;
+	uint32_t rtpBytesSent;
+	uint32_t rtpSendBitrate;
+	uint32_t rtxBytesReceived;
+	uint32_t rtxRecvBitrate;
+	uint32_t rtxBytesSent;
+	uint32_t rtxSendBitrate;
+	uint32_t probationBytesReceived;
+	uint32_t probationRecvBitrate;
+	uint32_t probationBytesSent;
+	uint32_t probationSendBitrate;
+	uint32_t availableOutgoingBitrate?;
+	uint32_t availableIncomingBitrate?;
+	uint32_t maxIncomingBitrate?;
 	// PipeTransport specific.
-	tuple: TransportTuple;
-}
+	TransportTuple tuple;
+};
 
 const Logger* logger = new Logger("PipeTransport");
 
@@ -212,7 +212,7 @@ class PipeTransport : public Transport
 	{
 		logger->debug("getStats()");
 
-		return this->_channel->request("transport.getStats", this->_internal);
+		co_return this->_channel->request("transport.getStats", this->_internal);
 	}
 
 	/**
@@ -220,24 +220,24 @@ class PipeTransport : public Transport
 	 *
 	 * @override
 	 */
-	async connect(
+		std::future<void> connect(
 		{
 			ip,
 			port,
 			srtpParameters
 		}:
 		{
-			ip: string;
-			port: uint32_t;
+			std::string ip;
+			uint32_t port;
 			srtpParameters?: SrtpParameters;
 		}
-	): Promise<void>
+	)
 	{
 		logger->debug("connect()");
 
-		const reqData = { ip, port, srtpParameters };
+		json reqData = { ip, port, srtpParameters };
 
-		const data =
+		json data =
 			co_await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
@@ -253,22 +253,22 @@ class PipeTransport : public Transport
 	{
 		logger->debug("consume()");
 
-		if (!producerId || typeof producerId !== "string")
+		if (!producerId || typeof producerId != "string")
 			throw new TypeError("missing producerId");
-		else if (appData && typeof appData !== "object")
+		else if (appData && typeof appData != "object")
 			throw new TypeError("if given, appData must be an object");
 
 		const producer = this->_getProducerById(producerId);
 
 		if (!producer)
-			throw Error(`Producer with id "${producerId}" not found`);
+			throw Error(utils::Printf("Producer with id \"${producerId}\" not found", producerId));
 
 		// This may throw.
 		const rtpParameters = ortc::getPipeConsumerRtpParameters(
 			producer.consumableRtpParameters, this->_data.rtx);
 
-		const internal = { ...this->_internal, consumerId: uuidv4(), producerId };
-		const reqData =
+		json internal = { ...this->_internal, consumerId: uuidv4(), producerId };
+		json reqData =
 		{
 			kind                   : producer.kind,
 			rtpParameters,
@@ -279,7 +279,7 @@ class PipeTransport : public Transport
 		const status =
 			co_await this->_channel->request("transport.consume", internal, reqData);
 
-		const data = { kind: producer.kind, rtpParameters, type: "pipe" };
+		json data = { kind: producer.kind, rtpParameters, type: "pipe" };
 
 		const consumer = new Consumer(
 			{
@@ -303,11 +303,11 @@ class PipeTransport : public Transport
 
 	private _handleWorkerNotifications(): void
 	{
-		this->_channel->on(this->_internal.transportId, (event: string, data?: any) =>
+		this->_channel->on(this->_internal.transportId, [=](std::string event, json data)
 		{
 			switch (event)
 			{
-				case "sctpstatechange":
+				if(event == "sctpstatechange")
 				{
 					const sctpState = data.sctpState as SctpState;
 
@@ -317,11 +317,8 @@ class PipeTransport : public Transport
 
 					// Emit observer event.
 					this->_observer->safeEmit("sctpstatechange", sctpState);
-
-					break;
 				}
-
-				case "trace":
+				else if (event == "trace")
 				{
 					const trace = data as TransportTraceEventData;
 
@@ -329,15 +326,12 @@ class PipeTransport : public Transport
 
 					// Emit observer event.
 					this->_observer->safeEmit("trace", trace);
-
-					break;
 				}
-
-				default:
+				else
 				{
 					logger->error("ignoring unknown event \"%s\"", event);
 				}
 			}
 		});
 	}
-}
+};

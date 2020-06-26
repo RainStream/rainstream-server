@@ -228,7 +228,7 @@ std::future<json> Worker::dump()
 // 	{
 // 		DLOG(INFO) << "updateSettings() [spawnOptions:" << spawnOptions.dump() << "]";
 // 
-// 		return this->_channel->request("worker.updateSettings", nullptr, spawnOptions)
+// 		co_return this->_channel->request("worker.updateSettings", nullptr, spawnOptions)
 // 			.then([=]()
 // 		{
 // 			DLOG(INFO) << "\"worker.updateSettings\" request succeeded";

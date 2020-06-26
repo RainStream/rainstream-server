@@ -7,17 +7,18 @@
 //#include "PayloadChannel.hpp"
 #include "Producer.hpp"
 
-const Logger* logger = new Logger("RtpObserver");
+class Producer;
 
 class RtpObserver : public EnhancedEventEmitter
 {
+	Logger* logger;
 	// Internal data.
 protected:
-	json _internal:
-	{
-		routerId: string;
-		rtpObserverId: string;
-	};
+	json _internal;
+// 	{
+// 		std::string routerId;
+// 		std::string rtpObserverId;
+// 	};
 
 	// Channel instance.
 	Channel* _channel;
@@ -32,14 +33,17 @@ protected:
 	bool _paused = false;
 
 	// Custom app data.
-	private readonly _appData?: any;
+private:
+	json _appData;
 
 	// Method to retrieve a Producer.
-	protected readonly _getProducerById: (producerId: string) => Producer;
+protected:
+	Producer* _getProducerById(std::string producerId);
 
 	// Observer instance.
 	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
 
+public:
 	/**
 	 * @private
 	 * @interface
@@ -47,24 +51,15 @@ protected:
 	 * @emits @close
 	 */
 	RtpObserver(
-		{
-			internal,
-			channel,
-			payloadChannel,
-			appData,
-			getProducerById
-		}:
-		{
-			internal: any;
-			channel: Channel;
-			payloadChannel: PayloadChannel;
-			json appData;
-			getProducerById: (producerId: string) => Producer;
-		}
+		json internal,
+		Channel* channel,
+		PayloadChannel* payloadChannel,
+		json appData,
+		getProducerById
 	)
+		: EnhancedEventEmitter()
+		, logger(new Logger("RtpObserver"))
 	{
-		super();
-
 		logger->debug("constructor()");
 
 		this->_internal = internal;
@@ -77,9 +72,9 @@ protected:
 	/**
 	 * RtpObserver id.
 	 */
-	get id(): string
+	std::string id()
 	{
-		return this->_internal.rtpObserverId;
+		return this->_internal["rtpObserverId"];
 	}
 
 	/**
@@ -109,7 +104,7 @@ protected:
 	/**
 	 * Invalid setter.
 	 */
-	set appData(json appData) // eslint-disable-line no-unused-vars
+	void appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -141,7 +136,7 @@ protected:
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.rtpObserverId);
+		this->_channel->removeAllListeners(this->_internal["rtpObserverId"]);
 
 		this->_channel->request("rtpObserver.close", this->_internal)
 			.catch(() => {});
@@ -167,7 +162,7 @@ protected:
 		this->_closed = true;
 
 		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.rtpObserverId);
+		this->_channel->removeAllListeners(this->_internal["rtpObserverId"]);
 
 		this->safeEmit("routerclose");
 
@@ -178,11 +173,11 @@ protected:
 	/**
 	 * Pause the RtpObserver.
 	 */
-	async pause(): Promise<void>
+	std::future<void> pause()
 	{
 		logger->debug("pause()");
 
-		const wasPaused = this->_paused;
+		bool wasPaused = this->_paused;
 
 		co_await this->_channel->request("rtpObserver.pause", this->_internal);
 
@@ -196,11 +191,11 @@ protected:
 	/**
 	 * Resume the RtpObserver.
 	 */
-	async resume(): Promise<void>
+	std::future<void> resume()
 	{
 		logger->debug("resume()");
 
-		const wasPaused = this->_paused;
+		bool wasPaused = this->_paused;
 
 		co_await this->_channel->request("rtpObserver.resume", this->_internal);
 
@@ -214,12 +209,12 @@ protected:
 	/**
 	 * Add a Producer to the RtpObserver.
 	 */
-	async addProducer({ producerId }: { producerId: string }): Promise<void>
+	std::future<void> addProducer({ producerId }: { producerId })
 	{
 		logger->debug("addProducer()");
 
-		const producer = this->_getProducerById(producerId);
-		const internal = { ...this->_internal, producerId };
+		Producer* producer = this->_getProducerById(producerId);
+		json internal = { ...this->_internal, producerId };
 
 		co_await this->_channel->request("rtpObserver.addProducer", internal);
 
@@ -230,16 +225,16 @@ protected:
 	/**
 	 * Remove a Producer from the RtpObserver.
 	 */
-	async removeProducer({ producerId }: { producerId: string }): Promise<void>
+	std::future<void> removeProducer({ producerId }: { producerId })
 	{
 		logger->debug("removeProducer()");
 
-		const producer = this->_getProducerById(producerId);
-		const internal = { ...this->_internal, producerId };
+		Producer* producer = this->_getProducerById(producerId);
+		json internal = { ...this->_internal, producerId };
 
 		co_await this->_channel->request("rtpObserver.removeProducer", internal);
 
 		// Emit observer event.
 		this->_observer->safeEmit("removeproducer", producer);
 	}
-}
+};

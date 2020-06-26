@@ -12,7 +12,7 @@ struct DataProducerOptions
 	/**
 	 * DataProducer id (just for Router.pipeToRouter() method).
 	 */
-	id?: string;
+	std::string id?;
 
 	/**
 	 * SCTP parameters defining how the endpoint is sending the data.
@@ -23,12 +23,12 @@ struct DataProducerOptions
 	/**
 	 * A label which can be used to distinguish this DataChannel from others.
 	 */
-	label?: string;
+	std::string label?;
 
 	/**
 	 * Name of the sub-protocol used by this DataChannel.
 	 */
-	protocol?: string;
+	std::string protocol?;
 
 	/**
 	 * Custom application data.
@@ -36,14 +36,14 @@ struct DataProducerOptions
 	appData?: any;
 };
 
-struct DataProducerStat =
+struct DataProducerStat
 {
-	type: string;
-	timestamp: uint32_t;
-	label: string;
-	protocol: string;
-	messagesReceived: uint32_t;
-	bytesReceived: uint32_t;
+	std::string type;
+	uint32_t timestamp;
+	std::string label;
+	std::string protocol;
+	uint32_t messagesReceived;
+	uint32_t bytesReceived;
 };
 
 /**
@@ -56,20 +56,21 @@ const Logger* logger = new Logger("DataProducer");
 class DataProducer : public EnhancedEventEmitter
 {
 	// Internal data.
-	private readonly _internal:
-	{
-		routerId: string;
-		transportId: string;
-		dataProducerId: string;
-	};
+private:
+	json _internal;
+// 	{
+// 		std::string routerId;
+// 		std::string transportId;
+// 		std::string dataProducerId;
+// 	};
 
 	// DataProducer data.
 	private readonly _data:
 	{
 		type: DataProducerType;
 		sctpStreamParameters?: SctpStreamParameters;
-		label: string;
-		protocol: string;
+		std::string label;
+		std::string protocol;
 	};
 
 	// Channel instance.
@@ -125,7 +126,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * DataProducer id.
 	 */
-	get id(): string
+	std::string id()
 	{
 		return this->_internal.dataProducerId;
 	}
@@ -157,7 +158,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * DataChannel label.
 	 */
-	get label(): string
+		std::string label()
 	{
 		return this->_data.label;
 	}
@@ -165,7 +166,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * DataChannel protocol.
 	 */
-	get protocol(): string
+		std::string protocol()
 	{
 		return this->_data.protocol;
 	}
@@ -181,7 +182,7 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * Invalid setter.
 	 */
-	set appData(json appData) // eslint-disable-line no-unused-vars
+	void appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -243,11 +244,11 @@ class DataProducer : public EnhancedEventEmitter
 	/**
 	 * Dump DataProducer.
 	 */
-	async dump(): Promise<any>
+	std::future<json> dump()
 	{
 		logger->debug("dump()");
 
-		return this->_channel->request("dataProducer.dump", this->_internal);
+		co_return this->_channel->request("dataProducer.dump", this->_internal);
 	}
 
 	/**
@@ -257,17 +258,17 @@ class DataProducer : public EnhancedEventEmitter
 	{
 		logger->debug("getStats()");
 
-		return this->_channel->request("dataProducer.getStats", this->_internal);
+		co_return this->_channel->request("dataProducer.getStats", this->_internal);
 	}
 
 	/**
 	 * Send data (just valid for DataProducers created on a DirectTransport).
 	 */
-	send(message: string | Buffer, ppid?: uint32_t): void
+	send(message | Buffer, ppid?): void
 	{
 		logger->debug("send()");
 
-		if (typeof message !== "string" && !Buffer.isBuffer(message))
+		if (typeof message != "string" && !Buffer.isBuffer(message))
 		{
 			throw new TypeError("message must be a string or a Buffer");
 		}
@@ -288,17 +289,17 @@ class DataProducer : public EnhancedEventEmitter
 		 * +-------------------------------+----------+
 		 */
 
-		if (typeof ppid !== "uint32_t")
+		if (typeof ppid != "uint32_t")
 		{
-			ppid = (typeof message === "string")
+			ppid = (typeof message == "string")
 				? message.length > 0 ? 51 : 56
 				: message.length > 0 ? 53 : 57;
 		}
 
 		// Ensure we honor PPIDs.
-		if (ppid === 56)
+		if (ppid == 56)
 			message = " ";
-		else if (ppid === 57)
+		else if (ppid == 57)
 			message = Buffer.alloc(1);
 
 		const notifData = { ppid };

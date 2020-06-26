@@ -15,7 +15,7 @@ struct DirectTransportOptions
 	 * Maximum allowed size for direct messages sent from DataProducers.
 	 * Default 262144.
 	 */
-	maxMessageSize: uint32_t;
+	uint32_t maxMessageSize;
 
 	/**
 	 * Custom application data.
@@ -26,28 +26,28 @@ struct DirectTransportOptions
 struct DirectTransportStat =
 {
 	// Common to all Transports.
-	type: string;
-	transportId: string;
-	timestamp: uint32_t;
-	bytesReceived: uint32_t;
-	recvBitrate: uint32_t;
-	bytesSent: uint32_t;
-	sendBitrate: uint32_t;
-	rtpBytesReceived: uint32_t;
-	rtpRecvBitrate: uint32_t;
-	rtpBytesSent: uint32_t;
-	rtpSendBitrate: uint32_t;
-	rtxBytesReceived: uint32_t;
-	rtxRecvBitrate: uint32_t;
-	rtxBytesSent: uint32_t;
-	rtxSendBitrate: uint32_t;
-	probationBytesReceived: uint32_t;
-	probationRecvBitrate: uint32_t;
-	probationBytesSent: uint32_t;
-	probationSendBitrate: uint32_t;
-	availableOutgoingBitrate?: uint32_t;
-	availableIncomingBitrate?: uint32_t;
-	maxIncomingBitrate?: uint32_t;
+	std::string type;
+	std::string transportId;
+	uint32_t timestamp;
+	uint32_t bytesReceived;
+	uint32_t recvBitrate;
+	uint32_t bytesSent;
+	uint32_t sendBitrate;
+	uint32_t rtpBytesReceived;
+	uint32_t rtpRecvBitrate;
+	uint32_t rtpBytesSent;
+	uint32_t rtpSendBitrate;
+	uint32_t rtxBytesReceived;
+	uint32_t rtxRecvBitrate;
+	uint32_t rtxBytesSent;
+	uint32_t rtxSendBitrate;
+	uint32_t probationBytesReceived;
+	uint32_t probationRecvBitrate;
+	uint32_t probationBytesSent;
+	uint32_t probationSendBitrate;
+	uint32_t availableOutgoingBitrate?;
+	uint32_t availableIncomingBitrate?;
+	uint32_t maxIncomingBitrate?;
 };
 
 const Logger* logger = new Logger("DirectTransport");
@@ -131,7 +131,7 @@ class DirectTransport : public Transport
 	{
 		logger->debug("getStats()");
 
-		return this->_channel->request("transport.getStats", this->_internal);
+		co_return this->_channel->request("transport.getStats", this->_internal);
 	}
 
 	/**
@@ -139,7 +139,7 @@ class DirectTransport : public Transport
 	 *
 	 * @override
 	 */
-	async connect(): Promise<void>
+		std::future<void> connect()
 	{
 		logger->debug("connect()");
 	}
@@ -148,7 +148,7 @@ class DirectTransport : public Transport
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async setMaxIncomingBitrate(bitrate: uint32_t): Promise<void>
+	std::future<void> setMaxIncomingBitrate(uint32_t bitrate)
 	{
 		throw new UnsupportedError(
 			"setMaxIncomingBitrate() not implemented in DirectTransport");
@@ -174,7 +174,7 @@ class DirectTransport : public Transport
 
 	private _handleWorkerNotifications(): void
 	{
-		this->_channel->on(this->_internal.transportId, (event: string, data?: any) =>
+		this->_channel->on(this->_internal.transportId, [=](std::string event, json data)
 		{
 			switch (event)
 			{

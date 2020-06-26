@@ -88,8 +88,8 @@ class Transport : public EnhancedEventEmitter
 protected:
 	json _internal;
 	// 	{
-	// 		routerId: string;
-	// 		transportId: string;
+	// 		std::string routerId;
+	// 		std::string transportId;
 	// 	};
 
 		// Transport data. This is set by the subclass.
@@ -113,13 +113,13 @@ private:
 	json _appData;
 
 	// Method to retrieve Router RTP capabilities.
-	readonly _getRouterRtpCapabilities : () = > RtpCapabilities;
+	json _getRouterRtpCapabilities();
 
 	// Method to retrieve a Producer.
-	readonly _getProducerById : (producerId: string) = > Producer;
+	Producer* _getProducerById(std::string producerId);
 
 	// Method to retrieve a DataProducer.
-	readonly _getDataProducerById : (dataProducerId: string) = > DataProducer;
+	DataProducer* _getDataProducerById(std::string dataProducerIdring);
 
 	// Producers map.
 	std::map<std::string, Producer*> _producers;
@@ -141,7 +141,7 @@ private:
 	uint32_t _nextMidForConsumers = 0;
 
 	// Buffer with available SCTP stream ids.
-	private _sctpStreamIds ? : Buffer;
+	Buffer _sctpStreamIds;
 
 	// Next SCTP stream id.
 	uint32_t _nextSctpStreamId = 0;
@@ -150,6 +150,7 @@ private:
 protected:
 	EnhancedEventEmitter* _observer;
 
+public:
 	/**
 	 * @private
 	 * @interface
@@ -169,11 +170,10 @@ protected:
 		getRouterRtpCapabilities,
 		getProducerById,
 		getDataProducerById
-)
-	: logger( new Logger("Transport"))
+	)
+		: EnhancedEventEmitter()
+		, logger( new Logger("Transport"))
 	{
-		super();
-
 		logger->debug("constructor()");
 
 		this->_internal = internal;
@@ -213,7 +213,7 @@ protected:
 	/**
 	 * Invalid setter.
 	 */
-	set appData(json appData) // eslint-disable-line no-unused-vars
+	void appData(json appData) // eslint-disable-line no-unused-vars
 	{
 		throw new Error("cannot override appData object");
 	}
@@ -251,7 +251,7 @@ protected:
 			.catch(() => {});
 
 		// Close every Producer.
-		for (const producer : this->_producers.values())
+		for (Producer* producer : this->_producers)
 		{
 			producer->transportClosed();
 
@@ -261,28 +261,28 @@ protected:
 		this->_producers.clear();
 
 		// Close every Consumer.
-		for (const consumer : this->_consumers.values())
+		for (Consumer* consumer : this->_consumers)
 		{
 			consumer->transportClosed();
 		}
 		this->_consumers.clear();
 
-		// Close every DataProducer.
-		for (const dataProducer : this->_dataProducers.values())
-		{
-			dataProducer->transportClosed();
-
-			// Must tell the Router.
-			this->emit("@dataproducerclose", dataProducer);
-		}
-		this->_dataProducers.clear();
-
-		// Close every DataConsumer.
-		for (const dataConsumer : this->_dataConsumers.values())
-		{
-			dataConsumer->transportClosed();
-		}
-		this->_dataConsumers.clear();
+// 		// Close every DataProducer.
+// 		for (DataProducer* dataProducer : this->_dataProducers)
+// 		{
+// 			dataProducer->transportClosed();
+// 
+// 			// Must tell the Router.
+// 			this->emit("@dataproducerclose", dataProducer);
+// 		}
+// 		this->_dataProducers.clear();
+// 
+// 		// Close every DataConsumer.
+// 		for (DataConsumer* dataConsumer : this->_dataConsumers)
+// 		{
+// 			dataConsumer->transportClosed();
+// 		}
+// 		this->_dataConsumers.clear();
 
 		this->emit("@close");
 
@@ -309,7 +309,7 @@ protected:
 		this->_channel->removeAllListeners(this->_internal["transportId"]);
 
 		// Close every Producer.
-		for (const producer of this->_producers.values())
+		for (Producer* producer : this->_producers)
 		{
 			producer->transportClosed();
 
@@ -319,28 +319,28 @@ protected:
 		this->_producers.clear();
 
 		// Close every Consumer.
-		for (const consumer of this->_consumers.values())
+		for (Consumer* consumer : this->_consumers)
 		{
 			consumer->transportClosed();
 		}
 		this->_consumers.clear();
 
 		// Close every DataProducer.
-		for (const dataProducer of this->_dataProducers.values())
-		{
-			dataProducer->transportClosed();
-
-			// NOTE: No need to tell the Router since it already knows (it has
-			// been closed in fact).
-		}
-		this->_dataProducers.clear();
-
-		// Close every DataConsumer.
-		for (const dataConsumer of this->_dataConsumers.values())
-		{
-			dataConsumer->transportClosed();
-		}
-		this->_dataConsumers.clear();
+// 		for (DataProducer* dataProducer : this->_dataProducers)
+// 		{
+// 			dataProducer->transportClosed();
+// 
+// 			// NOTE: No need to tell the Router since it already knows (it has
+// 			// been closed in fact).
+// 		}
+// 		this->_dataProducers.clear();
+// 
+// 		// Close every DataConsumer.
+// 		for (DataConsumer* dataConsumer : this->_dataConsumers)
+// 		{
+// 			dataConsumer->transportClosed();
+// 		}
+// 		this->_dataConsumers.clear();
 
 		this->safeEmit("routerclose");
 
@@ -351,11 +351,11 @@ protected:
 	/**
 	 * Dump Transport.
 	 */
-	async dump(): Promise<any>
+	std::future<json> dump()
 	{
 		logger->debug("dump()");
 
-		return this->_channel->request("transport.dump", this->_internal);
+		co_return this->_channel->request("transport.dump", this->_internal);
 	}
 
 	/**
@@ -363,7 +363,7 @@ protected:
 	 *
 	 * @abstract
 	 */
-	async getStats(): Promise<any[]>
+	std::future<json> getStats()
 	{
 		// Should not happen.
 		throw new Error("method not implemented in the subclass");
@@ -375,7 +375,7 @@ protected:
 	 * @abstract
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async connect(params: any): Promise<void>
+		std::future<void> connect(json params)
 	{
 		// Should not happen.
 		throw new Error("method not implemented in the subclass");
@@ -384,11 +384,11 @@ protected:
 	/**
 	 * Set maximum incoming bitrate for receiving media.
 	 */
-	async setMaxIncomingBitrate(bitrate: uint32_t): Promise<void>
+	std::future<void> setMaxIncomingBitrate(uint32_t bitrate)
 	{
 		logger->debug("setMaxIncomingBitrate() [bitrate:%s]", bitrate);
 
-		const reqData = { bitrate };
+		json reqData = { {"bitrate", bitrate} };
 
 		co_await this->_channel->request(
 			"transport.setMaxIncomingBitrate", this->_internal, reqData);
@@ -397,7 +397,7 @@ protected:
 	/**
 	 * Create a Producer.
 	 */
-	async produce(
+	std::future<Producer*> produce(
 		{
 			id = undefined,
 			kind,
@@ -406,15 +406,15 @@ protected:
 			keyFrameRequestDelay,
 			appData = {}
 		}: ProducerOptions
-	): Promise<Producer>
+	)
 	{
 		logger->debug("produce()");
 
-		if (id && this->_producers.has(id))
-			throw new TypeError(`a Producer with same id "${id}" already exists`);
+		if (id && this->_producers.count(id))
+			throw new TypeError(utils::Printf("a Producer with same id \"${ id }\" already exists",id));
 		else if (![ "audio", "video" ].includes(kind))
-			throw new TypeError(`invalid kind "${kind}"`);
-		else if (appData && typeof appData !== "object")
+			throw new TypeError(utils::Printf("invalid kind \"${kind}\"", kind));
+		else if (appData && typeof appData != "object")
 			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
@@ -424,7 +424,7 @@ protected:
 		if (
 			!rtpParameters.encodings ||
 			!Array.isArray(rtpParameters.encodings) ||
-			rtpParameters.encodings.length === 0
+			rtpParameters.encodings.length == 0
 		)
 		{
 			rtpParameters.encodings = [ {} ];
@@ -432,7 +432,7 @@ protected:
 
 		// Don"t do this in PipeTransports since there we must keep CNAME value in
 		// each Producer.
-		if (this->constructor.name !== "PipeTransport")
+		if (this->constructor.name != "PipeTransport")
 		{
 			// If CNAME is given and we don"t have yet a CNAME for Producers in this
 			// Transport, take it.
@@ -455,20 +455,20 @@ protected:
 		const routerRtpCapabilities = this->_getRouterRtpCapabilities();
 
 		// This may throw.
-		const rtpMapping = ortc::getProducerRtpParametersMapping(
+		json rtpMapping = ortc::getProducerRtpParametersMapping(
 			rtpParameters, routerRtpCapabilities);
 
 		// This may throw.
-		const consumableRtpParameters = ortc::getConsumableRtpParameters(
+		json consumableRtpParameters = ortc::getConsumableRtpParameters(
 			kind, rtpParameters, routerRtpCapabilities, rtpMapping);
 
-		const internal = { ...this->_internal, producerId: id || uuidv4() };
-		const reqData = { kind, rtpParameters, rtpMapping, keyFrameRequestDelay, paused };
+		json internal = { ...this->_internal, producerId: id || uuidv4() };
+		json reqData = { kind, rtpParameters, rtpMapping, keyFrameRequestDelay, paused };
 
 		const status =
 			co_await this->_channel->request("transport.produce", internal, reqData);
 
-		const data =
+		json data =
 		{
 			kind,
 			rtpParameters,
@@ -476,17 +476,16 @@ protected:
 			consumableRtpParameters
 		};
 
-		const producer = new Producer(
-			{
-				internal,
-				data,
-				channel : this->_channel,
-				appData,
-				paused
-			});
+		Producer* producer = new Producer(
+			internal,
+			data,
+			this->_channel,
+			appData,
+			paused
+			);
 
 		this->_producers.set(producer->id, producer);
-		producer->on("@close", () =>
+		producer->on("@close", [=]()
 		{
 			this->_producers.delete(producer->id);
 			this->emit("@producerclose", producer);
@@ -505,7 +504,7 @@ protected:
 	 *
 	 * @virtual
 	 */
-	async consume(
+	std::future<Consumer*> consume(
 		{
 			producerId,
 			rtpCapabilities,
@@ -513,13 +512,13 @@ protected:
 			preferredLayers,
 			appData = {}
 		}: ConsumerOptions
-	): Promise<Consumer>
+	)
 	{
 		logger->debug("consume()");
 
-		if (!producerId || typeof producerId !== "string")
+		if (!producerId || typeof producerId != "string")
 			throw new TypeError("missing producerId");
-		else if (appData && typeof appData !== "object")
+		else if (appData && typeof appData != "object")
 			throw new TypeError("if given, appData must be an object");
 
 		// This may throw.
@@ -528,26 +527,26 @@ protected:
 		const producer = this->_getProducerById(producerId);
 
 		if (!producer)
-			throw Error(`Producer with id "${producerId}" not found`);
+			throw Error(utils::Printf("Producer with id \"${producerId}\" not found", producerId));
 
 		// This may throw.
 		const rtpParameters = ortc::getConsumerRtpParameters(
 			producer->consumableRtpParameters, rtpCapabilities!);
 
 		// Set MID.
-		rtpParameters.mid = `${this->_nextMidForConsumers++}`;
+		rtpParameters.mid = utils::Printf("%ud", this->_nextMidForConsumers++);
 
 		// We use up to 8 bytes for MID (string).
-		if (this->_nextMidForConsumers === 100000000)
+		if (this->_nextMidForConsumers == 100000000)
 		{
 			logger->error(
-				`consume() | reaching max MID value "${this->_nextMidForConsumers}"`);
+				utils::Printf("consume() | reaching max MID value \"${this->_nextMidForConsumers}\"", this->_nextMidForConsumers));
 
 			this->_nextMidForConsumers = 0;
 		}
 
-		const internal = { ...this->_internal, consumerId: uuidv4(), producerId };
-		const reqData =
+		json internal = { ...this->_internal, consumerId: uuidv4(), producerId };
+		json reqData =
 		{
 			kind                   : producer->kind,
 			rtpParameters,
@@ -560,7 +559,7 @@ protected:
 		const status =
 			co_await this->_channel->request("transport.consume", internal, reqData);
 
-		const data = { kind: producer->kind, rtpParameters, type: producer->type };
+		json data = { kind: producer->kind, rtpParameters, type: producer->type };
 
 		const consumer = new Consumer(
 			{
@@ -587,203 +586,203 @@ protected:
 	/**
 	 * Create a DataProducer.
 	 */
-	async produceData(
-		{
-			id = undefined,
-			sctpStreamParameters,
-			label = "",
-			protocol = "",
-			appData = {}
-		}: DataProducerOptions = {}
-	): Promise<DataProducer>
-	{
-		logger->debug("produceData()");
-
-		if (id && this->_dataProducers.has(id))
-			throw new TypeError(`a DataProducer with same id "${id}" already exists`);
-		else if (appData && typeof appData !== "object")
-			throw new TypeError("if given, appData must be an object");
-
-		let type: DataProducerType;
-
-		// If this is not a DirectTransport, sctpStreamParameters are required.
-		if (this->constructor.name !== "DirectTransport")
-		{
-			type = "sctp";
-
-			// This may throw.
-			ortc::validateSctpStreamParameters(sctpStreamParameters!);
-		}
-		// If this is a DirectTransport, sctpStreamParameters must not be given.
-		else
-		{
-			type = "direct";
-
-			if (sctpStreamParameters)
-			{
-				logger->warn(
-					"produceData() | sctpStreamParameters are ignored when producing data on a DirectTransport");
-			}
-		}
-
-		const internal = { ...this->_internal, dataProducerId: id || uuidv4() };
-		const reqData =
-		{
-			type,
-			sctpStreamParameters,
-			label,
-			protocol
-		};
-
-		const data =
-			co_await this->_channel->request("transport.produceData", internal, reqData);
-
-		const dataProducer = new DataProducer(
-			{
-				internal,
-				data,
-				channel        : this->_channel,
-				payloadChannel : this->_payloadChannel,
-				appData
-			});
-
-		this->_dataProducers.set(dataProducer->id, dataProducer);
-		dataProducer->on("@close", () =>
-		{
-			this->_dataProducers.delete(dataProducer->id);
-			this->emit("@dataproducerclose", dataProducer);
-		});
-
-		this->emit("@newdataproducer", dataProducer);
-
-		// Emit observer event.
-		this->_observer->safeEmit("newdataproducer", dataProducer);
-
-		return dataProducer;
-	}
+// 	std::future<DataProducer*> produceData(
+// 		{
+// 			id = undefined,
+// 			sctpStreamParameters,
+// 			label = "",
+// 			protocol = "",
+// 			appData = {}
+// 		}: DataProducerOptions = {}
+// 	)
+// 	{
+// 		logger->debug("produceData()");
+// 
+// 		if (id && this->_dataProducers.has(id))
+// 			throw new TypeError(`a DataProducer with same id "${id}" already exists`);
+// 		else if (appData && typeof appData != "object")
+// 			throw new TypeError("if given, appData must be an object");
+// 
+// 		let type: DataProducerType;
+// 
+// 		// If this is not a DirectTransport, sctpStreamParameters are required.
+// 		if (this->constructor.name != "DirectTransport")
+// 		{
+// 			type = "sctp";
+// 
+// 			// This may throw.
+// 			ortc::validateSctpStreamParameters(sctpStreamParameters!);
+// 		}
+// 		// If this is a DirectTransport, sctpStreamParameters must not be given.
+// 		else
+// 		{
+// 			type = "direct";
+// 
+// 			if (sctpStreamParameters)
+// 			{
+// 				logger->warn(
+// 					"produceData() | sctpStreamParameters are ignored when producing data on a DirectTransport");
+// 			}
+// 		}
+// 
+// 		json internal = { ...this->_internal, dataProducerId: id || uuidv4() };
+// 		json reqData =
+// 		{
+// 			type,
+// 			sctpStreamParameters,
+// 			label,
+// 			protocol
+// 		};
+// 
+// 		json data =
+// 			co_await this->_channel->request("transport.produceData", internal, reqData);
+// 
+// 		const dataProducer = new DataProducer(
+// 			{
+// 				internal,
+// 				data,
+// 				channel        : this->_channel,
+// 				payloadChannel : this->_payloadChannel,
+// 				appData
+// 			});
+// 
+// 		this->_dataProducers.set(dataProducer->id, dataProducer);
+// 		dataProducer->on("@close", () =>
+// 		{
+// 			this->_dataProducers.delete(dataProducer->id);
+// 			this->emit("@dataproducerclose", dataProducer);
+// 		});
+// 
+// 		this->emit("@newdataproducer", dataProducer);
+// 
+// 		// Emit observer event.
+// 		this->_observer->safeEmit("newdataproducer", dataProducer);
+// 
+// 		return dataProducer;
+// 	}
 
 	/**
 	 * Create a DataConsumer.
 	 */
-	async consumeData(
-		{
-			dataProducerId,
-			ordered,
-			maxPacketLifeTime,
-			maxRetransmits,
-			appData = {}
-		}: DataConsumerOptions
-	): Promise<DataConsumer>
-	{
-		logger->debug("consumeData()");
-
-		if (!dataProducerId || typeof dataProducerId !== "string")
-			throw new TypeError("missing dataProducerId");
-		else if (appData && typeof appData !== "object")
-			throw new TypeError("if given, appData must be an object");
-
-		const dataProducer = this->_getDataProducerById(dataProducerId);
-
-		if (!dataProducer)
-			throw Error(`DataProducer with id "${dataProducerId}" not found`);
-
-		let type: DataConsumerType;
-		let sctpStreamParameters: SctpStreamParameters | undefined;
-		let sctpStreamId: uint32_t;
-
-		// If this is not a DirectTransport, use sctpStreamParameters from the
-		// DataProducer (if type "sctp") unless they are given in method parameters.
-		if (this->constructor.name !== "DirectTransport")
-		{
-			type = "sctp";
-			sctpStreamParameters =
-				utils.clone(dataProducer->sctpStreamParameters) as SctpStreamParameters;
-
-			// Override if given.
-			if (ordered !== undefined)
-				sctpStreamParameters.ordered = ordered;
-
-			if (maxPacketLifeTime !== undefined)
-				sctpStreamParameters.maxPacketLifeTime = maxPacketLifeTime;
-
-			if (maxRetransmits !== undefined)
-				sctpStreamParameters.maxRetransmits = maxRetransmits;
-
-			// This may throw.
-			sctpStreamId = this->_getNextSctpStreamId();
-
-			this->_sctpStreamIds![sctpStreamId] = 1;
-			sctpStreamParameters.streamId = sctpStreamId;
-		}
-		// If this is a DirectTransport, sctpStreamParameters must not be used.
-		else
-		{
-			type = "direct";
-
-			if (
-				ordered !== undefined ||
-				maxPacketLifeTime !== undefined ||
-				maxRetransmits !== undefined
-			)
-			{
-				logger->warn(
-					"consumeData() | ordered, maxPacketLifeTime and maxRetransmits are ignored when consuming data on a DirectTransport");
-			}
-		}
-
-		const { label, protocol } = dataProducer;
-
-		const internal = { ...this->_internal, dataConsumerId: uuidv4(), dataProducerId };
-		const reqData =
-		{
-			type,
-			sctpStreamParameters,
-			label,
-			protocol
-		};
-
-		const data =
-			co_await this->_channel->request("transport.consumeData", internal, reqData);
-
-		const dataConsumer = new DataConsumer(
-			{
-				internal,
-				data,
-				channel        : this->_channel,
-				payloadChannel : this->_payloadChannel,
-				appData
-			});
-
-		this->_dataConsumers.set(dataConsumer->id, dataConsumer);
-		dataConsumer->on("@close", () =>
-		{
-			this->_dataConsumers.delete(dataConsumer->id);
-
-			if (this->_sctpStreamIds)
-				this->_sctpStreamIds[sctpStreamId] = 0;
-		});
-		dataConsumer->on("@dataproducerclose", () =>
-		{
-			this->_dataConsumers.delete(dataConsumer->id);
-
-			if (this->_sctpStreamIds)
-				this->_sctpStreamIds[sctpStreamId] = 0;
-		});
-
-		// Emit observer event.
-		this->_observer->safeEmit("newdataconsumer", dataConsumer);
-
-		return dataConsumer;
-	}
+// 	std::future<DataConsumer*> consumeData(
+// 		{
+// 			dataProducerId,
+// 			ordered,
+// 			maxPacketLifeTime,
+// 			maxRetransmits,
+// 			appData = {}
+// 		}: DataConsumerOptions
+// 	)
+// 	{
+// 		logger->debug("consumeData()");
+// 
+// 		if (!dataProducerId || typeof dataProducerId != "string")
+// 			throw new TypeError("missing dataProducerId");
+// 		else if (appData && typeof appData != "object")
+// 			throw new TypeError("if given, appData must be an object");
+// 
+// 		const dataProducer = this->_getDataProducerById(dataProducerId);
+// 
+// 		if (!dataProducer)
+// 			throw Error(`DataProducer with id "${dataProducerId}" not found`);
+// 
+// 		let type: DataConsumerType;
+// 		let sctpStreamParameters: SctpStreamParameters | undefined;
+// 		let sctpStreamId;
+// 
+// 		// If this is not a DirectTransport, use sctpStreamParameters from the
+// 		// DataProducer (if type "sctp") unless they are given in method parameters.
+// 		if (this->constructor.name != "DirectTransport")
+// 		{
+// 			type = "sctp";
+// 			sctpStreamParameters =
+// 				utils.clone(dataProducer->sctpStreamParameters) as SctpStreamParameters;
+// 
+// 			// Override if given.
+// 			if (ordered != undefined)
+// 				sctpStreamParameters.ordered = ordered;
+// 
+// 			if (maxPacketLifeTime != undefined)
+// 				sctpStreamParameters.maxPacketLifeTime = maxPacketLifeTime;
+// 
+// 			if (maxRetransmits != undefined)
+// 				sctpStreamParameters.maxRetransmits = maxRetransmits;
+// 
+// 			// This may throw.
+// 			sctpStreamId = this->_getNextSctpStreamId();
+// 
+// 			this->_sctpStreamIds![sctpStreamId] = 1;
+// 			sctpStreamParameters.streamId = sctpStreamId;
+// 		}
+// 		// If this is a DirectTransport, sctpStreamParameters must not be used.
+// 		else
+// 		{
+// 			type = "direct";
+// 
+// 			if (
+// 				ordered != undefined ||
+// 				maxPacketLifeTime != undefined ||
+// 				maxRetransmits != undefined
+// 			)
+// 			{
+// 				logger->warn(
+// 					"consumeData() | ordered, maxPacketLifeTime and maxRetransmits are ignored when consuming data on a DirectTransport");
+// 			}
+// 		}
+// 
+// 		const { label, protocol } = dataProducer;
+// 
+// 		json internal = { ...this->_internal, dataConsumerId: uuidv4(), dataProducerId };
+// 		json reqData =
+// 		{
+// 			type,
+// 			sctpStreamParameters,
+// 			label,
+// 			protocol
+// 		};
+// 
+// 		json data =
+// 			co_await this->_channel->request("transport.consumeData", internal, reqData);
+// 
+// 		DataConsumer* dataConsumer = new DataConsumer(
+// 			{
+// 				internal,
+// 				data,
+// 				channel        : this->_channel,
+// 				payloadChannel : this->_payloadChannel,
+// 				appData
+// 			});
+// 
+// 		this->_dataConsumers.set(dataConsumer->id, dataConsumer);
+// 		dataConsumer->on("@close", () =>
+// 		{
+// 			this->_dataConsumers.delete(dataConsumer->id);
+// 
+// 			if (this->_sctpStreamIds)
+// 				this->_sctpStreamIds[sctpStreamId] = 0;
+// 		});
+// 		dataConsumer->on("@dataproducerclose", () =>
+// 		{
+// 			this->_dataConsumers.delete(dataConsumer->id);
+// 
+// 			if (this->_sctpStreamIds)
+// 				this->_sctpStreamIds[sctpStreamId] = 0;
+// 		});
+// 
+// 		// Emit observer event.
+// 		this->_observer->safeEmit("newdataconsumer", dataConsumer);
+// 
+// 		return dataConsumer;
+// 	}
 
 	/**
 	 * Enable "trace" event.
 	 */
-	async enableTraceEvent(types: TransportTraceEventType[] = []): Promise<void>
+	std::future<void> enableTraceEvent(std::vector<TransportTraceEventType> types)
 	{
 		logger->debug("pause()");
 
-		const reqData = { types };
+		json reqData = { types };
 
 		co_await this->_channel->request(
 			"transport.enableTraceEvent", this->_internal, reqData);
@@ -793,7 +792,7 @@ protected:
 	{
 		if (
 			!this->_data.sctpParameters ||
-			typeof this->_data.sctpParameters.MIS !== "uint32_t"
+			typeof this->_data.sctpParameters.MIS != "uint32_t"
 		)
 		{
 			throw new TypeError("missing data.sctpParameters.MIS");

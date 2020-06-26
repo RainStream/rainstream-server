@@ -41,7 +41,7 @@ struct PlainTransportOptions
 	 * Maximum allowed size for SCTP messages sent by DataProducers.
 	 * Default 262144.
 	 */
-	maxSctpMessageSize?: uint32_t;
+	maxSctpMessageSize?;
 
 	/**
 	 * Enable SRTP. For this to work, connect() must be called
@@ -69,29 +69,29 @@ struct PlainRtpTransportOptions = PlainTransportOptions;
 struct PlainTransportStat =
 {
 	// Common to all Transports.
-	type: string;
-	transportId: string;
-	timestamp: uint32_t;
-	sctpState?: SctpState;
-	bytesReceived: uint32_t;
-	recvBitrate: uint32_t;
-	bytesSent: uint32_t;
-	sendBitrate: uint32_t;
-	rtpBytesReceived: uint32_t;
-	rtpRecvBitrate: uint32_t;
-	rtpBytesSent: uint32_t;
-	rtpSendBitrate: uint32_t;
-	rtxBytesReceived: uint32_t;
-	rtxRecvBitrate: uint32_t;
-	rtxBytesSent: uint32_t;
-	rtxSendBitrate: uint32_t;
-	probationBytesReceived: uint32_t;
-	probationRecvBitrate: uint32_t;
-	probationBytesSent: uint32_t;
-	probationSendBitrate: uint32_t;
-	availableOutgoingBitrate?: uint32_t;
-	availableIncomingBitrate?: uint32_t;
-	maxIncomingBitrate?: uint32_t;
+	std::string type;
+	std::string transportId;
+	uint32_t timestamp;
+	uint32_t sctpState?: SctpState;
+	uint32_t bytesReceived;
+	uint32_t recvBitrate;
+	uint32_t bytesSent;
+	uint32_t sendBitrate;
+	uint32_t rtpBytesReceived;
+	uint32_t rtpRecvBitrate;
+	uint32_t rtpBytesSent;
+	uint32_t rtpSendBitrate;
+	uint32_t rtxBytesReceived;
+	uint32_t rtxRecvBitrate;
+	uint32_t rtxBytesSent;
+	uint32_t rtxSendBitrate;
+	uint32_t probationBytesReceived;
+	uint32_t probationRecvBitrate;
+	uint32_t probationBytesSent;
+	uint32_t probationSendBitrate;
+	uint32_t availableOutgoingBitrate?;
+	uint32_t availableIncomingBitrate?;
+	uint32_t maxIncomingBitrate?;
 	// PlainTransport specific.
 	rtcpMux: bool;
 	comedia: bool;
@@ -250,7 +250,7 @@ class PlainTransport : public Transport
 	{
 		logger->debug("getStats()");
 
-		return this->_channel->request("transport.getStats", this->_internal);
+		co_return this->_channel->request("transport.getStats", this->_internal);
 	}
 
 	/**
@@ -258,7 +258,7 @@ class PlainTransport : public Transport
 	 *
 	 * @override
 	 */
-	async connect(
+	std::future<void> connect(
 		{
 			ip,
 			port,
@@ -266,18 +266,18 @@ class PlainTransport : public Transport
 			srtpParameters
 		}:
 		{
-			ip?: string;
-			port?: uint32_t;
-			rtcpPort?: uint32_t;
+			ip?;
+			uint32_t port?;
+			uint32_t rtcpPort?;
 			srtpParameters?: SrtpParameters;
 		}
-	): Promise<void>
+	)
 	{
 		logger->debug("connect()");
 
-		const reqData = { ip, port, rtcpPort, srtpParameters };
+		json reqData = { ip, port, rtcpPort, srtpParameters };
 
-		const data =
+		json data =
 			co_await this->_channel->request("transport.connect", this->_internal, reqData);
 
 		// Update data.
@@ -290,82 +290,70 @@ class PlainTransport : public Transport
 		this->_data.srtpParameters = data.srtpParameters;
 	}
 
-	private _handleWorkerNotifications(): void
+private:
+	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.transportId, (event: string, data?: any) =>
-		{
-			switch (event)
+		this->_channel->on(this->_internal.transportId, [=](std::string event, json data)
+		{		
+			if(event == "tuple")
 			{
-				case "tuple":
-				{
-					const tuple = data.tuple as TransportTuple;
-
-					this->_data.tuple = tuple;
-
-					this->safeEmit("tuple", tuple);
-
-					// Emit observer event.
-					this->_observer->safeEmit("tuple", tuple);
-
-					break;
-				}
-
-				case "rtcptuple":
-				{
-					const rtcpTuple = data.rtcpTuple as TransportTuple;
-
-					this->_data.rtcpTuple = rtcpTuple;
-
-					this->safeEmit("rtcptuple", rtcpTuple);
-
-					// Emit observer event.
-					this->_observer->safeEmit("rtcptuple", rtcpTuple);
-
-					break;
-				}
-
-				case "sctpstatechange":
-				{
-					const sctpState = data.sctpState as SctpState;
-
-					this->_data.sctpState = sctpState;
-
-					this->safeEmit("sctpstatechange", sctpState);
-
-					// Emit observer event.
-					this->_observer->safeEmit("sctpstatechange", sctpState);
-
-					break;
-				}
-
-				case "trace":
-				{
-					const trace = data as TransportTraceEventData;
-
-					this->safeEmit("trace", trace);
-
-					// Emit observer event.
-					this->_observer->safeEmit("trace", trace);
-
-					break;
-				}
-
-				default:
-				{
-					logger->error("ignoring unknown event \"%s\"", event);
-				}
+// 				const tuple = data.tuple as TransportTuple;
+// 
+// 				this->_data.tuple = tuple;
+// 
+// 				this->safeEmit("tuple", tuple);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("tuple", tuple);
+			}
+			else if (event == "rtcptuple")
+			{
+// 				const rtcpTuple = data.rtcpTuple as TransportTuple;
+// 
+// 				this->_data.rtcpTuple = rtcpTuple;
+// 
+// 				this->safeEmit("rtcptuple", rtcpTuple);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("rtcptuple", rtcpTuple);
+			}
+			else if (event == "sctpstatechange")
+			{
+// 				const sctpState = data.sctpState as SctpState;
+// 
+// 				this->_data.sctpState = sctpState;
+// 
+// 				this->safeEmit("sctpstatechange", sctpState);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("sctpstatechange", sctpState);
+			}
+			else if (event == "trace")
+			{
+// 				const trace = data as TransportTraceEventData;
+// 
+// 				this->safeEmit("trace", trace);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("trace", trace);
+			}
+			else
+			{
+				logger->error("ignoring unknown event \"%s\"", event);
 			}
 		});
 	}
-}
+};
 
 /**
  * DEPRECATED: Use PlainTransport.
  */
 class PlainRtpTransport : public PlainTransport
 {
-	constructor(params: any)
+public:
+	PlainRtpTransport(json params)
+		: PlainTransport(params)
 	{
-		super(params);
+
 	}
-}
+};

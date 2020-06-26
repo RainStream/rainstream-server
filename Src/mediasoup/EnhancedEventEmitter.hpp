@@ -34,7 +34,7 @@ public:
 		}
 	}
 
-// 	async safeEmitAsPromise(event: string, ...args: any[]): Promise<any>
+// 	std::future<json> safeEmitAsPromise(event, ...args: any[])
 // 	{
 // 		return new Promise((resolve, reject) => (
 // 			this->safeEmit(event, ...args, resolve, reject)
