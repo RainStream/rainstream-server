@@ -113,9 +113,9 @@ struct PipeToRouterResult
 
 class Router : public EnhancedEventEmitter
 {
+private:
 	Logger* logger;
 	// Internal data.
-private:
 	json _internal;
 // 	{
 // 		std::string routerId;
@@ -429,16 +429,16 @@ public:
 			}
 		);
 
-		this->_transports.set(transport->id, transport);
-		transport->on("@close", () => this->_transports.delete(transport->id));
-		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer.id, producer));
-		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer.id));
-		transport->on("@newdataproducer", (dataProducer: DataProducer) => (
-			this->_dataProducers.set(dataProducer.id, dataProducer)
-		));
-		transport->on("@dataproducerclose", (dataProducer: DataProducer) => (
-			this->_dataProducers.delete(dataProducer.id)
-		));
+		this->_transports.insert(std::make_pair(transport->id(), transport));
+		transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+		transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
+		transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
+		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+		});
+		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+			this->_dataProducers.erase(dataProducer->id());
+		});
 
 		// Emit observer event.
 		this->_observer->safeEmit("newtransport", transport);
@@ -524,15 +524,15 @@ public:
 				}
 			);
 
-		this->_transports.set(transport->id, transport);
-		transport->on("@close", () => this->_transports.delete(transport->id));
-		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer.id, producer));
-		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer.id));
+		this->_transports.set(transport->id(), transport);
+		transport->on("@close", () => this->_transports.delete(transport->id()));
+		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer->id(), producer));
+		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer->id()));
 		transport->on("@newdataproducer", (dataProducer: DataProducer) => (
-			this->_dataProducers.set(dataProducer.id, dataProducer)
+			this->_dataProducers.set(dataProducer->id(), dataProducer)
 		));
 		transport->on("@dataproducerclose", (dataProducer: DataProducer) => (
-			this->_dataProducers.delete(dataProducer.id)
+			this->_dataProducers.delete(dataProducer->id())
 		));
 
 		// Emit observer event.
@@ -626,15 +626,15 @@ public:
 				}
 			);
 
-		this->_transports.set(transport->id, transport);
-		transport->on("@close", () => this->_transports.delete(transport->id));
-		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer.id, producer));
-		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer.id));
+		this->_transports.set(transport->id(), transport);
+		transport->on("@close", () => this->_transports.delete(transport->id()));
+		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer->id(), producer));
+		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer->id()));
 		transport->on("@newdataproducer", (dataProducer: DataProducer) => (
-			this->_dataProducers.set(dataProducer.id, dataProducer)
+			this->_dataProducers.set(dataProducer->id(), dataProducer)
 		));
 		transport->on("@dataproducerclose", (dataProducer: DataProducer) => (
-			this->_dataProducers.delete(dataProducer.id)
+			this->_dataProducers.delete(dataProducer->id())
 		));
 
 		// Emit observer event.
@@ -686,15 +686,15 @@ public:
 				}
 			});
 
-		this->_transports.set(transport->id, transport);
-		transport->on("@close", () => this->_transports.delete(transport->id));
-		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer.id, producer));
-		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer.id));
+		this->_transports.set(transport->id(), transport);
+		transport->on("@close", () => this->_transports.delete(transport->id()));
+		transport->on("@newproducer", (producer: Producer) => this->_producers.set(producer->id(), producer));
+		transport->on("@producerclose", (producer: Producer) => this->_producers.delete(producer->id()));
 		transport->on("@newdataproducer", (dataProducer: DataProducer) => (
-			this->_dataProducers.set(dataProducer.id, dataProducer)
+			this->_dataProducers.set(dataProducer->id(), dataProducer)
 		));
 		transport->on("@dataproducerclose", (dataProducer: DataProducer) => (
-			this->_dataProducers.delete(dataProducer.id)
+			this->_dataProducers.delete(dataProducer->id())
 		));
 
 		// Emit observer event.
@@ -844,7 +844,7 @@ public:
 // 
 // 				pipeProducer = co_await remotePipeTransport!.produce(
 // 					{
-// 						id            : producer.id,
+// 						id            : producer->id(),
 // 						kind          : pipeConsumer!.kind,
 // 						rtpParameters : pipeConsumer!.rtpParameters,
 // 						paused        : pipeConsumer!.producerPaused,
@@ -890,7 +890,7 @@ public:
 // 
 // 				pipeDataProducer = co_await remotePipeTransport!.produceData(
 // 					{
-// 						id                   : dataProducer.id,
+// 						id                   : dataProducer->id(),
 // 						sctpStreamParameters : pipeDataConsumer!.sctpStreamParameters,
 // 						label                : pipeDataConsumer!.label,
 // 						protocol             : pipeDataConsumer!.protocol,

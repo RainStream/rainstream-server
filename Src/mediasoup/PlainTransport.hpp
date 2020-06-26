@@ -145,13 +145,13 @@ protected:
 
 		this->_data =
 		{
-			rtcpMux        : data.rtcpMux,
-			comedia        : data.comedia,
-			tuple          : data.tuple,
-			rtcpTuple      : data.rtcpTuple,
-			sctpParameters : data.sctpParameters,
-			sctpState      : data.sctpState,
-			srtpParameters : data.srtpParameters
+			{ "rtcpMux"        , data["rtcpMux"] },
+			{ "comedia"        , data["comedia"] },
+			{ "tuple"          , data["tuple"] },
+			{ "rtcpTuple"      , data["rtcpTuple"] },
+			{ "sctpParameters" , data["sctpParameters"] },
+			{ "sctpState"      , data["sctpState"] },
+			{ "srtpParameters" , data["srtpParameters"] }
 		};
 
 		this->_handleWorkerNotifications();
@@ -226,8 +226,8 @@ protected:
 		if (this->_closed)
 			return;
 
-		if (this->_data.sctpState)
-			this->_data.sctpState = "closed";
+		if (this->_data.contains("sctpState"))
+			this->_data["sctpState"] = "closed";
 
 		Transport::close();
 	}
@@ -243,8 +243,8 @@ protected:
 		if (this->_closed)
 			return;
 
-		if (this->_data.sctpState)
-			this->_data.sctpState = "closed";
+		if (this->_data.contains("sctpState"))
+			this->_data["sctpState"] = "closed";
 
 		Transport::routerClosed();
 	}

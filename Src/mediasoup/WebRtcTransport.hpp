@@ -316,8 +316,8 @@ public:
 		this->_data["iceSelectedTuple"].clear();
 		this->_data["dtlsState"] = "closed";
 
-		if (this->_data.sctpState)
-			this->_data.sctpState = "closed";
+		if (this->_data.contains("sctpState"))
+			this->_data["sctpState"] = "closed";
 
 		Transport::close();
 	}
@@ -333,12 +333,12 @@ public:
 		if (this->_closed)
 			return;
 
-		this->_data.iceState = "closed";
-		this->_data.iceSelectedTuple = undefined;
-		this->_data.dtlsState = "closed";
+		this->_data["iceState"] = "closed";
+		this->_data["iceSelectedTuple"].clear();
+		this->_data["dtlsState"] = "closed";
 
-		if (this->_data.sctpState)
-			this->_data.sctpState = "closed";
+		if (this->_data.contains("sctpState"))
+			this->_data["sctpState"] = "closed";
 
 		Transport::routerClosed();
 	}

@@ -38,7 +38,7 @@ private:
 
 	// Method to retrieve a Producer.
 protected:
-	Producer* _getProducerById(std::string producerId);
+	GetProducerById _getProducerById;
 
 	// Observer instance.
 	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
@@ -55,7 +55,7 @@ public:
 		Channel* channel,
 		PayloadChannel* payloadChannel,
 		json appData,
-		getProducerById
+		GetProducerById getProducerById
 	)
 		: EnhancedEventEmitter()
 		, logger(new Logger("RtpObserver"))
@@ -138,8 +138,14 @@ public:
 		// Remove notification subscriptions.
 		this->_channel->removeAllListeners(this->_internal["rtpObserverId"]);
 
-		this->_channel->request("rtpObserver.close", this->_internal)
-			.catch(() => {});
+		try
+		{
+			this->_channel->request("rtpObserver.close", this->_internal);
+		}
+		catch (const std::exception&)
+		{
+
+		}
 
 		this->emit("@close");
 
@@ -209,12 +215,13 @@ public:
 	/**
 	 * Add a Producer to the RtpObserver.
 	 */
-	std::future<void> addProducer({ producerId }: { producerId })
+	std::future<void> addProducer(std::string producerId)
 	{
 		logger->debug("addProducer()");
 
 		Producer* producer = this->_getProducerById(producerId);
-		json internal = { ...this->_internal, producerId };
+		json internal = this->_internal;
+		internal["producerId"] = producerId;
 
 		co_await this->_channel->request("rtpObserver.addProducer", internal);
 
@@ -225,12 +232,13 @@ public:
 	/**
 	 * Remove a Producer from the RtpObserver.
 	 */
-	std::future<void> removeProducer({ producerId }: { producerId })
+	std::future<void> removeProducer(std::string producerId)
 	{
 		logger->debug("removeProducer()");
 
 		Producer* producer = this->_getProducerById(producerId);
-		json internal = { ...this->_internal, producerId };
+		json internal = this->_internal;
+		internal["producerId"] = producerId;
 
 		co_await this->_channel->request("rtpObserver.removeProducer", internal);
 
