@@ -12,6 +12,31 @@ using SrtpCryptoSuite = std::string;
  */
 struct SrtpParameters
 {
+	SrtpParameters()
+	{
+
+	}
+
+	SrtpParameters(const json& data)
+		: SrtpParameters()
+	{
+		if (data.is_object())
+		{
+			this->cryptoSuite = data.value("cryptoSuite", "");
+			this->keyBase64 = data.value("keyBase64", "");
+		}
+	}
+
+	operator json() const
+	{
+		json data = {
+			{ "cryptoSuite", cryptoSuite },
+			{ "keyBase64", keyBase64 }
+		};
+
+		return data;
+	}
+
 	/**
 	 * Encryption and authentication transforms to be used.
 	 */

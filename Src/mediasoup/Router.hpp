@@ -574,22 +574,22 @@ public:
 		else if (!appData.is_null() && !appData.is_object())
 			throw new TypeError("if given, appData must be an object");
 
-		if (typeof listenIp == "std::string" && listenIp)
-		{
-			listenIp = { ip: listenIp };
-		}
-		else if (typeof listenIp == "object")
-		{
-			listenIp =
-			{
-				ip          : listenIp.ip,
-				announcedIp : listenIp.announcedIp || undefined
-			};
-		}
-		else
-		{
-			throw new TypeError("wrong listenIp");
-		}
+// 		if (typeof listenIp == "std::string" && listenIp)
+// 		{
+// 			listenIp = { ip: listenIp };
+// 		}
+// 		else if (typeof listenIp == "object")
+// 		{
+// 			listenIp =
+// 			{
+// 				ip          : listenIp.ip,
+// 				announcedIp : listenIp.announcedIp || undefined
+// 			};
+// 		}
+// 		else
+// 		{
+// 			throw new TypeError("wrong listenIp");
+// 		}
 
 		json internal = this->_internal;
 		internal["transportId"] = uuidv4();
@@ -648,57 +648,62 @@ public:
 	/**
 	 * Create a DirectTransport.
 	 */
-	std::future<DirectTransport*> createDirectTransport(
-		uint32_t maxMessageSize = 262144,
-		json appData = json::object()
-	)
-	{
-		logger->debug("createDirectTransport()");
-
-		json internal = { ...this->_internal, transportId: uuidv4() };
-		json reqData = { direct: true, maxMessageSize };
-
-		json data =
-			co_await this->_channel->request("router.createDirectTransport", internal, reqData);
-
-		DirectTransport* transport = new DirectTransport(
-			{
-				internal,
-				data,
-				this->_channel,
-				this->_payloadChannel,
-				appData,
-				[=]() { return this->_data["rtpCapabilities"]; },
-				[=](std::string producerId) -> Producer* {
-					if (this->_producers.count(producerId))
-						return this->_producers.at(producerId);
-					else
-						return nullptr;
-				},
-				[=](std::string dataProducerId) -> DataProducer* {
-					if (this->_dataProducers.count(dataProducerId))
-						return this->_dataProducers.at(dataProducerId);
-					else
-						return nullptr;
-				}
-			});
-
-		this->_transports.insert(std::make_pair(transport->id(), transport));
-		transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
-		transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
-		transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
-// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
-// 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
-// 		});
-// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
-// 			this->_dataProducers.erase(dataProducer->id());
-// 		});
-
-		// Emit observer event.
-		this->_observer->safeEmit("newtransport", transport);
-
-		return transport;
-	}
+// 	std::future<DirectTransport*> createDirectTransport(
+// 		uint32_t maxMessageSize = 262144,
+// 		json appData = json::object()
+// 	)
+// 	{
+// 		logger->debug("createDirectTransport()");
+// 
+// 		json internal = this->_internal;
+// 		internal["transportId"] = uuidv4();
+// 
+// 		json reqData = {
+// 			{ "direct", true },
+// 			{ "maxMessageSize", maxMessageSize },
+// 		};
+// 
+// 		json data =
+// 			co_await this->_channel->request("router.createDirectTransport", internal, reqData);
+// 
+// 		DirectTransport* transport = new DirectTransport(
+// 			{
+// 				internal,
+// 				data,
+// 				this->_channel,
+// 				this->_payloadChannel,
+// 				appData,
+// 				[=]() { return this->_data["rtpCapabilities"]; },
+// 				[=](std::string producerId) -> Producer* {
+// 					if (this->_producers.count(producerId))
+// 						return this->_producers.at(producerId);
+// 					else
+// 						return nullptr;
+// 				},
+// 				[=](std::string dataProducerId) -> DataProducer* {
+// 					if (this->_dataProducers.count(dataProducerId))
+// 						return this->_dataProducers.at(dataProducerId);
+// 					else
+// 						return nullptr;
+// 				}
+// 			});
+// 
+// 		this->_transports.insert(std::make_pair(transport->id(), transport));
+// 		transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+// 		transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
+// 		transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
+// // 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+// // 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+// // 		});
+// // 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+// // 			this->_dataProducers.erase(dataProducer->id());
+// // 		});
+// 
+// 		// Emit observer event.
+// 		this->_observer->safeEmit("newtransport", transport);
+// 
+// 		return transport;
+// 	}
 
 	/**
 	 * Pipes the given Producer or DataProducer into another Router in same host.
@@ -971,27 +976,27 @@ public:
 	/**
 	 * Check whether the given RTP capabilities can consume the given Producer.
 	 */
-	bool canConsume(std::string producerId, json rtpCapabilities)
+bool canConsume(std::string producerId, json& rtpCapabilities)
+{
+	Producer* producer = GetMapValue(this->_producers, producerId);
+
+	if (!producer)
 	{
-		Producer* producer = this->_producers.get(producerId);
+		logger->error(
+			"canConsume() | Producer with id \"%s\" not found", producerId);
 
-		if (!producer)
-		{
-			logger->error(
-				"canConsume() | Producer with id \"%s\" not found", producerId);
-
-			return false;
-		}
-
-		try
-		{
-			return ortc::canConsume(producer->consumableRtpParameters, rtpCapabilities);
-		}
-		catch (error)
-		{
-			logger->error("canConsume() | unexpected error: %s", String(error));
-
-			return false;
-		}
+		return false;
 	}
+
+	try
+	{
+		return ortc::canConsume(producer->consumableRtpParameters(), rtpCapabilities);
+	}
+	catch (std::exception& error)
+	{
+		logger->error("canConsume() | unexpected error: %s", error.what());
+
+		return false;
+	}
+}
 };

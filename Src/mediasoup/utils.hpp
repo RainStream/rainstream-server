@@ -53,3 +53,18 @@ void clearInterval(uint32_t identifier);
 
 std::string uuidv4();
 
+template<class K, class V>
+V GetMapValue(const std::map<K, V>& maps, K key)
+{
+	auto it = maps.find(key);
+	if (it != maps.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+

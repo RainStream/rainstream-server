@@ -17,6 +17,7 @@ struct ConsumerLayers
 	}
 
 	ConsumerLayers(const json& data)
+		: ConsumerLayers()
 	{
 		if (data.is_object())
 		{
@@ -126,6 +127,7 @@ struct ConsumerScore
 	}
 
 	ConsumerScore(const json& data)
+		: ConsumerScore()
 	{
 		if (data.is_object())
 		{

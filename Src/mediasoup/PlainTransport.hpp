@@ -121,6 +121,7 @@ protected:
 // 		srtpParameters?: SrtpParameters;
 // 	};
 
+public:
 	/**
 	 * @private
 	 * @emits tuple - (tuple: TransportTuple)
@@ -289,7 +290,7 @@ protected:
 		if (data.count("tuple"))
 			this->_data["tuple"] = data["tuple"];
 
-		if (data.rtcpTuple)
+		if (data.count("rtcpTuple"))
 			this->_data["rtcpTuple"] = data["rtcpTuple"];
 
 		this->_data["srtpParameters"] = data["srtpParameters"];

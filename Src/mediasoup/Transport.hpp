@@ -36,6 +36,25 @@ using TransportProtocol = std::string;// = "udp" | "tcp";
 
 struct TransportTuple
 {
+	TransportTuple()
+		: localPort(0)
+		, remoteIp(0)
+	{
+
+	}
+
+	TransportTuple(const json& data)
+	{
+		if (data.is_object())
+		{
+			localIp = data.value("localIp" , "");
+			localPort = data.value("localPort", 0);
+			remoteIp = data.value("remoteIp", "");
+			remotePort = data.value("remotePort", 0);
+			protocol = data.value("protocol", "");
+		}
+	}
+
 	std::string localIp;
 	uint32_t localPort;
 	std::string remoteIp;

@@ -119,6 +119,50 @@ struct IceCandidate
 
 struct DtlsParameters
 {
+	DtlsParameters()
+	{
+
+	}
+
+	DtlsParameters(const json& data)
+		: DtlsParameters()
+	{
+		if (data.is_object())
+		{
+			this->role = data.value("role", "");
+			for (auto& fingerprint : data["fingerprints"])
+			{
+				DtlsFingerprint dtlsFingerprint;
+				dtlsFingerprint.algorithm = fingerprint.value("algorithm", "");
+				dtlsFingerprint.value = fingerprint.value("value", "");
+
+				fingerprints.push_back(dtlsFingerprint);
+			}
+		}
+	}
+
+	operator json() const
+	{
+		json jFingerprints = json::array();
+		for (auto& fingerprint : fingerprints)
+		{
+			json jFingerprint = 
+			{
+				{ "algorithm", fingerprint.algorithm },
+				{ "value", fingerprint.value }
+			};
+
+			jFingerprints.push_back(jFingerprint);
+		}
+
+		json data = {
+			{ "role", role },
+			{ "fingerprints", jFingerprints }
+		};
+
+		return data;
+	}
+
 	DtlsRole role;
 	std::vector<DtlsFingerprint> fingerprints;
 };

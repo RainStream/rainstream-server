@@ -46,6 +46,27 @@ struct SctpCapabilities
 
 struct SctpParameters
 {
+	SctpParameters()
+		: port(5000)
+		, OS(0)
+		, MIS(0)
+		, maxMessageSize(0)
+	{
+
+	}
+
+	SctpParameters(const json& data)
+		: SctpParameters()
+	{
+		if (data.is_object())
+		{
+			this->port = data.value("port", 0);
+			this->OS = data.value("OS", 0);
+			this->MIS = data.value("MIS", 0);
+			this->maxMessageSize = data.value("maxMessageSize", 0);
+		}
+	}
+
 	/**
 	 * Must always equal 5000.
 	 */
