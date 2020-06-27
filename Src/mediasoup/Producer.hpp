@@ -368,7 +368,9 @@ public:
 	{
 		logger->debug("dump()");
 
-		co_return this->_channel->request("producer.dump", this->_internal);
+		json ret = co_await this->_channel->request("producer.dump", this->_internal);
+
+		co_return ret;
 	}
 
 	/**

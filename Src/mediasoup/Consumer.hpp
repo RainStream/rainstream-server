@@ -259,8 +259,8 @@ public:
 		json appData,
 		bool paused,
 		bool producerPaused,
-		ConsumerScore score,
-		ConsumerLayers preferredLayers)
+		ConsumerScore score = ConsumerScore(),
+		ConsumerLayers preferredLayers = ConsumerLayers())
 		: EnhancedEventEmitter(),
 		logger(new Logger("Consumer"))
 	{
@@ -465,7 +465,9 @@ public:
 	{
 		logger->debug("dump()");
 
-		co_return this->_channel->request("consumer.dump", this->_internal);
+		json ret = co_await this->_channel->request("consumer.dump", this->_internal);
+
+		co_return ret;
 	}
 
 	/**
@@ -475,7 +477,9 @@ public:
 	{
 		logger->debug("getStats()");
 
-		co_return this->_channel->request("consumer.getStats", this->_internal);
+		json ret = co_await  this->_channel->request("consumer.getStats", this->_internal);
+
+		co_return ret;
 	}
 
 	/**

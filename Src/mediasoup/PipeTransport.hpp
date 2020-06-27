@@ -162,6 +162,11 @@ public:
 		return this->_data["srtpParameters"];
 	}
 
+	virtual std::string typeName()
+	{
+		return "PipeTransport";
+	}
+
 	/**
 	 * Observer.
 	 *
@@ -221,7 +226,9 @@ public:
 	{
 		logger->debug("getStats()");
 
-		co_return this->_channel->request("transport.getStats", this->_internal);
+		json ret = co_await  this->_channel->request("transport.getStats", this->_internal);
+
+		co_return ret;
 	}
 
 	/**

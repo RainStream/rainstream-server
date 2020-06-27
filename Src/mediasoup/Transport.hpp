@@ -242,6 +242,8 @@ public:
 		throw new Error("cannot override appData object");
 	}
 
+	virtual std::string typeName() = 0;
+
 	/**
 	 * Observer.
 	 *
@@ -385,7 +387,9 @@ public:
 	{
 		logger->debug("dump()");
 
-		co_return this->_channel->request("transport.dump", this->_internal);
+		json ret = co_await this->_channel->request("transport.dump", this->_internal);
+
+		co_return ret;
 	}
 
 	/**
@@ -462,7 +466,7 @@ public:
 
 		// Don"t do this in PipeTransports since there we must keep CNAME value in
 		// each Producer.
-		if (this->constructor.name != "PipeTransport")
+		if (this->typeName() != "PipeTransport")
 		{
 			// If CNAME is given and we don"t have yet a CNAME for Producers in this
 			// Transport, take it.

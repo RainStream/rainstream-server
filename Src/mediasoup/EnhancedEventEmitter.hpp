@@ -15,20 +15,20 @@ public:
 	}
 
 	template <typename ... Arg>
-	bool safeEmit(std::string event, Arg&& ... args)
+	bool safeEmit(const std::string& event, Arg&& ... args)
 	{
-		const numListeners = this->listener_count(event);
+		int numListeners = this->listener_count(event);
 
 		try
 		{
-			this->emit(event, ...args);
+			this->emit(event, std::forward<Arg>(args)...);
 			return true;
 		}
-		catch (error)
+		catch (std::exception& error)
 		{
 			logger->error(
-				"safeEmit() | event listener threw an error [event:%s]:%o",
-				event, error);
+				"safeEmit() | event listener threw an error [event:%s]:%s",
+				event.c_str(), error.what());
 
 			return numListeners;
 		}

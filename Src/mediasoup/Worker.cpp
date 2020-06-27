@@ -219,7 +219,7 @@ std::future<json> Worker::dump()
 {
 	logger->debug("dump()");
 
-	auto ret = co_await this->_channel->request("worker.dump");
+	json ret = co_await this->_channel->request("worker.dump");
 
 	co_return ret;
 }

@@ -282,7 +282,7 @@ public:
 	/**
 	 * ICE candidates.
 	 */
-	std::vector<IceCandidate> iceCandidates()
+	json iceCandidates()
 	{
 		return this->_data["iceCandidates"];
 	}
@@ -341,6 +341,11 @@ public:
 	SctpState sctpState()
 	{
 		return this->_data["sctpState"];
+	}
+
+	virtual std::string typeName()
+	{
+		return "WebRtcTransport";
 	}
 
 	/**
@@ -413,7 +418,9 @@ public:
 	{
 		logger->debug("getStats()");
 
-		co_return this->_channel->request("transport.getStats", this->_internal);
+		json ret = co_await this->_channel->request("transport.getStats", this->_internal);
+
+		co_return ret;
 	}
 
 	/**

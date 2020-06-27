@@ -344,7 +344,9 @@ public:
 	{
 		logger->debug("dump()");
 
-		co_return this->_channel->request("router.dump", this->_internal);
+		json ret = co_await this->_channel->request("router.dump", this->_internal);
+
+		co_return ret;
 	}
 
 	/**
@@ -539,19 +541,6 @@ public:
 		this->_observer->safeEmit("newtransport", transport);
 
 		return transport;
-	}
-
-	/**
-	 * DEPRECATED: Use createPlainTransport().
-	 */
-	std::future<PlainTransport*> createPlainRtpTransport(
-		PlainTransportOptions options
-	)
-	{
-		logger->warn(
-			"createPlainRtpTransport() is DEPRECATED, use createPlainTransport()");
-
-		co_return this->createPlainTransport(options);
 	}
 
 	/**

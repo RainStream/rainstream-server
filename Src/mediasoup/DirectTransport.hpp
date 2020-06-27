@@ -88,6 +88,11 @@ public:
 		this->_handleWorkerNotifications();
 	}
 
+	virtual std::string typeName()
+	{
+		return "DirectTransport";
+	}
+
 	/**
 	 * Observer.
 	 *
@@ -174,7 +179,7 @@ public:
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	std::future<Consumer*> consume(options: ConsumerOptions)
+	std::future<Consumer*> consume(ConsumerOptions options)
 	{
 		throw new UnsupportedError("consume() not implemented in DirectTransport");
 	}
@@ -186,12 +191,12 @@ private:
 		{
 			if (event == "trace")
 			{
-				const trace = data as TransportTraceEventData;
-
-				this->safeEmit("trace", trace);
-
-				// Emit observer event.
-				this->_observer->safeEmit("trace", trace);
+// 				const trace = data as TransportTraceEventData;
+// 
+// 				this->safeEmit("trace", trace);
+// 
+// 				// Emit observer event.
+// 				this->_observer->safeEmit("trace", trace);
 			}
 			else
 			{
