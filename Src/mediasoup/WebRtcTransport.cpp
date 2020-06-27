@@ -1,5 +1,7 @@
 
 #include "WebRtcTransport.hpp"
+#include "Channel.hpp"
+
 
 /**
  * @private

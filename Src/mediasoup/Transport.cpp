@@ -1,5 +1,15 @@
 
 #include "Transport.hpp"
+#include "utils.hpp"
+#include "ortc.hpp"
+#include "Channel.hpp"
+#include "Producer.hpp"
+#include "Consumer.hpp"
+//#include "PayloadChannel.hpp"
+//#include "DataProducer.hpp"
+//#include "DataConsumer.hpp"
+//#include "SctpParameters.hpp"
+
 
 /**
  * @private
@@ -374,9 +384,8 @@ std::future<Consumer*> Transport::consume(
 	std::string producerId,
 	json rtpCapabilities,
 	bool paused/* = false*/,
-	ConsumerLayers preferredLayers/* = ConsumerLayers()*/,
-	json appData/* = json()*/
-)
+	json preferredLayers/* = json()*/,
+	json appData/* = json()*/)
 {
 	logger->debug("consume()");
 

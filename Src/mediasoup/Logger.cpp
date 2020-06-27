@@ -34,4 +34,26 @@ namespace mediasoupclient
 	{
 		std::cout << payload << std::endl;
 	}
+
+	Logger::Logger(std::string prefix) 
+		: _prefix(prefix)
+	{
+
+	}
+
+	void Logger::debug(const char * a_Format, ...)
+	{
+
+	}
+
+	void Logger::warn(const char * a_Format, ...)
+	{
+
+	}
+
+	void Logger::error(const char * a_Format, ...)
+	{
+
+	}
+
 } // namespace mediasoupclient

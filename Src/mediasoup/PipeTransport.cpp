@@ -2,8 +2,9 @@
 #include "PipeTransport.hpp"
 #include "ortc.hpp"
 #include "Transport.hpp"
+#include "Producer.hpp"
 #include "Consumer.hpp"
-
+#include "Channel.hpp"
 
 
 /**
@@ -134,7 +135,7 @@ std::future<json> PipeTransport::getStats()
 {
 	logger->debug("getStats()");
 
-	json ret = co_await  this->_channel->request("transport.getStats", this->_internal);
+	json ret = co_await this->_channel->request("transport.getStats", this->_internal);
 
 	co_return ret;
 }

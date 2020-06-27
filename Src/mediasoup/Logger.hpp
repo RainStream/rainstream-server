@@ -85,20 +85,15 @@ namespace mediasoupclient
 
 	public:
 		Logger(std::string prefix);
-		void debug(const char * a_Format, ...)
-		{
-			//return this->_debug;
-		}
 
-		void warn(const char * a_Format, ...)
-		{
-			//return this->_warn;
-		}
+		void debug(const char * a_Format, ...);
 
-		void error(const char * a_Format, ...)
-		{
+		void warn(const char * a_Format, ...);
 
-		}
+		void error(const char * a_Format, ...);
+
+	private:
+		std::string _prefix;
 	};
 } // namespace mediasoupclient
 

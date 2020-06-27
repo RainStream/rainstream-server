@@ -4,16 +4,9 @@
 #include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-#include "utils.hpp"
-#include "ortc.hpp"
-#include "Channel.hpp"
-//#include "PayloadChannel.hpp"
-#include "Producer.hpp"
-#include "Consumer.hpp"
-//#include "DataProducer.hpp"
-//#include "DataConsumer.hpp"
 #include "RtpParameters.hpp"
-//#include "SctpParameters.hpp"
+
+
 
 struct TransportListenIp
 {
@@ -95,6 +88,7 @@ struct TransportTraceEventData
 
 using SctpState = std::string;//  "new" | "connecting" | "connected" | "failed" | "closed";
 
+class Channel;
 class Producer;
 class Consumer;
 class DataProducer;
@@ -223,7 +217,7 @@ public:
 		std::string producerId,
 		json rtpCapabilities,
 		bool paused = false,
-		ConsumerLayers preferredLayers = ConsumerLayers(),
+		json preferredLayers = json(),
 		json appData = json()
 	);
 

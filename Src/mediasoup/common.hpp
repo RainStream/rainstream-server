@@ -53,7 +53,23 @@ typedef SSIZE_T ssize_t;
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-#include <promise.hpp>
-using namespace promise;
+
+#ifdef _MSC_VER
+#  define MS_DECL_EXPORT __declspec(dllexport)
+#endif
+
+#if defined(MS_SHARED) || !defined(MS_STATIC)
+#  ifdef MS_STATIC
+#    error "Both MS_SHARED and MS_STATIC defined, please make up your mind"
+#  endif
+#  ifndef MS_SHARED
+#    define MS_SHARED
+#  endif
+#  if defined(MS_BUILD_LIB)
+#    define MS_EXPORT MS_DECL_EXPORT
+#  endif
+#else
+#  define MS_EXPORT
+#endif
 
 #endif
