@@ -108,7 +108,7 @@ namespace errors
 		static char buffer[2000]; \
 		\
 		std::snprintf(buffer, 2000, desc, ##__VA_ARGS__); \
-		throw MediaSoupClientTypeError(buffer); \
+		throw TypeError(buffer); \
 	} while (false)
 
 #define MSC_THROW_UNSUPPORTED_ERROR(desc, ...) \

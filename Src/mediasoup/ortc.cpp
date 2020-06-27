@@ -1,40 +1,40 @@
-#pragma once 
+#define MSC_CLASS "ortc"
 
-#include "common.hpp"
 #include "ortc.hpp"
-#include "utils.hpp"
+#include "Logger.hpp"
 #include "errors.hpp"
-#include "supportedRtpCapabilities.hpp"
-#include "scalabilityModes.hpp"
-#include "RtpParameters.hpp"
-#include "SctpParameters.hpp"
+// #include "MediaSoupClientErrors.hpp"
+// #include <media/base/h264_profile_level_id.h>
+#include <algorithm> // std::find_if
+#include <regex>
+#include <stdexcept>
+#include <string>
 
-// type RtpMapping =
-// {
-// 	codecs:
-// 	{
-// 			uint32_t payloadType;
-// 			uint32_t mappedPayloadType;
-// 	}[];
-// 
-// 	encodings:
-// 	{
-// 			uint32_t ssrc;
-// 		std::string rid;
-// 		std::string scalabilityMode;
-// 			uint32_t mappedSsrc;
-// 	}[];
-// };
+using json = nlohmann::json;
+using namespace mediasoupclient;
+
+static constexpr uint32_t ProbatorSsrc{ 1234u };
+static const std::string ProbatorMid("probator");
+
+// Static functions declaration.
+static bool isRtxCodec(const json& codec);
+static bool matchCodecs(json& aCodec, const json& bCodec, bool strict = false, bool modify = false);
+static bool matchHeaderExtensions(const json& aExt, const json& bExt);
+static json reduceRtcpFeedback(const json& codecA, const json& codecB);
+static uint8_t getH264PacketizationMode(const json& codec);
+static uint8_t getH264LevelAssimetryAllowed(const json& codec);
+static std::string getH264ProfileLevelId(const json& codec);
+static std::string getVP9ProfileId(const json& codec);
+
+const std::vector<int> DynamicPayloadTypes =
+{
+	100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
+	111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121,
+	122, 123, 124, 125, 126, 127, 96, 97, 98, 99
+};
+
 namespace ortc
 {
-
-	const std::vector<int> DynamicPayloadTypes =
-	{
-		100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
-		111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121,
-		122, 123, 124, 125, 126, 127, 96, 97, 98, 99
-	};
-
 	/**
 	 * Validates RtpCapabilities. It may modify given data by adding missing
 	 * fields with default values.
@@ -420,7 +420,7 @@ namespace ortc
 	}
 
 	/**
-	 * Validates RtpHeaderExtensionParameteters. It may modify given data by adding missing
+	 * Validates RtpHeaderExtensionParameters. It may modify given data by adding missing
 	 * fields with default values.
 	 * It throws if invalid.
 	 */
@@ -713,656 +713,1054 @@ namespace ortc
 			params["protocol"] = "";
 	}
 
+	/**
+	 * Validates IceParameters. It may modify given data by adding missing
+	 * fields with default values.
+	 * It throws if invalid.
+	 */
+	void validateIceParameters(json& params)
+	{
+		MSC_TRACE();
+
+		if (!params.is_object())
+			MSC_THROW_TYPE_ERROR("params is not an object");
+
+		auto usernameFragmentIt = params.find("usernameFragment");
+		auto passwordIt = params.find("password");
+		auto iceLiteIt = params.find("iceLite");
+
+		// usernameFragment is mandatory.
+		if (
+			usernameFragmentIt == params.end() ||
+			(!usernameFragmentIt->is_string() || usernameFragmentIt->get<std::string>().empty()))
+		{
+			MSC_THROW_TYPE_ERROR("missing params.usernameFragment");
+		}
+
+		// userFragment is mandatory.
+		if (passwordIt == params.end() || (!passwordIt->is_string() || passwordIt->get<std::string>().empty()))
+		{
+			MSC_THROW_TYPE_ERROR("missing params.password");
+		}
+
+		// iceLIte is optional. If unset set it to false.
+		if (iceLiteIt == params.end() || !iceLiteIt->is_boolean())
+			params["iceLite"] = false;
+	}
 
 	/**
-	 * Generate RTP capabilities for the Router based on the given media codecs and
-	 * mediasoup supported RTP capabilities.
+	 * Validates IceCandidate. It may modify given data by adding missing
+	 * fields with default values.
+	 * It throws if invalid.
 	 */
-	json generateRouterRtpCapabilities(
-		json& mediaCodecs/* = json::array()*/
-	)
+	void validateIceCandidate(json& params)
 	{
-		// Normalize supported RTP capabilities.
-		validateRtpCapabilities(supportedRtpCapabilities);
+		MSC_TRACE();
 
-		if (!Array.isArray(mediaCodecs))
-			throw new TypeError("mediaCodecs must be an Array");
+		static const std::regex ProtocolRegex(
+			"(udp|tcp)", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
-		const clonedSupportedRtpCapabilities =
-			utils.clone(supportedRtpCapabilities) as RtpCapabilities;
-		const dynamicPayloadTypes = utils.clone(DynamicPayloadTypes) as uint32_t[];
-		const caps : RtpCapabilities =
-		{
-			codecs: [],
-			headerExtensions : clonedSupportedRtpCapabilities.headerExtensions
-		};
+		static const std::regex TypeRegex(
+			"(host|srflx|prflx|relay)", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
-		for (const mediaCodec of mediaCodecs)
-		{
-			// This may throw.
-			validateRtpCodecCapability(mediaCodec);
+		if (!params.is_object())
+			MSC_THROW_TYPE_ERROR("params is not an object");
 
-			const matchedSupportedCodec = clonedSupportedRtpCapabilities
-				.codecs!
-				.find((supportedCodec) = > (
-					matchCodecs(mediaCodec, supportedCodec, { strict: false }))
-				);
+		auto foundationIt = params.find("foundation");
+		auto priorityIt = params.find("priority");
+		auto ipIt = params.find("ip");
+		auto protocolIt = params.find("protocol");
+		auto portIt = params.find("port");
+		auto typeIt = params.find("type");
 
-			if (!matchedSupportedCodec)
-			{
-				throw new UnsupportedError(
-					utils::Printf("media codec not supported[mimeType:${ mediaCodec.mimeType }]"));
-			}
-
-			// Clone the supported codec.
-			const codec = utils.clone(matchedSupportedCodec) as RtpCodecCapability;
-
-			// If the given media codec has preferredPayloadType, keep it.
-			if (typeof mediaCodec.preferredPayloadType == "uint32_t")
-			{
-				codec.preferredPayloadType = mediaCodec.preferredPayloadType;
-
-				// Also remove the pt from the list of available dynamic values.
-				const idx = dynamicPayloadTypes.indexOf(codec.preferredPayloadType);
-
-				if (idx > -1)
-					dynamicPayloadTypes.splice(idx, 1);
-			}
-			// Otherwise if the supported codec has preferredPayloadType, use it.
-			else if (typeof codec.preferredPayloadType == "uint32_t")
-			{
-				// No need to remove it from the list since it"s not a dynamic value.
-			}
-			// Otherwise choose a dynamic one.
-			else
-			{
-				// Take the first available pt and remove it from the list.
-				const pt = dynamicPayloadTypes.shift();
-
-				if (!pt)
-					throw new Error("cannot allocate more dynamic codec payload types");
-
-				codec.preferredPayloadType = pt;
-			}
-
-			// Ensure there is not duplicated preferredPayloadType values.
-			if (caps.codecs!.some((c) = > c.preferredPayloadType == codec.preferredPayloadType))
-				throw new TypeError("duplicated codec.preferredPayloadType");
-
-			// Merge the media codec parameters.
-			codec.parameters = { ...codec.parameters, ...mediaCodec.parameters };
-
-			// Append to the codec list.
-			caps.codecs!.push(codec);
-
-			// Add a RTX video codec if video.
-			if (codec.kind == "video")
-			{
-				// Take the first available pt and remove it from the list.
-				const pt = dynamicPayloadTypes.shift();
-
-				if (!pt)
-					throw new Error("cannot allocate more dynamic codec payload types");
-
-				const rtxCodec : RtpCodecCapability =
-				{
-					kind: codec.kind,
-					mimeType : `${codec.kind } / rtx`,
-							   preferredPayloadType : pt,
-					clockRate : codec.clockRate,
-					parameters :
-				{
-				apt: codec.preferredPayloadType
-				},
-					rtcpFeedback : []
-			};
-
-			// Append to the codec list.
-			caps.codecs!.push(rtxCodec);
-		}
-	}
-
-	return caps;
-}
-
-/**
- * Get a mapping of codec payloads and encodings of the given Producer RTP
- * parameters as values expected by the Router.
- *
- * It may throw if invalid or non supported RTP parameters are given.
- */
-json getProducerRtpParametersMapping(
-	json& params,
-	json& caps
-)
-{
-	const rtpMapping : RtpMapping =
-	{
-		codecs: [],
-		encodings : []
-	};
-
-	// Match parameters media codecs to capabilities media codecs.
-	const codecToCapCodec : Map<RtpCodecParameters, RtpCodecCapability> = new Map();
-
-	for (const codec of params.codecs)
-	{
-		if (isRtxCodec(codec))
-			continue;
-
-		// Search for the same media codec in capabilities.
-		const matchedCapCodec = caps.codecs!
-			.find((capCodec) = > (
-				matchCodecs(codec, capCodec, { strict: true, modify : true }))
-			);
-
-		if (!matchedCapCodec)
-		{
-			throw new UnsupportedError(
-				`unsupported codec[mimeType:${ codec.mimeType }, payloadType : ${ codec.payloadType }]`);
-		}
-
-		codecToCapCodec.set(codec, matchedCapCodec);
-	}
-
-	// Match parameters RTX codecs to capabilities RTX codecs.
-	for (const codec of params.codecs)
-	{
-		if (!isRtxCodec(codec))
-			continue;
-
-		// Search for the associated media codec.
-		const associatedMediaCodec = params.codecs
-			.find((mediaCodec) = > mediaCodec.payloadType == codec.parameters.apt);
-
-		if (!associatedMediaCodec)
-		{
-			throw new TypeError(
-				`missing media codec found for RTX PT ${ codec.payloadType }`);
-		}
-
-		const capMediaCodec = codecToCapCodec.get(associatedMediaCodec);
-
-		// Ensure that the capabilities media codec has a RTX codec.
-		const associatedCapRtxCodec = caps.codecs!
-			.find((capCodec) = > (
-				isRtxCodec(capCodec) &&
-				capCodec.parameters.apt == capMediaCodec!.preferredPayloadType
-				));
-
-		if (!associatedCapRtxCodec)
-		{
-			throw new UnsupportedError(
-				`no RTX codec for capability codec PT ${ capMediaCodec!.preferredPayloadType }`);
-		}
-
-		codecToCapCodec.set(codec, associatedCapRtxCodec);
-	}
-
-	// Generate codecs mapping.
-	for (const[codec, capCodec] of codecToCapCodec)
-	{
-		rtpMapping.codecs.push(
-			{
-				payloadType: codec.payloadType,
-				mappedPayloadType : capCodec.preferredPayloadType!
-			});
-	}
-
-	// Generate encodings mapping.
-	let mappedSsrc = utils.generateRandomNumber();
-
-	for (const encoding of params.encodings!)
-	{
-		const mappedEncoding : any = {};
-
-		mappedEncoding.mappedSsrc = mappedSsrc++;
-
-		if (encoding.rid)
-			mappedEncoding.rid = encoding.rid;
-		if (encoding.ssrc)
-			mappedEncoding.ssrc = encoding.ssrc;
-		if (encoding.scalabilityMode)
-			mappedEncoding.scalabilityMode = encoding.scalabilityMode;
-
-		rtpMapping.encodings.push(mappedEncoding);
-	}
-
-	return rtpMapping;
-}
-
-/**
- * Generate RTP parameters to be internally used by Consumers given the RTP
- * parameters of a Producer and the RTP capabilities of the Router.
- */
-json getConsumableRtpParameters(
-	std::string kind,
-	json& params,
-	json& caps,
-	json& rtpMapping
-)
-{
-	const consumableParams : RtpParameters =
-	{
-		codecs: [],
-		headerExtensions : [],
-		encodings : [],
-		rtcp : {}
-	};
-
-	for (const codec of params.codecs)
-	{
-		if (isRtxCodec(codec))
-			continue;
-
-		const consumableCodecPt = rtpMapping.codecs
-			.find((entry) = > entry.payloadType == codec.payloadType)!
-			.mappedPayloadType;
-
-		const matchedCapCodec = caps.codecs!
-			.find((capCodec) = > capCodec.preferredPayloadType == consumableCodecPt)!;
-
-		const consumableCodec : RtpCodecParameters =
-		{
-			mimeType: matchedCapCodec.mimeType,
-			payloadType : matchedCapCodec.preferredPayloadType!,
-			clockRate : matchedCapCodec.clockRate,
-			channels : matchedCapCodec.channels,
-			parameters : codec.parameters, // Keep the Producer codec parameters.
-			rtcpFeedback : matchedCapCodec.rtcpFeedback
-		};
-
-		consumableParams.codecs.push(consumableCodec);
-
-		const consumableCapRtxCodec = caps.codecs!
-			.find((capRtxCodec) = > (
-				isRtxCodec(capRtxCodec) &&
-				capRtxCodec.parameters.apt == consumableCodec.payloadType
-				));
-
-		if (consumableCapRtxCodec)
-		{
-			const consumableRtxCodec : RtpCodecParameters =
-			{
-				mimeType: consumableCapRtxCodec.mimeType,
-				payloadType : consumableCapRtxCodec.preferredPayloadType!,
-				clockRate : consumableCapRtxCodec.clockRate,
-				parameters : consumableCapRtxCodec.parameters,
-				rtcpFeedback : consumableCapRtxCodec.rtcpFeedback
-			};
-
-			consumableParams.codecs.push(consumableRtxCodec);
-		}
-	}
-
-	for (const capExt of caps.headerExtensions!)
-	{
-
-		// Just take RTP header extension that can be used in Consumers.
+		// foundation is mandatory.
 		if (
-			capExt.kind != = kind ||
-			(capExt.direction != = "sendrecv" && capExt.direction != = "sendonly")
-			)
+			foundationIt == params.end() ||
+			(!foundationIt->is_string() || foundationIt->get<std::string>().empty()))
 		{
-			continue;
+			MSC_THROW_TYPE_ERROR("missing params.foundation");
 		}
 
-		const consumableExt =
+		// priority is mandatory.
+		if (priorityIt == params.end() || !priorityIt->is_number_unsigned())
+			MSC_THROW_TYPE_ERROR("missing params.priority");
+
+		// ip is mandatory.
+		if (ipIt == params.end() || (!ipIt->is_string() || ipIt->get<std::string>().empty()))
 		{
-			uri: capExt.uri,
-			id : capExt.preferredId,
-			encrypt : capExt.preferredEncrypt,
-			parameters : {}
+			MSC_THROW_TYPE_ERROR("missing params.ip");
+		}
+
+		// protocol is mandatory.
+		if (protocolIt == params.end() || (!protocolIt->is_string() || protocolIt->get<std::string>().empty()))
+		{
+			MSC_THROW_TYPE_ERROR("missing params.protocol");
+		}
+
+		std::smatch protocolMatch;
+		std::string regexTarget = protocolIt->get<std::string>();
+		std::regex_match(regexTarget, protocolMatch, ProtocolRegex);
+
+		if (protocolMatch.empty())
+			MSC_THROW_TYPE_ERROR("invalid params.protocol");
+
+		// port is mandatory.
+		if (portIt == params.end() || !portIt->is_number_unsigned())
+			MSC_THROW_TYPE_ERROR("missing params.port");
+
+		// type is mandatory.
+		if (typeIt == params.end() || (!typeIt->is_string() || typeIt->get<std::string>().empty()))
+		{
+			MSC_THROW_TYPE_ERROR("missing params.type");
+		}
+
+		std::smatch typeMatch;
+		regexTarget = typeIt->get<std::string>();
+		std::regex_match(regexTarget, typeMatch, TypeRegex);
+
+		if (typeMatch.empty())
+			MSC_THROW_TYPE_ERROR("invalid params.type");
+	}
+
+	/**
+	 * Validates IceCandidates. It may modify given data by adding missing
+	 * fields with default values.
+	 * It throws if invalid.
+	 */
+	void validateIceCandidates(json& params)
+	{
+		MSC_TRACE();
+
+		if (!params.is_array())
+			MSC_THROW_TYPE_ERROR("params is not an array");
+
+		for (auto& iceCandidate : params)
+		{
+			validateIceCandidate(iceCandidate);
+		}
+	}
+
+	/**
+	 * Validates DtlsFingerprint. It may modify given data by adding missing
+	 * fields with default values.
+	 * It throws if invalid.
+	 */
+	void validateDtlsFingerprint(json& params)
+	{
+		MSC_TRACE();
+
+		if (!params.is_object())
+			MSC_THROW_TYPE_ERROR("params is not an object");
+
+		auto algorithmIt = params.find("algorithm");
+		auto valueIt = params.find("value");
+
+		// foundation is mandatory.
+		if (
+			algorithmIt == params.end() ||
+			(!algorithmIt->is_string() || algorithmIt->get<std::string>().empty()))
+		{
+			MSC_THROW_TYPE_ERROR("missing params.algorithm");
+		}
+
+		// foundation is mandatory.
+		if (valueIt == params.end() || (!valueIt->is_string() || valueIt->get<std::string>().empty()))
+		{
+			MSC_THROW_TYPE_ERROR("missing params.value");
+		}
+	}
+
+	/**
+	 * Validates DtlsParameters. It may modify given data by adding missing
+	 * fields with default values.
+	 * It throws if invalid.
+	 */
+	void validateDtlsParameters(json& params)
+	{
+		MSC_TRACE();
+
+		static const std::regex RoleRegex(
+			"(auto|client|server)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+		if (!params.is_object())
+			MSC_THROW_TYPE_ERROR("params is not an object");
+
+		auto roleIt = params.find("role");
+		auto fingerprintsIt = params.find("fingerprints");
+
+		// role is mandatory.
+		if (roleIt == params.end() || (!roleIt->is_string() || roleIt->get<std::string>().empty()))
+		{
+			MSC_THROW_TYPE_ERROR("missing params.role");
+		}
+
+		std::smatch roleMatch;
+		std::string regexTarget = roleIt->get<std::string>();
+		std::regex_match(regexTarget, roleMatch, RoleRegex);
+
+		if (roleMatch.empty())
+			MSC_THROW_TYPE_ERROR("invalid params.role");
+
+		// fingerprints is mandatory.
+		if (fingerprintsIt == params.end() || (!fingerprintsIt->is_array() || fingerprintsIt->empty()))
+		{
+			MSC_THROW_TYPE_ERROR("missing params.fingerprints");
+		}
+
+		for (auto& fingerprint : *fingerprintsIt)
+			validateDtlsFingerprint(fingerprint);
+	}
+
+	/**
+	 * Validates Producer codec options. It may modify given data by adding missing
+	 * fields with default values.
+	 * It throws if invalid.
+	 */
+	void validateProducerCodecOptions(json& params)
+	{
+		MSC_TRACE();
+
+		if (!params.is_object())
+			MSC_THROW_TYPE_ERROR("params is not an object");
+
+		auto opusStereoIt = params.find("opusStereo");
+		auto opusFecIt = params.find("opusFec");
+		auto opusDtxIt = params.find("opusDtx");
+		auto opusMaxPlaybackRateIt = params.find("opusMaxPlaybackRate");
+		auto opusPtimeIt = params.find("opusPtime");
+		auto videoGoogleStartBitrateIt = params.find("videoGoogleStartBitrate");
+		auto videoGoogleMaxBitrateIt = params.find("videoGoogleMaxBitrate");
+		auto videoGoogleMinBitrateIt = params.find("videoGoogleMinBitrate");
+
+		if (opusStereoIt != params.end() && !opusStereoIt->is_boolean())
+		{
+			MSC_THROW_TYPE_ERROR("invalid params.opusStereo");
+		}
+
+		if (opusFecIt != params.end() && !opusFecIt->is_boolean())
+		{
+			MSC_THROW_TYPE_ERROR("invalid params.opusFec");
+		}
+
+		if (opusDtxIt != params.end() && !opusDtxIt->is_boolean())
+		{
+			MSC_THROW_TYPE_ERROR("invalid params.opusDtx");
+		}
+
+		if (opusMaxPlaybackRateIt != params.end() && !opusMaxPlaybackRateIt->is_number_unsigned())
+		{
+			MSC_THROW_TYPE_ERROR("invalid params.opusMaxPlaybackRate");
+		}
+
+		if (opusPtimeIt != params.end() && !opusPtimeIt->is_number_integer())
+		{
+			MSC_THROW_TYPE_ERROR("invalid params.opusPtime");
+		}
+
+		if (videoGoogleStartBitrateIt != params.end() && !videoGoogleStartBitrateIt->is_number_integer())
+		{
+			MSC_THROW_TYPE_ERROR("invalid params.videoGoogleStartBitrate");
+		}
+
+		if (videoGoogleMaxBitrateIt != params.end() && !videoGoogleMaxBitrateIt->is_number_integer())
+		{
+			MSC_THROW_TYPE_ERROR("invalid params.videoGoogleMaxBitrate");
+		}
+
+		if (videoGoogleMinBitrateIt != params.end() && !videoGoogleMinBitrateIt->is_number_integer())
+		{
+			MSC_THROW_TYPE_ERROR("invalid params.videoGoogleMinBitrate");
+		}
+	}
+
+	/**
+	 * Generate extended RTP capabilities for sending and receiving.
+	 */
+	json getExtendedRtpCapabilities(json& localCaps, json& remoteCaps)
+	{
+		MSC_TRACE();
+
+		// This may throw.
+		validateRtpCapabilities(localCaps);
+		validateRtpCapabilities(remoteCaps);
+
+		static const std::regex MimeTypeRegex(
+			"^(audio|video)/(.+)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+		// clang-format off
+		json extendedRtpCapabilities =
+		{
+			{ "codecs",           json::array() },
+			{ "headerExtensions", json::array() }
 		};
+		// clang-format on
 
-		consumableParams.headerExtensions!.push(consumableExt);
-	}
+		// Match media codecs and keep the order preferred by remoteCaps.
+		auto remoteCapsCodecsIt = remoteCaps.find("codecs");
 
-	// Clone Producer encodings since we"ll mangle them.
-	const consumableEncodings = utils.clone(params.encodings) as RtpEncodingParameters[];
-
-	for (let i = 0; i < consumableEncodings.length; ++i)
-	{
-		const consumableEncoding = consumableEncodings[i];
-		const { mappedSsrc } = rtpMapping.encodings[i];
-
-		// Remove useless fields.
-		delete consumableEncoding.rid;
-		delete consumableEncoding.rtx;
-		delete consumableEncoding.codecPayloadType;
-
-		// Set the mapped ssrc.
-		consumableEncoding.ssrc = mappedSsrc;
-
-		consumableParams.encodings!.push(consumableEncoding);
-	}
-
-	consumableParams.rtcp =
-	{
-		cname: params.rtcp!.cname,
-		reducedSize : true,
-		mux : true
-	};
-
-	return consumableParams;
-}
-
-/**
- * Check whether the given RTP capabilities can consume the given Producer.
- */
-bool canConsume(
-	json& consumableParams,
-	json& caps
-)
-{
-	// This may throw.
-	validateRtpCapabilities(caps);
-
-	const matchingCodecs : RtpCodecParameters[] = [];
-
-	for (const codec of consumableParams.codecs)
-	{
-		const matchedCapCodec = caps.codecs!
-			.find((capCodec) = > matchCodecs(capCodec, codec, { strict: true }));
-
-		if (!matchedCapCodec)
-			continue;
-
-		matchingCodecs.push(codec);
-	}
-
-	// Ensure there is at least one media codec.
-	if (matchingCodecs.length == 0 || isRtxCodec(matchingCodecs[0]))
-		return false;
-
-	return true;
-}
-
-/**
- * Generate RTP parameters for a specific Consumer.
- *
- * It reduces encodings to just one and takes into account given RTP capabilities
- * to reduce codecs, codecs" RTCP feedback and header extensions, and also enables
- * or disabled RTX.
- */
-json  getConsumerRtpParameters(
-	json& consumableParams,
-	json& caps
-)
-{
-	const consumerParams : RtpParameters =
-	{
-		codecs: [],
-		headerExtensions : [],
-		encodings : [],
-		rtcp : consumableParams.rtcp
-	};
-
-	for (const capCodec of caps.codecs!)
-	{
-		validateRtpCodecCapability(capCodec);
-	}
-
-	const consumableCodecs =
-		utils.clone(consumableParams.codecs) as RtpCodecParameters[];
-
-	let rtxSupported = false;
-
-	for (const codec of consumableCodecs)
-	{
-		const matchedCapCodec = caps.codecs!
-			.find((capCodec) = > matchCodecs(capCodec, codec, { strict: true }));
-
-		if (!matchedCapCodec)
-			continue;
-
-		codec.rtcpFeedback = matchedCapCodec.rtcpFeedback;
-
-		consumerParams.codecs.push(codec);
-
-		if (!rtxSupported && isRtxCodec(codec))
-			rtxSupported = true;
-	}
-
-	// Ensure there is at least one media codec.
-	if (consumerParams.codecs.length == 0 || isRtxCodec(consumerParams.codecs[0]))
-	{
-		throw new UnsupportedError("no compatible media codecs");
-	}
-
-	consumerParams.headerExtensions = consumableParams.headerExtensions!
-		.filter((ext) = > (
-			caps.headerExtensions!
-			.some((capExt) = > (
-				capExt.preferredId == ext.id &&
-				capExt.uri == ext.uri
-				))
-			));
-
-	// Reduce codecs" RTCP feedback. Use Transport-CC if available, REMB otherwise.
-	if (
-		consumerParams.headerExtensions.some((ext) = > (
-			ext.uri == "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
-			))
-		)
-	{
-		for (const codec of consumerParams.codecs)
+		for (auto& remoteCodec : *remoteCapsCodecsIt)
 		{
-			codec.rtcpFeedback = codec.rtcpFeedback!
-				.filter((fb) = > fb.type != = "goog-remb");
+			if (isRtxCodec(remoteCodec))
+				continue;
+
+			json& localCodecs = localCaps["codecs"];
+
+			auto matchingLocalCodecIt =
+				std::find_if(localCodecs.begin(), localCodecs.end(), [&remoteCodec](json& localCodec) {
+				return matchCodecs(localCodec, remoteCodec, /*strict*/ true, /*modify*/ true);
+			});
+
+			if (matchingLocalCodecIt == localCodecs.end())
+				continue;
+
+			auto& matchingLocalCodec = *matchingLocalCodecIt;
+
+			// clang-format off
+			json extendedCodec =
+			{
+				{ "mimeType",             matchingLocalCodec["mimeType"]                      },
+				{ "kind",                 matchingLocalCodec["kind"]                          },
+				{ "clockRate",            matchingLocalCodec["clockRate"]                     },
+				{ "localPayloadType",     matchingLocalCodec["preferredPayloadType"]          },
+				{ "localRtxPayloadType",  nullptr                                             },
+				{ "remotePayloadType",    remoteCodec["preferredPayloadType"]                 },
+				{ "remoteRtxPayloadType", nullptr                                             },
+				{ "localParameters",      matchingLocalCodec["parameters"]                    },
+				{ "remoteParameters",     remoteCodec["parameters"]                           },
+				{ "rtcpFeedback",         reduceRtcpFeedback(matchingLocalCodec, remoteCodec) }
+			};
+			// clang-format on
+
+			if (matchingLocalCodec.contains("channels"))
+				extendedCodec["channels"] = matchingLocalCodec["channels"];
+
+			extendedRtpCapabilities["codecs"].push_back(extendedCodec);
 		}
-	}
-	else if (
-		consumerParams.headerExtensions.some((ext) = > (
-			ext.uri == "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time"
-			))
-		)
-	{
-		for (const codec of consumerParams.codecs)
+
+		// Match RTX codecs.
+		json& extendedCodecs = extendedRtpCapabilities["codecs"];
+
+		for (json& extendedCodec : extendedCodecs)
 		{
-			codec.rtcpFeedback = codec.rtcpFeedback!
-				.filter((fb) = > fb.type != = "transport-cc");
+			auto& localCodecs = localCaps["codecs"];
+			auto localCodecIt = std::find_if(
+				localCodecs.begin(), localCodecs.end(), [&extendedCodec](const json& localCodec) {
+				return isRtxCodec(localCodec) &&
+					localCodec["parameters"]["apt"] == extendedCodec["localPayloadType"];
+			});
+
+			if (localCodecIt == localCodecs.end())
+				continue;
+
+			auto& matchingLocalRtxCodec = *localCodecIt;
+			auto& remoteCodecs = remoteCaps["codecs"];
+			auto remoteCodecIt = std::find_if(
+				remoteCodecs.begin(), remoteCodecs.end(), [&extendedCodec](const json& remoteCodec) {
+				return isRtxCodec(remoteCodec) &&
+					remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
+			});
+
+			if (remoteCodecIt == remoteCodecs.end())
+				continue;
+
+			auto& matchingRemoteRtxCodec = *remoteCodecIt;
+
+			extendedCodec["localRtxPayloadType"] = matchingLocalRtxCodec["preferredPayloadType"];
+			extendedCodec["remoteRtxPayloadType"] = matchingRemoteRtxCodec["preferredPayloadType"];
 		}
-	}
-	else
-	{
-		for (const codec of consumerParams.codecs)
+
+		// Match header extensions.
+		auto& remoteExts = remoteCaps["headerExtensions"];
+
+		for (auto& remoteExt : remoteExts)
 		{
-			codec.rtcpFeedback = codec.rtcpFeedback!
-				.filter((fb) = > (
-					fb.type != = "transport-cc" &&
-					fb.type != = "goog-remb"
-					));
+			auto& localExts = localCaps["headerExtensions"];
+			auto localExtIt =
+				std::find_if(localExts.begin(), localExts.end(), [&remoteExt](const json& localExt) {
+				return matchHeaderExtensions(localExt, remoteExt);
+			});
+
+			if (localExtIt == localExts.end())
+				continue;
+
+			auto& matchingLocalExt = *localExtIt;
+
+			// TODO: Must do stuff for encrypted extensions.
+
+			// clang-format off
+			json extendedExt =
+			{
+				{ "kind",    remoteExt["kind"]                    },
+				{ "uri",     remoteExt["uri"]                     },
+				{ "sendId",  matchingLocalExt["preferredId"]      },
+				{ "recvId",  remoteExt["preferredId"]             },
+				{ "encrypt", matchingLocalExt["preferredEncrypt"] }
+			};
+			// clang-format on
+
+			auto remoteExtDirection = remoteExt["direction"].get<std::string>();
+
+			if (remoteExtDirection == "sendrecv")
+				extendedExt["direction"] = "sendrecv";
+			else if (remoteExtDirection == "recvonly")
+				extendedExt["direction"] = "sendonly";
+			else if (remoteExtDirection == "sendonly")
+				extendedExt["direction"] = "recvonly";
+			else if (remoteExtDirection == "inactive")
+				extendedExt["direction"] = "inactive";
+
+			extendedRtpCapabilities["headerExtensions"].push_back(extendedExt);
 		}
+
+		return extendedRtpCapabilities;
 	}
 
-	const consumerEncoding : RtpEncodingParameters =
+	/**
+	 * Generate RTP capabilities for receiving media based on the given extended
+	 * RTP capabilities.
+	 */
+	json getRecvRtpCapabilities(const json& extendedRtpCapabilities)
 	{
-		ssrc: utils.generateRandomNumber()
-	};
+		MSC_TRACE();
 
-	if (rtxSupported)
-		consumerEncoding.rtx = { ssrc: utils.generateRandomNumber() };
+		// clang-format off
+		json rtpCapabilities =
+		{
+			{ "codecs",           json::array() },
+			{ "headerExtensions", json::array() }
+		};
+		// clang-format on
 
-	// If any of the consumableParams.encodings has scalabilityMode, process it
-	// (assume all encodings have the same value).
-	const encodingWithScalabilityMode =
-		consumableParams.encodings!.find((encoding) = > encoding.scalabilityMode);
+		for (auto& extendedCodec : extendedRtpCapabilities["codecs"])
+		{
+			// clang-format off
+			json codec =
+			{
+				{ "mimeType",             extendedCodec["mimeType"]          },
+				{ "kind",                 extendedCodec["kind"]              },
+				{ "preferredPayloadType", extendedCodec["remotePayloadType"] },
+				{ "clockRate",            extendedCodec["clockRate"]         },
+				{ "parameters",           extendedCodec["localParameters"]   },
+				{ "rtcpFeedback",         extendedCodec["rtcpFeedback"]      },
+			};
+			// clang-format on
 
-	let scalabilityMode = encodingWithScalabilityMode
-		? encodingWithScalabilityMode.scalabilityMode
-		: undefined;
+			if (extendedCodec.contains("channels"))
+				codec["channels"] = extendedCodec["channels"];
 
-	// If there is simulast, mangle spatial layers in scalabilityMode.
-	if (consumableParams.encodings!.length > 1)
-	{
-		const { temporalLayers } = parseScalabilityMode(scalabilityMode);
+			rtpCapabilities["codecs"].push_back(codec);
 
-		scalabilityMode = `S${consumableParams.encodings!.length
-	}T${ temporalLayers }`;
-}
+			// Add RTX codec.
+			if (extendedCodec["remoteRtxPayloadType"] == nullptr)
+				continue;
 
-if (scalabilityMode)
-consumerEncoding.scalabilityMode = scalabilityMode;
+			auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
 
-// Use the maximum maxBitrate in any encoding and honor it in the Consumer"s
-// encoding.
-const maxEncodingMaxBitrate =
-consumableParams.encodings!.reduce((maxBitrate, encoding) = > (
-	encoding.maxBitrate && encoding.maxBitrate > maxBitrate
-	? encoding.maxBitrate
-	: maxBitrate
-	), 0);
+			// clang-format off
+			json rtxCodec =
+			{
+				{ "mimeType",             mimeType                              },
+				{ "kind",                 extendedCodec["kind"]                 },
+				{ "preferredPayloadType", extendedCodec["remoteRtxPayloadType"] },
+				{ "clockRate",            extendedCodec["clockRate"]            },
+				{
+					"parameters",
+					{
+						{ "apt", extendedCodec["remotePayloadType"].get<uint8_t>() }
+					}
+				},
+				{ "rtcpFeedback", json::array() }
+			};
+			// clang-format on
 
-if (maxEncodingMaxBitrate)
-{
-	consumerEncoding.maxBitrate = maxEncodingMaxBitrate;
-}
+			rtpCapabilities["codecs"].push_back(rtxCodec);
 
-// Set a single encoding for the Consumer.
-consumerParams.encodings!.push(consumerEncoding);
+			// TODO: In the future, we need to add FEC, CN, etc, codecs.
+		}
 
-// Copy verbatim.
-consumerParams.rtcp = consumableParams.rtcp;
+		for (auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
+		{
+			std::string direction = extendedExtension["direction"].get<std::string>();
 
-return consumerParams;
-}
+			// Ignore RTP extensions not valid for receiving.
+			if (direction != "sendrecv" && direction != "recvonly")
+				continue;
 
-/**
- * Generate RTP parameters for a pipe Consumer.
- *
- * It keeps all original consumable encodings and removes support for BWE. If
- * enableRtx is false, it also removes RTX and NACK support.
- */
-json getPipeConsumerRtpParameters(
-	json& consumableParams,
-	bool enableRtx = false
-)
-{
-	const consumerParams : RtpParameters =
-	{
-		codecs: [],
-		headerExtensions : [],
-		encodings : [],
-		rtcp : consumableParams.rtcp
-	};
+			// clang-format off
+			json ext =
+			{
+				{ "kind",             extendedExtension["kind"]      },
+				{ "uri",              extendedExtension["uri"]       },
+				{ "preferredId",      extendedExtension["recvId"]    },
+				{ "preferredEncrypt", extendedExtension["encrypt"]   },
+				{ "direction",        extendedExtension["direction"] }
+			};
+			// clang-format on
 
-	const consumableCodecs =
-		utils.clone(consumableParams.codecs) as RtpCodecParameters[];
+			rtpCapabilities["headerExtensions"].push_back(ext);
+		}
 
-	for (const codec of consumableCodecs)
-	{
-		if (!enableRtx && isRtxCodec(codec))
-			continue;
-
-		codec.rtcpFeedback = codec.rtcpFeedback!
-			.filter((fb) = > (
-			(fb.type == "nack" && fb.parameter == "pli") ||
-				(fb.type == "ccm" && fb.parameter == "fir") ||
-				(enableRtx && fb.type == "nack" && !fb.parameter)
-				));
-
-		consumerParams.codecs.push(codec);
+		return rtpCapabilities;
 	}
 
-	// Reduce RTP extensions by disabling transport MID and BWE related ones.
-	consumerParams.headerExtensions = consumableParams.headerExtensions!
-		.filter((ext) = > (
-			ext.uri != = "urn:ietf:params:rtp-hdrext:sdes:mid" &&
-			ext.uri != = "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time" &&
-			ext.uri != = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
-			));
-
-	const consumableEncodings =
-		utils.clone(consumableParams.encodings) as RtpEncodingParameters[];
-
-	for (const encoding of consumableEncodings)
+	/**
+	 * Generate RTP parameters of the given kind for sending media.
+	 * Just the first media codec per kind is considered.
+	 * NOTE: mid, encodings and rtcp fields are left empty.
+	 */
+	json getSendingRtpParameters(const std::string& kind, const json& extendedRtpCapabilities)
 	{
-		if (!enableRtx)
-			delete encoding.rtx;
+		MSC_TRACE();
 
-		consumerParams.encodings!.push(encoding);
+		// clang-format off
+		json rtpParameters =
+		{
+			{ "mid",              nullptr        },
+			{ "codecs",           json::array()  },
+			{ "headerExtensions", json::array()  },
+			{ "encodings",        json::array()  },
+			{ "rtcp",             json::object() }
+		};
+		// clang-format on
+
+		for (auto& extendedCodec : extendedRtpCapabilities["codecs"])
+		{
+			if (kind != extendedCodec["kind"].get<std::string>())
+				continue;
+
+			// clang-format off
+			json codec =
+			{
+				{ "mimeType",     extendedCodec["mimeType"]         },
+				{ "payloadType",  extendedCodec["localPayloadType"] },
+				{ "clockRate",    extendedCodec["clockRate"]        },
+				{ "parameters",   extendedCodec["localParameters"]  },
+				{ "rtcpFeedback", extendedCodec["rtcpFeedback"]     }
+			};
+			// clang-format on
+
+			if (extendedCodec.contains("channels"))
+				codec["channels"] = extendedCodec["channels"];
+
+			rtpParameters["codecs"].push_back(codec);
+
+			// Add RTX codec.
+			if (extendedCodec["localRtxPayloadType"] != nullptr)
+			{
+				auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
+
+				// clang-format off
+				json rtxCodec =
+				{
+					{ "mimeType",    mimeType                             },
+					{ "payloadType", extendedCodec["localRtxPayloadType"] },
+					{ "clockRate",   extendedCodec["clockRate"]           },
+					{
+						"parameters",
+						{
+							{ "apt", extendedCodec["localPayloadType"].get<uint8_t>() }
+						}
+					},
+					{ "rtcpFeedback", json::array() }
+				};
+				// clang-format on
+
+				rtpParameters["codecs"].push_back(rtxCodec);
+			}
+
+			// NOTE: We assume a single media codec plus an optional RTX codec.
+			break;
+		}
+
+		for (auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
+		{
+			if (kind != extendedExtension["kind"].get<std::string>())
+				continue;
+
+			std::string direction = extendedExtension["direction"].get<std::string>();
+
+			// Ignore RTP extensions not valid for sending.
+			if (direction != "sendrecv" && direction != "sendonly")
+				continue;
+
+			// clang-format off
+			json ext =
+			{
+				{ "uri",        extendedExtension["uri"]     },
+				{ "id",         extendedExtension["sendId"]  },
+				{ "encrypt",    extendedExtension["encrypt"] },
+				{ "parameters", json::object()               }
+			};
+			// clang-format on
+
+			rtpParameters["headerExtensions"].push_back(ext);
+		}
+
+		return rtpParameters;
 	}
 
-	return consumerParams;
+	/**
+	 * Generate RTP parameters of the given kind for sending media.
+	 */
+	json getSendingRemoteRtpParameters(const std::string& kind, const json& extendedRtpCapabilities)
+	{
+		MSC_TRACE();
+
+		// clang-format off
+		json rtpParameters =
+		{
+			{ "mid",              nullptr        },
+			{ "codecs",           json::array()  },
+			{ "headerExtensions", json::array()  },
+			{ "encodings",        json::array()  },
+			{ "rtcp",             json::object() }
+		};
+		// clang-format on
+
+		for (auto& extendedCodec : extendedRtpCapabilities["codecs"])
+		{
+			if (kind != extendedCodec["kind"].get<std::string>())
+				continue;
+
+			// clang-format off
+			json codec =
+			{
+				{ "mimeType",     extendedCodec["mimeType"]         },
+				{ "payloadType",  extendedCodec["localPayloadType"] },
+				{ "clockRate",    extendedCodec["clockRate"]        },
+				{ "parameters",   extendedCodec["remoteParameters"] },
+				{ "rtcpFeedback", extendedCodec["rtcpFeedback"]     }
+			};
+			// clang-format on
+
+			if (extendedCodec.contains("channels"))
+				codec["channels"] = extendedCodec["channels"];
+
+			rtpParameters["codecs"].push_back(codec);
+
+			// Add RTX codec.
+			if (extendedCodec["localRtxPayloadType"] != nullptr)
+			{
+				auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
+
+				// clang-format off
+				json rtxCodec =
+				{
+					{ "mimeType",    mimeType                             },
+					{ "payloadType", extendedCodec["localRtxPayloadType"] },
+					{ "clockRate",   extendedCodec["clockRate"]           },
+					{
+						"parameters",
+						{
+							{ "apt", extendedCodec["localPayloadType"].get<uint8_t>() }
+						}
+					},
+					{ "rtcpFeedback", json::array() }
+				};
+				// clang-format on
+
+				rtpParameters["codecs"].push_back(rtxCodec);
+			}
+
+			// NOTE: We assume a single media codec plus an optional RTX codec.
+			break;
+		}
+
+		for (auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
+		{
+			if (kind != extendedExtension["kind"].get<std::string>())
+				continue;
+
+			std::string direction = extendedExtension["direction"].get<std::string>();
+
+			// Ignore RTP extensions not valid for sending.
+			if (direction != "sendrecv" && direction != "sendonly")
+				continue;
+
+			// clang-format off
+			json ext =
+			{
+				{ "uri",        extendedExtension["uri"]     },
+				{ "id",         extendedExtension["sendId"]  },
+				{ "encrypt",    extendedExtension["encrypt"] },
+				{ "parameters", json::object()               }
+			};
+			// clang-format on
+
+			rtpParameters["headerExtensions"].push_back(ext);
+		}
+
+		auto headerExtensionsIt = rtpParameters.find("headerExtensions");
+
+		// Reduce codecs' RTCP feedback. Use Transport-CC if available, REMB otherwise.
+		auto headerExtensionIt =
+			std::find_if(headerExtensionsIt->begin(), headerExtensionsIt->end(), [](json& ext) {
+			return ext["uri"].get<std::string>() ==
+				"http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
+		});
+
+		if (headerExtensionIt != headerExtensionsIt->end())
+		{
+			for (auto& codec : rtpParameters["codecs"])
+			{
+				auto& rtcpFeedback = codec["rtcpFeedback"];
+
+				for (auto it = rtcpFeedback.begin(); it != rtcpFeedback.end();)
+				{
+					auto& fb = *it;
+					auto type = fb["type"].get<std::string>();
+
+					if (type == "goog-remb")
+						it = rtcpFeedback.erase(it);
+					else
+						++it;
+				}
+			}
+
+			return rtpParameters;
+		}
+
+		headerExtensionIt =
+			std::find_if(headerExtensionsIt->begin(), headerExtensionsIt->end(), [](json& ext) {
+			return ext["uri"].get<std::string>() ==
+				"http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time";
+		});
+
+		if (headerExtensionIt != headerExtensionsIt->end())
+		{
+			for (auto& codec : rtpParameters["codecs"])
+			{
+				auto& rtcpFeedback = codec["rtcpFeedback"];
+
+				for (auto it = rtcpFeedback.begin(); it != rtcpFeedback.end();)
+				{
+					auto& fb = *it;
+					auto type = fb["type"].get<std::string>();
+
+					if (type == "transport-cc")
+						it = rtcpFeedback.erase(it);
+					else
+						++it;
+				}
+			}
+
+			return rtpParameters;
+		}
+
+		for (auto& codec : rtpParameters["codecs"])
+		{
+			auto& rtcpFeedback = codec["rtcpFeedback"];
+
+			for (auto it = rtcpFeedback.begin(); it != rtcpFeedback.end();)
+			{
+				auto& fb = *it;
+				auto type = fb["type"].get<std::string>();
+
+				if (type == "transport-cc" || type == "goog-remb")
+					it = rtcpFeedback.erase(it);
+				else
+					++it;
+			}
+		}
+
+		return rtpParameters;
+	}
+
+	/**
+	 * Create RTP parameters for a Consumer for the RTP probator.
+	 */
+	const json generateProbatorRtpParameters(const json& videoRtpParameters)
+	{
+		MSC_TRACE();
+
+		// This may throw.
+		json validatedRtpParameters = videoRtpParameters;
+
+		// This may throw.
+		ortc::validateRtpParameters(validatedRtpParameters);
+
+		// clang-format off
+		json rtpParameters =
+		{
+			{ "mid",              ProbatorMid    },
+			{ "codecs",           json::array()  },
+			{ "headerExtensions", json::array()  },
+			{ "encodings",        json::array()  },
+			{
+				"rtcp",
+				{
+					{ "cname", "probator" }
+				}
+			}
+		};
+		// clang-format on
+
+		rtpParameters["codecs"].push_back(validatedRtpParameters["codecs"][0]);
+
+		for (auto& ext : validatedRtpParameters["headerExtensions"])
+		{
+			// clang-format off
+			if (
+				ext["uri"] == "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time" ||
+				ext["uri"] == "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
+				)
+				// clang-format on
+			{
+				rtpParameters["headerExtensions"].push_back(ext);
+			}
+		}
+
+		json encoding = json::object();
+
+		encoding["ssrc"] = ProbatorSsrc;
+
+		rtpParameters["encodings"].push_back(encoding);
+
+		return rtpParameters;
+	}
+
+	/**
+	 * Whether media can be sent based on the given RTP capabilities.
+	 */
+	bool canSend(const std::string& kind, const json& extendedRtpCapabilities)
+	{
+		MSC_TRACE();
+
+		auto& codecs = extendedRtpCapabilities["codecs"];
+		auto codecIt = std::find_if(codecs.begin(), codecs.end(), [&kind](const json& codec) {
+			return kind == codec["kind"].get<std::string>();
+		});
+
+		return codecIt != codecs.end();
+	}
+
+	/**
+	 * Whether the given RTP parameters can be received with the given RTP
+	 * capabilities.
+	 */
+	bool canReceive(json& rtpParameters, const json& extendedRtpCapabilities)
+	{
+		MSC_TRACE();
+
+		// This may throw.
+		validateRtpParameters(rtpParameters);
+
+		if (rtpParameters["codecs"].empty())
+			return false;
+
+		auto& firstMediaCodec = rtpParameters["codecs"][0];
+		auto& codecs = extendedRtpCapabilities["codecs"];
+		auto codecIt =
+			std::find_if(codecs.begin(), codecs.end(), [&firstMediaCodec](const json& codec) {
+			return codec["remotePayloadType"] == firstMediaCodec["payloadType"];
+		});
+
+		return codecIt != codecs.end();
+	}
+} // namespace ortc
+
+// Private helpers used in this file.
+
+static bool isRtxCodec(const json& codec)
+{
+	MSC_TRACE();
+
+	static const std::regex RtxMimeTypeRegex(
+		"^(audio|video)/rtx$", std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+	std::smatch match;
+	auto mimeType = codec["mimeType"].get<std::string>();
+
+	return std::regex_match(mimeType, match, RtxMimeTypeRegex);
 }
 
-bool isRtxCodec(json& codec)
+static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modify)
 {
-	return / . + \ / rtx$ / i.test(codec.mimeType);
-}
+	MSC_TRACE();
 
-bool matchCodecs(json& aCodec, json&bCodec, bool strict/* = false*/, bool modify/* = false*/)
-{
-	const aMimeType = aCodec.mimeType.toLowerCase();
-	const bMimeType = bCodec.mimeType.toLowerCase();
+	auto aMimeTypeIt = aCodec.find("mimeType");
+	auto bMimeTypeIt = bCodec.find("mimeType");
+	auto aMimeType = aMimeTypeIt->get<std::string>();
+	auto bMimeType = bMimeTypeIt->get<std::string>();
 
-	if (aMimeType != = bMimeType)
+	std::transform(aMimeType.begin(), aMimeType.end(), aMimeType.begin(), ::tolower);
+	std::transform(bMimeType.begin(), bMimeType.end(), bMimeType.begin(), ::tolower);
+
+	if (aMimeType != bMimeType)
 		return false;
 
-	if (aCodec.clockRate != = bCodec.clockRate)
+	if (aCodec["clockRate"] != bCodec["clockRate"])
 		return false;
 
-	if (aCodec.channels != = bCodec.channels)
+	if (aCodec.contains("channels") != bCodec.contains("channels"))
 		return false;
 
-	// Per codec special checks.
-	switch (aMimeType)
+	if (aCodec.contains("channels") && aCodec["channels"] != bCodec["channels"])
+		return false;
+
+	// Match H264 parameters.
+	if (aMimeType == "video/h264")
 	{
-	case "video/h264":
-	{
-		const aPacketizationMode = aCodec.parameters["packetization-mode"] || 0;
-		const bPacketizationMode = bCodec.parameters["packetization-mode"] || 0;
+		auto aPacketizationMode = getH264PacketizationMode(aCodec);
+		auto bPacketizationMode = getH264PacketizationMode(bCodec);
 
-		if (aPacketizationMode != = bPacketizationMode)
+		if (aPacketizationMode != bPacketizationMode)
 			return false;
 
 		// If strict matching check profile-level-id.
 		if (strict)
 		{
-			if (!h264.isSameProfile(aCodec.parameters, bCodec.parameters))
+			webrtc::H264::CodecParameterMap aParameters;
+			webrtc::H264::CodecParameterMap bParameters;
+
+			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
+			aParameters["packetization-mode"] = std::to_string(aPacketizationMode);
+			aParameters["profile-level-id"] = getH264ProfileLevelId(aCodec);
+			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
+			bParameters["packetization-mode"] = std::to_string(bPacketizationMode);
+			bParameters["profile-level-id"] = getH264ProfileLevelId(bCodec);
+
+			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
 				return false;
 
-			let selectedProfileLevelId;
+			webrtc::H264::CodecParameterMap newParameters;
 
 			try
 			{
-				selectedProfileLevelId =
-					h264.generateProfileLevelIdForAnswer(aCodec.parameters, bCodec.parameters);
+				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
 			}
-			catch (error)
+			catch (std::runtime_error)
 			{
 				return false;
 			}
 
 			if (modify)
 			{
-				if (selectedProfileLevelId)
-					aCodec.parameters["profile-level-id"] = selectedProfileLevelId;
+				auto profileLevelIdIt = newParameters.find("profile-level-id");
+
+				if (profileLevelIdIt != newParameters.end())
+					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
 				else
-					delete aCodec.parameters["profile-level-id"];
+					aCodec["parameters"].erase("profile-level-id");
 			}
 		}
-
-		break;
 	}
-
-	case "video/vp9":
+	// Match VP9 parameters.
+	else if (aMimeType == "video/vp9")
 	{
 		// If strict matching check profile-id.
 		if (strict)
 		{
-			const aProfileId = aCodec.parameters["profile-id"] || 0;
-			const bProfileId = bCodec.parameters["profile-id"] || 0;
+			auto aProfileId = getVP9ProfileId(aCodec);
+			auto bProfileId = getVP9ProfileId(bCodec);
 
-			if (aProfileId != = bProfileId)
+			if (aProfileId != bProfileId)
 				return false;
 		}
-
-		break;
-	}
 	}
 
 	return true;
 }
+
+static bool matchHeaderExtensions(const json& aExt, const json& bExt)
+{
+	MSC_TRACE();
+
+	if (aExt["kind"] != bExt["kind"])
+		return false;
+
+	return aExt["uri"] == bExt["uri"];
+}
+
+static json reduceRtcpFeedback(const json& codecA, const json& codecB)
+{
+	MSC_TRACE();
+
+	auto reducedRtcpFeedback = json::array();
+	auto rtcpFeedbackAIt = codecA.find("rtcpFeedback");
+	auto rtcpFeedbackBIt = codecB.find("rtcpFeedback");
+
+	for (auto& aFb : *rtcpFeedbackAIt)
+	{
+		auto rtcpFeedbackIt =
+			std::find_if(rtcpFeedbackBIt->begin(), rtcpFeedbackBIt->end(), [&aFb](const json& bFb) {
+			return (aFb["type"] == bFb["type"] && aFb["parameter"] == bFb["parameter"]);
+		});
+
+		if (rtcpFeedbackIt != rtcpFeedbackBIt->end())
+			reducedRtcpFeedback.push_back(*rtcpFeedbackIt);
+	}
+
+	return reducedRtcpFeedback;
+}
+
+static uint8_t getH264PacketizationMode(const json& codec)
+{
+	MSC_TRACE();
+
+	auto& parameters = codec["parameters"];
+	auto packetizationModeIt = parameters.find("packetization-mode");
+
+	// clang-format off
+	if (
+		packetizationModeIt == parameters.end() ||
+		!packetizationModeIt->is_number_integer()
+		)
+		// clang-format on
+	{
+		return 0;
+	}
+
+	return packetizationModeIt->get<uint8_t>();
+}
+
+static uint8_t getH264LevelAssimetryAllowed(const json& codec)
+{
+	MSC_TRACE();
+
+	auto& parameters = codec["parameters"];
+	auto levelAssimetryAllowedIt = parameters.find("level-asymmetry-allowed");
+
+	// clang-format off
+	if (
+		levelAssimetryAllowedIt == parameters.end() ||
+		!levelAssimetryAllowedIt->is_number_integer()
+		)
+		// clang-format on
+	{
+		return 0;
+	}
+
+	return levelAssimetryAllowedIt->get<uint8_t>();
+}
+
+static std::string getH264ProfileLevelId(const json& codec)
+{
+	MSC_TRACE();
+
+	auto& parameters = codec["parameters"];
+	auto profileLevelIdIt = parameters.find("profile-level-id");
+
+	if (profileLevelIdIt == parameters.end())
+		return "";
+	else if (profileLevelIdIt->is_number())
+		return std::to_string(profileLevelIdIt->get<int32_t>());
+	else
+		return profileLevelIdIt->get<std::string>();
+}
+
+static std::string getVP9ProfileId(const json& codec)
+{
+	MSC_TRACE();
+
+	auto& parameters = codec["parameters"];
+	auto profileIdIt = parameters.find("profile-id");
+
+	if (profileIdIt == parameters.end())
+		return "0";
+
+	if (profileIdIt->is_number())
+		return std::to_string(profileIdIt->get<int32_t>());
+	else
+		return profileIdIt->get<std::string>();
 }

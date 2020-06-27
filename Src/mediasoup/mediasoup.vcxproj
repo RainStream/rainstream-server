@@ -165,10 +165,7 @@
     <ClCompile Include="Consumer.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="common.cpp" />
-    <ClCompile Include="ortc.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="ortc.cpp" />
     <ClCompile Include="PipeTransport.cpp" />
     <ClCompile Include="PlainTransport.cpp" />
     <ClCompile Include="Producer.cpp" />
