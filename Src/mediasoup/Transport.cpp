@@ -259,9 +259,9 @@ std::future<Producer*> Transport::produce(
 	std::string id,
 	std::string kind,
 	json rtpParameters,
-	bool paused = false,
-	bool keyFrameRequestDelay = 0,
-	json appData = json()
+	bool paused/* = false*/,
+	bool keyFrameRequestDelay/* = 0*/,
+	json appData/* = json()*/
 )
 {
 	static std::set<std::string> kinds = { "audio","video" };
@@ -373,9 +373,9 @@ std::future<Producer*> Transport::produce(
 std::future<Consumer*> Transport::consume(
 	std::string producerId,
 	json rtpCapabilities,
-	bool paused = false,
-	ConsumerLayers preferredLayers = ConsumerLayers(),
-	json appData = json()
+	bool paused/* = false*/,
+	ConsumerLayers preferredLayers/* = ConsumerLayers()*/,
+	json appData/* = json()*/
 )
 {
 	logger->debug("consume()");

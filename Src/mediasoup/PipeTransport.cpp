@@ -170,7 +170,7 @@ std::future<void> PipeTransport::connect(
  *
  * @override
  */
-std::future<Consumer*> PipeTransport::consume(std::string producerId, json appData = json())
+std::future<Consumer*> PipeTransport::consume(std::string producerId, json appData/* = json()*/)
 {
 	logger->debug("consume()");
 

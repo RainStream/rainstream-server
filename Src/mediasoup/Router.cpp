@@ -35,7 +35,7 @@ Router::Router(
 /**
  * Router id.
  */
-std::string id()
+std::string Router::id()
 {
 	return this->_internal["routerId"];
 }
@@ -199,15 +199,15 @@ std::future<json> Router::dump()
  */
 std::future<WebRtcTransport*> Router::createWebRtcTransport(
 	json listenIps,
-	bool enableUdp = true,
-	bool enableTcp = false,
-	bool preferUdp = false,
-	bool preferTcp = false,
-	uint32_t initialAvailableOutgoingBitrate = 600000,
-	bool enableSctp = false,
-	json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
-	uint32_t maxSctpMessageSize = 262144,
-	json appData = json()
+	bool enableUdp/* = true*/,
+	bool enableTcp/* = false*/,
+	bool preferUdp/* = false*/,
+	bool preferTcp/* = false*/,
+	uint32_t initialAvailableOutgoingBitrate /*= 600000*/,
+	bool enableSctp/* = false*/,
+	json numSctpStreams/* = { { "OS", 1024 }, { "MIS", 1024 } }*/,
+	uint32_t maxSctpMessageSize/* = 262144*/,
+	json appData/* = json()*/
 )
 {
 	logger->debug("createWebRtcTransport()");
@@ -298,14 +298,14 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(
  */
 std::future<PlainTransport*> Router::createPlainTransport(
 	json listenIp,
-	bool rtcpMux = true,
-	bool comedia = false,
-	bool enableSctp = false,
-	json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
-	uint32_t maxSctpMessageSize = 262144,
-	bool enableSrtp = false,
-	std::string srtpCryptoSuite = "AES_CM_128_HMAC_SHA1_80",
-	json appData = json::object()
+	bool rtcpMux/* = true*/,
+	bool comedia/* = false*/,
+	bool enableSctp/* = false*/,
+	json numSctpStreams/* = { { "OS", 1024 }, { "MIS", 1024 } }*/,
+	uint32_t maxSctpMessageSize/* = 262144*/,
+	bool enableSrtp/* = false*/,
+	std::string srtpCryptoSuite/* = "AES_CM_128_HMAC_SHA1_80"*/,
+	json appData/* = json::object()*/
 )
 {
 	logger->debug("createPlainTransport()");
@@ -393,12 +393,12 @@ std::future<PlainTransport*> Router::createPlainTransport(
  */
 std::future<PipeTransport*> Router::createPipeTransport(
 	json listenIp,
-	bool enableSctp = false,
-	json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
-	uint32_t maxSctpMessageSize = 1073741823,
-	bool enableRtx = false,
-	bool enableSrtp = false,
-	json appData = json()
+	bool enableSctp/* = false*/,
+	json numSctpStreams/* = { { "OS", 1024 }, { "MIS", 1024 } }*/,
+	uint32_t maxSctpMessageSize/* = 1073741823*/,
+	bool enableRtx/* = false*/,
+	bool enableSrtp/* = false*/,
+	json appData/* = json()*/
 )
 {
 	logger->debug("createPipeTransport()");

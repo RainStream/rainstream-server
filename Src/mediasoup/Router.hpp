@@ -7,6 +7,7 @@
 #include "ortc.hpp"
 #include "errors.hpp"
 #include "Channel.hpp"
+#include "Transport.hpp"
 #include "RtpParameters.hpp"
 #include "SctpParameters.hpp"
 

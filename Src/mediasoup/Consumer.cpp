@@ -12,8 +12,8 @@ Consumer::Consumer(
 	json appData,
 	bool paused,
 	bool producerPaused,
-	ConsumerScore score = ConsumerScore(),
-	ConsumerLayers preferredLayers = ConsumerLayers())
+	ConsumerScore score/* = ConsumerScore()*/,
+	ConsumerLayers preferredLayers/* = ConsumerLayers()*/)
 	: EnhancedEventEmitter(),
 	logger(new Logger("Consumer"))
 {
@@ -432,4 +432,4 @@ void Consumer::_handleWorkerNotifications()
 		}
 	});
 }
-};
+

@@ -268,7 +268,7 @@ private:
 		Logger* logger;
 		// Internal data.
 
-		json _internal:
+		json _internal;
 		
 
 		// Producer data.
