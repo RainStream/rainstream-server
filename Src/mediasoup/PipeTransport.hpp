@@ -2,12 +2,10 @@
 
 #include "common.hpp"
 #include "Logger.hpp"
-#include "EnhancedEventEmitter.hpp"
-#include "ortc.hpp"
 #include "Transport.hpp"
-#include "Consumer.hpp"
 #include "SctpParameters.hpp"
 #include "SrtpParameters.hpp"
+
 
 struct PipeTransportOptions
 {
@@ -82,21 +80,12 @@ struct PipeTransportStat
 	TransportTuple tuple;
 };
 
+class Producer;
+class Consumer;
+class PayloadChannel;
 
 class PipeTransport : public Transport
 {
-	Logger* logger;
-	// PipeTransport data.
-protected:
-	json _data;
-// 	{
-// 		tuple: TransportTuple;
-// 		sctpParameters?: SctpParameters;
-// 		sctpState?: SctpState;
-// 		rtx: bool;
-// 		srtpParameters?: SrtpParameters;
-// 	};
-
 public:
 	/**
 	 * @private
@@ -110,62 +99,29 @@ public:
 		const json& appData,
 		GetRouterRtpCapabilities getRouterRtpCapabilities,
 		GetProducerById getProducerById,
-		GetDataProducerById getDataProducerById)
-		: Transport(internal, data, channel, payloadChannel,
-			appData, getRouterRtpCapabilities,
-			getProducerById, getDataProducerById)
-		, logger(new Logger("PipeTransport"))
-	{
-		logger->debug("constructor()");
-
-		this->_data =
-		{
-			{ "tuple"          , data["tuple"] },
-			{ "sctpParameters" , data["sctpParameters"] },
-			{ "sctpState"      , data["sctpState"] },
-			{ "rtx"            , data["rtx"] },
-			{ "srtpParameters" , data["srtpParameters"] }
-		};
-
-		this->_handleWorkerNotifications();
-	}
+		GetDataProducerById getDataProducerById);
 
 	/**
 	 * Transport tuple.
 	 */
-	TransportTuple tuple()
-	{
-		return this->_data["tuple"];
-	}
+	TransportTuple tuple();
 
 	/**
 	 * SCTP parameters.
 	 */
-	SctpParameters sctpParameters()
-	{
-		return this->_data["sctpParameters"];
-	}
+	SctpParameters sctpParameters();
 
 	/**
 	 * SCTP state.
 	 */
-	SctpState sctpState()
-	{
-		return this->_data["sctpState"];
-	}
+	SctpState sctpState();
 
 	/**
 	 * SRTP parameters.
 	 */
-	SrtpParameters srtpParameters()
-	{
-		return this->_data["srtpParameters"];
-	}
+	SrtpParameters srtpParameters();
 
-	virtual std::string typeName()
-	{
-		return "PipeTransport";
-	}
+	virtual std::string typeName();
 
 	/**
 	 * Observer.
@@ -179,26 +135,14 @@ public:
 	 * @emits sctpstatechange - (sctpState: SctpState)
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	EnhancedEventEmitter* observer()
-	{
-		return this->_observer;
-	}
+	EnhancedEventEmitter* observer();
 
 	/**
 	 * Close the PipeTransport.
 	 *
 	 * @override
 	 */
-	void close()
-	{
-		if (this->_closed)
-			return;
-
-		if (this->_data.contains("sctpState"))
-			this->_data["sctpState"] = "closed";
-
-		Transport::close();
-	}
+	void close();
 
 	/**
 	 * Router was closed.
@@ -206,30 +150,14 @@ public:
 	 * @private
 	 * @override
 	 */
-	void routerClosed()
-	{
-		if (this->_closed)
-			return;
-
-		if (this->_data.contains("sctpState"))
-			this->_data["sctpState"] = "closed";
-
-		Transport::routerClosed();
-	}
+	void routerClosed();
 
 	/**
 	 * Get PipeTransport stats.
 	 *
 	 * @override
 	 */
-	std::future<json> getStats()
-	{
-		logger->debug("getStats()");
-
-		json ret = co_await  this->_channel->request("transport.getStats", this->_internal);
-
-		co_return ret;
-	}
+	std::future<json> getStats();
 
 	/**
 	 * Provide the PipeTransport remote parameters.
@@ -240,115 +168,22 @@ public:
 		std::string ip,
 		uint32_t port,
 		SrtpParameters srtpParameters
-	)
-	{
-		logger->debug("connect()");
-
-		json reqData = {
-			{ "ip", ip },
-			{ "port", port },
-			{ "srtpParameters", srtpParameters }
-		};
-
-		json data =
-			co_await this->_channel->request("transport.connect", this->_internal, reqData);
-
-		// Update data.
-		this->_data["tuple"] = data["tuple"];
-	}
+	);
 
 	/**
 	 * Create a pipe Consumer.
 	 *
 	 * @override
 	 */
-	std::future<Consumer*> consume(std::string producerId, json appData = json())
-	{
-		logger->debug("consume()");
-
-		if (producerId.empty())
-			throw new TypeError("missing producerId");
-		else if (!appData.is_null() && !appData.is_object())
-			throw new TypeError("if given, appData must be an object");
-
-		Producer* producer = this->_getProducerById(producerId);
-
-		if (!producer)
-			throw Error(utils::Printf("Producer with id \"${producerId}\" not found", producerId));
-
-		// This may throw.
-		json rtpParameters = ortc::getPipeConsumerRtpParameters(
-			producer->consumableRtpParameters(), this->_data["rtx"]);
-
-		json internal = this->_internal;
-		internal["consumerId"] = uuidv4();
-		internal["producerId"] = producerId;
-
-		json reqData =
-		{
-			{ "kind"                   , producer->kind() },
-			{ "rtpParameters"          , rtpParameters },
-			{ "type"                   , "pipe" },
-			{ "consumableRtpEncodings" , producer->consumableRtpParameters()["encodings"] }
-		};
-
-		json status =
-			co_await this->_channel->request("transport.consume", internal, reqData);
-
-		json data = { 
-			{ "kind", producer->kind() },
-			{ "rtpParameters", rtpParameters },
-			{ "type" , "pipe" }
-		};
-
-		Consumer* consumer = new Consumer(
-				internal,
-				data,
-				this->_channel,
-				appData,
-				status["paused"],
-				status["producerPaused"]
-			);
-
-		this->_consumers.insert(std::make_pair(consumer->id(), consumer));
-		consumer->on("@close", [=]() { this->_consumers.erase(consumer->id()); } );
-		consumer->on("@producerclose", [=]() { this->_consumers.erase(consumer->id()); });
-
-		// Emit observer event.
-		this->_observer->safeEmit("newconsumer", consumer);
-
-		return consumer;
-	}
+	std::future<Consumer*> consume(std::string producerId, json appData = json());
 
 private:
-	void _handleWorkerNotifications()
-	{
-		this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
-		{
-			if (event == "sctpstatechange")
-			{
-// 				const sctpState = data.sctpState as SctpState;
-// 
-// 				this->_data.sctpState = sctpState;
-// 
-// 				this->safeEmit("sctpstatechange", sctpState);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("sctpstatechange", sctpState);
-			}
-			else if (event == "trace")
-			{
-// 				const trace = data as TransportTraceEventData;
-// 
-// 				this->safeEmit("trace", trace);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("trace", trace);
-			}
-			else
-			{
-				logger->error("ignoring unknown event \"%s\"", event);
-			}
-		});
-	}
+	void _handleWorkerNotifications();
+
+private:
+	Logger* logger;
+
+	// PipeTransport data.
+	json _data;
+
 };

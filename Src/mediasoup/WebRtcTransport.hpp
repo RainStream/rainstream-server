@@ -202,26 +202,11 @@ struct WebRtcTransportStat
 	DtlsState dtlsState;
 };
 
+class PayloadChannel;
+
 
 class WebRtcTransport : public Transport
 {
-	Logger* logger;
-	// WebRtcTransport data.
-protected:
-	json _data;
-// 	{
-// 		iceRole: "controlled";
-// 		iceParameters: IceParameters;
-// 		iceCandidates: IceCandidate[];
-// 		iceState: IceState;
-// 		iceSelectedTuple?: TransportTuple;
-// 		dtlsParameters: DtlsParameters;
-// 		dtlsState: DtlsState;
-// 		std::string dtlsRemoteCert;
-// 		sctpParameters?: SctpParameters;
-// 		sctpState?: SctpState;
-// 	};
-
 public:
 	/**
 	 * @private
@@ -238,115 +223,59 @@ public:
 		const json& appData,
 		GetRouterRtpCapabilities getRouterRtpCapabilities,
 		GetProducerById getProducerById,
-		GetDataProducerById getDataProducerById)
-		: Transport(internal, data, channel, payloadChannel, 
-			appData, getRouterRtpCapabilities, 
-			getProducerById, getDataProducerById)
-		, logger(new Logger("WebRtcTransport"))
-	{
-		logger->debug("constructor()");
-
-		this->_data =
-		{
-			{ "iceRole"          , data["iceRole"] },
-			{ "iceParameters"    , data["iceParameters"] },
-			{ "iceCandidates"    , data["iceCandidates"] },
-			{ "iceState"         , data["iceState"] },
-			{ "iceSelectedTuple" , data["iceSelectedTuple"] },
-			{ "dtlsParameters"   , data["dtlsParameters"] },
-			{ "dtlsState"        , data["dtlsState"] },
-			{ "dtlsRemoteCert"   , data["dtlsRemoteCert"] },
-			{ "sctpParameters"   , data["sctpParameters"] },
-			{ "sctpState"        , data["sctpState"] }
-		};
-
-		this->_handleWorkerNotifications();
-	}
+		GetDataProducerById getDataProducerById);
 
 	/**
 	 * ICE role.
 	 */
-	std::string iceRole()
-	{
-		return this->_data["iceRole"];
-	}
+	std::string iceRole();
 
 	/**
 	 * ICE parameters.
 	 */
-	IceParameters iceParameters()
-	{
-		return this->_data["iceParameters"];
-	}
+	IceParameters iceParameters();
 
 	/**
 	 * ICE candidates.
 	 */
-	json iceCandidates()
-	{
-		return this->_data["iceCandidates"];
-	}
+	json iceCandidates();
 
 	/**
 	 * ICE state.
 	 */
-	IceState iceState()
-	{
-		return this->_data["iceState"];
-	}
+	IceState iceState();
 
 	/**
 	 * ICE selected tuple.
 	 */
-	TransportTuple iceSelectedTuple()
-	{
-		return this->_data["iceSelectedTuple"];
-	}
+	TransportTuple iceSelectedTuple();
 
 	/**
 	 * DTLS parameters.
 	 */
-	DtlsParameters dtlsParameters()
-	{
-		return this->_data["dtlsParameters"];
-	}
+	DtlsParameters dtlsParameters();
 
 	/**
 	 * DTLS state.
 	 */
-	DtlsState dtlsState()
-	{
-		return this->_data["dtlsState"];
-	}
+	DtlsState dtlsState();
 
 	/**
 	 * Remote certificate in PEM format.
 	 */
-	std::string dtlsRemoteCert()
-	{
-		return this->_data["dtlsRemoteCert"];
-	}
+	std::string dtlsRemoteCert();
 
 	/**
 	 * SCTP parameters.
 	 */
-	SctpParameters sctpParameters()
-	{
-		return this->_data["sctpParameters"];
-	}
+	SctpParameters sctpParameters();
 
 	/**
 	 * SCTP state.
 	 */
-	SctpState sctpState()
-	{
-		return this->_data["sctpState"];
-	}
+	SctpState sctpState();
 
-	virtual std::string typeName()
-	{
-		return "WebRtcTransport";
-	}
+	virtual std::string typeName();
 
 	/**
 	 * Observer.
@@ -363,30 +292,14 @@ public:
 	 * @emits sctpstatechange - (sctpState: SctpState)
 	 * @emits trace - (trace: TransportTraceEventData)
 	 */
-	EnhancedEventEmitter* observer()
-	{
-		return this->_observer;
-	}
+	EnhancedEventEmitter* observer();
 
 	/**
 	 * Close the WebRtcTransport.
 	 *
 	 * @override
 	 */
-	void close()
-	{
-		if (this->_closed)
-			return;
-
-		this->_data["iceState"] = "closed";
-		this->_data["iceSelectedTuple"].clear();
-		this->_data["dtlsState"] = "closed";
-
-		if (this->_data.contains("sctpState"))
-			this->_data["sctpState"] = "closed";
-
-		Transport::close();
-	}
+	void close();
 
 	/**
 	 * Router was closed.
@@ -394,136 +307,33 @@ public:
 	 * @private
 	 * @override
 	 */
-	void routerClosed()
-	{
-		if (this->_closed)
-			return;
-
-		this->_data["iceState"] = "closed";
-		this->_data["iceSelectedTuple"].clear();
-		this->_data["dtlsState"] = "closed";
-
-		if (this->_data.contains("sctpState"))
-			this->_data["sctpState"] = "closed";
-
-		Transport::routerClosed();
-	}
+	void routerClosed();
 
 	/**
 	 * Get WebRtcTransport stats.
 	 *
 	 * @override
 	 */
-	std::future<json> getStats()
-	{
-		logger->debug("getStats()");
-
-		json ret = co_await this->_channel->request("transport.getStats", this->_internal);
-
-		co_return ret;
-	}
+	std::future<json> getStats();
 
 	/**
 	 * Provide the WebRtcTransport remote parameters.
 	 *
 	 * @override
 	 */
-	std::future<void> connect(DtlsParameters dtlsParameters)
-	{
-		logger->debug("connect()");
-
-		json reqData = { { "dtlsParameters", dtlsParameters } };
-
-		json data =
-			co_await this->_channel->request("transport.connect", this->_internal, reqData);
-
-		// Update data.
-		this->_data["dtlsParameters"]["role"] = data["dtlsLocalRole"];
-	}
+	std::future<void> connect(DtlsParameters dtlsParameters);
 
 	/**
 	 * Restart ICE.
 	 */
-	std::future<IceParameters> restartIce()
-	{
-		logger->debug("restartIce()");
-
-		json data =
-			co_await this->_channel->request("transport.restartIce", this->_internal);
-
-		json iceParameters = data["iceParameters"];
-
-		this->_data["iceParameters"] = iceParameters;
-
-		return iceParameters;
-	}
+	std::future<IceParameters> restartIce();
 
 private:
-	void _handleWorkerNotifications()
-	{
-		this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
-		{
-			if (event == "icestatechange")
-			{
-// 				const iceState = data.iceState as IceState;
-// 
-// 				this->_data.iceState = iceState;
-// 
-// 				this->safeEmit("icestatechange", iceState);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("icestatechange", iceState);
-			}
-			else if (event == "iceselectedtuplechange")
-			{
-// 				const iceSelectedTuple = data.iceSelectedTuple as TransportTuple;
-// 
-// 				this->_data.iceSelectedTuple = iceSelectedTuple;
-// 
-// 				this->safeEmit("iceselectedtuplechange", iceSelectedTuple);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("iceselectedtuplechange", iceSelectedTuple);
-			}
-			else if (event == "dtlsstatechange")
-			{
-// 				const dtlsState = data.dtlsState as DtlsState;
-// 				const dtlsRemoteCert = data.dtlsRemoteCert as string;
-// 
-// 				this->_data.dtlsState = dtlsState;
-// 
-// 				if (dtlsState == "connected")
-// 					this->_data.dtlsRemoteCert = dtlsRemoteCert;
-// 
-// 				this->safeEmit("dtlsstatechange", dtlsState);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("dtlsstatechange", dtlsState);
-			}
-			else if (event == "sctpstatechange")
-			{
-// 				const sctpState = data.sctpState as SctpState;
-// 
-// 				this->_data.sctpState = sctpState;
-// 
-// 				this->safeEmit("sctpstatechange", sctpState);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("sctpstatechange", sctpState);
-			}
-			else if (event == "trace")
-			{
-// 				const trace = data as TransportTraceEventData;
-// 
-// 				this->safeEmit("trace", trace);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("trace", trace);
-			}
-			else
-			{
-				logger->error("ignoring unknown event \"%s\"", event);
-			}
-		});
-	}
+	void _handleWorkerNotifications();
+
+private:
+	Logger* logger;
+
+	// WebRtcTransport data.
+	json _data;
 };

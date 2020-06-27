@@ -3,9 +3,8 @@
 #include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-#include "Channel.hpp"
-#include "Producer.hpp"
-#include "RtpParameters.hpp"
+
+class Channel;
 
 struct ConsumerLayers
 {
@@ -190,23 +189,181 @@ using ConsumerType = std::string;// "simple" | "simulcast" | "svc" | "pipe";
 
 class Consumer : public EnhancedEventEmitter
 {
+public:
+	/**
+	 * @private
+	 * @emits transportclose
+	 * @emits producerclose
+	 * @emits producerpause
+	 * @emits producerresume
+	 * @emits score - (score: ConsumerScore)
+	 * @emits layerschange - (layers: ConsumerLayers | undefined)
+	 * @emits trace - (trace: ConsumerTraceEventData)
+	 * @emits @close
+	 * @emits @producerclose
+	 */
+	Consumer(
+		json internal,
+		json data,
+		Channel* channel,
+		json appData,
+		bool paused,
+		bool producerPaused,
+		ConsumerScore score = ConsumerScore(),
+		ConsumerLayers preferredLayers = ConsumerLayers());
+
+	/**
+	 * Consumer id.
+	 */
+	std::string id();
+
+	/**
+	 * Associated Producer id.
+	 */
+	std::string producerId();
+
+	/**
+	 * Whether the Consumer is closed.
+	 */
+	bool closed();
+
+	/**
+	 * Media kind.
+	 */
+	std::string kind();
+
+	/**
+	 * RTP parameters.
+	 */
+	json rtpParameters();
+
+	/**
+	 * Consumer type.
+	 */
+	ConsumerType type();
+
+	/**
+	 * Whether the Consumer is paused.
+	 */
+	bool paused();
+
+	/**
+	 * Whether the associate Producer is paused.
+	 */
+	bool producerPaused();
+
+	/**
+	 * Current priority.
+	 */
+	int priority();
+
+	/**
+	 * Consumer score.
+	 */
+	ConsumerScore score();
+
+	/**
+	 * Preferred video layers.
+	 */
+	ConsumerLayers preferredLayers();
+
+	/**
+	 * Current video layers.
+	 */
+	ConsumerLayers currentLayers();
+
+	/**
+	 * App custom data.
+	 */
+	json appData();
+
+	/**
+	 * Invalid setter.
+	 */
+	void appData(json appData);
+
+	/**
+	 * Observer.
+	 *
+	 * @emits close
+	 * @emits pause
+	 * @emits resume
+	 * @emits score - (score: ConsumerScore)
+	 * @emits layerschange - (layers: ConsumerLayers | undefined)
+	 * @emits trace - (trace: ConsumerTraceEventData)
+	 */
+	EnhancedEventEmitter* observer();
+
+	/**
+	 * Close the Consumer.
+	 */
+	void close();
+
+	/**
+	 * Transport was closed.
+	 *
+	 * @private
+	 */
+	void transportClosed();
+
+	/**
+	 * Dump Consumer.
+	 */
+	std::future<json> dump();
+
+	/**
+	 * Get Consumer stats.
+	 */
+	std::future<json> getStats();
+
+	/**
+	 * Pause the Consumer.
+	 */
+	std::future<void> pause();
+
+	/**
+	 * Resume the Consumer.
+	 */
+	std::future<void> resume();
+
+	/**
+	 * Set preferred video layers.
+	 */
+	std::future<void> setPreferredLayers(
+		uint32_t spatialLayer,
+		uint32_t temporalLayer
+	);
+
+	/**
+	 * Set priority.
+	 */
+	std::future<void> setPriority(int priority);
+
+	/**
+	 * Unset priority.
+	 */
+	std::future<void> unsetPriority();
+
+	/**
+	 * Request a key frame to the Producer.
+	 */
+	std::future<void> requestKeyFrame();
+
+	/**
+	 * Enable "trace" event.
+	 */
+	std::future<void> enableTraceEvent(std::vector<ConsumerTraceEventType> types);
+
+private:
+	void _handleWorkerNotifications();
+
+private:
 	Logger* logger;
 	// Internal data.
 	json _internal;
-// 	{
-// 		std::string routerId;
-// 		std::string transportId;
-// 		std::string consumerId;
-// 		std::string producerId;
-// 	};
 
 	// Consumer data.
 	json _data;
-// 	{
-// 		kind: MediaKind;
-// 		rtpParameters: RtpParameters;
-// 		type: ConsumerType;
-// 	};
 
 	// Channel instance.
 	Channel* _channel;
@@ -215,7 +372,6 @@ class Consumer : public EnhancedEventEmitter
 	bool _closed = false;
 
 	// Custom app data.
-private:
 	json _appData;
 
 	// Paused flag.
@@ -238,447 +394,5 @@ private:
 
 	// Observer instance.
 	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
-
-public:
-	/**
-	 * @private
-	 * @emits transportclose
-	 * @emits producerclose
-	 * @emits producerpause
-	 * @emits producerresume
-	 * @emits score - (score: ConsumerScore)
-	 * @emits layerschange - (layers: ConsumerLayers | undefined)
-	 * @emits trace - (trace: ConsumerTraceEventData)
-	 * @emits @close
-	 * @emits @producerclose
-	 */
-	Consumer(
-		json internal,
-		json data,
-		Channel* channel,
-		json appData,
-		bool paused,
-		bool producerPaused,
-		ConsumerScore score = ConsumerScore(),
-		ConsumerLayers preferredLayers = ConsumerLayers())
-		: EnhancedEventEmitter(),
-		logger(new Logger("Consumer"))
-	{
-		logger->debug("constructor()");
-
-		this->_internal = internal;
-		this->_data = data;
-		this->_channel = channel;
-		this->_appData = appData;
-		this->_paused = paused;
-		this->_producerPaused = producerPaused;
-		this->_score = score;
-		this->_preferredLayers = preferredLayers;
-
-		this->_handleWorkerNotifications();
-	}
-
-	/**
-	 * Consumer id.
-	 */
-	std::string id()
-	{
-		return this->_internal["consumerId"];
-	}
-
-	/**
-	 * Associated Producer id.
-	 */
-	std::string producerId()
-	{
-		return this->_internal["producerId"];
-	}
-
-	/**
-	 * Whether the Consumer is closed.
-	 */
-	bool closed()
-	{
-		return this->_closed;
-	}
-
-	/**
-	 * Media kind.
-	 */
-	std::string kind()
-	{
-		return this->_data["kind"];
-	}
-
-	/**
-	 * RTP parameters.
-	 */
-	json rtpParameters()
-	{
-		return this->_data["rtpParameters"];
-	}
-
-	/**
-	 * Consumer type.
-	 */
-	ConsumerType type()
-	{
-		return this->_data["type"];
-	}
-
-	/**
-	 * Whether the Consumer is paused.
-	 */
-	bool paused()
-	{
-		return this->_paused;
-	}
-
-	/**
-	 * Whether the associate Producer is paused.
-	 */
-	bool producerPaused()
-	{
-		return this->_producerPaused;
-	}
-
-	/**
-	 * Current priority.
-	 */
-	int priority()
-	{
-		return this->_priority;
-	}
-
-	/**
-	 * Consumer score.
-	 */
-	ConsumerScore score()
-	{
-		return this->_score;
-	}
-
-	/**
-	 * Preferred video layers.
-	 */
-	ConsumerLayers preferredLayers()
-	{
-		return this->_preferredLayers;
-	}
-
-	/**
-	 * Current video layers.
-	 */
-	ConsumerLayers currentLayers()
-	{
-		return this->_currentLayers;
-	}
-
-	/**
-	 * App custom data.
-	 */
-	json appData()
-	{
-		return this->_appData;
-	}
-
-	/**
-	 * Invalid setter.
-	 */
-	void appData(json appData) // eslint-disable-line no-unused-vars
-	{
-		throw new Error("cannot override appData object");
-	}
-
-	/**
-	 * Observer.
-	 *
-	 * @emits close
-	 * @emits pause
-	 * @emits resume
-	 * @emits score - (score: ConsumerScore)
-	 * @emits layerschange - (layers: ConsumerLayers | undefined)
-	 * @emits trace - (trace: ConsumerTraceEventData)
-	 */
-	EnhancedEventEmitter* observer()
-	{
-		return this->_observer;
-	}
-
-	/**
-	 * Close the Consumer.
-	 */
-	void close()
-	{
-		if (this->_closed)
-			return;
-
-		logger->debug("close()");
-
-		this->_closed = true;
-
-		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal["consumerId"]);
-
-		try
-		{
-			this->_channel->request("consumer.close", this->_internal);
-		}
-		catch (const std::exception&)
-		{
-
-		}
-
-		this->emit("@close");
-
-		// Emit observer event.
-		this->_observer->safeEmit("close");
-	}
-
-	/**
-	 * Transport was closed.
-	 *
-	 * @private
-	 */
-	void transportClosed()
-	{
-		if (this->_closed)
-			return;
-
-		logger->debug("transportClosed()");
-
-		this->_closed = true;
-
-		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal["consumerId"]);
-
-		this->safeEmit("transportclose");
-
-		// Emit observer event.
-		this->_observer->safeEmit("close");
-	}
-
-	/**
-	 * Dump Consumer.
-	 */
-	std::future<json> dump()
-	{
-		logger->debug("dump()");
-
-		json ret = co_await this->_channel->request("consumer.dump", this->_internal);
-
-		co_return ret;
-	}
-
-	/**
-	 * Get Consumer stats.
-	 */
-	std::future<json> getStats()
-	{
-		logger->debug("getStats()");
-
-		json ret = co_await  this->_channel->request("consumer.getStats", this->_internal);
-
-		co_return ret;
-	}
-
-	/**
-	 * Pause the Consumer.
-	 */
-	std::future<void> pause()
-	{
-		logger->debug("pause()");
-
-		bool wasPaused = this->_paused || this->_producerPaused;
-
-		co_await this->_channel->request("consumer.pause", this->_internal);
-
-		this->_paused = true;
-
-		// Emit observer event.
-		if (!wasPaused)
-			this->_observer->safeEmit("pause");
-	}
-
-	/**
-	 * Resume the Consumer.
-	 */
-	std::future<void> resume()
-	{
-		logger->debug("resume()");
-
-		bool wasPaused = this->_paused || this->_producerPaused;
-
-		co_await this->_channel->request("consumer.resume", this->_internal);
-
-		this->_paused = false;
-
-		// Emit observer event.
-		if (wasPaused && !this->_producerPaused)
-			this->_observer->safeEmit("resume");
-	}
-
-	/**
-	 * Set preferred video layers.
-	 */
-	std::future<void> setPreferredLayers(
-		uint32_t spatialLayer,
-		uint32_t temporalLayer
-	)
-	{
-		logger->debug("setPreferredLayers()");
-
-		json reqData = { 
-			{ "spatialLayer",spatialLayer },
-			{"temporalLayer", temporalLayer}
-		};
-
-		json data = co_await this->_channel->request(
-			"consumer.setPreferredLayers", this->_internal, reqData);
-
-		this->_preferredLayers = data /*|| undefined*/;
-	}
-
-	/**
-	 * Set priority.
-	 */
-	std::future<void> setPriority(int priority)
-	{
-		logger->debug("setPriority()");
-
-		json reqData = { { "priority" , priority } };
-
-		json data = co_await this->_channel->request(
-			"consumer.setPriority", this->_internal, reqData);
-
-		this->_priority = data["priority"];
-	}
-
-	/**
-	 * Unset priority.
-	 */
-	std::future<void> unsetPriority()
-	{
-		logger->debug("unsetPriority()");
-
-		json reqData = { { "priority" , 1 } };
-
-		json data = co_await this->_channel->request(
-			"consumer.setPriority", this->_internal, reqData);
-
-		this->_priority = data["priority"];
-	}
-
-	/**
-	 * Request a key frame to the Producer.
-	 */
-	std::future<void> requestKeyFrame()
-	{
-		logger->debug("requestKeyFrame()");
-
-		co_await this->_channel->request("consumer.requestKeyFrame", this->_internal);
-	}
-
-	/**
-	 * Enable "trace" event.
-	 */
-	std::future<void> enableTraceEvent(std::vector<ConsumerTraceEventType> types)
-	{
-		logger->debug("enableTraceEvent()");
-
-		json reqData = { types };
-
-		co_await this->_channel->request(
-			"consumer.enableTraceEvent", this->_internal, reqData);
-	}
-
-private:
-	void _handleWorkerNotifications()
-	{
-		this->_channel->on(this->_internal["consumerId"], [=](std::string event, json data)
-		{
-			if(event == "producerclose")
-			{
-// 				if (this->_closed)
-// 					return;
-// 
-// 				this->_closed = true;
-// 
-// 				// Remove notification subscriptions.
-// 				this->_channel->removeAllListeners(this->_internal["consumerId"]);
-// 
-// 				this->emit("@producerclose");
-// 				this->safeEmit("producerclose");
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("close");
-			}
-			else if (event == "producerpause")
-			{
-// 				if (this->_producerPaused)
-// 					break;
-// 
-// 				bool wasPaused = this->_paused || this->_producerPaused;
-// 
-// 				this->_producerPaused = true;
-// 
-// 				this->safeEmit("producerpause");
-// 
-// 				// Emit observer event.
-// 				if (!wasPaused)
-// 					this->_observer->safeEmit("pause");
-			}
-			else if (event == "producerresume")
-			{
-// 				if (!this->_producerPaused)
-// 					break;
-// 
-// 				bool wasPaused = this->_paused || this->_producerPaused;
-// 
-// 				this->_producerPaused = false;
-// 
-// 				this->safeEmit("producerresume");
-// 
-// 				// Emit observer event.
-// 				if (wasPaused && !this->_paused)
-// 					this->_observer->safeEmit("resume");
-			}
-			else if (event == "score")
-			{
-// 				const score = data as ConsumerScore;
-// 
-// 				this->_score = score;
-// 
-// 				this->safeEmit("score", score);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("score", score);
-			}
-			else if (event == "layerschange")
-			{
-// 				const layers = data as ConsumerLayers | undefined;
-// 
-// 				this->_currentLayers = layers;
-// 
-// 				this->safeEmit("layerschange", layers);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("layerschange", layers);
-			}
-			else if (event == "trace")
-			{
-// 				const trace = data as ConsumerTraceEventData;
-// 
-// 				this->safeEmit("trace", trace);
-// 
-// 				// Emit observer event.
-// 				this->_observer->safeEmit("trace", trace);
-			}
-			else
-			{
-				logger->error("ignoring unknown event \"%s\"", event);
-			}
-		});
-	}
 };
 

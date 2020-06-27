@@ -47,6 +47,7 @@ typedef SSIZE_T ssize_t;
 #include <any>
 #include <optional>
 #include <variant>
+#include <future>
 #include <condition_variable>
 
 #include <nlohmann/json.hpp>

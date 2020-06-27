@@ -48,6 +48,27 @@
     <ClCompile Include="scalabilityModes.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Router.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="PipeTransport.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="PlainTransport.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WebRtcTransport.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Transport.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Consumer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Producer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="child_process\PipeStreamSocket.hpp">
