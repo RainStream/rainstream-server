@@ -100,9 +100,9 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 	{
 		envs.push_back(env.data());
 	}
-	envs.push_back("\0");
+	envs.push_back('\0');
 
-	subProcess->options.args = spawnArgs.data();;
+	subProcess->options.args = spawnArgs.data();
 	subProcess->options.env = envs.data();
 	subProcess->options.file = spawnArgs[0];
 	subProcess->options.stdio = child_stdios.data();

@@ -47,10 +47,11 @@
 #include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
 #include <cstdlib> // std::abort()
 #include <cstring>
+#include "common.hpp"
 
 namespace mediasoupclient
 {
-	class Logger
+	class MS_EXPORT Logger
 	{
 	public:
 		enum class LogLevel : int

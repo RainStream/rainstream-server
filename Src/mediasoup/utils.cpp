@@ -3,7 +3,7 @@
 
 namespace utils
 {
-	inline std::string & AppendVPrintf(std::string & str, const char * format, va_list args)
+	std::string & AppendVPrintf(std::string & str, const char * format, va_list args)
 	{
 		assert(format != nullptr);
 

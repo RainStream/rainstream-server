@@ -130,7 +130,7 @@ std::future<json> Channel::request(std::string method, const json& internal, con
 
 	uint32_t id = this->_nextId;
 
-	logger->debug("request() [method\"%s\", id:\"%d\"]", method.c_str(), id);
+	logger->debug("request() [method \"%s\", id: \"%d\"]", method.c_str(), id);
 
 	if (this->_closed)
 		throw new InvalidStateError("Channel closed");

@@ -1,10 +1,11 @@
 #pragma once 
 
 #include "Logger.hpp"
+#include "common.hpp"
 #include <EventEmitter.hpp>
 
 
-class EnhancedEventEmitter : public EventEmitter
+class MS_EXPORT EnhancedEventEmitter : public EventEmitter
 {
 public:
 

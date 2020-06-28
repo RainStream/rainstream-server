@@ -56,17 +56,16 @@ using json = nlohmann::json;
 
 #ifdef _MSC_VER
 #  define MS_DECL_EXPORT __declspec(dllexport)
+#  define MS_DECL_IMPORT __declspec(dllimport)
 #endif
 
-#if defined(MS_SHARED) || !defined(MS_STATIC)
-#  ifdef MS_STATIC
-#    error "Both MS_SHARED and MS_STATIC defined, please make up your mind"
-#  endif
-#  ifndef MS_SHARED
-#    define MS_SHARED
-#  endif
+
+
+#ifndef MS_STATIC
 #  if defined(MS_BUILD_LIB)
 #    define MS_EXPORT MS_DECL_EXPORT
+#  else
+#    define MS_EXPORT MS_DECL_IMPORT
 #  endif
 #else
 #  define MS_EXPORT

@@ -13,7 +13,7 @@ class Request;
 class SubProcess;
 class PayloadChannel;
 
-class Worker : public EnhancedEventEmitter
+class MS_EXPORT Worker : public EnhancedEventEmitter
 {
 public:
 	Worker(json settings);
