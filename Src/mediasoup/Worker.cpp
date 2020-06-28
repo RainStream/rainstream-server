@@ -241,38 +241,43 @@ std::future<json> Worker::dump()
 // 		});
 // 	}
 
-	/**
-	* Create a Room instance.
-	*
-	* @return {Room}
-	*/
-	// 	Router* Worker::createRouter(const json& data)
-	// 	{
-	// 		DLOG(INFO) << "Room()";
-	// 
-	// 		json internal;
-	// 		internal["routerId"] = utils::randomNumber();
-	// 
-	// 		Room* room = new Room(internal, data, this->_channel);
-	// 
-	// 		// Store the Room instance and remove it when closed.
-	// 		this->_rooms.insert(room);
-	// 		room->addEventListener("@close", [=](json)
-	// 		{
-	// 			this->_rooms.erase(room);
-	// 		});
-	// 
-	// 		this->_channel->request("worker.createRouter", internal)
-	// 			.then([=]()
-	// 		{
-	// 			DLOG(INFO) << "\"worker.createRouter\" request succeeded";
-	// 		})
-	// 			.fail([=](Error error)
-	// 		{
-	// 			LOG(ERROR) << "\"worker.createRouter\" request failed: " << error.ToString();
-	// 
-	// 			room->close(undefined, false);
-	// 		});
-	// 
-	// 		return room;
-	// 	}
+std::future<json> Worker::getResourceUsage()
+{
+	logger->debug("getResourceUsage()");
+
+	json ret = co_await this->_channel->request("worker.getResourceUsage");
+
+	co_return ret;
+}
+
+std::future<Router*> Worker::createRouter(
+	json& mediaCodecs, json& appData/* = json()*/)
+{
+	logger->debug("createRouter()");
+
+	if (!appData.is_null() && !appData.is_object())
+		throw new TypeError("if given, appData must be an object");
+
+	// This may throw.
+	json rtpCapabilities = ortc::generateRouterRtpCapabilities(mediaCodecs);
+
+	json internal = { { "routerId", uuidv4() } };
+
+	co_await this->_channel->request("worker.createRouter", internal);
+
+	json data = { { "rtpCapabilities", rtpCapabilities } };
+	Router* router = new Router(
+		internal,
+		data,
+		this->_channel,
+		this->_payloadChannel,
+		appData);
+
+	this->_routers.insert(router);
+	router->on("@close", [=]() {this->_routers.erase(router); });
+
+	// Emit observer event.
+	this->_observer->safeEmit("newrouter", router);
+
+	return router;
+}

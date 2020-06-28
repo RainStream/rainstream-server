@@ -22,15 +22,16 @@ public:
 
 	std::future<json> dump();
 
-	//Defer updateSettings(json& options);
+	/**
+	 * Get mediasoup-worker process resource usage.
+	 */
+	std::future<json> getResourceUsage();
+
 
 	/**
-	 * Create a Room instance.
-	 *
-	 * @return {Room}
+	 * Create a Router.
 	 */
-	 //Router* createRouter(const json& data);
-
+	std::future<Router*> createRouter(json& mediaCodecs, json& appData = json());
 
 private:
 	Logger* logger;
@@ -41,7 +42,7 @@ private:
 
 	Channel* _channel{ nullptr };
 
-	//PayloadChannel* _payloadChannel{ nullptr };
+	PayloadChannel* _payloadChannel{ nullptr };
 
 	bool _closed = false;
 
