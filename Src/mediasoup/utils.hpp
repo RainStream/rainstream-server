@@ -11,7 +11,7 @@ using AStringVector = std::vector<std::string>;
 
 namespace utils
 {
-	inline uint32_t randomNumber(uint32_t min = 10000000, uint32_t max = 99999999)
+	inline uint32_t generateRandomNumber(uint32_t min = 10000000, uint32_t max = 99999999)
 	{
 		//平均分布
 		std::random_device rd;
@@ -32,7 +32,7 @@ namespace utils
 			length = 64;
 
 		for (size_t i{ 0 }; i < length; ++i)
-			buffer[i] = chars[randomNumber(0, sizeof(chars) - 1)];
+			buffer[i] = chars[generateRandomNumber(0, sizeof(chars) - 1)];
 
 		return std::string(buffer, length);
 	}
@@ -46,6 +46,8 @@ namespace utils
 	std::string ToUpperCase(const std::string& str);
 
 	std::string join(const AStringVector& vec, const std::string & delimeter);
+
+	json clone(const json& item);
 }
 
 uint32_t setInterval(std::function<void(void)> func, int interval);

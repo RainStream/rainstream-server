@@ -124,6 +124,11 @@ namespace utils
 		);
 		return Result;
 	}
+
+	json clone(const json& item)
+	{
+		return item;
+	}
 }
 
 
@@ -136,6 +141,7 @@ void clearInterval(uint32_t identifier)
 {
 
 }
+
 #include <random>
 #include <sstream>
 

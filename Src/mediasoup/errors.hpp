@@ -92,18 +92,18 @@ namespace errors
 #define MSC_THROW_ERROR(desc, ...) \
 	do \
 	{ \
-		MSC_ERROR("throwing MediaSoupClientError: " desc, ##__VA_ARGS__); \
+		MSC_ERROR("throwing Error: " desc, ##__VA_ARGS__); \
 		\
 		static char buffer[2000]; \
 		\
 		std::snprintf(buffer, 2000, desc, ##__VA_ARGS__); \
-		throw MediaSoupClientError(buffer); \
+		throw Error(buffer); \
 	} while (false)
 
 #define MSC_THROW_TYPE_ERROR(desc, ...) \
 	do \
 	{ \
-		MSC_ERROR("throwing MediaSoupClientTypeError: " desc, ##__VA_ARGS__); \
+		MSC_ERROR("throwing TypeError: " desc, ##__VA_ARGS__); \
 		\
 		static char buffer[2000]; \
 		\
@@ -114,21 +114,21 @@ namespace errors
 #define MSC_THROW_UNSUPPORTED_ERROR(desc, ...) \
 	do \
 	{ \
-		MSC_ERROR("throwing MediaSoupClientUnsupportedError: " desc, ##__VA_ARGS__); \
+		MSC_ERROR("throwing UnsupportedError: " desc, ##__VA_ARGS__); \
 		\
 		static char buffer[2000]; \
 		\
 		std::snprintf(buffer, 2000, desc, ##__VA_ARGS__); \
-		throw MediaSoupClientUnsupportedError(buffer); \
+		throw UnsupportedError(buffer); \
 	} while (false)
 
 #define MSC_THROW_INVALID_STATE_ERROR(desc, ...) \
 	do \
 	{ \
-		MSC_ERROR("throwing MediaSoupClientInvalidStateError: " desc, ##__VA_ARGS__); \
+		MSC_ERROR("throwing InvalidStateError: " desc, ##__VA_ARGS__); \
 		\
 		static char buffer[2000]; \
 		\
 		std::snprintf(buffer, 2000, desc, ##__VA_ARGS__); \
-		throw MediaSoupClientInvalidStateError(buffer); \
+		throw InvalidStateError(buffer); \
 	} while (false)
