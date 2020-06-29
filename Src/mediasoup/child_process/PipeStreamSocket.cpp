@@ -26,7 +26,8 @@ inline static void onRead(uv_stream_t* handle, ssize_t nread, const uv_buf_t* bu
 inline static void onWrite(uv_write_t* req, int status)
 {
 	auto* writeData = static_cast<PipeStreamSocket::UvWriteData*>(req->data);
-	PipeStreamSocket* socket = writeData->socket;
+	auto* handle = req->handle;
+	auto* socket = static_cast<PipeStreamSocket*>(handle->data);
 
 	// Delete the UvWriteData struct (which includes the uv_req_t and the store char[]).
 	std::free(writeData);
@@ -146,15 +147,11 @@ void PipeStreamSocket::Write(const uint8_t* data, size_t len)
 	if (len == 0)
 		return;
 
-	uv_buf_t buffer{};
-	int written;
-	int err;
-
 	// First try uv_try_write(). In case it can not directly send all the given data
 	// then build a uv_req_t and use uv_write().
 
-	buffer = uv_buf_init(reinterpret_cast<char*>(const_cast<uint8_t*>(data)), len);
-	written = uv_try_write(reinterpret_cast<uv_stream_t*>(this->uvHandle), &buffer, 1);
+	uv_buf_t buffer = uv_buf_init(reinterpret_cast<char*>(const_cast<uint8_t*>(data)), len);
+	int written = uv_try_write(reinterpret_cast<uv_stream_t*>(this->uvHandle), &buffer, 1);
 
 	// All the data was written. Done.
 	if (written == static_cast<int>(len))
@@ -162,42 +159,41 @@ void PipeStreamSocket::Write(const uint8_t* data, size_t len)
 		return;
 	}
 	// Cannot write any data at first time. Use uv_write().
-	if (written == UV_EAGAIN || written == UV_ENOSYS)
+	else if (written == UV_EAGAIN || written == UV_ENOSYS)
 	{
 		// Set written to 0 so pendingLen can be properly calculated.
 		written = 0;
 	}
-	// Error. Should not happen.
+	// Any other error.
 	else if (written < 0)
 	{
-		MSC_ERROR("uv_try_write() failed, closing the socket: %s", uv_strerror(written));
+		MSC_ERROR("uv_try_write() failed, trying uv_write(): %s", uv_strerror(written));
 
-		Destroy();
-
-		return;
+		// Set written to 0 so pendingLen can be properly calculated.
+		written = 0;
 	}
 
 	size_t pendingLen = len - written;
+	auto* writeData = new UvWriteData(pendingLen);
 
-	// Allocate a special UvWriteData struct pointer.
-	auto* writeData = static_cast<UvWriteData*>(std::malloc(sizeof(UvWriteData) + pendingLen));
-
-	writeData->socket = this;
+	writeData->req.data = static_cast<void*>(writeData);
 	std::memcpy(writeData->store, data + written, pendingLen);
-	writeData->req.data = (void*)writeData;
 
 	buffer = uv_buf_init(reinterpret_cast<char*>(writeData->store), pendingLen);
 
-	err = uv_write(
+	int err = uv_write(
 		&writeData->req,
 		reinterpret_cast<uv_stream_t*>(this->uvHandle),
 		&buffer,
 		1,
 		static_cast<uv_write_cb>(onWrite));
+
 	if (err != 0)
 	{
 		MSC_ERROR("uv_write() failed: %s", uv_strerror(err));
-		std::abort();
+
+		// Delete the UvSendData struct.
+		delete writeData;
 	}
 }
 

@@ -8,7 +8,7 @@
 #include "supportedRtpCapabilities.hpp"
 #include "scalabilityModes.hpp"
 #include "SctpParameters.hpp"
-#include <media/base/h264_profile_level_id.h>
+//#include <media/base/h264_profile_level_id.h>
 
 #include <algorithm> // std::find_if
 #include <regex>
@@ -2241,39 +2241,39 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 		// If strict matching check profile-level-id.
 		if (strict)
 		{
-			webrtc::H264::CodecParameterMap aParameters;
-			webrtc::H264::CodecParameterMap bParameters;
-
-			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
-			aParameters["packetization-mode"] = std::to_string(aPacketizationMode);
-			aParameters["profile-level-id"] = getH264ProfileLevelId(aCodec);
-			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
-			bParameters["packetization-mode"] = std::to_string(bPacketizationMode);
-			bParameters["profile-level-id"] = getH264ProfileLevelId(bCodec);
-
-			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
-				return false;
-
-			webrtc::H264::CodecParameterMap newParameters;
-
-			try
-			{
-				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
-			}
-			catch (std::runtime_error)
-			{
-				return false;
-			}
-
-			if (modify)
-			{
-				auto profileLevelIdIt = newParameters.find("profile-level-id");
-
-				if (profileLevelIdIt != newParameters.end())
-					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
-				else
-					aCodec["parameters"].erase("profile-level-id");
-			}
+// 			webrtc::H264::CodecParameterMap aParameters;
+// 			webrtc::H264::CodecParameterMap bParameters;
+// 
+// 			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
+// 			aParameters["packetization-mode"] = std::to_string(aPacketizationMode);
+// 			aParameters["profile-level-id"] = getH264ProfileLevelId(aCodec);
+// 			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
+// 			bParameters["packetization-mode"] = std::to_string(bPacketizationMode);
+// 			bParameters["profile-level-id"] = getH264ProfileLevelId(bCodec);
+// 
+// 			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
+// 				return false;
+// 
+// 			webrtc::H264::CodecParameterMap newParameters;
+// 
+// 			try
+// 			{
+// 				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
+// 			}
+// 			catch (std::runtime_error)
+// 			{
+// 				return false;
+// 			}
+// 
+// 			if (modify)
+// 			{
+// 				auto profileLevelIdIt = newParameters.find("profile-level-id");
+// 
+// 				if (profileLevelIdIt != newParameters.end())
+// 					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
+// 				else
+// 					aCodec["parameters"].erase("profile-level-id");
+// 			}
 		}
 	}
 	// Match VP9 parameters.

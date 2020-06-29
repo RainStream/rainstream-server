@@ -69,6 +69,12 @@
     <ClCompile Include="Producer.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="supportedRtpCapabilities.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="PayloadChannel.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="child_process\PipeStreamSocket.hpp">

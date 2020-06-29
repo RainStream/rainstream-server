@@ -9,7 +9,7 @@
 #include "utils.hpp"
 #include "Router.hpp"
 #include "ortc.hpp"
-//#include "PayloadChannel.hpp"
+#include "PayloadChannel.hpp"
 #include "child_process/SubProcess.hpp"
 
 #define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
@@ -77,8 +77,8 @@ Worker::Worker(json settings)
 		this->_child->stdio()[4],
 		this->_pid);
 
-// 	this->_payloadChannel = new PayloadChannel(this->_child->stdio()[5],
-// 		this->_child->stdio()[6]);
+	this->_payloadChannel = new PayloadChannel(this->_child->stdio()[5],
+		this->_child->stdio()[6]);
 
 	this->_appData = settings.value("appData", json());
 
@@ -205,7 +205,7 @@ void Worker::close()
 	this->_channel->close();
 
 	// Close the PayloadChannel instance.
-//	this->_payloadChannel->close();
+	this->_payloadChannel->close();
 
 	// Close every Router.
 	for (Router* router : this->_routers)
@@ -222,9 +222,9 @@ std::future<json> Worker::dump()
 {
 	MSC_DEBUG("dump()");
 
-	json ret = co_await this->_channel->request("worker.dump");
+	return this->_channel->request("worker.dump");
 
-	co_return ret;
+	//co_return ret;
 }
 // 
 // 	Defer Worker::updateSettings(json& spawnOptions)

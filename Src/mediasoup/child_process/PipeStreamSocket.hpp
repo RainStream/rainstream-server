@@ -10,9 +10,21 @@ public:
 	/* Struct for the data field of uv_req_t when writing data. */
 	struct UvWriteData
 	{
-		PipeStreamSocket* socket{ nullptr };
+		explicit UvWriteData(size_t storeSize)
+		{
+			this->store = new uint8_t[storeSize];
+		}
+
+		// Disable copy constructor because of the dynamically allocated data (store).
+		UvWriteData(const UvWriteData&) = delete;
+
+		~UvWriteData()
+		{
+			delete[] this->store;
+		}
+
 		uv_write_t req;
-		uint8_t store[1];
+		uint8_t* store{ nullptr };
 	};
 
 public:

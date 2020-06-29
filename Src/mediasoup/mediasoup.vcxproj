@@ -166,11 +166,13 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="ortc.cpp" />
+    <ClCompile Include="PayloadChannel.cpp" />
     <ClCompile Include="PipeTransport.cpp" />
     <ClCompile Include="PlainTransport.cpp" />
     <ClCompile Include="Producer.cpp" />
     <ClCompile Include="Router.cpp" />
     <ClCompile Include="scalabilityModes.cpp" />
+    <ClCompile Include="supportedRtpCapabilities.cpp" />
     <ClCompile Include="Transport.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="WebRtcTransport.cpp" />

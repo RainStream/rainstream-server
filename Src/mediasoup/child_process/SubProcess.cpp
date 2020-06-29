@@ -50,35 +50,30 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 			uv_stdio_container_t child_stdio;
 			Socket* socket = nullptr;
 
-			if (i == 0)
+			if (stdio_type == "ignore")
 			{
-				child_stdio.data.fd = i;//stdin
+				//child_stdio.data.fd = i;
 				child_stdio.flags = UV_IGNORE;
 			}
-			else if (i == 1)
+			else if (stdio_type == "pipe")
 			{
-				child_stdio.data.fd = i;//stdout
-				child_stdio.flags = UV_INHERIT_FD;
+				socket = new Socket;
+				//child_stdio.data.fd = i;
+				child_stdio.flags = static_cast<uv_stdio_flags>(
+					UV_CREATE_PIPE | UV_READABLE_PIPE | UV_WRITABLE_PIPE);
+				child_stdio.data.stream = (uv_stream_t*)socket->GetUvHandle();
 			}
-			else if (i == 2)
+			else if (stdio_type == "warp")
 			{
-				child_stdio.data.fd = i;//stderr
-				child_stdio.flags = UV_INHERIT_FD;
+				socket = new Socket;
+				//child_stdio.data.fd = i;
+				child_stdio.flags = UV_INHERIT_STREAM;
+				child_stdio.data.stream = (uv_stream_t*)socket->GetUvHandle();
 			}
 			else
 			{
-				if (stdio_type == "pipe")
-				{
-					socket = new Socket;
-					child_stdio.data.fd = i;//channel
-					child_stdio.flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE | UV_WRITABLE_PIPE);
-					child_stdio.data.stream = (uv_stream_t*)socket->GetUvHandle();
-				}
-				else
-				{
-					child_stdio.data.fd = i;
-					child_stdio.flags = UV_IGNORE;
-				}
+				child_stdio.data.fd = i;
+				child_stdio.flags = UV_INHERIT_FD;
 			}
 
 			subProcess->_stdio.push_back(socket);
@@ -97,15 +92,14 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 		}
 	}
 
-	std::vector<char*> envs;
-	for (auto &env : strEnvs)
+	subProcess->options.env = new char*[strEnvs.size() + 1];
+	for (int i = 0; i < strEnvs.size(); ++i)
 	{
-		envs.push_back(env.data());
+		subProcess->options.env[i] = strdup(strEnvs[i].c_str());
 	}
-	envs.push_back('\0');
+	subProcess->options.env[strEnvs.size()] = nullptr;
 
 	subProcess->options.args = spawnArgs.data();
-	subProcess->options.env = envs.data();
 	subProcess->options.file = spawnArgs[0];
 	subProcess->options.stdio = child_stdios.data();
 	subProcess->options.stdio_count = child_stdios.size();
@@ -121,9 +115,19 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 
 		delete subProcess;
 		subProcess = nullptr;
-
-		return nullptr;
 	}
+
+// 	if (subProcess->options.args) {
+// 		for (int i = 0; subProcess->options.args[i]; i++) free(subProcess->options.args[i]);
+// 		delete[] subProcess->options.args;
+// 	}
+
+	if (subProcess->options.env) {
+		for (int i = 0; subProcess->options.env[i]; i++) free(subProcess->options.env[i]);
+		delete[] subProcess->options.env;
+	}
+
+	//delete[] subProcess->options.stdio;
 
 
 	return subProcess;

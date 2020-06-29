@@ -88,7 +88,7 @@ Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 	});
 
 	_consumerSocket->Start();
-	_producerSocket->Start();
+	//_producerSocket->Start();
 }
 
 
