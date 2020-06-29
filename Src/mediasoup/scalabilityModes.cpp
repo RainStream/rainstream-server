@@ -1,5 +1,6 @@
 #define MSC_CLASS "scalabilityMode"
 
+#include "common.hpp"
 #include "scalabilityModes.hpp"
 #include "Logger.hpp"
 #include <regex>

@@ -1,3 +1,5 @@
+#define MSC_CLASS "SubProcess"
+
 #include "common.hpp"
 #include "SubProcess.hpp"
 #include "Socket.hpp"
@@ -115,7 +117,7 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 	int err = uv_spawn(uv_default_loop(), &subProcess->req, &subProcess->options);
 	if (err != 0)
 	{
-		subProcess->logger->error("uv_spawn() failed: ", uv_strerror(err));
+		MSC_ERROR("uv_spawn() failed: %s", uv_strerror(err));
 
 		delete subProcess;
 		subProcess = nullptr;
@@ -128,7 +130,6 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 }
 
 SubProcess::SubProcess()
-	: logger(new Logger("Socket"))
 {
 
 }
@@ -142,7 +143,7 @@ void SubProcess::Close(std::string error)
 {
 	if (this->closed)
 	{
-		logger->error("already closed");
+		MSC_ERROR("already closed");
 		return;
 	}
 
@@ -179,6 +180,6 @@ void SubProcess::OnUvReqClosed(int64_t exit_status, int term_signal)
 
 	emit("exit", exit_status, term_signal);
 
-	logger->error("child process exited code:%d, signal:%d",
+	MSC_ERROR("child process exited code:%lld, signal:%d",
 		exit_status, term_signal);
 }

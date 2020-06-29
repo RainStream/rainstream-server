@@ -1,7 +1,5 @@
 #pragma once 
 
-#include "common.hpp"
-
 struct NumSctpStreams
 {
 	/**

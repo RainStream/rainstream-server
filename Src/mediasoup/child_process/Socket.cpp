@@ -1,3 +1,5 @@
+#define MSC_CLASS "Socket"
+
 #include "common.hpp"
 #include "Socket.hpp"
 #include "Logger.hpp"
@@ -21,7 +23,6 @@ static uint8_t WriteBuffer[MaxSize];
 
 Socket::Socket()
 	: PipeStreamSocket(MaxSize)
-	, logger(new Logger("Socket"))
 {
 
 }
@@ -69,7 +70,7 @@ void Socket::UserOnPipeStreamRead()
 					// The message is too big, so discard it.
 					else
 					{
-						logger->error("no more space in the buffer for the unfinished message being parsed, "
+						MSC_ERROR("no more space in the buffer for the unfinished message being parsed, "
 							"discarding it");
 
 						this->msgStart = 0;
@@ -82,23 +83,23 @@ void Socket::UserOnPipeStreamRead()
 				return;
 
 			case NETSTRING_ERROR_TOO_LONG:
-				logger->error("NETSTRING_ERROR_TOO_LONG");
+				MSC_ERROR("NETSTRING_ERROR_TOO_LONG");
 				break;
 
 			case NETSTRING_ERROR_NO_COLON:
-				logger->error("NETSTRING_ERROR_NO_COLON");
+				MSC_ERROR("NETSTRING_ERROR_NO_COLON");
 				break;
 
 			case NETSTRING_ERROR_NO_COMMA:
-				logger->error("NETSTRING_ERROR_NO_COMMA");
+				MSC_ERROR("NETSTRING_ERROR_NO_COMMA");
 				break;
 
 			case NETSTRING_ERROR_LEADING_ZERO:
-				logger->error("NETSTRING_ERROR_LEADING_ZERO");
+				MSC_ERROR("NETSTRING_ERROR_LEADING_ZERO");
 				break;
 
 			case NETSTRING_ERROR_NO_LENGTH:
-				logger->error("NETSTRING_ERROR_NO_LENGTH");
+				MSC_ERROR("NETSTRING_ERROR_NO_LENGTH");
 				break;
 			}
 

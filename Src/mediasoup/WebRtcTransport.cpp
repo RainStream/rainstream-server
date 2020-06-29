@@ -1,7 +1,10 @@
+#define MSC_CLASS "WebRtcTransport"
 
+#include "common.hpp"
 #include "WebRtcTransport.hpp"
 #include "Channel.hpp"
-
+#include "Logger.hpp"
+#include "SctpParameters.hpp"
 
 /**
  * @private
@@ -22,9 +25,8 @@ WebRtcTransport::WebRtcTransport(const json& internal,
 	: Transport(internal, data, channel, payloadChannel,
 		appData, getRouterRtpCapabilities,
 		getProducerById, getDataProducerById)
-	, logger(new Logger("WebRtcTransport"))
 {
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	this->_data =
 	{
@@ -196,7 +198,7 @@ void WebRtcTransport::routerClosed()
  */
 std::future<json> WebRtcTransport::getStats()
 {
-	logger->debug("getStats()");
+	MSC_DEBUG("getStats()");
 
 	json ret = co_await this->_channel->request("transport.getStats", this->_internal);
 
@@ -210,7 +212,7 @@ std::future<json> WebRtcTransport::getStats()
  */
 std::future<void> WebRtcTransport::connect(DtlsParameters dtlsParameters)
 {
-	logger->debug("connect()");
+	MSC_DEBUG("connect()");
 
 	json reqData = { { "dtlsParameters", dtlsParameters } };
 
@@ -226,7 +228,7 @@ std::future<void> WebRtcTransport::connect(DtlsParameters dtlsParameters)
  */
 std::future<IceParameters> WebRtcTransport::restartIce()
 {
-	logger->debug("restartIce()");
+	MSC_DEBUG("restartIce()");
 
 	json data =
 		co_await this->_channel->request("transport.restartIce", this->_internal);
@@ -301,7 +303,7 @@ void WebRtcTransport::_handleWorkerNotifications()
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 		}
 	});
 }

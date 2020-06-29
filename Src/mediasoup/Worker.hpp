@@ -1,9 +1,5 @@
 #pragma once
 
-#include <future>
-#include "Logger.hpp"
-#include "utils.hpp"
-#include "common.hpp"
 #include "EnhancedEventEmitter.hpp"
 
 
@@ -34,8 +30,6 @@ public:
 	std::future<Router*> createRouter(json& mediaCodecs, json& appData = json());
 
 private:
-	Logger* logger;
-
 	SubProcess* _child{ nullptr };
 
 	uint32_t _pid{ 0 };

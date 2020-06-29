@@ -1,7 +1,5 @@
 #pragma once
 
-#include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 
 class Channel;
@@ -319,7 +317,6 @@ private:
 	void _handleWorkerNotifications();
 
 private:
-	Logger* logger;
 	// Internal data.
 	json _internal;
 

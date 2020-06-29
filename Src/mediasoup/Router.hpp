@@ -1,15 +1,7 @@
 #pragma once 
 
 // import { AwaitQueue } from "awaitqueue";
-#include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-#include "ortc.hpp"
-#include "errors.hpp"
-#include "Channel.hpp"
-#include "Transport.hpp"
-#include "RtpParameters.hpp"
-#include "SctpParameters.hpp"
 
 class Channel;
 class Router;
@@ -25,85 +17,6 @@ class WebRtcTransport;
 class PlainTransport;
 class PipeTransport;
 
-
-struct RouterOptions
-{
-	/**
-	 * Router media codecs.
-	 */
-	std::vector<json> mediaCodecs;
-
-	/**
-	 * Custom application data.
-	 */
-	json appData;
-};
-
-struct PipeToRouterOptions
-{
-	/**
-	 * The id of the Producer to consume.
-	 */
-	std::string producerId;
-
-	/**
-	 * The id of the DataProducer to consume.
-	 */
-	std::string dataProducerId;
-
-	/**
-	 * Target Router instance.
-	 */
-	Router* router;
-
-	/**
-	 * IP used in the PipeTransport pair. Default "127.0.0.1".
-	 */
-	TransportListenIp listenIp;
-
-	/**
-	 * Create a SCTP association. Default false.
-	 */
-	bool enableSctp;
-
-	/**
-	 * SCTP streams uint32_t.
-	 */
-	NumSctpStreams numSctpStreams;
-
-	/**
-	 * Enable RTX and NACK for RTP retransmission.
-	 */
-	bool enableRtx;
-
-	/**
-	 * Enable SRTP.
-	 */
-	bool enableSrtp;
-};
-
-struct PipeToRouterResult
-{
-	/**
-	 * The Consumer created in the current Router.
-	 */
-	Consumer* pipeConsumer;
-
-	/**
-	 * The Producer created in the target Router.
-	 */
-	Producer* pipeProducer;
-
-	/**
-	 * The DataConsumer created in the current Router.
-	 */
-	DataConsumer* pipeDataConsumer;
-
-	/**
-	 * The DataProducer created in the target Router.
-	 */
-	DataProducer* pipeDataProducer;
-};
 
 class Router : public EnhancedEventEmitter
 {
@@ -258,7 +171,6 @@ public:
 	bool canConsume(std::string producerId, json& rtpCapabilities);
 
 private:
-	Logger* logger;
 	// Internal data.
 	json _internal;
 

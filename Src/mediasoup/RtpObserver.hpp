@@ -1,8 +1,7 @@
 #pragma once 
 
-#include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
+#include "Logger.hpp"
 #include "Channel.hpp"
 //#include "PayloadChannel.hpp"
 #include "Producer.hpp"
@@ -11,7 +10,6 @@ class Producer;
 
 class RtpObserver : public EnhancedEventEmitter
 {
-	Logger* logger;
 	// Internal data.
 protected:
 	json _internal;
@@ -58,9 +56,8 @@ public:
 		GetProducerById getProducerById
 	)
 		: EnhancedEventEmitter()
-		, logger(new Logger("RtpObserver"))
 	{
-		logger->debug("constructor()");
+		MSC_DEBUG("constructor()");
 
 		this->_internal = internal;
 		this->_channel = channel;
@@ -131,7 +128,7 @@ public:
 		if (this->_closed)
 			return;
 
-		logger->debug("close()");
+		MSC_DEBUG("close()");
 
 		this->_closed = true;
 
@@ -163,7 +160,7 @@ public:
 		if (this->_closed)
 			return;
 
-		logger->debug("routerClosed()");
+		MSC_DEBUG("routerClosed()");
 
 		this->_closed = true;
 
@@ -181,7 +178,7 @@ public:
 	 */
 	std::future<void> pause()
 	{
-		logger->debug("pause()");
+		MSC_DEBUG("pause()");
 
 		bool wasPaused = this->_paused;
 
@@ -199,7 +196,7 @@ public:
 	 */
 	std::future<void> resume()
 	{
-		logger->debug("resume()");
+		MSC_DEBUG("resume()");
 
 		bool wasPaused = this->_paused;
 
@@ -217,7 +214,7 @@ public:
 	 */
 	std::future<void> addProducer(std::string producerId)
 	{
-		logger->debug("addProducer()");
+		MSC_DEBUG("addProducer()");
 
 		Producer* producer = this->_getProducerById(producerId);
 		json internal = this->_internal;
@@ -234,7 +231,7 @@ public:
 	 */
 	std::future<void> removeProducer(std::string producerId)
 	{
-		logger->debug("removeProducer()");
+		MSC_DEBUG("removeProducer()");
 
 		Producer* producer = this->_getProducerById(producerId);
 		json internal = this->_internal;

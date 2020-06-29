@@ -1,7 +1,11 @@
+#define MSC_CLASS "Transport"
 
+#include "common.hpp"
 #include "Transport.hpp"
 #include "utils.hpp"
 #include "ortc.hpp"
+#include "errors.hpp"
+#include "Logger.hpp"
 #include "Channel.hpp"
 #include "Producer.hpp"
 #include "Consumer.hpp"
@@ -32,9 +36,8 @@ Transport::Transport(
 	GetDataProducerById getDataProducerById
 )
 	: EnhancedEventEmitter()
-	, logger(new Logger("Transport"))
 {
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	this->_internal = internal;
 	this->_data = data;
@@ -100,7 +103,7 @@ void Transport::close()
 	if (this->_closed)
 		return;
 
-	logger->debug("close()");
+	MSC_DEBUG("close()");
 
 	this->_closed = true;
 
@@ -167,7 +170,7 @@ void Transport::routerClosed()
 	if (this->_closed)
 		return;
 
-	logger->debug("routerClosed()");
+	MSC_DEBUG("routerClosed()");
 
 	this->_closed = true;
 
@@ -219,7 +222,7 @@ void Transport::routerClosed()
  */
 std::future<json> Transport::dump()
 {
-	logger->debug("dump()");
+	MSC_DEBUG("dump()");
 
 	json ret = co_await this->_channel->request("transport.dump", this->_internal);
 
@@ -254,7 +257,7 @@ std::future<void> Transport::connect(json params)
  */
 std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 {
-	logger->debug("setMaxIncomingBitrate() [bitrate:%s]", bitrate);
+	MSC_DEBUG("setMaxIncomingBitrate() [bitrate:%d]", bitrate);
 
 	json reqData = { {"bitrate", bitrate} };
 
@@ -276,7 +279,7 @@ std::future<Producer*> Transport::produce(
 {
 	static std::set<std::string> kinds = { "audio","video" };
 
-	logger->debug("produce()");
+	MSC_DEBUG("produce()");
 
 	if (!id.empty() && this->_producers.count(id))
 		throw new TypeError(utils::Printf("a Producer with same id \"${ %s }\" already exists", id.c_str()));
@@ -382,12 +385,12 @@ std::future<Producer*> Transport::produce(
  */
 std::future<Consumer*> Transport::consume(
 	std::string producerId,
-	json rtpCapabilities,
+	json& rtpCapabilities,
 	bool paused/* = false*/,
-	json preferredLayers/* = json()*/,
-	json appData/* = json()*/)
+	json& preferredLayers/* = json()*/,
+	json& appData/* = json()*/)
 {
-	logger->debug("consume()");
+	MSC_DEBUG("consume()");
 
 	if (!appData.is_null() && !appData.is_object())
 		throw new TypeError("if given, appData must be an object");
@@ -410,7 +413,7 @@ std::future<Consumer*> Transport::consume(
 	// We use up to 8 bytes for MID (string).
 	if (this->_nextMidForConsumers == 100000000)
 	{
-		logger->error("consume() | reaching max MID value \"${%ud}\"", this->_nextMidForConsumers);
+		MSC_ERROR("consume() | reaching max MID value \"${%ud}\"", this->_nextMidForConsumers);
 
 		this->_nextMidForConsumers = 0;
 	}
@@ -473,7 +476,7 @@ std::future<Consumer*> Transport::consume(
  // 		}: DataProducerOptions = {}
  // 	)
  // 	{
- // 		logger->debug("produceData()");
+ // 		MSC_DEBUG("produceData()");
  // 
  // 		if (id && this->_dataProducers.has(id))
  // 			throw new TypeError(`a DataProducer with same id "${id}" already exists`);
@@ -497,7 +500,7 @@ std::future<Consumer*> Transport::consume(
  // 
  // 			if (sctpStreamParameters)
  // 			{
- // 				logger->warn(
+ // 				MSC_WARN(
  // 					"produceData() | sctpStreamParameters are ignored when producing data on a DirectTransport");
  // 			}
  // 		}
@@ -551,7 +554,7 @@ std::future<Consumer*> Transport::consume(
 	  // 		}: DataConsumerOptions
 	  // 	)
 	  // 	{
-	  // 		logger->debug("consumeData()");
+	  // 		MSC_DEBUG("consumeData()");
 	  // 
 	  // 		if (!dataProducerId || typeof dataProducerId != "string")
 	  // 			throw new TypeError("missing dataProducerId");
@@ -602,7 +605,7 @@ std::future<Consumer*> Transport::consume(
 	  // 				maxRetransmits != undefined
 	  // 			)
 	  // 			{
-	  // 				logger->warn(
+	  // 				MSC_WARN(
 	  // 					"consumeData() | ordered, maxPacketLifeTime and maxRetransmits are ignored when consuming data on a DirectTransport");
 	  // 			}
 	  // 		}
@@ -657,7 +660,7 @@ std::future<Consumer*> Transport::consume(
 		   */
 std::future<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> types)
 {
-	logger->debug("pause()");
+	MSC_DEBUG("pause()");
 
 	json reqData = { types };
 

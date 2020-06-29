@@ -1,10 +1,15 @@
+#define MSC_CLASS "PipeTransport"
 
+#include "common.hpp"
 #include "PipeTransport.hpp"
 #include "ortc.hpp"
-#include "Transport.hpp"
+#include "utils.hpp"
+#include "errors.hpp"
+#include "Logger.hpp"
 #include "Producer.hpp"
 #include "Consumer.hpp"
 #include "Channel.hpp"
+
 
 
 /**
@@ -23,9 +28,8 @@ PipeTransport::PipeTransport(const json& internal,
 	: Transport(internal, data, channel, payloadChannel,
 		appData, getRouterRtpCapabilities,
 		getProducerById, getDataProducerById)
-	, logger(new Logger("PipeTransport"))
 {
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	this->_data =
 	{
@@ -133,7 +137,7 @@ void PipeTransport::routerClosed()
  */
 std::future<json> PipeTransport::getStats()
 {
-	logger->debug("getStats()");
+	MSC_DEBUG("getStats()");
 
 	json ret = co_await this->_channel->request("transport.getStats", this->_internal);
 
@@ -148,10 +152,10 @@ std::future<json> PipeTransport::getStats()
 std::future<void> PipeTransport::connect(
 	std::string ip,
 	uint32_t port,
-	SrtpParameters srtpParameters
+	SrtpParameters& srtpParameters
 )
 {
-	logger->debug("connect()");
+	MSC_DEBUG("connect()");
 
 	json reqData = {
 		{ "ip", ip },
@@ -171,9 +175,9 @@ std::future<void> PipeTransport::connect(
  *
  * @override
  */
-std::future<Consumer*> PipeTransport::consume(std::string producerId, json appData/* = json()*/)
+std::future<Consumer*> PipeTransport::consume(std::string producerId, json& appData/* = json()*/)
 {
-	logger->debug("consume()");
+	MSC_DEBUG("consume()");
 
 	if (producerId.empty())
 		throw new TypeError("missing producerId");
@@ -255,7 +259,7 @@ void PipeTransport::_handleWorkerNotifications()
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 		}
 	});
 }

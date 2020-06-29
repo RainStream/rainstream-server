@@ -1,4 +1,5 @@
 
+#include "common.hpp"
 #include "supportedRtpCapabilities.hpp"
 
 json supportedRtpCapabilities =

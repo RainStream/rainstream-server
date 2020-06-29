@@ -1,11 +1,8 @@
 #pragma once 
 
-#include "common.hpp"
-#include "Logger.hpp"
-
 #include "EnhancedEventEmitter.hpp"
 #include "Transport.hpp"
-#include "SctpParameters.hpp"
+
 
 using IceState = std::string;// "new" | "connected" | "completed" | "disconnected" | "closed";
 
@@ -332,8 +329,6 @@ private:
 	void _handleWorkerNotifications();
 
 private:
-	Logger* logger;
-
 	// WebRtcTransport data.
 	json _data;
 };

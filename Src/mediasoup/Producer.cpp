@@ -1,5 +1,11 @@
+#define MSC_CLASS "Producer"
 
+#include "common.hpp"
 #include "Producer.hpp"
+#include "Logger.hpp"
+#include "errors.hpp"
+#include "Channel.hpp"
+
 
 /**
  * @private
@@ -16,9 +22,8 @@ Producer::Producer(json internal,
 	bool paused
 )
 	: EnhancedEventEmitter()
-	, logger(new Logger("Producer"))
 {
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	this->_internal = internal;
 	this->_data = data;
@@ -134,7 +139,7 @@ void Producer::close()
 	if (this->_closed)
 		return;
 
-	logger->debug("close()");
+	MSC_DEBUG("close()");
 
 	this->_closed = true;
 
@@ -166,7 +171,7 @@ void Producer::transportClosed()
 	if (this->_closed)
 		return;
 
-	logger->debug("transportClosed()");
+	MSC_DEBUG("transportClosed()");
 
 	this->_closed = true;
 
@@ -184,7 +189,7 @@ void Producer::transportClosed()
  */
 std::future<json> Producer::dump()
 {
-	logger->debug("dump()");
+	MSC_DEBUG("dump()");
 
 	json ret = co_await this->_channel->request("producer.dump", this->_internal);
 
@@ -196,7 +201,7 @@ std::future<json> Producer::dump()
  */
 std::future<json> Producer::getStats()
 {
-	logger->debug("getStats()");
+	MSC_DEBUG("getStats()");
 
 	json ret = co_await this->_channel->request("producer.getStats", this->_internal);
 
@@ -208,7 +213,7 @@ std::future<json> Producer::getStats()
 	  */
 std::future<void> Producer::pause()
 {
-	logger->debug("pause()");
+	MSC_DEBUG("pause()");
 
 	bool wasPaused = this->_paused;
 
@@ -226,7 +231,7 @@ std::future<void> Producer::pause()
  */
 std::future<void> Producer::resume()
 {
-	logger->debug("resume()");
+	MSC_DEBUG("resume()");
 
 	bool wasPaused = this->_paused;
 
@@ -244,7 +249,7 @@ std::future<void> Producer::resume()
  */
 std::future<void> Producer::enableTraceEvent(std::vector<ProducerTraceEventType> types)
 {
-	logger->debug("enableTraceEvent()");
+	MSC_DEBUG("enableTraceEvent()");
 
 	json reqData = { {"types", types } };
 
@@ -288,7 +293,7 @@ void Producer::_handleWorkerNotifications()
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 		}
 
 	});

@@ -1,6 +1,5 @@
 #pragma once 
 
-#include "common.hpp"
 #include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "Channel.hpp"
@@ -50,8 +49,6 @@ struct DataProducerStat
  * DataProducer type.
  */
 struct DataProducerType = "sctp" | "direct";
-
-const Logger* logger = new Logger("DataProducer");
 
 class DataProducer : public EnhancedEventEmitter
 {
@@ -112,7 +109,7 @@ private:
 	{
 		super();
 
-		logger->debug("constructor()");
+		MSC_DEBUG("constructor()");
 
 		this->_internal = internal;
 		this->_data = data;
@@ -205,7 +202,7 @@ private:
 		if (this->_closed)
 			return;
 
-		logger->debug("close()");
+		MSC_DEBUG("close()");
 
 		this->_closed = true;
 
@@ -231,7 +228,7 @@ private:
 		if (this->_closed)
 			return;
 
-		logger->debug("transportClosed()");
+		MSC_DEBUG("transportClosed()");
 
 		this->_closed = true;
 
@@ -246,7 +243,7 @@ private:
 	 */
 	std::future<json> dump()
 	{
-		logger->debug("dump()");
+		MSC_DEBUG("dump()");
 
 		co_return this->_channel->request("dataProducer.dump", this->_internal);
 	}
@@ -256,7 +253,7 @@ private:
 	 */
 	async getStats(): Promise<DataProducerStat[]>
 	{
-		logger->debug("getStats()");
+		MSC_DEBUG("getStats()");
 
 		co_return this->_channel->request("dataProducer.getStats", this->_internal);
 	}
@@ -266,7 +263,7 @@ private:
 	 */
 	send(message | Buffer, ppid?): void
 	{
-		logger->debug("send()");
+		MSC_DEBUG("send()");
 
 		if (typeof message != "string" && !Buffer.isBuffer(message))
 		{

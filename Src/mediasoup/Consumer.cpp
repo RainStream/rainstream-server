@@ -1,8 +1,10 @@
+#define MSC_CLASS "Consumer"
 
+#include "common.hpp"
 #include "Consumer.hpp"
 #include "Channel.hpp"
-#include "Producer.hpp"
-#include "RtpParameters.hpp"
+#include "Logger.hpp"
+#include "errors.hpp"
 
 
 Consumer::Consumer(
@@ -14,10 +16,9 @@ Consumer::Consumer(
 	bool producerPaused,
 	ConsumerScore score/* = ConsumerScore()*/,
 	ConsumerLayers preferredLayers/* = ConsumerLayers()*/)
-	: EnhancedEventEmitter(),
-	logger(new Logger("Consumer"))
+	: EnhancedEventEmitter()
 {
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	this->_internal = internal;
 	this->_data = data;
@@ -166,7 +167,7 @@ void Consumer::close()
 	if (this->_closed)
 		return;
 
-	logger->debug("close()");
+	MSC_DEBUG("close()");
 
 	this->_closed = true;
 
@@ -198,7 +199,7 @@ void Consumer::transportClosed()
 	if (this->_closed)
 		return;
 
-	logger->debug("transportClosed()");
+	MSC_DEBUG("transportClosed()");
 
 	this->_closed = true;
 
@@ -216,7 +217,7 @@ void Consumer::transportClosed()
  */
 std::future<json> Consumer::dump()
 {
-	logger->debug("dump()");
+	MSC_DEBUG("dump()");
 
 	json ret = co_await this->_channel->request("consumer.dump", this->_internal);
 
@@ -228,7 +229,7 @@ std::future<json> Consumer::dump()
  */
 std::future<json> Consumer::getStats()
 {
-	logger->debug("getStats()");
+	MSC_DEBUG("getStats()");
 
 	json ret = co_await  this->_channel->request("consumer.getStats", this->_internal);
 
@@ -240,7 +241,7 @@ std::future<json> Consumer::getStats()
  */
 std::future<void> Consumer::pause()
 {
-	logger->debug("pause()");
+	MSC_DEBUG("pause()");
 
 	bool wasPaused = this->_paused || this->_producerPaused;
 
@@ -258,7 +259,7 @@ std::future<void> Consumer::pause()
  */
 std::future<void> Consumer::resume()
 {
-	logger->debug("resume()");
+	MSC_DEBUG("resume()");
 
 	bool wasPaused = this->_paused || this->_producerPaused;
 
@@ -279,7 +280,7 @@ std::future<void> Consumer::setPreferredLayers(
 	uint32_t temporalLayer
 )
 {
-	logger->debug("setPreferredLayers()");
+	MSC_DEBUG("setPreferredLayers()");
 
 	json reqData = {
 		{ "spatialLayer",spatialLayer },
@@ -297,7 +298,7 @@ std::future<void> Consumer::setPreferredLayers(
  */
 std::future<void> Consumer::setPriority(int priority)
 {
-	logger->debug("setPriority()");
+	MSC_DEBUG("setPriority()");
 
 	json reqData = { { "priority" , priority } };
 
@@ -312,7 +313,7 @@ std::future<void> Consumer::setPriority(int priority)
  */
 std::future<void> Consumer::unsetPriority()
 {
-	logger->debug("unsetPriority()");
+	MSC_DEBUG("unsetPriority()");
 
 	json reqData = { { "priority" , 1 } };
 
@@ -327,7 +328,7 @@ std::future<void> Consumer::unsetPriority()
  */
 std::future<void> Consumer::requestKeyFrame()
 {
-	logger->debug("requestKeyFrame()");
+	MSC_DEBUG("requestKeyFrame()");
 
 	co_await this->_channel->request("consumer.requestKeyFrame", this->_internal);
 }
@@ -337,7 +338,7 @@ std::future<void> Consumer::requestKeyFrame()
  */
 std::future<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
 {
-	logger->debug("enableTraceEvent()");
+	MSC_DEBUG("enableTraceEvent()");
 
 	json reqData = { types };
 
@@ -428,7 +429,7 @@ void Consumer::_handleWorkerNotifications()
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 		}
 	});
 }

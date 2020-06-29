@@ -59,8 +59,6 @@ protected:
 	uint8_t* buffer{ nullptr };
 	// Others.
 	size_t bufferDataLen{ 0 };
-
-	Logger* logger;
 };
 
 /* Inline methods. */

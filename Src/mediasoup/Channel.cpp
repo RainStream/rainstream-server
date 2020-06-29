@@ -1,7 +1,11 @@
+#define MSC_CLASS "Channel"
+
 #include "common.hpp"
 #include "Channel.hpp"
-#include "child_process/Socket.hpp"
 #include "Logger.hpp"
+#include "utils.hpp"
+#include "errors.hpp"
+#include "child_process/Socket.hpp"
 #include <netstring.h>
 
 
@@ -12,9 +16,8 @@ const int  NS_PAYLOAD_MAX_LEN = 4194304;
 static uint8_t WriteBuffer[NS_MESSAGE_MAX_LEN];
 
 Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
-	: logger(new Logger("Channel"))
 {
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	this->_producerSocket = producerSocket;
 	this->_consumerSocket = consumerSocket;
@@ -35,53 +38,53 @@ Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 
 				// 68 = "D" (a debug log).
 			case 68:
-				logger->debug(nsPayload.substr(1).c_str());
+				MSC_DEBUG("%s", nsPayload.substr(1).c_str());
 				break;
 
 				// 87 = "W" (a warning log).
 			case 87:
-				logger->warn(nsPayload.substr(1).c_str());
+				MSC_WARN("%s", nsPayload.substr(1).c_str());
 				break;
 
 				// 69 = "E" (an error log).
 			case 69:
-				logger->error(nsPayload.substr(1).c_str());
+				MSC_ERROR("%s", nsPayload.substr(1).c_str());
 				break;
 				// 88 = "X" (a dump log).
 			case 88:
 				// eslint-disable-next-line no-console
-				logger->debug(nsPayload.substr(1).c_str());
+				MSC_DEBUG("%s", nsPayload.substr(1).c_str());
 				break;
 
 			default:
-				logger->error("unexpected data: %s", nsPayload.c_str());
+				MSC_ERROR("unexpected data: %s", nsPayload.c_str());
 			}
 		}
 		catch (std::exception error)
 		{
-			logger->error("received invalid message : " , error.what());
+			MSC_ERROR("received invalid message : %s" , error.what());
 		}
 
 	});
 
 	this->_consumerSocket->on("end", [=](json data)
 	{
-		logger->debug("Consumer channel ended by the other side");
+		MSC_DEBUG("Consumer channel ended by the other side");
 	});
 
 	this->_consumerSocket->on("error", [=](json data)
 	{
-		logger->error("Consumer channel error:", data.dump().c_str());
+		MSC_ERROR("Consumer channel error: %s", data.dump().c_str());
 	});
 
 	this->_producerSocket->on("end", [=](json data)
 	{
-		logger->debug("Producer channel ended by the other side");
+		MSC_DEBUG("Producer channel ended by the other side");
 	});
 
 	this->_producerSocket->on("error", [=](json data)
 	{
-		logger->error("Producer channel error:", data.dump().c_str());
+		MSC_ERROR("Producer channel error: %s", data.dump().c_str());
 	});
 
 	_consumerSocket->Start();
@@ -94,7 +97,7 @@ void Channel::close()
 	if (this->_closed)
 		return;
 
-	logger->debug("close()");
+	MSC_DEBUG("close()");
 
 	this->_closed = true;
 
@@ -130,7 +133,7 @@ std::future<json> Channel::request(std::string method, const json& internal, con
 
 	uint32_t id = this->_nextId;
 
-	logger->debug("request() [method \"%s\", id: \"%d\"]", method.c_str(), id);
+	MSC_DEBUG("request() [method \"%s\", id: \"%d\"]", method.c_str(), id);
 
 	if (this->_closed)
 		throw new InvalidStateError("Channel closed");
@@ -171,14 +174,14 @@ void Channel::_processMessage(const json& msg)
 		uint32_t id = msg["id"].get<uint32_t>();
 
 		if (msg.count("accepted") && msg["accepted"].get<bool>())
-			logger->debug("request succeeded [id:\"%d\"]",id);
+			MSC_DEBUG("request succeeded [id:\"%d\"]",id);
 		else
-			logger->error("request failed [id:\"%d\"] reason:%s]", 
+			MSC_ERROR("request failed [id:\"%d\"] reason:%s]", 
 				id, msg["reason"].get<std::string>().c_str());
 
 		if (!this->_sents.count(id))
 		{
-			logger->error("received Response does not match any sent Request");
+			MSC_ERROR("received Response does not match any sent Request");
 			return;
 		}
 
@@ -201,7 +204,7 @@ void Channel::_processMessage(const json& msg)
 	// Otherwise unexpected message.
 	else
 	{
-		logger->error("received message is not a Response nor a Notification");
+		MSC_ERROR("received message is not a Response nor a Notification");
 	}
 }
 

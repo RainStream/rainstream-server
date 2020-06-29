@@ -35,6 +35,4 @@ private:
 	// Others.
 	size_t msgStart{ 0 }; // Where the latest message starts.
 	bool closed{ false };
-
-	Logger* logger;
 };

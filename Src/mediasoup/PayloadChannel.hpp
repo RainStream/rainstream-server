@@ -4,8 +4,8 @@ extern "C" {
 #include <netstring.h>
 }
 #include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
+#include "Logger.hpp"
 #include "errors.hpp"
 #include "child_process/Socket.hpp"
 
@@ -20,8 +20,6 @@ const int NS_PAYLOAD_MAX_LEN = 4194304;
 class PayloadChannel : public EnhancedEventEmitter
 {
 private:
-	Logger* logger;
-
 	// Closed flag.
 	bool _closed = false;
 
@@ -44,9 +42,8 @@ public:
 	PayloadChannel(Socket* producerSocket,
 		Socket* consumerSocket)
 		: EnhancedEventEmitter()
-		, logger(new Logger("PayloadChannel"))
 	{
-		logger->debug("constructor()");
+		MSC_DEBUG("constructor()");
 
 		this->_producerSocket = producerSocket;
 		this->_consumerSocket = consumerSocket;
@@ -67,7 +64,7 @@ public:
 
 			if (this->_recvBuffer!.length > NS_PAYLOAD_MAX_LEN)
 			{
-				logger->error("receiving buffer is full, discarding all data into it");
+				MSC_ERROR("receiving buffer is full, discarding all data into it");
 
 				// Reset the buffer and exit.
 				this->_recvBuffer = undefined;
@@ -85,7 +82,7 @@ public:
 				}
 				catch (error)
 				{
-					logger->error(
+					MSC_ERROR(
 						"invalid netstring data received from the worker process: %s",
 						String(error));
 
@@ -115,19 +112,19 @@ public:
 		});
 
 		this->_consumerSocket->on("end", () = > (
-			logger->debug("Consumer PayloadChannel ended by the worker process")
+			MSC_DEBUG("Consumer PayloadChannel ended by the worker process")
 			));
 
 		this->_consumerSocket->on("error", (error) = > (
-			logger->error("Consumer PayloadChannel error: %s", String(error))
+			MSC_ERROR("Consumer PayloadChannel error: %s", String(error))
 			));
 
 		this->_producerSocket->on("end", () = > (
-			logger->debug("Producer PayloadChannel ended by the worker process")
+			MSC_DEBUG("Producer PayloadChannel ended by the worker process")
 			));
 
 		this->_producerSocket->on("error", (error) = > (
-			logger->error("Producer PayloadChannel error: %s", String(error))
+			MSC_ERROR("Producer PayloadChannel error: %s", String(error))
 			));
 	}
 
@@ -139,7 +136,7 @@ public:
 		if (this->_closed)
 			return;
 
-		logger->debug("close()");
+		MSC_DEBUG("close()");
 
 		this->_closed = true;
 
@@ -173,7 +170,7 @@ public:
 		std::string payload  | Buffer
 	)
 	{
-		logger->debug("notify() [event:%s]", event);
+		MSC_DEBUG("notify() [event:%s]", event);
 
 		if (this->_closed)
 			throw new InvalidStateError("PayloadChannel closed");
@@ -194,7 +191,7 @@ public:
 		}
 		catch (error)
 		{
-			logger->warn("notify() | sending notification failed: %s", String(error));
+			MSC_WARN("notify() | sending notification failed: %s", String(error));
 
 			return;
 		}
@@ -206,7 +203,7 @@ public:
 		}
 		catch (error)
 		{
-			logger->warn("notify() | sending payload failed: %s", String(error));
+			MSC_WARN("notify() | sending payload failed: %s", String(error));
 
 			return;
 		}
@@ -225,7 +222,7 @@ private:
 			}
 			catch (error)
 			{
-				logger->error(
+				MSC_ERROR(
 					"received invalid data from the worker process: %s",
 					String(error));
 
@@ -234,7 +231,7 @@ private:
 
 			if (!msg.targetId || !msg.event)
 			{
-				logger->error("received message is not a notification");
+				MSC_ERROR("received message is not a notification");
 
 				return;
 			}

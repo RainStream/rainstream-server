@@ -43,11 +43,9 @@
 #ifndef MSC_LOGGER_HPP
 #define MSC_LOGGER_HPP
 
-#include <string>
 #include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
 #include <cstdlib> // std::abort()
 #include <cstring>
-#include "common.hpp"
 
 namespace mediasoupclient
 {
@@ -83,18 +81,6 @@ namespace mediasoupclient
 		static LogHandlerInterface* handler;
 		static const size_t bufferSize{ 50000 };
 		static char buffer[];
-
-	public:
-		Logger(std::string prefix);
-
-		void debug(const char * a_Format, ...);
-
-		void warn(const char * a_Format, ...);
-
-		void error(const char * a_Format, ...);
-
-	private:
-		std::string _prefix;
 	};
 } // namespace mediasoupclient
 

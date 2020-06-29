@@ -1,3 +1,5 @@
+#define MSC_CLASS "PipeStreamSocket"
+
 /**
  * NOTE: This code cannot log to the Channel since this is the base code of the
  * Channel.
@@ -53,7 +55,6 @@ inline static void onErrorClose(uv_handle_t* handle)
 
 PipeStreamSocket::PipeStreamSocket(size_t bufferSize)
 	: bufferSize(bufferSize)
-	, logger(new Logger("PipeStreamSocket"))
 {
 
 	int err;
@@ -67,7 +68,7 @@ PipeStreamSocket::PipeStreamSocket(size_t bufferSize)
 		delete this->uvHandle;
 		this->uvHandle = nullptr;
 
-		logger->warn("uv_pipe_init() failed: %s", uv_strerror(err));
+		MSC_WARN("uv_pipe_init() failed: %s", uv_strerror(err));
 	}
 }
 
@@ -94,7 +95,7 @@ void PipeStreamSocket::Start()
 	{
 		uv_close(reinterpret_cast<uv_handle_t*>(this->uvHandle), static_cast<uv_close_cb>(onErrorClose));
 
-		logger->warn("uv_read_start() failed: %s", uv_strerror(err));
+		MSC_WARN("uv_read_start() failed: %s", uv_strerror(err));
 	}
 }
 
@@ -111,7 +112,7 @@ void PipeStreamSocket::Destroy()
 	err = uv_read_stop(reinterpret_cast<uv_stream_t*>(this->uvHandle));
 	if (err != 0)
 	{
-		logger->error("uv_read_stop() failed: %s", uv_strerror(err));
+		MSC_ERROR("uv_read_stop() failed: %s", uv_strerror(err));
 		std::abort();
 	}
 
@@ -125,7 +126,7 @@ void PipeStreamSocket::Destroy()
 			req, reinterpret_cast<uv_stream_t*>(this->uvHandle), static_cast<uv_shutdown_cb>(onShutdown));
 		if (err != 0)
 		{
-			logger->error("uv_shutdown() failed: %s", uv_strerror(err));
+			MSC_ERROR("uv_shutdown() failed: %s", uv_strerror(err));
 			std::abort();
 		}
 
@@ -169,7 +170,7 @@ void PipeStreamSocket::Write(const uint8_t* data, size_t len)
 	// Error. Should not happen.
 	else if (written < 0)
 	{
-		logger->error("uv_try_write() failed, closing the socket: %s", uv_strerror(written));
+		MSC_ERROR("uv_try_write() failed, closing the socket: %s", uv_strerror(written));
 
 		Destroy();
 
@@ -195,7 +196,7 @@ void PipeStreamSocket::Write(const uint8_t* data, size_t len)
 		static_cast<uv_write_cb>(onWrite));
 	if (err != 0)
 	{
-		logger->error("uv_write() failed: %s", uv_strerror(err));
+		MSC_ERROR("uv_write() failed: %s", uv_strerror(err));
 		std::abort();
 	}
 }
@@ -217,7 +218,7 @@ inline void PipeStreamSocket::OnUvReadAlloc(size_t /*suggestedSize*/, uv_buf_t* 
 	{
 		buf->len = 0;
 
-		logger->error("no available space in the buffer");
+		MSC_ERROR("no available space in the buffer");
 	}
 }
 
@@ -246,7 +247,7 @@ inline void PipeStreamSocket::OnUvRead(ssize_t nread, const uv_buf_t* /*buf*/)
 	// Some error.
 	else
 	{
-		logger->error("read error, closing the pipe: %s", uv_strerror(nread));
+		MSC_ERROR("read error, closing the pipe: %s", uv_strerror(nread));
 
 		this->hasError = true;
 
@@ -263,7 +264,7 @@ inline void PipeStreamSocket::OnUvWriteError(int error)
 	if (error != UV_EPIPE && error != UV_ENOTCONN)
 		this->hasError = true;
 
-	logger->error("write error, closing the pipe: %s", uv_strerror(error));
+	MSC_ERROR("write error, closing the pipe: %s", uv_strerror(error));
 
 	Destroy();
 }
@@ -275,7 +276,7 @@ inline void PipeStreamSocket::OnUvShutdown(uv_shutdown_t* req, int status)
 
 	if (status != 0)
 	{
-		logger->error("shutdown error: %s", uv_strerror(status));
+		MSC_ERROR("shutdown error: %s", uv_strerror(status));
 	}
 
 	// Now do close the handle.

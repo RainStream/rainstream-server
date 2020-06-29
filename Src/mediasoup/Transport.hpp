@@ -1,12 +1,8 @@
-
 #pragma once 
 
-#include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-#include "RtpParameters.hpp"
-
-
+#include "SctpParameters.hpp"
+#include "SrtpParameters.hpp"
 
 struct TransportListenIp
 {
@@ -213,12 +209,12 @@ public:
 	 *
 	 * @virtual
 	 */
-	std::future<Consumer*> consume(
+	virtual std::future<Consumer*> consume(
 		std::string producerId,
-		json rtpCapabilities,
-		bool paused = false,
-		json preferredLayers = json(),
-		json appData = json()
+		json& rtpCapabilities,
+		bool paused /*= false*/,
+		json& preferredLayers = json(),
+		json& appData = json()
 	);
 
 	/**
@@ -255,8 +251,6 @@ public:
 // 	uint32_t _getNextSctpStreamId();
 
 protected:
-	Logger* logger;
-
 	// Internal data.
 	json _internal;
 

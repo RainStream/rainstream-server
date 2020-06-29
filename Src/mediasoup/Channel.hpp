@@ -1,9 +1,6 @@
 #pragma once
 
-#include <future>
 #include <unordered_map>
-#include "utils.hpp"
-#include "errors.hpp"
 #include "EnhancedEventEmitter.hpp"
 
 class Socket;
@@ -33,7 +30,4 @@ private:
 
 	// Next id for messages sent to the worker process.
 	int32_t _nextId = 0;
-
-	Logger* logger;
-
 };

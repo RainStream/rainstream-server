@@ -1,69 +1,6 @@
 #pragma once 
 
-#include "common.hpp"
-#include "Logger.hpp"
 #include "Transport.hpp"
-#include "SctpParameters.hpp"
-#include "SrtpParameters.hpp"
-
-struct PlainTransportOptions
-{
-	/**
-	 * Listening IP address.
-	 */
-	TransportListenIp listenIp;
-
-	/**
-	 * Use RTCP-mux (RTP and RTCP in the same port). Default true.
-	 */
-	bool rtcpMux;
-
-	/**
-	 * Whether remote IP:port should be auto-detected based on first RTP/RTCP
-	 * packet received. If enabled, connect() method must not be called unless
-	 * SRTP is enabled. If so, it must be called with just remote SRTP parameters.
-	 * Default false.
-	 */
-	bool comedia;
-
-	/**
-	 * Create a SCTP association. Default false.
-	 */
-	bool enableSctp;
-
-	/**
-	 * SCTP streams uint32_t.
-	 */
-	NumSctpStreams numSctpStreams;
-
-	/**
-	 * Maximum allowed size for SCTP messages sent by DataProducers.
-	 * Default 262144.
-	 */
-	uint32_t maxSctpMessageSize;
-
-	/**
-	 * Enable SRTP. For this to work, connect() must be called
-	 * with remote SRTP parameters. Default false.
-	 */
-	bool enableSrtp;
-
-	/**
-	 * The SRTP crypto suite to be used if enableSrtp is set. Default
-	 * "AES_CM_128_HMAC_SHA1_80".
-	 */
-	SrtpCryptoSuite srtpCryptoSuite;
-
-	/**
-	 * Custom application data.
-	 */
-	json appData;
-};
-
-/**
- * DEPRECATED: Use PlainTransportOptions.
- */
-using PlainRtpTransportOptions = PlainTransportOptions;
 
 struct PlainTransportStat
 {
@@ -206,7 +143,6 @@ private:
 	void _handleWorkerNotifications();
 
 private:
-	Logger* logger;
 	// PlainTransport data.
 	json _data;
 };

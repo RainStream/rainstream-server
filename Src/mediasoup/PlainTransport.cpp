@@ -1,6 +1,9 @@
+#define MSC_CLASS "PlainTransport"
 
+#include "common.hpp"
 #include "PlainTransport.hpp"
 #include "Channel.hpp"
+#include "Logger.hpp"
 
 
 /**
@@ -21,9 +24,8 @@ PlainTransport::PlainTransport(const json& internal,
 	: Transport(internal, data, channel, payloadChannel,
 		appData, getRouterRtpCapabilities,
 		getProducerById, getDataProducerById)
-	, logger(new Logger("PlainTransport"))
 {
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	this->_data =
 	{
@@ -143,7 +145,7 @@ void PlainTransport::routerClosed()
  */
 std::future<json> PlainTransport::getStats()
 {
-	logger->debug("getStats()");
+	MSC_DEBUG("getStats()");
 
 	json ret = co_await  this->_channel->request("transport.getStats", this->_internal);
 
@@ -162,7 +164,7 @@ std::future<void> PlainTransport::connect(
 	SrtpParameters srtpParameters
 )
 {
-	logger->debug("connect()");
+	MSC_DEBUG("connect()");
 
 	json reqData = {
 		{ "ip", ip },
@@ -232,7 +234,7 @@ void PlainTransport::_handleWorkerNotifications()
 		}
 		else
 		{
-			logger->error("ignoring unknown event \"%s\"", event);
+			MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 		}
 	});
 }

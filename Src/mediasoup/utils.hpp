@@ -39,8 +39,6 @@ namespace utils
 
 	std::string & AppendPrintf(std::string & dst, const char * format, ...);
 
-	std::string & AppendVPrintf(std::string & str, const char * format, va_list args);
-
 	std::string Printf(const char * format, ...);
 
 	std::string ToLowerCase(const std::string& str);

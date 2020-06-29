@@ -33,6 +33,4 @@ private:
 	bool closed{ false };
 
 	std::vector<Socket*> _stdio;
-
-	Logger* logger;
 };

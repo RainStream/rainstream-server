@@ -1,8 +1,7 @@
 #pragma once 
 
-#include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
+#include "Logger.hpp"
 #include "errors.hpp"
 #include "Transport.hpp"
 #include "Producer.hpp"
@@ -54,7 +53,6 @@ class PayloadChannel;
 
 class DirectTransport : public Transport
 {
-	Logger* logger;
 	// DirectTransport data.
 protected:
 	json _data;
@@ -78,9 +76,8 @@ public:
 		: Transport(internal, data, channel, payloadChannel,
 			appData, getRouterRtpCapabilities,
 			getProducerById, getDataProducerById)
-		, logger(new Logger("DirectTransport"))
 	{
-		logger->debug("constructor()");
+		MSC_DEBUG("constructor()");
 
 		// TODO
 		this->_data = data;
@@ -141,7 +138,7 @@ public:
 	 */
 	std::future<json> getStats()
 	{
-		logger->debug("getStats()");
+		MSC_DEBUG("getStats()");
 
 		co_return this->_channel->request("transport.getStats", this->_internal);
 	}
@@ -153,7 +150,7 @@ public:
 	 */
 	std::future<void> connect()
 	{
-		logger->debug("connect()");
+		MSC_DEBUG("connect()");
 	}
 
 	/**
@@ -200,7 +197,7 @@ private:
 			}
 			else
 			{
-				logger->error("ignoring unknown event \"%s\"", event);
+				MSC_ERROR("ignoring unknown event \"%s\"", event);
 			}
 		});
 	}

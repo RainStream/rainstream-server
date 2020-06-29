@@ -10,7 +10,6 @@ class MS_EXPORT EnhancedEventEmitter : public EventEmitter
 public:
 
 	EnhancedEventEmitter()
-		: logger(new Logger("EnhancedEventEmitter"))
 	{
 		
 	}
@@ -27,7 +26,7 @@ public:
 		}
 		catch (std::exception& error)
 		{
-			logger->error(
+			MSC_ERROR(
 				"safeEmit() | event listener threw an error [event:%s]:%s",
 				event.c_str(), error.what());
 
@@ -48,8 +47,4 @@ public:
 
 		events.erase(event);
 	}
-
-protected:
-	Logger* logger;
-
 };

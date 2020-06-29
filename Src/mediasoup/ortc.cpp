@@ -1,11 +1,15 @@
 #define MSC_CLASS "ortc"
 
+#include "common.hpp"
 #include "ortc.hpp"
 #include "Logger.hpp"
 #include "errors.hpp"
 #include "utils.hpp"
 #include "supportedRtpCapabilities.hpp"
+#include "scalabilityModes.hpp"
+#include "SctpParameters.hpp"
 #include <media/base/h264_profile_level_id.h>
+
 #include <algorithm> // std::find_if
 #include <regex>
 #include <stdexcept>

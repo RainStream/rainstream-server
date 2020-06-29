@@ -1,10 +1,6 @@
 #pragma once 
 
-#include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
-#include "Channel.hpp"
-#include "RtpParameters.hpp"
 
 struct ProducerOptions
 {
@@ -141,6 +137,7 @@ struct ProducerStat
  */
 using ProducerType = std::string; // = "simple" | "simulcast" | "svc";
 
+class Channel;
 
 class Producer : public EnhancedEventEmitter
 {
@@ -265,15 +262,11 @@ private:
 	void _handleWorkerNotifications();
 
 	private:
-		Logger* logger;
 		// Internal data.
-
-		json _internal;
-		
+		json _internal;		
 
 		// Producer data.
-		json _data;
-		
+		json _data;		
 
 		// Channel instance.
 		Channel* _channel;

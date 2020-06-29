@@ -1,8 +1,7 @@
 #pragma once 
 
-#include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
+#include "Logger.hpp"
 #include "Channel.hpp"
 #include "PayloadChannel.hpp"
 #include "SctpParameters.hpp"
@@ -61,7 +60,6 @@ struct DataConsumerType = "sctp" | "direct";
 
 class DataConsumer : public EnhancedEventEmitter
 {
-	Logger* logger;
 	// Internal data.
 private:
 	json _internal;
@@ -112,9 +110,8 @@ private:
 		json appData
 	)
 		: EnhancedEventEmitter()
-		, logger(new Logger("DataConsumer"))
 	{
-		logger->debug("constructor()");
+		MSC_DEBUG("constructor()");
 
 		this->_internal = internal;
 		this->_data = data;
@@ -215,7 +212,7 @@ private:
 		if (this->_closed)
 			return;
 
-		logger->debug("close()");
+		MSC_DEBUG("close()");
 
 		this->_closed = true;
 
@@ -241,7 +238,7 @@ private:
 		if (this->_closed)
 			return;
 
-		logger->debug("transportClosed()");
+		MSC_DEBUG("transportClosed()");
 
 		this->_closed = true;
 
@@ -259,7 +256,7 @@ private:
 	 */
 	std::future<json> dump()
 	{
-		logger->debug("dump()");
+		MSC_DEBUG("dump()");
 
 		co_return this->_channel->request("dataConsumer.dump", this->_internal);
 	}
@@ -269,7 +266,7 @@ private:
 	 */
 	async getStats(): Promise<DataConsumerStat[]>
 	{
-		logger->debug("getStats()");
+		MSC_DEBUG("getStats()");
 
 		co_return this->_channel->request("dataConsumer.getStats", this->_internal);
 	}
@@ -296,7 +293,7 @@ private:
 			}
 			else
 			{
-				logger->error("ignoring unknown event \"%s\"", event);
+				MSC_ERROR("ignoring unknown event \"%s\"", event);
 			}			
 		});
 
@@ -317,7 +314,7 @@ private:
 			}
 			else
 			{
-				logger->error("ignoring unknown event \"%s\"", event);
+				MSC_ERROR("ignoring unknown event \"%s\"", event);
 			}
 				
 			});

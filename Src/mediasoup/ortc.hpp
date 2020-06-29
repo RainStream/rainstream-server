@@ -1,14 +1,6 @@
 #pragma once 
 
 #include "common.hpp"
-//import * as h264 from "h264-profile-level-id";
-#include "utils.hpp"
-#include "errors.hpp"
-#include "supportedRtpCapabilities.hpp"
-#include "scalabilityModes.hpp"
-#include "RtpParameters.hpp"
-#include "SctpParameters.hpp"
-
 
 namespace ortc
 {

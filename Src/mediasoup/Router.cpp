@@ -1,10 +1,20 @@
+#define MSC_CLASS "Router"
 
+#include "common.hpp"
 #include "Router.hpp"
 #include "Producer.hpp"
 #include "Consumer.hpp"
+#include "Logger.hpp"
+#include "ortc.hpp"
+#include "utils.hpp"
+#include "errors.hpp"
+#include "Channel.hpp"
+#include "Transport.hpp"
 #include "WebRtcTransport.hpp"
 #include "PlainTransport.hpp"
 #include "PipeTransport.hpp"
+#include "SctpParameters.hpp"
+
 //#include "PayloadChannel.hpp"
 //#include "DirectTransport.hpp"
 
@@ -21,9 +31,8 @@ Router::Router(
 	json appData
 )
 	: EnhancedEventEmitter()
-	, logger(new Logger("Router"))
 {
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	this->_internal = internal;
 	this->_data = data;
@@ -92,7 +101,7 @@ void Router::close()
 	if (this->_closed)
 		return;
 
-	logger->debug("close()");
+	MSC_DEBUG("close()");
 
 	this->_closed = true;
 
@@ -148,7 +157,7 @@ void Router::workerClosed()
 	if (this->_closed)
 		return;
 
-	logger->debug("workerClosed()");
+	MSC_DEBUG("workerClosed()");
 
 	this->_closed = true;
 
@@ -187,7 +196,7 @@ void Router::workerClosed()
  */
 std::future<json> Router::dump()
 {
-	logger->debug("dump()");
+	MSC_DEBUG("dump()");
 
 	json ret = co_await this->_channel->request("router.dump", this->_internal);
 
@@ -210,7 +219,7 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(
 	json appData/* = json()*/
 )
 {
-	logger->debug("createWebRtcTransport()");
+	MSC_DEBUG("createWebRtcTransport()");
 
 	if (!listenIps.is_array())
 		throw new TypeError("missing listenIps");
@@ -308,7 +317,7 @@ std::future<PlainTransport*> Router::createPlainTransport(
 	json appData/* = json::object()*/
 )
 {
-	logger->debug("createPlainTransport()");
+	MSC_DEBUG("createPlainTransport()");
 
 	if (!listenIp)
 		throw new TypeError("missing listenIp");
@@ -401,7 +410,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	json appData/* = json()*/
 )
 {
-	logger->debug("createPipeTransport()");
+	MSC_DEBUG("createPipeTransport()");
 
 	if (!listenIp)
 		throw new TypeError("missing listenIp");
@@ -487,7 +496,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
  // 		json appData = json::object()
  // 	)
  // 	{
- // 		logger->debug("createDirectTransport()");
+ // 		MSC_DEBUG("createDirectTransport()");
  // 
  // 		json internal = this->_internal;
  // 		internal["transportId"] = uuidv4();
@@ -651,7 +660,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	  // 				}
 	  // 				catch (error)
 	  // 				{
-	  // 					logger->error(
+	  // 					MSC_ERROR(
 	  // 						"pipeToRouter() | error creating PipeTransport pair:%o",
 	  // 						error);
 	  // 
@@ -699,7 +708,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	  // 			}
 	  // 			catch (error)
 	  // 			{
-	  // 				logger->error(
+	  // 				MSC_ERROR(
 	  // 					"pipeToRouter() | error creating pipe Consumer/Producer pair:%o",
 	  // 					error);
 	  // 
@@ -743,7 +752,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	  // 			}
 	  // 			catch (error)
 	  // 			{
-	  // 				logger->error(
+	  // 				MSC_ERROR(
 	  // 					"pipeToRouter() | error creating pipe DataConsumer/DataProducer pair:%o",
 	  // 					error);
 	  // 
@@ -774,7 +783,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 		   // 		}: AudioLevelObserverOptions = {}
 		   // 	)
 		   // 	{
-		   // 		logger->debug("createAudioLevelObserver()");
+		   // 		MSC_DEBUG("createAudioLevelObserver()");
 		   // 
 		   // 		if (!appData.is_null() && !appData.is_object())
 		   // 			throw new TypeError("if given, appData must be an object");
@@ -816,8 +825,8 @@ bool Router::canConsume(std::string producerId, json& rtpCapabilities)
 
 	if (!producer)
 	{
-		logger->error(
-			"canConsume() | Producer with id \"%s\" not found", producerId);
+		MSC_ERROR(
+			"canConsume() | Producer with id \"%s\" not found", producerId.c_str());
 
 		return false;
 	}
@@ -828,7 +837,7 @@ bool Router::canConsume(std::string producerId, json& rtpCapabilities)
 	}
 	catch (std::exception& error)
 	{
-		logger->error("canConsume() | unexpected error: %s", error.what());
+		MSC_ERROR("canConsume() | unexpected error: %s", error.what());
 
 		return false;
 	}

@@ -1,10 +1,14 @@
+#define MSC_CLASS "Worker"
 
 #include "common.hpp"
 #include "Worker.hpp"
+#include "Logger.hpp"
 #include "Channel.hpp"
 #include "Logger.hpp"
+#include "errors.hpp"
 #include "utils.hpp"
 #include "Router.hpp"
+#include "ortc.hpp"
 //#include "PayloadChannel.hpp"
 #include "child_process/SubProcess.hpp"
 
@@ -21,12 +25,11 @@ const int CHANNEL_FD = 3;
 std::string workerPath;
 
 Worker::Worker(json settings)
-	: logger(new Logger("Worker"))
-	, _observer(new EnhancedEventEmitter())
+	: _observer(new EnhancedEventEmitter())
 {
 	//this->setMaxListeners(Infinity);
 
-	logger->debug("constructor()");
+	MSC_DEBUG("constructor()");
 
 	std::string spawnBin = WORK_PATH;
 	AStringVector spawnArgs;
@@ -88,7 +91,7 @@ Worker::Worker(json settings)
 		{
 			spawnDone = true;
 
-			logger->debug("worker process running [pid:%d]", this->_pid);
+			MSC_DEBUG("worker process running [pid:%d]", this->_pid);
 
 			this->emit("@success");
 		}
@@ -105,15 +108,15 @@ Worker::Worker(json settings)
 
 			if (code == 42)
 			{
-				logger->error(
+				MSC_ERROR(
 					"worker process failed due to wrong settings [pid:%d]", this->_pid);
 
 				this->emit("@failure", new TypeError("wrong settings"));
 			}
 			else
 			{
-				logger->error(
-					"worker process failed unexpectedly [pid:%d, code:%s, signal:%s]",
+				MSC_ERROR(
+					"worker process failed unexpectedly [pid:%d, code:%d, signal:%d]",
 					this->_pid, code, signal);
 
 				this->emit(
@@ -123,8 +126,8 @@ Worker::Worker(json settings)
 		}
 		else
 		{
-			logger->error(
-				"worker process died unexpectedly [pid:%s, code:%s, signal:%s]",
+			MSC_ERROR(
+				"worker process died unexpectedly [pid:%d, code:%d, signal:%d]",
 				this->_pid, code, signal);
 
 			this->safeEmit(
@@ -142,15 +145,15 @@ Worker::Worker(json settings)
 		{
 			spawnDone = true;
 
-			logger->error(
-				"worker process failed [pid:%s]: %s", this->_pid, error.ToString().c_str());
+			MSC_ERROR(
+				"worker process failed [pid:%d]: %s", this->_pid, error.ToString().c_str());
 
 			this->emit("@failure", error);
 		}
 		else
 		{
-			logger->error(
-				"worker process error [pid:%s]: %s", this->_pid, error.ToString().c_str());
+			MSC_ERROR(
+				"worker process error [pid:%d]: %s", this->_pid, error.ToString().c_str());
 
 			this->safeEmit("died", error);
 		}
@@ -182,7 +185,7 @@ void Worker::close()
 	if (this->_closed)
 		return;
 
-	logger->debug("close()");
+	MSC_DEBUG("close()");
 
 	this->_closed = true;
 
@@ -217,7 +220,7 @@ void Worker::close()
 
 std::future<json> Worker::dump()
 {
-	logger->debug("dump()");
+	MSC_DEBUG("dump()");
 
 	json ret = co_await this->_channel->request("worker.dump");
 
@@ -243,7 +246,7 @@ std::future<json> Worker::dump()
 
 std::future<json> Worker::getResourceUsage()
 {
-	logger->debug("getResourceUsage()");
+	MSC_DEBUG("getResourceUsage()");
 
 	json ret = co_await this->_channel->request("worker.getResourceUsage");
 
@@ -253,7 +256,7 @@ std::future<json> Worker::getResourceUsage()
 std::future<Router*> Worker::createRouter(
 	json& mediaCodecs, json& appData/* = json()*/)
 {
-	logger->debug("createRouter()");
+	MSC_DEBUG("createRouter()");
 
 	if (!appData.is_null() && !appData.is_object())
 		throw new TypeError("if given, appData must be an object");
