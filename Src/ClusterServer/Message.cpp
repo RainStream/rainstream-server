@@ -1,26 +1,27 @@
-#define MS_CLASS "Message"
+#define MSC_CLASS "Message"
 
 #include "Message.hpp"
+#include <Utils.hpp>
 
 namespace protoo
 {
 
-	Json Message::requestFactory(std::string method, const Json& data)
+	json Message::requestFactory(std::string method, const json& data)
 	{
-		Json request =
+		json request =
 		{
 			{ "request" , true },
-			{ "id" , utils::randomNumber() },
+			{ "id" , utils::generateRandomNumber() },
 			{ "method" , method },
-			{ "data", data.is_null() ? Json::object() : data }
+			{ "data", data.is_null() ? json::object() : data }
 		};
 
 		return request;
 	}
 
-	Json Message::successResponseFactory(const Json& request, const Json& data)
+	json Message::successResponseFactory(const json& request, const json& data)
 	{
-		Json response =
+		json response =
 		{
 			{ "response", true },
 			{ "id" , request["id"] },
@@ -31,9 +32,9 @@ namespace protoo
 		return response;
 	}
 
-	Json Message::errorResponseFactory(const Json& request, int errorCode, std::string errorReason)
+	json Message::errorResponseFactory(const json& request, int errorCode, std::string errorReason)
 	{
-		Json response =
+		json response =
 		{
 			{ "response", true },
 			{ "id" , request["id"] },
@@ -44,9 +45,9 @@ namespace protoo
 		return response;
 	}
 
-	Json Message::notificationFactory(std::string method, const Json& data)
+	json Message::notificationFactory(std::string method, const json& data)
 	{
-		Json notification =
+		json notification =
 		{
 			{ "notification" , true },
 			{ "method" , method },

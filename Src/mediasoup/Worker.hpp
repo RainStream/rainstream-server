@@ -16,6 +16,8 @@ public:
 
 	void close();
 
+	uint32_t pid();
+
 	std::future<json> dump();
 
 	/**

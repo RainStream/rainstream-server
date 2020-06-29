@@ -1,8 +1,7 @@
 #ifndef MS_CLUSTER_SERVER_HPP
 #define MS_CLUSTER_SERVER_HPP
 
-#include "common.hpp"
-#include "Room.hpp"
+#include <common.hpp>
 #include "WebSocketServer.hpp"
 
 namespace protoo
@@ -10,28 +9,39 @@ namespace protoo
 	class WebSocketClient;
 }
 
-class ClusterServer : public protoo::WebSocketServer::Lisenter, public rs::Server::Listener, public Room::Listener
+class Room;
+class Worker;
+
+class ClusterServer : public protoo::WebSocketServer::Lisenter
 {
 public:
 	explicit ClusterServer();
 	virtual ~ClusterServer();
 
 protected:
-	void OnServerClose() override;
-	void OnNewRoom(rs::Room* room) override;
-	void OnRoomClose(std::string roomId) override;
+	void OnRoomClose(std::string roomId);
 
 	void OnConnectRequest(protoo::WebSocketClient* transport) override;
 	void OnConnectClosed(protoo::WebSocketClient* transport) override;
 
+protected:
+	std::future<void> connectionrequest(protoo::WebSocketClient* transport);
+
+	void runMediasoupWorkers();
+	/**
+	 * Get next mediasoup Worker.
+	 */
+	Worker* getMediasoupWorker();
+
+	std::future<Room*> getOrCreateRoom(std::string roomId);
+
 private:
 
-	Json config;
-
-	rs::Server* mediaServer = nullptr;
+	json config;
 
 	protoo::WebSocketServer* webSocketServer = nullptr;
 
+	std::vector<Worker*> mediasoupWorkers;
 	std::map<std::string, Room*> rooms_;
 };
 

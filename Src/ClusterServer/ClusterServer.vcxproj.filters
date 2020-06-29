@@ -1,19 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="common.cpp" />
-    <ClCompile Include="Loop.cpp" />
     <ClCompile Include="handles\SignalsHandler.cpp">
       <Filter>handles</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\File.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\IP.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="DepLibUV.cpp" />
-    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="ClusterServer.cpp" />
@@ -21,33 +12,27 @@
     <ClCompile Include="WebSocketServer.cpp" />
     <ClCompile Include="Peer.cpp" />
     <ClCompile Include="Message.cpp" />
-    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Loop.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.hpp" />
-    <ClInclude Include="Loop.hpp" />
-    <ClInclude Include="Utils.hpp" />
     <ClInclude Include="handles\SignalsHandler.hpp">
       <Filter>handles</Filter>
     </ClInclude>
     <ClInclude Include="DepLibUV.hpp" />
-    <ClInclude Include="Settings.hpp" />
     <ClInclude Include="Room.hpp" />
-    <ClInclude Include="RainStreamError.hpp" />
     <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="WebSocketClient.hpp" />
     <ClInclude Include="WebSocketServer.hpp" />
     <ClInclude Include="Peer.hpp" />
     <ClInclude Include="Message.hpp" />
-    <ClInclude Include="LogLevel.hpp" />
-    <ClInclude Include="Logger.hpp" />
+    <ClInclude Include="Loop.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">
       <UniqueIdentifier>{7a9d6e4f-1d51-4a52-b27b-de4792d6cce1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utils">
-      <UniqueIdentifier>{62189913-8d87-43c5-a6a3-91a40fb3797d}</UniqueIdentifier>
-    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props" Condition="Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -91,14 +92,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\ServerSDK\include;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;D:\Develop\vcpkg\installed\x86-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\mediasoup;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\uWebSockets\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x86-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;uWS.lib;libeay32.lib;ssleay32.lib;getopt.lib;glog.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;libeay32.lib;ssleay32.lib;getopt.lib;glog.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -125,20 +128,22 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\ServerSDK\include;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;D:\Develop\vcpkg\installed\x86-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\mediasoup;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\uWebSockets\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x86-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;uWS.lib;libeay32.lib;ssleay32.lib;getopt.lib;glog.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -166,39 +171,47 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ClusterServer.cpp" />
-    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Loop.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Peer.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="common.cpp" />
     <ClCompile Include="DepLibUV.cpp" />
     <ClCompile Include="handles\SignalsHandler.cpp" />
-    <ClCompile Include="Loop.cpp" />
-    <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="Utils\File.cpp" />
-    <ClCompile Include="Utils\IP.cpp" />
     <ClCompile Include="WebSocketClient.cpp" />
     <ClCompile Include="WebSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClusterServer.hpp" />
-    <ClInclude Include="common.hpp" />
-    <ClInclude Include="Logger.hpp" />
-    <ClInclude Include="LogLevel.hpp" />
+    <ClInclude Include="Loop.hpp" />
     <ClInclude Include="Message.hpp" />
     <ClInclude Include="Peer.hpp" />
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="DepLibUV.hpp" />
     <ClInclude Include="handles\SignalsHandler.hpp" />
-    <ClInclude Include="Loop.hpp" />
-    <ClInclude Include="RainStreamError.hpp" />
-    <ClInclude Include="Settings.hpp" />
-    <ClInclude Include="Utils.hpp" />
     <ClInclude Include="WebSocketClient.hpp" />
     <ClInclude Include="WebSocketServer.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Deps\uWebSockets\uWebSockets.vcxproj">
+      <Project>{baf494b1-0081-4457-b7ce-72f2b7b01f69}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\mediasoup\mediasoup.vcxproj">
+      <Project>{57034427-4d2c-4bf0-832b-76f46602fd84}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props'))" />
+    <Error Condition="!Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets'))" />
+  </Target>
 </Project>

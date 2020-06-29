@@ -6,7 +6,8 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--configFile=../../config.json</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>
+    </LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

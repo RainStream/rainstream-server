@@ -3,13 +3,8 @@
 
 #include "common.hpp"
 #include "Peer.hpp"
+#include <EnhancedEventEmitter.hpp>
 
-namespace rs
-{
-	class Server;
-	class Room;
-	class Logger;
-}
 
 namespace protoo
 {
@@ -17,8 +12,10 @@ namespace protoo
 	class Request;
 	class WebSocketClient;
 }
+class Router;
+class Worker;
 
-class Room : public protoo::Peer::Listener
+class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
 public:
 	class Listener
@@ -27,7 +24,10 @@ public:
 		virtual void OnRoomClose(std::string roomId) = 0;
 	};
 public:
-	Room(std::string roomId, Json mediaCodecs, rs::Server* mediaServer, Listener* listener);
+
+	static std::future<Room*> create(Worker* mediasoupWorker, std::string roomId);
+
+	Room(std::string roomId, Router* router);
 	~Room();
 
 public:
@@ -39,27 +39,29 @@ public:
 	/* Methods inherited from protoo::Peer::Listener. */
 public:
 	void OnPeerClose(protoo::Peer* peer) override;
-	void OnPeerRequest(protoo::Peer* peer, Json& request) override;
-	void OnPeerNotify(protoo::Peer* peer, Json& notification) override;
+	void OnPeerRequest(protoo::Peer* peer, json& request) override;
+	void OnPeerNotify(protoo::Peer* peer, json& notification) override;
 	
 protected:
 	void _handleMediaRoom();
-	void _handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer);
-	void _handleMediaTransport(rs::WebRtcTransport* transport);
-	void _handleMediaProducer(rs::Producer* producer);
-	void _handleMediaConsumer(rs::Consumer* consumer);
-	void _handleMediasoupClientRequest(protoo::Peer* protooPeer, uint32_t id, Json request);
-	void _handleMediasoupClientNotification(protoo::Peer* protooPeer, Json notification);
-	void _updateMaxBitrate();
+// 	void _handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer);
+// 	void _handleMediaTransport(rs::WebRtcTransport* transport);
+// 	void _handleMediaProducer(rs::Producer* producer);
+// 	void _handleMediaConsumer(rs::Consumer* consumer);
+// 	void _handleMediasoupClientRequest(protoo::Peer* protooPeer, uint32_t id, json request);
+// 	void _handleMediasoupClientNotification(protoo::Peer* protooPeer, json notification);
+// 	void _updateMaxBitrate();
 
-	void spread(std::string method, Json data, std::set<std::string> excluded = std::set<std::string>());
+	void spread(std::string method, json data, std::set<std::string> excluded = std::set<std::string>());
 
 private:
 	std::string _roomId;
-	rs::Server* _mediaServer{ nullptr };
-	rs::Room* _mediaRoom{ nullptr };
+// 	rs::Server* _mediaServer{ nullptr };
+// 	rs::Room* _mediaRoom{ nullptr };
 
-	rs::Peer* _currentActiveSpeaker{ nullptr };
+	Router* _mediasoupRouter{ nullptr };
+
+	//rs::Peer* _currentActiveSpeaker{ nullptr };
 	Listener* listener{ nullptr };
 
 	std::map<std::string, protoo::Peer*> _peers;

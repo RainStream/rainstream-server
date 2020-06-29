@@ -1,10 +1,10 @@
-﻿#define MS_CLASS "main"
+﻿#define MSC_CLASS "main"
 
-#include "common.hpp"
+#include <common.hpp>
+#include <Logger.hpp>
 #include "DepLibUV.hpp"
 #include "Loop.hpp"
-#include "RainStreamError.hpp"
-#include "Settings.hpp"
+//#include "Settings.hpp"
 #include "Utils.hpp"
 #include "ClusterServer.hpp"
 #include <uv.h>
@@ -30,24 +30,23 @@ int main(int argc, char* argv[])
 	DepLibUV::ClassInit();
 
 	// Initialize the Logger.
-	google::InitGoogleLogging(argv[0]);    // 初始化
-	google::SetLogDestination(google::GLOG_INFO, "log/prefix_");
-	google::SetStderrLogging(google::GLOG_INFO);
+	Logger::SetLogLevel(Logger::LogLevel::LOG_DEBUG);
+	Logger::SetDefaultHandler();
 
 	// Setup the configuration.
-	try
-	{
-		Settings::SetConfiguration(argc, argv);
-	}
-	catch (const RainStreamError& error)
-	{
-		LOG(ERROR) << "configuration error: %s", error.what();
-
-		exitWithError();
-	}
-
-	// Print the effective configuration.
-	Settings::PrintConfiguration();
+// 	try
+// 	{
+// 		Settings::SetConfiguration(argc, argv);
+// 	}
+// 	catch (const RainStreamError& error)
+// 	{
+// 		MSC_ERROR("configuration error: %s", error.what());
+// 
+// 		exitWithError();
+// 	}
+// 
+// 	// Print the effective configuration.
+// 	Settings::PrintConfiguration();
 
 	//	MS_DEBUG_TAG(info, "starting mediasoup-worker [pid:%ld]", (long)getpid());
 
@@ -58,11 +57,11 @@ int main(int argc, char* argv[])
 #endif
 
 #if defined(INTPTR_MAX) && defined(INT32_MAX) && (INTPTR_MAX == INT32_MAX)
-	MS_DEBUG_TAG(info, "32 bits architecture detected");
+	MSC_DEBUG("32 bits architecture detected");
 #elif defined(INTPTR_MAX) && defined(INT64_MAX) && (INTPTR_MAX == INT64_MAX)
-	DLOG(INFO) << "64 bits architecture detected";
+	MSC_DEBUG("64 bits architecture detected");
 #else
-	DLOG(INFO) << "can not determine whether the architecture is 32 or 64 bits";
+	MSC_DEBUG("can not determine whether the architecture is 32 or 64 bits");
 #endif
 
 	try
@@ -81,15 +80,13 @@ int main(int argc, char* argv[])
 		destroy();
 		exitSuccess();
 	}
-	catch (const RainStreamError& error)
+	catch (const std::exception& error)
 	{
-		DLOG(INFO) << "failure exit: %s", error.what();
+		MSC_DEBUG("failure exit: %s", error.what());
 
 		destroy();
 		exitWithError();
 	}
-
-	google::ShutdownGoogleLogging();
 }
 
 
@@ -103,7 +100,7 @@ void init()
 
 void ignoreSignals()
 {
-	// 	MS_TRACE();
+	// 	MSC_TRACE();
 	// 
 	// 	int err;
 	// 	// clang-format off
@@ -123,7 +120,7 @@ void ignoreSignals()
 	// 	act.sa_flags   = 0;
 	// 	err            = sigfillset(&act.sa_mask);
 	// 	if (err != 0)
-	// 		RS_THROW_ERROR("sigfillset() failed: %s", std::strerror(errno));
+	// 		MSC_THROW_ERROR("sigfillset() failed: %s", std::strerror(errno));
 	// 
 	// 	for (auto& ignoredSignal : ignoredSignals)
 	// 	{
@@ -133,7 +130,7 @@ void ignoreSignals()
 	// 		err = sigaction(sigId, &act, nullptr);
 	// 		if (err != 0)
 	// 		{
-	// 			RS_THROW_ERROR("sigaction() failed for signal %s: %s", sigName.c_str(), std::strerror(errno));
+	// 			MSC_THROW_ERROR("sigaction() failed for signal %s: %s", sigName.c_str(), std::strerror(errno));
 	// 		}
 	// 	}
 }

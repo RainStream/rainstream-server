@@ -21,7 +21,7 @@ namespace protoo
 			virtual void OnConnectClosed(WebSocketClient* transport) = 0;
 		};
 	public:
-		explicit WebSocketServer(Json tls, Lisenter* lisenter);
+		explicit WebSocketServer(json tls, Lisenter* lisenter);
 		WebSocketServer& operator=(const WebSocketServer&) = delete;
 		WebSocketServer(const WebSocketServer&) = delete;
 
@@ -32,7 +32,7 @@ namespace protoo
 		bool Setup(const char *host, uint16_t port);
 
 	private:
-		Json tls;
+		json tls;
 		Lisenter * lisenter{ nullptr };
 		// Closed flag.
 		bool _closed = false;

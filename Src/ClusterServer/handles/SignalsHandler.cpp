@@ -1,10 +1,10 @@
-#define MS_CLASS "SignalsHandler"
+#define MSC_CLASS "SignalsHandler"
 // #define MS_LOG_DEV
 
 #include "handles/SignalsHandler.hpp"
 #include "DepLibUV.hpp"
 #include "Logger.hpp"
-#include "RainStreamError.hpp"
+#include <errors.hpp>
 
 /* Static methods for UV callbacks. */
 
@@ -22,12 +22,12 @@ inline static void onClose(uv_handle_t* handle)
 
 SignalsHandler::SignalsHandler(Listener* listener) : listener(listener)
 {
-	MS_TRACE();
+	MSC_TRACE();
 }
 
 void SignalsHandler::AddSignal(int signum, const std::string& name)
 {
-	MS_TRACE();
+	MSC_TRACE();
 
 	int err;
 
@@ -39,12 +39,12 @@ void SignalsHandler::AddSignal(int signum, const std::string& name)
 	{
 		delete uvHandle;
 
-		RS_THROW_ERROR("uv_signal_init() failed for signal %s: %s", name.c_str(), uv_strerror(err));
+		MSC_THROW_ERROR("uv_signal_init() failed for signal %s: %s", name.c_str(), uv_strerror(err));
 	}
 
 	err = uv_signal_start(uvHandle, static_cast<uv_signal_cb>(onSignal), signum);
 	if (err != 0)
-		RS_THROW_ERROR("uv_signal_start() failed for signal %s: %s", name.c_str(), uv_strerror(err));
+		MSC_THROW_ERROR("uv_signal_start() failed for signal %s: %s", name.c_str(), uv_strerror(err));
 
 	// Enter the UV handle into the vector.
 	this->uvHandles.push_back(uvHandle);
@@ -52,7 +52,7 @@ void SignalsHandler::AddSignal(int signum, const std::string& name)
 
 void SignalsHandler::Destroy()
 {
-	MS_TRACE();
+	MSC_TRACE();
 
 	for (auto uvHandle : uvHandles)
 	{
@@ -65,7 +65,7 @@ void SignalsHandler::Destroy()
 
 inline void SignalsHandler::OnUvSignal(int signum)
 {
-	MS_TRACE();
+	MSC_TRACE();
 
 	// Notify the listener.
 	this->listener->OnSignal(this, signum);

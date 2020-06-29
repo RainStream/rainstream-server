@@ -1,25 +1,54 @@
-#define MS_CLASS "ClusterServer"
+#define MSC_CLASS "ClusterServer"
 
 #include "ClusterServer.hpp"
-#include "Settings.hpp"
+#include <Logger.hpp>
+#include <Worker.hpp>
 #include "Utils.hpp"
 #include "Room.hpp"
-#include "RainStreamError.hpp"
-#include <iostream>
-#include <fstream>
-
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"
+#include <regex>
 
-const Json DefaultConfig = 
+class Url
+{
+public:
+	static std::string Request(const std::string& url, const std::string& request);
+};
+
+/* Inline static methods. */
+
+inline std::string Url::Request(const std::string& url, const std::string& request)
+{
+	std::smatch result;
+	if (std::regex_search(url.cbegin(), url.cend(), result, std::regex(request + "=(.*?)&"))) {
+		// 匹配具有多个参数的url
+
+		// *? 重复任意次，但尽可能少重复  
+		return result[1];
+	}
+	else if (regex_search(url.cbegin(), url.cend(), result, std::regex(request + "=(.*)"))) {
+		// 匹配只有一个参数的url
+
+		return result[1];
+	}
+	else {
+		// 不含参数或制定参数不存在
+
+		return std::string();
+	}
+}
+
+static int nextMediasoupWorkerIdx = 0;
+
+const json DefaultConfig = 
 
 R"(
 {
 	"domain" : "127.0.0.1",
 	"tls" :
 	{
-		"cert" : "certs/rainstream.localhost.cert.pem",
-		"key" : "certs/rainstream.localhost.key.pem"
+		"cert" : "certs/fullchain.pem",
+		"key" : "certs/privkey.pem"
 	},
 	"rainstream" :
 	{
@@ -62,21 +91,21 @@ R"(
 ClusterServer::ClusterServer()
 	: config(DefaultConfig)
 {
-	if (!Settings::configuration.configFile.empty())
-	{
-		std::ifstream in(Settings::configuration.configFile.c_str());
-		if (in.is_open())
-		{
-			Json newConfig;
-			in >> newConfig;
-			in.close();
-
-			config = Object::assign(config, newConfig);
-		}
-	}
+// 	if (!Settings::configuration.configFile.empty())
+// 	{
+// 		std::ifstream in(Settings::configuration.configFile.c_str());
+// 		if (in.is_open())
+// 		{
+// 			json newConfig;
+// 			in >> newConfig;
+// 			in.close();
+// 
+// 			config = Object::assign(config, newConfig);
+// 		}
+// 	}
 
 	// rainstream server.
-	Json rainstream = 
+	json rainstream = 
 	{
 		{ "numWorkers"       , 1 },
 		{ "logLevel"         , config["rainstream"]["logLevel"] },
@@ -89,24 +118,22 @@ ClusterServer::ClusterServer()
 		{ "rtcMaxPort"       , config["rainstream"]["rtcMaxPort"] }
 	};
 
-	mediaServer = new rs::Server(rainstream,this);
-
 	// HTTPS server for the protoo WebSocket server.
-	Json tls =
+	json tls =
 	{
 		{ "cert" , config["tls"]["cert"] },
 		{ "key"  , config["tls"]["key"] }
 	};
 
 	webSocketServer = new protoo::WebSocketServer(tls, this);
-	if (webSocketServer->Setup(config["domain"].get<std::string>().c_str(),
-		Settings::configuration.serverPort))
+	if (webSocketServer->Setup("127.0.0.1", 4443))
 	{
-		LOG(INFO) << "WebSocket server running on port "
-			<< Settings::configuration.serverPort;
+		MSC_ERROR("WebSocket server running on port: %d", 4443);
 	}
 
-	LOG(INFO) << "ClusterServer Started";
+	MSC_DEBUG("ClusterServer Started");
+
+	runMediasoupWorkers();
 }
 
 ClusterServer::~ClusterServer()
@@ -114,68 +141,41 @@ ClusterServer::~ClusterServer()
 
 }
 
-void ClusterServer::OnServerClose()
-{
-
-}
-
-void ClusterServer::OnNewRoom(rs::Room* room)
-{
-
-}
-
 void ClusterServer::OnRoomClose(std::string roomId)
 {
-	LOG(INFO) << "Room has closed [roomId:" << roomId << "]";
+	MSC_DEBUG("Room has closed [roomId:\"%s\"]", roomId.c_str());
 	rooms_.erase(roomId);
 }
 
 void ClusterServer::OnConnectRequest(protoo::WebSocketClient* transport)
 {
+	connectionrequest(transport);
+}
+
+std::future<void> ClusterServer::connectionrequest(protoo::WebSocketClient* transport)
+{
 	std::string url = transport->url();
 
-	std::string roomId = Utils::Url::Request(url, "roomId");
-	std::string peerName = Utils::Url::Request(url, "peerName");
 
-	if (roomId.empty() || peerName.empty())
+	std::string roomId = Url::Request(url, "roomId");
+	std::string peerId = Url::Request(url, "peerId");
+
+	if (roomId.empty() || peerId.empty())
 	{
-		LOG(ERROR) << "Connection request without roomId and/or peerName";
+		MSC_ERROR("Connection request without roomId and/or peerName");
 
 		transport->Close(400, "Connection request without roomId and/or peerName");
 
 		return;
 	}
 
-	LOG(INFO) << "Peer[peerName:" << peerName << "] request join room [roomId:" << roomId << "]";
+	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
+		peerId.c_str(), roomId.c_str());
 
-	Room* room = nullptr;
+	Room* room = co_await getOrCreateRoom(roomId);
+	room->handleConnection(peerId, transport);
 
-	// If an unknown roomId, create a new Room.
-	if (!rooms_.count(roomId))
-	{
-		LOG(INFO) << "Creating a new room [roomId:" << roomId << "]";
-
-		try
-		{
-			room = new Room(roomId, config["rainstream"]["mediaCodecs"], mediaServer, this);
-		}
-		catch (rs::Error error)
-		{
-			LOG(ERROR) << "error creating a new Room:" << error.ToString();
-
-			reject(error);
-
-			return;
-		}
-
-		rooms_[roomId] = room;
-	}
-	else
-	{
-		room = rooms_[roomId];
-	}
-
-	room->handleConnection(peerName, transport);
+	co_return;
 }
 
 void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
@@ -183,3 +183,72 @@ void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
 
 }
 
+void ClusterServer::runMediasoupWorkers()
+{
+	int numWorkers = 1;
+
+	MSC_DEBUG("running %d mediasoup Workers...", numWorkers);
+
+	for (int i = 0; i < numWorkers; ++i)
+	{
+		json settings = {
+			{ "logLevel", "warn" },
+			{ "logTags", { "info", "ice", "dtls","rtp","srtp","rtcp", "rtx","bwe",	"score", "simulcast","svc",	"sctp" } },
+			{ "rtcMinPort", 40000 },
+			{ "rtcMaxPort", 49999 }
+		};
+
+		Worker* worker = new Worker(settings);
+
+		worker->on("died", [=]()
+		{
+			MSC_ERROR("mediasoup Worker died, exiting  in 2 seconds... [pid:%d]", worker->pid());
+
+			//setTimeout(() = > process.exit(1), 2000);
+		});
+
+		mediasoupWorkers.push_back(worker);
+
+		// Log worker resource usage every X seconds.
+// 		setInterval(async() = >
+// 		{
+// 			const usage = await worker.getResourceUsage();
+// 
+// 			logger.info('mediasoup Worker resource usage [pid:%d]: %o', worker.pid, usage);
+// 		}, 120000);
+	}
+}
+
+Worker* ClusterServer::getMediasoupWorker()
+{
+	Worker* worker = mediasoupWorkers[nextMediasoupWorkerIdx];
+
+	if (++nextMediasoupWorkerIdx == mediasoupWorkers.size())
+		nextMediasoupWorkerIdx = 0;
+
+	return worker;
+}
+
+std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
+{
+	Room* room;
+
+	// If the Room does not exist create a new one.
+	if (!rooms_.count(roomId))
+	{
+		MSC_DEBUG("creating a new Room [roomId:%s]", roomId.c_str());
+
+		Worker* mediasoupWorker = getMediasoupWorker();
+
+		room = co_await Room::create(mediasoupWorker, roomId);
+
+		rooms_.insert(std::make_pair(roomId, room));
+		room->on("close", [=]() { rooms_.erase(roomId); });
+	}
+	else
+	{
+		room = rooms_.at(roomId);
+	}
+
+	co_return room;
+}

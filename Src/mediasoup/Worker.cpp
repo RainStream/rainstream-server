@@ -218,13 +218,18 @@ void Worker::close()
 	this->_observer->safeEmit("close");
 }
 
+uint32_t Worker::pid()
+{
+	return _pid;
+}
+
 std::future<json> Worker::dump()
 {
 	MSC_DEBUG("dump()");
 
-	return this->_channel->request("worker.dump");
+	json ret = co_await this->_channel->request("worker.dump");
 
-	//co_return ret;
+	co_return ret;
 }
 // 
 // 	Defer Worker::updateSettings(json& spawnOptions)

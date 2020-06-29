@@ -16,8 +16,8 @@ namespace protoo
 		{
 		public:
 			virtual void OnPeerClose(Peer* peer) = 0;
-			virtual void OnPeerRequest(Peer* peer, Json& request) = 0;
-			virtual void OnPeerNotify(Peer* peer, Json& notification) = 0;
+			virtual void OnPeerRequest(Peer* peer, json& request) = 0;
+			virtual void OnPeerNotify(Peer* peer, json& notification) = 0;
 		};
 	public:
 		explicit Peer(std::string peerName, protoo::WebSocketClient* transport, Listener* listener);
@@ -26,14 +26,12 @@ namespace protoo
 	public:
 		std::string id();
 		void close();
-		rs::Peer* mediaPeer();
-		void setMediaPeer(rs::Peer* peer);
 
-		void Accept(uint32_t id, Json& data);
+		void Accept(uint32_t id, json& data);
 		void Reject(uint32_t id, uint32_t code, const std::string& errorReason);
 
-		Defer send(std::string method, Json data);
-		Defer notify(std::string method, Json data);
+// 		Defer send(std::string method, json data);
+// 		Defer notify(std::string method, json data);
 
 	protected:
 		virtual void onMessage(const std::string& message);
@@ -41,21 +39,21 @@ namespace protoo
 
 	protected:
 		void _handleTransport();
-		void _handleRequest(Json request);
-		void _handleResponse(Json response);
-		void _handleNotification(Json notification);
+		void _handleRequest(json request);
+		void _handleResponse(json response);
+		void _handleNotification(json notification);
 
 	private:
 		std::string _peerName;
-		rs::Peer* _peer{ nullptr };
+
 		Listener* listener{ nullptr };
 		WebSocketClient* _transport{ nullptr };
 
 		// Closed flag.
 		bool _closed = false;
 
-		std::unordered_map<uint32_t, Defer> _requestHandlers;
-		std::unordered_map<uint32_t, Json> _requests;
+//		std::unordered_map<uint32_t, Defer> _requestHandlers;
+		std::unordered_map<uint32_t, json> _requests;
 	};
 }
 

@@ -1,8 +1,8 @@
-#define MS_CLASS "DepLibUV"
+#define MSC_CLASS "DepLibUV"
 // #define MS_LOG_DEV
 
 #include "DepLibUV.hpp"
-#include "Logger.hpp"
+#include <Logger.hpp>
 #include <cstdlib> // std::abort()
 
 /* Static variables. */
@@ -19,16 +19,16 @@ void DepLibUV::ClassInit()
 
 	DepLibUV::loop = uv_default_loop();
 	if (loop == 0)
-		MS_ABORT("libuv initialization failed");
+		MSC_ABORT("libuv initialization failed");
 }
 
 void DepLibUV::ClassDestroy()
 {
-	MS_TRACE();
+	MSC_TRACE();
 
 	// This should never happen.
 	if (DepLibUV::loop == nullptr)
-		MS_ABORT("DepLibUV::loop was not allocated");
+		MSC_ABORT("DepLibUV::loop was not allocated");
 
 	uv_loop_close(DepLibUV::loop);
 	delete DepLibUV::loop;
@@ -36,18 +36,18 @@ void DepLibUV::ClassDestroy()
 
 void DepLibUV::PrintVersion()
 {
-	MS_TRACE();
+	MSC_TRACE();
 
-	MS_DEBUG_TAG(info, "loaded libuv version: \"%s\"", uv_version_string());
+	MSC_DEBUG("loaded libuv version: \"%s\"", uv_version_string());
 }
 
 void DepLibUV::RunLoop()
 {
-	MS_TRACE();
+	MSC_TRACE();
 
 	// This should never happen.
 	if (DepLibUV::loop == nullptr)
-		MS_ABORT("DepLibUV::loop was not allocated");
+		MSC_ABORT("DepLibUV::loop was not allocated");
 
 	uv_run(DepLibUV::loop, UV_RUN_DEFAULT);
 }

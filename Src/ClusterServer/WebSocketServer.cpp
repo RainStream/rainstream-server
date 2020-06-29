@@ -1,4 +1,4 @@
-#define MS_CLASS "WebSocketServer"
+#define MSC_CLASS "WebSocketServer"
 
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"
@@ -7,13 +7,13 @@
 #include <iostream>
 #include <fstream>
 
-#include <uWS/uWS.h>
+#include <uWS.h>
 
 #define SEC_WEBSOCKET_PROTOCOL "protoo"
 
 namespace protoo
 {
-	WebSocketServer::WebSocketServer(Json tls, Lisenter* lisenter)
+	WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 		: lisenter(lisenter)
 		, tls(tls)
 	{
