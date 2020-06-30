@@ -13,6 +13,7 @@
     <ClCompile Include="Peer.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Loop.cpp" />
+    <ClCompile Include="Request.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="handles\SignalsHandler.hpp">
@@ -26,6 +27,7 @@
     <ClInclude Include="Peer.hpp" />
     <ClInclude Include="Message.hpp" />
     <ClInclude Include="Loop.hpp" />
+    <ClInclude Include="Request.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">
