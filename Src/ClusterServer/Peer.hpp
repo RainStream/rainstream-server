@@ -3,13 +3,14 @@
 
 #include "common.hpp"
 #include "WebSocketClient.hpp"
+#include <EnhancedEventEmitter.hpp>
 
 namespace protoo
 {
 	class Request;
 	class WebSocketClient;
 
-	class Peer : public WebSocketClient::Listener
+	class Peer : public WebSocketClient::Listener , public EnhancedEventEmitter
 	{
 	public:
 		class Listener
@@ -32,6 +33,24 @@ namespace protoo
 
 // 		Defer send(std::string method, json data);
 // 		Defer notify(std::string method, json data);
+
+		struct Data
+		{
+			bool consume = false;
+			bool joined = false;
+			std::string displayName;
+			json device = json();
+			json rtpCapabilities = json();
+			json sctpCapabilities = json();
+
+			// Have mediasoup related maps ready even before the Peer joins since we
+			// allow creating Transports before joining.
+			std::map<std::string, Transport*> transports;
+			std::map<std::string, Producer*> producers;
+			std::map<std::string, Consumer*> consumers;
+			std::map<std::string, DataProducer*> dataProducers;
+			std::map<std::string, DataConsumer*> dataConsumers;
+		} data;
 
 	protected:
 		virtual void onMessage(const std::string& message);

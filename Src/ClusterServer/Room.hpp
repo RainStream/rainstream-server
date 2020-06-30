@@ -34,8 +34,9 @@ public:
 	std::string id();
 	void close();
 
-	void handleConnection(std::string peerName, protoo::WebSocketClient* transport);
-
+	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
+protected:
+	std::list<protoo::Peer*> _getJoinedPeers(protoo::Peer* excludePeer = nullptr);
 	/* Methods inherited from protoo::Peer::Listener. */
 public:
 	void OnPeerClose(protoo::Peer* peer) override;
