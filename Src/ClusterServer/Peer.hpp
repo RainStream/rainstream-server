@@ -31,6 +31,8 @@ namespace protoo
 		void Accept(uint32_t id, json& data);
 		void Reject(uint32_t id, uint32_t code, const std::string& errorReason);
 
+		void Send(const json& message);
+
 // 		Defer send(std::string method, json data);
 // 		Defer notify(std::string method, json data);
 
