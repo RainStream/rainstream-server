@@ -2,8 +2,12 @@
 
 #include "Room.hpp"
 #include <Logger.hpp>
+#include <errors.hpp>
 #include <Worker.hpp>
 #include <Router.hpp>
+#include <Transport.hpp>
+#include <Producer.hpp>
+#include <Consumer.hpp>
 #include "Utils.hpp"
 #include "WebSocketClient.hpp"
 #include <math.h>
@@ -151,7 +155,7 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 		{
 			for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
 			{
-				otherPeer->notify("peerClosed", { peerId: peer->id })
+				otherPeer->notify("peerClosed", { peerId: peer->id() })
 					.catch (() = > {});
 			}
 		}
@@ -186,7 +190,7 @@ async _handleProtooRequest(protoo::Peer* peer, request, accept, reject)
 
 	if( method == "getRouterRtpCapabilities" )
 	{
-		accept(this->_mediasoupRouter.rtpCapabilities);
+		accept(this->_mediasoupRouter->rtpCapabilities());
 	}
 	else if( method == "join" )
 	{
@@ -194,7 +198,7 @@ async _handleProtooRequest(protoo::Peer* peer, request, accept, reject)
 		if (peer->data.joined)
 			MSC_THROW_ERROR("Peer already joined");
 
-		const {
+		json {
 			displayName,
 				device,
 				rtpCapabilities,
@@ -211,7 +215,7 @@ async _handleProtooRequest(protoo::Peer* peer, request, accept, reject)
 		// Tell the new Peer about already joined Peers.
 		// And also create Consumers for existing Producers.
 
-		const joinedPeers =
+		std::list<protoo::Peer*> joinedPeers =
 			[
 				...this->_getJoinedPeers(),
 				...this->_broadcasters.values()
@@ -219,19 +223,19 @@ async _handleProtooRequest(protoo::Peer* peer, request, accept, reject)
 
 		// Reply now the request with the list of joined peers (all but the new one).
 		json peerInfos = joinedPeers
-			.filter((joinedPeer) = > joinedPeer.id != = peer->id)
+			.filter((joinedPeer) = > joinedPeer.id != peer->id())
 			.map((joinedPeer) = > ({
 				id: joinedPeer.id,
 				displayName : joinedPeer.data.displayName,
 				device : joinedPeer.data.device
 				}));
 
-		accept({ peers: peerInfos });
+		accept(json{ { "peers", peerInfos } });
 
 		// Mark the new Peer as joined.
 		peer->data.joined = true;
 
-		for (const joinedPeer of joinedPeers)
+		for (const joinedPeer : joinedPeers)
 		{
 			// Create Consumers for existing Producers.
 			for (const producer of joinedPeer.data.producers.values())
@@ -306,7 +310,7 @@ async _handleProtooRequest(protoo::Peer* peer, request, accept, reject)
 			webRtcTransportOptions.enableTcp = true;
 		}
 
-		WebRtcTransport* transport = await this->_mediasoupRouter.createWebRtcTransport(
+		WebRtcTransport* transport = await this->_mediasoupRouter->createWebRtcTransport(
 			webRtcTransportOptions);
 
 		transport->on("sctpstatechange", (sctpState) = >
@@ -754,7 +758,7 @@ async _handleProtooRequest(protoo::Peer* peer, request, accept, reject)
 
 		const { uplink, downlink, rtt, secret } = request.data;
 
-		if (!secret || secret != = process.env.NETWORK_THROTTLE_SECRET)
+		if (!secret || secret != process.env.NETWORK_THROTTLE_SECRET)
 		{
 			reject(403, "operation NOT allowed, modda fuckaa");
 
@@ -789,7 +793,7 @@ async _handleProtooRequest(protoo::Peer* peer, request, accept, reject)
 	{
 		const { secret } = request.data;
 
-		if (!secret || secret != = process.env.NETWORK_THROTTLE_SECRET)
+		if (!secret || secret != process.env.NETWORK_THROTTLE_SECRET)
 		{
 			reject(403, "operation NOT allowed, modda fuckaa");
 
@@ -824,7 +828,7 @@ std::list<protoo::Peer*> Room::_getJoinedPeers(protoo::Peer* excludePeer = nullp
 	std::list<protoo::Peer*> peers;
 	for (protoo::Peer* peer : this->_peers)
 	{
-		if (peer->data.joined && peer != = excludePeer)
+		if (peer->data.joined && peer != excludePeer)
 		{
 			peers.push_back(peer);
 		}
