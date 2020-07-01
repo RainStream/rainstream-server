@@ -5,6 +5,16 @@
 #include "WebSocketClient.hpp"
 #include <EnhancedEventEmitter.hpp>
 
+class Transport;
+class Producer;
+class Consumer;
+class DataProducer;
+class DataConsumer;
+
+using Accept = std::function<void(json&)>;
+using Reject = std::function<void(int, std::string)>;
+
+
 namespace protoo
 {
 	class Request;
@@ -28,13 +38,13 @@ namespace protoo
 		std::string id();
 		void close();
 
-		void Accept(uint32_t id, json& data);
-		void Reject(uint32_t id, uint32_t code, const std::string& errorReason);
+// 		void Accept(uint32_t id, json& data);
+// 		void Reject(uint32_t id, uint32_t code, const std::string& errorReason);
 
 		void Send(const json& message);
-
 // 		Defer send(std::string method, json data);
-// 		Defer notify(std::string method, json data);
+		void notify(std::string method, json& data);
+		void request(std::string method, json& data);
 
 		struct Data
 		{

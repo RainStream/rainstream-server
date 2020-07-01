@@ -50,8 +50,8 @@ namespace protoo
 		this->listener->OnPeerClose(this);
 	}
 
-	void Peer::Accept(uint32_t id, json& data)
-	{
+// 	void Peer::Accept(uint32_t id, json& data)
+// 	{
 // 		auto it = _requests.find(id);
 // 		if (it != _requests.end())
 // 		{
@@ -67,10 +67,10 @@ namespace protoo
 // 
 // 			_requests.erase(it);
 // 		}
-	}
+//	}
 
-	void Peer::Reject(uint32_t id, uint32_t code, const std::string& errorReason)
-	{
+// 	void Peer::Reject(uint32_t id, uint32_t code, const std::string& errorReason)
+// 	{
 // 		auto it = _requests.find(id);
 // 		if (it != _requests.end())
 // 		{
@@ -87,7 +87,7 @@ namespace protoo
 // 
 // 			_requests.erase(it);
 // 		}
-	}
+//	}
 
 // 	Defer Peer::send(std::string method, json data)
 // 	{
@@ -151,6 +151,16 @@ namespace protoo
 // 
 // 		return this->_transport->send(notification);
 // 	}
+
+	void Peer::notify(std::string method, json& data)
+	{
+
+	}
+
+	void Peer::request(std::string method, json& data)
+	{
+
+	}
 
 	void Peer::onMessage(const std::string& message)
 	{
