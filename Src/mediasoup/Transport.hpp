@@ -96,7 +96,7 @@ using GetProducerById = std::function<Producer*(std::string)>;
 using GetDataProducerById =std::function<DataProducer*(std::string)>;
 
 
-class Transport : public EnhancedEventEmitter
+class MS_EXPORT Transport : public EnhancedEventEmitter
 {
 
 public:

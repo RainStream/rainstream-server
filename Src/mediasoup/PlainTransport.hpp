@@ -43,7 +43,7 @@ using PlainRtpTransportStat = PlainTransportStat;
 class PayloadChannel;
 
 
-class PlainTransport : public Transport
+class MS_EXPORT PlainTransport : public Transport
 {
 public:
 	/**

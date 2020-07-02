@@ -1,6 +1,6 @@
 #include "common.hpp"
 
-#include "config.h"
+#include "config.hpp"
 
 json config =
 R"(
@@ -120,4 +120,5 @@ R"(
 			"maxSctpMessageSize" : 262144
 		}
 	}
-})"_json;
+}
+)"_json;

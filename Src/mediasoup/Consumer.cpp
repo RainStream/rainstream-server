@@ -14,7 +14,7 @@ Consumer::Consumer(
 	json appData,
 	bool paused,
 	bool producerPaused,
-	ConsumerScore score/* = ConsumerScore()*/,
+	json score/* = json()*/,
 	ConsumerLayers preferredLayers/* = ConsumerLayers()*/)
 	: EnhancedEventEmitter()
 {
@@ -107,7 +107,7 @@ int Consumer::priority()
 /**
  * Consumer score.
  */
-ConsumerScore Consumer::score()
+json Consumer::score()
 {
 	return this->_score;
 }

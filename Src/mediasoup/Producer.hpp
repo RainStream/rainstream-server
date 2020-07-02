@@ -139,7 +139,7 @@ using ProducerType = std::string; // = "simple" | "simulcast" | "svc";
 
 class Channel;
 
-class Producer : public EnhancedEventEmitter
+class MS_EXPORT Producer : public EnhancedEventEmitter
 {
 public:
 	/**

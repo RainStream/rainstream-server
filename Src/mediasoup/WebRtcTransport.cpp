@@ -56,7 +56,7 @@ std::string WebRtcTransport::iceRole()
 /**
  * ICE parameters.
  */
-IceParameters WebRtcTransport::iceParameters()
+json WebRtcTransport::iceParameters()
 {
 	return this->_data["iceParameters"];
 }
@@ -88,7 +88,7 @@ TransportTuple WebRtcTransport::iceSelectedTuple()
 /**
  * DTLS parameters.
  */
-DtlsParameters WebRtcTransport::dtlsParameters()
+json WebRtcTransport::dtlsParameters()
 {
 	return this->_data["dtlsParameters"];
 }
@@ -112,7 +112,7 @@ std::string WebRtcTransport::dtlsRemoteCert()
 /**
  * SCTP parameters.
  */
-SctpParameters WebRtcTransport::sctpParameters()
+json WebRtcTransport::sctpParameters()
 {
 	return this->_data["sctpParameters"];
 }
@@ -210,7 +210,7 @@ std::future<json> WebRtcTransport::getStats()
  *
  * @override
  */
-std::future<void> WebRtcTransport::connect(DtlsParameters dtlsParameters)
+std::future<void> WebRtcTransport::connect(json& dtlsParameters)
 {
 	MSC_DEBUG("connect()");
 
@@ -226,7 +226,7 @@ std::future<void> WebRtcTransport::connect(DtlsParameters dtlsParameters)
 /**
  * Restart ICE.
  */
-std::future<IceParameters> WebRtcTransport::restartIce()
+std::future<json> WebRtcTransport::restartIce()
 {
 	MSC_DEBUG("restartIce()");
 

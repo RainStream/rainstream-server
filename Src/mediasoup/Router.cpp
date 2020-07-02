@@ -226,24 +226,28 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(
 	else if (!appData.is_null() && !appData.is_object())
 		throw new TypeError("if given, appData must be an object");
 
-	// 		listenIps = listenIps.map((listenIp)
-	// 		{
-	// 			if (typeof listenIp == "std::string" && listenIp)
-	// 			{
-	// 				return { ip: listenIp };
-	// 			}
-	// 			else if (typeof listenIp == "object")
-	// 			{
-	// 				return {
-	// 					ip          : listenIp.ip,
-	// 					announcedIp : listenIp.announcedIp || undefined
-	// 				};
-	// 			}
-	// 			else
-	// 			{
-	// 				throw new TypeError("wrong listenIp");
-	// 			}
-	// 		});
+	json tmpListenIps = json::array();
+	for (json& listenIp : listenIps)
+	{
+		if (listenIp.is_string() && !listenIp.get<std::string>().empty())
+		{
+			tmpListenIps.push_back( { { "ip", listenIp } } );
+		}
+		else if (listenIp.is_object())
+		{
+			tmpListenIps.push_back(
+			{
+				{ "ip", listenIp["ip"] },
+				{ "announcedIp", listenIp.value("announcedIp", json()) }
+			});
+		}
+		else
+		{
+			throw new TypeError("wrong listenIp");
+		}
+	}
+
+	listenIps = tmpListenIps;
 
 	json internal = this->_internal;
 	internal["transportId"] = uuidv4();
@@ -324,22 +328,22 @@ std::future<PlainTransport*> Router::createPlainTransport(
 	else if (!appData.is_null() && !appData.is_object())
 		throw new TypeError("if given, appData must be an object");
 
-	// 		if (typeof listenIp == "std::string" && listenIp)
-	// 		{
-	// 			listenIp = { ip: listenIp };
-	// 		}
-	// 		else if (typeof listenIp == "object")
-	// 		{
-	// 			listenIp =
-	// 			{
-	// 				ip          : listenIp.ip,
-	// 				announcedIp : listenIp.announcedIp || undefined
-	// 			};
-	// 		}
-	// 		else
-	// 		{
-	// 			throw new TypeError("wrong listenIp");
-	// 		}
+	if (listenIp.is_string() && !listenIp.get<std::string>().empty())
+	{
+		listenIp = { { "ip", listenIp } };
+	}
+	else if (listenIp.is_object())
+	{
+		listenIp =
+		{
+			{ "ip", listenIp["ip"] },
+			{ "announcedIp", listenIp.value("announcedIp", json()) }
+		};
+	}
+	else
+	{
+		throw new TypeError("wrong listenIp");
+	}
 
 	json internal = this->_internal;
 	internal["transportId"] = uuidv4();

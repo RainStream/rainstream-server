@@ -173,7 +173,7 @@ std::future<void> ClusterServer::connectionrequest(protoo::WebSocketClient* tran
 		peerId.c_str(), roomId.c_str());
 
 	Room* room = co_await getOrCreateRoom(roomId);
-	room->handleConnection(peerId, transport);
+	room->handleConnection(peerId, true, transport);
 
 	co_return;
 }

@@ -6,7 +6,7 @@ class Producer;
 class Consumer;
 class PayloadChannel;
 
-class PipeTransport : public Transport
+class MS_EXPORT PipeTransport : public Transport
 {
 public:
 	/**

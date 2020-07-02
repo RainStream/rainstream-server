@@ -18,7 +18,7 @@ class PlainTransport;
 class PipeTransport;
 
 
-class Router : public EnhancedEventEmitter
+class MS_EXPORT Router : public EnhancedEventEmitter
 {
 public:
 	/**

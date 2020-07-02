@@ -202,7 +202,7 @@ struct WebRtcTransportStat
 class PayloadChannel;
 
 
-class WebRtcTransport : public Transport
+class MS_EXPORT WebRtcTransport : public Transport
 {
 public:
 	/**
@@ -230,7 +230,7 @@ public:
 	/**
 	 * ICE parameters.
 	 */
-	IceParameters iceParameters();
+	json iceParameters();
 
 	/**
 	 * ICE candidates.
@@ -250,7 +250,7 @@ public:
 	/**
 	 * DTLS parameters.
 	 */
-	DtlsParameters dtlsParameters();
+	json dtlsParameters();
 
 	/**
 	 * DTLS state.
@@ -265,7 +265,7 @@ public:
 	/**
 	 * SCTP parameters.
 	 */
-	SctpParameters sctpParameters();
+	json sctpParameters();
 
 	/**
 	 * SCTP state.
@@ -318,12 +318,12 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<void> connect(DtlsParameters dtlsParameters);
+	std::future<void> connect(json& dtlsParameters);
 
 	/**
 	 * Restart ICE.
 	 */
-	std::future<IceParameters> restartIce();
+	std::future<json> restartIce();
 
 private:
 	void _handleWorkerNotifications();

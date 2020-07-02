@@ -146,7 +146,7 @@ struct ConsumerStat
 using ConsumerType = std::string;// "simple" | "simulcast" | "svc" | "pipe";
 
 
-class Consumer : public EnhancedEventEmitter
+class MS_EXPORT Consumer : public EnhancedEventEmitter
 {
 public:
 	/**
@@ -168,7 +168,7 @@ public:
 		json appData,
 		bool paused,
 		bool producerPaused,
-		ConsumerScore score = ConsumerScore(),
+		json score = json(),
 		ConsumerLayers preferredLayers = ConsumerLayers());
 
 	/**
@@ -219,7 +219,7 @@ public:
 	/**
 	 * Consumer score.
 	 */
-	ConsumerScore score();
+	json score();
 
 	/**
 	 * Preferred video layers.
@@ -342,7 +342,7 @@ private:
 	uint32_t _priority = 1;
 
 	// Current score.
-	ConsumerScore _score;
+	json _score;
 
 	// Preferred layers.
 	ConsumerLayers _preferredLayers;

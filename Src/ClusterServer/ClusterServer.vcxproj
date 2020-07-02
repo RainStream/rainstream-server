@@ -171,10 +171,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ClusterServer.cpp" />
+    <ClCompile Include="config.cpp" />
     <ClCompile Include="Loop.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Peer.cpp" />
-    <ClCompile Include="Request.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DepLibUV.cpp" />
@@ -184,10 +184,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClusterServer.hpp" />
+    <ClInclude Include="config.hpp" />
     <ClInclude Include="Loop.hpp" />
     <ClInclude Include="Message.hpp" />
     <ClInclude Include="Peer.hpp" />
-    <ClInclude Include="Request.hpp" />
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="DepLibUV.hpp" />
     <ClInclude Include="handles\SignalsHandler.hpp" />

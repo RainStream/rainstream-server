@@ -159,7 +159,7 @@ namespace protoo
 
 	std::future<json> Peer::request(std::string method, json& data)
 	{
-
+		co_return json();
 	}
 
 	void Peer::onMessage(const std::string& message)
