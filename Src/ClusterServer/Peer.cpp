@@ -157,7 +157,7 @@ namespace protoo
 
 	}
 
-	void Peer::request(std::string method, json& data)
+	std::future<json> Peer::request(std::string method, json& data)
 	{
 
 	}

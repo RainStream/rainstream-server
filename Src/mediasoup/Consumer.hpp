@@ -289,8 +289,8 @@ public:
 	 * Set preferred video layers.
 	 */
 	std::future<void> setPreferredLayers(
-		uint32_t spatialLayer,
-		uint32_t temporalLayer
+		int spatialLayer,
+		int temporalLayer
 	);
 
 	/**

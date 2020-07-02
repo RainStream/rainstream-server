@@ -276,8 +276,8 @@ std::future<void> Consumer::resume()
  * Set preferred video layers.
  */
 std::future<void> Consumer::setPreferredLayers(
-	uint32_t spatialLayer,
-	uint32_t temporalLayer
+	int spatialLayer,
+	int temporalLayer
 )
 {
 	MSC_DEBUG("setPreferredLayers()");

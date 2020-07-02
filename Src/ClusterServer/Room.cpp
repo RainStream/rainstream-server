@@ -50,14 +50,14 @@ std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId)
 	Router* mediasoupRouter = co_await mediasoupWorker->createRouter({ mediaCodecs });
 
 	// Create a mediasoup AudioLevelObserver.
-// 	const audioLevelObserver = await mediasoupRouter.createAudioLevelObserver(
+// 	const audioLevelObserver = co_await mediasoupRouter.createAudioLevelObserver(
 // 		{
 // 			maxEntries: 1,
 // 			threshold : -80,
 // 			interval : 800
 // 		});
 // 
-// 	const bot = await Bot.create({ mediasoupRouter });
+// 	const bot = co_await Bot.create({ mediasoupRouter });
 
 	return new Room(
 		roomId,
@@ -156,8 +156,14 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 		{
 			for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
 			{
-				otherPeer->notify("peerClosed", { { "peerId", peer->id()} })
-					.catch ([=]() {});
+				try
+				{
+					otherPeer->notify("peerClosed", { { "peerId", peer->id()} });
+				}
+				catch (const std::exception&)
+				{
+
+				}
 			}
 		}
 
@@ -297,28 +303,28 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		// NOTE: Don"t require that the Peer is joined here, so the client can
 		// initiate mediasoup Transports and be ready when he later joins.
 
-		json{
-			forceTcp,
-				producing,
-				consuming,
-				sctpCapabilities
-		} = request.data;
+		bool forceTcp = data["forceTcp"];
+		bool producing = data["producing"];
+		bool consuming = data["consuming"];
+		json sctpCapabilities = data["sctpCapabilities"];
 
-		const webRtcTransportOptions =
+
+		json webRtcTransportOptions =
 		{
-			...config.mediasoup.webRtcTransportOptions,
-			enableSctp     : Boolean(sctpCapabilities),
-			numSctpStreams : (sctpCapabilities || {}).numStreams,
-			appData : { producing, consuming }
+// 			config.mediasoup.webRtcTransportOptions,
+// 			enableSctp     : Boolean(sctpCapabilities),
+// 			numSctpStreams : (sctpCapabilities || {}).numStreams,
+// 			appData : { producing, consuming }
 		};
 
 		if (forceTcp)
 		{
-			webRtcTransportOptions.enableUdp = false;
-			webRtcTransportOptions.enableTcp = true;
+			webRtcTransportOptions["enableUdp"] = false;
+			webRtcTransportOptions["enableTcp"] = true;
 		}
 
-		WebRtcTransport* transport = await this->_mediasoupRouter->createWebRtcTransport(
+
+		WebRtcTransport* transport = co_await this->_mediasoupRouter->createWebRtcTransport(
 			webRtcTransportOptions);
 
 		transport->on("sctpstatechange", [=](std::string sctpState)
@@ -333,25 +339,25 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		});
 
 		// NOTE: For testing.
-		// await transport->enableTraceEvent([ "probation", "bwe" ]);
-		co_await transport->enableTraceEvent(["bwe"]);
+		// co_await transport->enableTraceEvent([ "probation", "bwe" ]);
+		co_await transport->enableTraceEvent({ "bwe" });
 
 		transport->on("trace", [=](json &trace)
 		{
 			MSC_DEBUG(
-				"transport "trace" event [transportId:%s, trace.type:%s, trace:%o]",
-				transport->id(), trace.type, trace);
+				"transport \"trace\" event [transportId:%s, trace.type:%s, trace:%o]",
+				transport->id(), trace.value("type",""), trace.dump().c_str());
 
-			if (trace.type == "bwe" && trace.direction == "out")
+			if (trace.type == "bwe" && trace["direction"] == "out")
 			{
 				try
 				{
 					peer->notify(
 						"downlinkBwe",
 						{
-							desiredBitrate: trace.info.desiredBitrate,
-							effectiveDesiredBitrate : trace.info.effectiveDesiredBitrate,
-							availableBitrate : trace.info.availableBitrate
+							{ "desiredBitrate", trace["info"]["desiredBitrate"] },
+							{ "effectiveDesiredBitrate", trace["info"]["effectiveDesiredBitrate"] },
+							{ "availableBitrate", trace["info"]["availableBitrate"] }
 						});
 				}
 				catch (const std::exception&)
@@ -362,24 +368,24 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		});
 
 		// Store the WebRtcTransport into the protoo Peer data Object.
-		peer->data.transports.insert(transport->id(), transport);
+		peer->data.transports.insert(std::make_pair(transport->id(), transport));
 
 		accept(
-			{
-				id: transport->id(),
-				iceParameters : transport->iceParameters,
-				iceCandidates : transport->iceCandidates,
-				dtlsParameters : transport->dtlsParameters,
-				sctpParameters : transport->sctpParameters
+			json{
+				{ "id", transport->id() },
+				{ "iceParameters", transport->iceParameters() },
+				{ "iceCandidates", transport->iceCandidates() },
+				{ "dtlsParameters", transport->dtlsParameters() },
+				{ "sctpParameters", transport->sctpParameters() }
 			});
 
-		const { maxIncomingBitrate } = config.mediasoup.webRtcTransportOptions;
+		uint32_t maxIncomingBitrate = config.mediasoup.webRtcTransportOptions;
 
 		// If set, apply max incoming bitrate limit.
 		if (maxIncomingBitrate)
 		{
 			try {
-				await transport->setMaxIncomingBitrate(maxIncomingBitrate);
+				co_await transport->setMaxIncomingBitrate(maxIncomingBitrate);
 			}
 			catch (std::exception& error)
 			{
@@ -388,25 +394,28 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 	}
 	else if (method == "connectWebRtcTransport")
 	{
-		const { transportId, dtlsParameters } = request.data;
-		const transport = peer->data.transports.get(transportId);
+		std::string transportId = data["transportId"];
+		json dtlsParameters = data["dtlsParameters"];
 
-		if (!transport)
+		if (!peer->data.transports.count(transportId))
 			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
 
-		await transport->connect({ dtlsParameters });
+		Transport* transport = peer->data.transports.at(transportId);
 
-		accept();
+		co_await transport->connect({ dtlsParameters });
+
+		accept(json());
 	}
 	else if (method == "restartIce")
 	{
-		const { transportId } = request.data;
-		const transport = peer->data.transports.get(transportId);
+		std::string transportId = data["transportId"];
 
-		if (!transport)
+		if (!peer->data.transports.count(transportId))
 			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
 
-		const iceParameters = await transport->restartIce();
+		WebRtcTransport* transport = dynamic_cast<WebRtcTransport*>(peer->data.transports.at(transportId));
+
+		json iceParameters = co_await transport->restartIce();
 
 		accept(iceParameters);
 	}
@@ -416,30 +425,29 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { transportId, kind, rtpParameters } = request.data;
-		let{ appData } = request.data;
-		const transport = peer->data.transports.get(transportId);
+		std::string transportId = data["transportId"];
+		std::string kind = data["kind"];
+		json rtpParameters = data["rtpParameters"];
+		json appData = data["appData"];
 
-		if (!transport)
+		if (!peer->data.transports.count(transportId))
 			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
+
+		Transport* transport = peer->data.transports.at(transportId);
+
 
 		// Add peerId into appData to later get the associated Peer during
 		// the "loudest" event of the audioLevelObserver.
-		appData = { ...appData, peerId: peer->id };
+		appData["peerId"] = peer->id();
 
-		const producer = await transport->produce(
-			{
-				kind,
-				rtpParameters,
-				appData
-				// keyFrameRequestDelay: 5000
-			});
+		Producer* producer = co_await transport->produce(std::string(), kind,
+				rtpParameters, false, 0, appData);
 
 		// Store the Producer into the protoo Peer data Object.
-		peer->data.producers.set(producer->id, producer);
+		peer->data.producers.insert(std::make_pair(producer->id(), producer));
 
 		// Set Producer events.
-		producer->on("score", (score) = >
+		producer->on("score", [=](json score)
 		{
 			// MSC_DEBUG(
 			// 	"producer "score" event [producerId:%s, score:%o]",
@@ -447,7 +455,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 			try
 			{
-				peer->notify("producerScore", { producerId: producer->id, score });
+				peer->notify("producerScore", { { "producerId", producer->id }, { "score", score } });
 			}
 			catch (const std::exception&)
 			{
@@ -455,41 +463,37 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 			}
 		});
 
-		producer->on("videoorientationchange", (videoOrientation) = >
+		producer->on("videoorientationchange", [=](json videoOrientation)
 		{
 			MSC_DEBUG(
-				"producer "videoorientationchange" event [producerId:%s, videoOrientation:%o]",
-				producer->id, videoOrientation);
+				"producer \"videoorientationchange\" event [producerId:%s, videoOrientation:%s]",
+				producer->id().c_str(), videoOrientation.dump().c_str());
 		});
 
 		// NOTE: For testing.
-		// await producer->enableTraceEvent([ "rtp", "keyframe", "nack", "pli", "fir" ]);
-		// await producer->enableTraceEvent([ "pli", "fir" ]);
-		// await producer->enableTraceEvent([ "keyframe" ]);
+		// co_await producer->enableTraceEvent([ "rtp", "keyframe", "nack", "pli", "fir" ]);
+		// co_await producer->enableTraceEvent([ "pli", "fir" ]);
+		// co_await producer->enableTraceEvent([ "keyframe" ]);
 
-		producer->on("trace", (trace) = >
+		producer->on("trace", [=](json trace)
 		{
 			MSC_DEBUG(
-				"producer "trace" event [producerId:%s, trace.type:%s, trace:%o]",
-				producer->id, trace.type, trace);
+				"producer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
+				producer->id().c_str(), trace.value("type", ""), trace.dump().c_str());
 		});
 
-		accept({ id: producer->id });
+		accept(json{ { "id", producer->id() } });
 
 		// Optimization: Create a server-side Consumer for each Peer.
-		for (protoo::Peer* otherPeer : this->_getJoinedPeers({ excludePeer: peer }))
+		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
 		{
-			this->_createConsumer(
-				{
-					consumerPeer: otherPeer,
-					producerPeer : peer,
-					producer
-				});
+			this->_createConsumer(otherPeer, peer, producer);
 		}
 
 		// Add into the audioLevelObserver.
 		if (producer->kind() == "audio")
 		{
+			/*
 			try
 			{
 				this->_audioLevelObserver.addProducer({ producerId: producer->id });
@@ -498,6 +502,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 			{
 
 			}
+			*/
 		}
 	}
 	else if (method == "closeProducer")
@@ -506,18 +511,19 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { producerId } = request.data;
-		const producer = peer->data.producers.get(producerId);
+		std::string producerId = data["producerId"];
 
-		if (!producer)
+		if (!peer->data.producers.count(producerId))
 			MSC_THROW_ERROR("producer with id \"%s\" not found", producerId.c_str());
+
+		Producer* producer = peer->data.producers.at(producerId);
 
 		producer->close();
 
 		// Remove from its map.
-		peer->data.producers.delete(producer->id);
+		peer->data.producers.erase(producer->id());
 
-		accept();
+		accept(json());
 	}
 	else if (method == "pauseProducer")
 	{
@@ -525,15 +531,16 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { producerId } = request.data;
-		const producer = peer->data.producers.get(producerId);
+		std::string producerId = data["producerId"];
 
-		if (!producer)
+		if (!peer->data.producers.count(producerId))
 			MSC_THROW_ERROR("producer with id \"%s\" not found", producerId.c_str());
 
-		await producer->pause();
+		Producer* producer = peer->data.producers.at(producerId);
 
-		accept();
+		co_await producer->pause();
+
+		accept(json());
 	}
 	else if (method == "resumeProducer")
 	{
@@ -541,15 +548,16 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { producerId } = request.data;
-		const producer = peer->data.producers.get(producerId);
+		std::string producerId = data["producerId"];
 
-		if (!producer)
+		if (!peer->data.producers.count(producerId))
 			MSC_THROW_ERROR("producer with id \"%s\" not found", producerId.c_str());
 
-		await producer->resume();
+		Producer* producer = peer->data.producers.at(producerId);
 
-		accept();
+		co_await producer->resume();
+
+		accept(json());
 	}
 	else if (method == "pauseConsumer")
 	{
@@ -557,15 +565,16 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { consumerId } = request.data;
-		const consumer = peer->data.consumers.get(consumerId);
+		std::string consumerId = data["consumerId"];		
 
-		if (!consumer)
+		if (!peer->data.consumers.count(consumerId))
 			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
 
-		await consumer->pause();
+		Consumer* consumer = peer->data.consumers.at(consumerId);
 
-		accept();
+		co_await consumer->pause();
+
+		accept(json());
 	}
 	else if (method == "resumeConsumer")
 	{
@@ -573,15 +582,16 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { consumerId } = request.data;
-		const consumer = peer->data.consumers.get(consumerId);
+		std::string consumerId = data["consumerId"];
 
-		if (!consumer)
+		if (!peer->data.consumers.count(consumerId))
 			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
 
-		await consumer->resume();
+		Consumer* consumer = peer->data.consumers.at(consumerId);
 
-		accept();
+		co_await consumer->resume();
+
+		accept(json());
 	}
 	else if (method == "setConsumerPreferredLayers")
 	{
@@ -589,15 +599,18 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { consumerId, spatialLayer, temporalLayer } = request.data;
-		const consumer = peer->data.consumers.get(consumerId);
+		int spatialLayer = data["spatialLayer"];
+		int temporalLayer = data["temporalLayer"];
+		std::string consumerId = data["consumerId"];
 
-		if (!consumer)
+		if (!peer->data.consumers.count(consumerId))
 			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
 
-		await consumer->setPreferredLayers({ spatialLayer, temporalLayer });
+		Consumer* consumer = peer->data.consumers.at(consumerId);
 
-		accept();
+		co_await consumer->setPreferredLayers(spatialLayer, temporalLayer);
+
+		accept(json());
 	}
 	else if (method == "setConsumerPriority")
 	{
@@ -605,15 +618,17 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { consumerId, priority } = request.data;
-		const consumer = peer->data.consumers.get(consumerId);
+		int priority = data["priority"];
+		std::string consumerId = data["consumerId"];
 
-		if (!consumer)
+		if (!peer->data.consumers.count(consumerId))
 			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
 
-		await consumer->setPriority(priority);
+		Consumer* consumer = peer->data.consumers.at(consumerId);
 
-		accept();
+		co_await consumer->setPriority(priority);
+
+		accept(json());
 	}
 	else if (method == "requestConsumerKeyFrame")
 	{
@@ -621,16 +636,18 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { consumerId } = request.data;
-		const consumer = peer->data.consumers.get(consumerId);
+		std::string consumerId = data["consumerId"];
 
-		if (!consumer)
+		if (!peer->data.consumers.count(consumerId))
 			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
 
-		await consumer->requestKeyFrame();
+		Consumer* consumer = peer->data.consumers.at(consumerId);
 
-		accept();
+		co_await consumer->requestKeyFrame();
+
+		accept(json());
 	}
+	/*
 	else if (method == "produceData")
 	{
 		// Ensure the Peer is joined.
@@ -650,7 +667,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!transport)
 			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
 
-		const dataProducer = await transport->produceData(
+		const dataProducer = co_await transport->produceData(
 			{
 				sctpStreamParameters,
 				label,
@@ -686,16 +703,17 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 					dataProducerId: dataProducer.id,
 					peer
 				});
-		}
+		}		
 	}
+	*/
 	else if (method == "changeDisplayName")
 	{
 		// Ensure the Peer is joined.
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		const { displayName } = request.data;
-		const oldDisplayName = peer->data.displayName;
+		std::string displayName = data["displayName"];
+		std::string oldDisplayName = peer->data.displayName;
 
 		// Store the display name into the custom data Object of the protoo
 		// Peer.
@@ -709,9 +727,9 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 				otherPeer->notify(
 					"peerDisplayNameChanged",
 					{
-						peerId: peer->id,
-						displayName,
-						oldDisplayName
+						{ "peerId", peer->id() },
+						{ "displayName", displayName },
+						{ "oldDisplayName", oldDisplayName }
 					});
 			}
 			catch (const std::exception&)
@@ -720,44 +738,48 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 			}
 		}
 
-		accept();
+		accept(json());
 	}
 	else if (method == "getTransportStats")
 	{
-		const { transportId } = request.data;
-		const transport = peer->data.transports.get(transportId);
+		std::string transportId = data["transportId"];		
 
-		if (!transport)
+		if (!peer->data.transports.count(transportId))
 			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
 
-		const stats = await transport->getStats();
+		Transport* transport = peer->data.transports.at(transportId);
+
+		json stats = co_await transport->getStats();
 
 		accept(stats);
 	}
 	else if (method == "getProducerStats")
 	{
-		const { producerId } = request.data;
-		const producer = peer->data.producers.get(producerId);
+		std::string producerId = data["producerId"];
 
-		if (!producer)
+		if (!peer->data.producers.count(producerId))
 			MSC_THROW_ERROR("producer with id \"%s\" not found", producerId.c_str());
 
-		const stats = await producer->getStats();
+		Producer* producer = peer->data.producers.at(producerId);
+
+		json stats = co_await producer->getStats();
 
 		accept(stats);
 	}
 	else if (method == "getConsumerStats")
 	{
-		const { consumerId } = request.data;
-		const consumer = peer->data.consumers.get(consumerId);
+		std::string consumerId = data["consumerId"];
 
-		if (!consumer)
+		if (!peer->data.consumers.count(consumerId))
 			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
 
-		const stats = await consumer->getStats();
+		Consumer* consumer = peer->data.consumers.at(consumerId);
+
+		json stats = co_await consumer->getStats();
 
 		accept(stats);
 	}
+	/*
 	else if (method == "getDataProducerStats")
 	{
 		const { dataProducerId } = request.data;
@@ -766,7 +788,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!dataProducer)
 			MSC_THROW_ERROR(`dataProducer with id "${dataProducerId}" not found`);
 
-		const stats = await dataProducer.getStats();
+		const stats = co_await dataProducer.getStats();
 
 		accept(stats);
 	}
@@ -778,10 +800,10 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		if (!dataConsumer)
 			MSC_THROW_ERROR(`dataConsumer with id "${dataConsumerId}" not found`);
 
-		const stats = await dataConsumer.getStats();
+		const stats = co_await dataConsumer.getStats();
 
 		accept(stats);
-	}
+	}	
 	else if (method == "applyNetworkThrottle")
 	{
 		const DefaultUplink = 1000000;
@@ -799,7 +821,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		try
 		{
-			await throttle.start(
+			co_await throttle.start(
 				{
 					up: uplink || DefaultUplink,
 					down : downlink || DefaultDownlink,
@@ -812,7 +834,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 				downlink || DefaultDownlink,
 				rtt || DefaultRtt);
 
-			accept();
+			accept(json());
 		}
 		catch (std::exception& error)
 		{
@@ -838,7 +860,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 			MSC_WARN("network throttle stopped");
 
-			accept();
+			accept(json());
 		}
 		catch (std::exception& error)
 		{
@@ -847,6 +869,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 			reject(500, error.toString());
 		}
 	}
+	*/
 	else
 	{
 		MSC_ERROR("unknown request.method \"%s\"", request.method);
@@ -858,7 +881,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 std::list<protoo::Peer*> Room::_getJoinedPeers(protoo::Peer* excludePeer = nullptr)
 {
 	std::list<protoo::Peer*> peers;
-	for (protoo::Peer* peer : this->_peers)
+	for (auto [key, peer] : this->_peers)
 	{
 		if (peer->data.joined && peer != excludePeer)
 		{
@@ -897,11 +920,13 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	}
 
 	// Must take the Transport the remote Peer is using for consuming.
-	Transport* transport = Array.from(consumerPeer->data.transports.values())
-		.find((t) = > t.appData.consuming);
+	auto transportIt = 
+		std::find_if(consumerPeer->data.transports.begin(), consumerPeer->data.transports.end(), [=](Transport* t) {
+		return t->appData().value("consuming", false);
+	});
 
 	// This should not happen.
-	if (!transport)
+	if (transportIt == consumerPeer->data.transports.end())
 	{
 		MSC_WARN("_createConsumer() | Transport for consuming not found");
 
@@ -913,7 +938,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 
 	try
 	{
-		consumer = await transport->consume(
+		consumer = co_await (transportIt->second)->consume(
 			producer->id(),
 			consumerPeer->data.rtpCapabilities,
 			true
@@ -927,7 +952,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	}
 
 	// Store the Consumer into the protoo consumerPeer data Object.
-	consumerPeer->data.consumers.insert(consumer->id(), consumer);
+	consumerPeer->data.consumers.insert(std::make_pair(consumer->id(), consumer));
 
 	// Set Consumer events.
 	consumer->on("transportclose", [=]()
@@ -941,20 +966,38 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 		// Remove from its map.
 		consumerPeer->data.consumers.erase(consumer->id());
 
-		consumerPeer->notify("consumerClosed", { { "consumerId", consumer->id() } })
-			.catch ([=]() {});
+		try
+		{
+			consumerPeer->notify("consumerClosed", { { "consumerId", consumer->id() } });
+		}
+		catch (const std::exception&)
+		{
+
+		}
 	});
 
 	consumer->on("producerpause", [=]()
 	{
-		consumerPeer->notify("consumerPaused", { { "consumerId", consumer->id() } })
-			.catch ([=]() {});
+		try
+		{
+			consumerPeer->notify("consumerPaused", { { "consumerId", consumer->id() } });
+		}
+		catch (const std::exception&)
+		{
+
+		}
 	});
 
 	consumer->on("producerresume", [=]()
 	{
-		consumerPeer->notify("consumerResumed", { { "consumerId", consumer->id() } })
-			.catch ([=]() {});
+		try
+		{
+			consumerPeer->notify("consumerResumed", { { "consumerId", consumer->id() } });
+		}
+		catch (const std::exception&)
+		{
+
+		}
 	});
 
 	consumer->on("score", [=](json& score)
@@ -962,33 +1005,44 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 		// MSC_DEBUG(
 		// 	"consumer "score" event [consumerId:%s, score:%o]",
 		// 	consumer->id(), score);
+		try
+		{
+			consumerPeer->notify("consumerScore", { { "consumerId", consumer->id() },{"score", score} });
+		}
+		catch (const std::exception&)
+		{
 
-		consumerPeer->notify("consumerScore", { { "consumerId", consumer->id() },{"score", score} })
-			.catch ([=]() {});
+		}
 	});
 
 	consumer->on("layerschange", [=](json& layers)
 	{
-		consumerPeer->notify(
-			"consumerLayersChanged",
-			{
-				{ "consumerId", consumer->id() },
-				{ "spatialLayer",  layers ? layers.spatialLayer : null },
-				{ "temporalLayer",  layers ? layers.temporalLayer : null }
-			})
-			.catch ([=]() {});
+		try
+		{
+			consumerPeer->notify(
+				"consumerLayersChanged",
+				{
+					{ "consumerId", consumer->id() },
+					{ "spatialLayer",  !layers.is_null() ? layers["spatialLayer"] : json() },
+					{ "temporalLayer",  !layers.is_null() ? layers["temporalLayer"] : json() }
+				});
+		}
+		catch (const std::exception&)
+		{
+
+		}
 	});
 
 	// NOTE: For testing.
-	// await consumer->enableTraceEvent([ "rtp", "keyframe", "nack", "pli", "fir" ]);
-	// await consumer->enableTraceEvent([ "pli", "fir" ]);
-	// await consumer->enableTraceEvent([ "keyframe" ]);
+	// co_await consumer->enableTraceEvent([ "rtp", "keyframe", "nack", "pli", "fir" ]);
+	// co_await consumer->enableTraceEvent([ "pli", "fir" ]);
+	// co_await consumer->enableTraceEvent([ "keyframe" ]);
 
 	consumer->on("trace", [=](json& trace)
 	{
 		MSC_DEBUG(
-			"consumer "trace" event [producerId:%s, trace.type:%s, trace:%o]",
-			consumer->id(), trace.type, trace);
+			"consumer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
+			consumer->id().c_str(), trace.value("type", ""), trace.dump().c_str());
 	});
 
 	// Send a protoo request to the remote Peer with Consumer parameters.
@@ -1011,7 +1065,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 		// the Consumer so the remote endpoint will receive the a first RTP packet
 		// of this new stream once its PeerConnection is already ready to process
 		// and associate it.
-		await consumer->resume();
+		co_await consumer->resume();
 
 		try
 		{
