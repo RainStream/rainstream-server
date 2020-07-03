@@ -1032,7 +1032,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 			"newConsumer",
 			json{
 				{ "peerId", producerPeer->id() },
-				{ "producerId ", producer->id() },
+				{ "producerId", producer->id() },
 				{ "id", consumer->id() },
 				{ "kind", consumer->kind() },
 				{ "rtpParameters", consumer->rtpParameters() },

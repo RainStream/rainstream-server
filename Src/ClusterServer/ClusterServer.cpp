@@ -156,7 +156,6 @@ std::future<void> ClusterServer::connectionrequest(protoo::WebSocketClient* tran
 {
 	std::string url = transport->url();
 
-
 	std::string roomId = Url::Request(url, "roomId");
 	std::string peerId = Url::Request(url, "peerId");
 
