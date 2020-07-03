@@ -1,6 +1,7 @@
 #define MSC_CLASS "Peer"
 
 #include "Peer.hpp"
+#include <errors.hpp>
 #include "Message.hpp"
 #include "Request.hpp"
 #include "WebSocketClient.hpp"
@@ -167,12 +168,28 @@ namespace protoo
 
 	void Peer::notify(std::string method, json& data)
 	{
+		json notification = Message::createNotification(method, data);
 
+		MSC_DEBUG("notify() [method:%s]", method.c_str());
+
+		// This may throw.
+		this->_transport->send(notification);
 	}
 
 	std::future<json> Peer::request(std::string method, json& data)
 	{
-		co_return json();
+		json request = Message::createRequest(method, data);
+
+		uint32_t id = request["id"];
+
+		MSC_DEBUG("request() [method:%s, id:%d]", method.c_str(), id);
+
+		this->Send(request);
+
+		std::promise<json> promise;
+		this->_sents.insert(std::make_pair(id, std::move(promise)));
+
+		return this->_sents[id].get_future();
 	}
 
 	void Peer::onMessage(const std::string& message)
@@ -231,25 +248,24 @@ namespace protoo
 	{
 		uint32_t id = response["id"].get<uint32_t>();
 
-// 		if (!this->_requestHandlers.count(id))
-// 		{
-// 			//logger.error("received response does not match any sent request");
-// 
-// 			return;
-// 		}
-// 
-// 		auto handler = this->_requestHandlers[id];
-// 
-// 
-// 		if (response.count("ok") && response["ok"].get<bool>())
-// 		{
-// 			handler.resolve(response["data"]);
-// 		}
-// 		else
-// 		{
-// 			response["errorCode"];
-// 			handler.reject(rs::Error(response["reason"].get<std::string>()));
-// 		}
+		if (!this->_sents.count(id))
+		{
+			MSC_ERROR("received response does not match any sent request [id:%d]", id);
+
+			return;
+		}
+
+		std::promise<json> sent = std::move(this->_sents[id]);
+		this->_sents.erase(id);
+
+		if (response.count("ok") && response["ok"].get<bool>())
+		{
+			sent.set_value(response["data"]);
+		}
+		else
+		{
+			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
+		}
 	}
 
 	void Peer::_handleNotification(json& notification)

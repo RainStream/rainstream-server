@@ -83,8 +83,7 @@ namespace protoo
 		// Closed flag.
 		bool _closed = false;
 
-//		std::unordered_map<uint32_t, Defer> _requestHandlers;
-		std::unordered_map<uint32_t, json> _requests;
+		std::unordered_map<uint32_t, std::promise<json> > _sents;
 	};
 }
 
