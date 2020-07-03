@@ -3,6 +3,7 @@
 #include "WebSocketClient.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
+#include <errors.hpp>
 
 #include <uWS.h>
 
@@ -35,27 +36,25 @@ namespace protoo
 		}
 	}
 
-// 	Defer WebSocketClient::send(const json& data)
-// 	{
-// 		if (this->_closed)
-// 			return promise::reject("transport closed");
-// 
-// 		std::string message = data.dump();
-// 
-// 		DLOG(INFO) << "send Message to " << userData << " says :" << message;
-// 
-// 		try
-// 		{
-// 			uWS::WebSocket<uWS::SERVER>* ws = static_cast <uWS::WebSocket<uWS::SERVER>*>(userData);
-// 			ws->send(message.c_str());
-// 
-// 			return promise::resolve();
-// 		}
-// 		catch (std::exception error)
-// 		{
-// 			return promise::reject(std::string(error.what()));
-// 		}
-// 	}
+	void WebSocketClient::send(const json& data)
+	{
+		if (this->_closed)
+			MSC_THROW_ERROR("transport closed");
+
+		std::string message = data.dump();
+
+		try
+		{
+			uWS::WebSocket<uWS::SERVER>* ws = static_cast <uWS::WebSocket<uWS::SERVER>*>(userData);
+			ws->send(message.c_str());
+		}
+		catch (std::exception& error)
+		{
+			MSC_ERROR("send() failed:%s", error.what());
+
+			throw error;
+		}
+	}
 
 	bool WebSocketClient::closed()
 	{

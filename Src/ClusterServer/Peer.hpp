@@ -27,7 +27,7 @@ namespace protoo
 		{
 		public:
 			virtual void OnPeerClose(Peer* peer) = 0;
-			virtual void OnPeerRequest(Peer* peer, json& request) = 0;
+			virtual void OnPeerRequest(Peer* peer, Request* request) = 0;
 			virtual void OnPeerNotify(Peer* peer, json& notification) = 0;
 		};
 	public:
@@ -70,9 +70,9 @@ namespace protoo
 
 	protected:
 		void _handleTransport();
-		void _handleRequest(json request);
-		void _handleResponse(json response);
-		void _handleNotification(json notification);
+		void _handleRequest(json& jsonRequest);
+		void _handleResponse(json& response);
+		void _handleNotification(json& notification);
 
 	private:
 		std::string _peerName;

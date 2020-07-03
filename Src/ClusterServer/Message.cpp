@@ -6,7 +6,7 @@
 namespace protoo
 {
 
-	json Message::requestFactory(std::string method, const json& data)
+	json Message::createRequest(std::string method, const json& data)
 	{
 		json request =
 		{
@@ -19,7 +19,7 @@ namespace protoo
 		return request;
 	}
 
-	json Message::successResponseFactory(const json& request, const json& data)
+	json Message::createSuccessResponse(const json& request, const json& data)
 	{
 		json response =
 		{
@@ -32,7 +32,7 @@ namespace protoo
 		return response;
 	}
 
-	json Message::errorResponseFactory(const json& request, int errorCode, std::string errorReason)
+	json Message::createErrorResponse(const json& request, int errorCode, std::string errorReason)
 	{
 		json response =
 		{
@@ -45,7 +45,7 @@ namespace protoo
 		return response;
 	}
 
-	json Message::notificationFactory(std::string method, const json& data)
+	json Message::createNotification(std::string method, const json& data)
 	{
 		json notification =
 		{

@@ -2,6 +2,7 @@
 
 #include "Peer.hpp"
 #include "Message.hpp"
+#include "Request.hpp"
 #include "WebSocketClient.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
@@ -56,7 +57,7 @@ namespace protoo
 // 		if (it != _requests.end())
 // 		{
 // 			json request = it->second;
-// 			json response = Message::successResponseFactory(request, data);
+// 			json response = Message::createSuccessResponse(request, data);
 // 
 // 			this->_transport->send(response)
 // 			.fail([=](std::string error)
@@ -76,7 +77,7 @@ namespace protoo
 // 		{
 // 			json request = it->second;
 // 
-// 			json response = Message::errorResponseFactory(request, code, errorReason);
+// 			json response = Message::createErrorResponse(request, code, errorReason);
 // 
 // 			this->_transport->send(response)
 // 			.fail([=](std::string error)
@@ -91,7 +92,7 @@ namespace protoo
 
 // 	Defer Peer::send(std::string method, json data)
 // 	{
-// 		json request = Message::requestFactory(method, data);
+// 		json request = Message::createRequest(method, data);
 // 
 // 		uint32_t id = request["id"].get<uint32_t>();
 // 
@@ -147,10 +148,22 @@ namespace protoo
 // 
 // 	Defer Peer::notify(std::string method, json data)
 // 	{
-// 		json notification = Message::notificationFactory(method, data);
+// 		json notification = Message::createNotification(method, data);
 // 
 // 		return this->_transport->send(notification);
 // 	}
+
+	void Peer::Send(const json& message)
+	{
+		try
+		{
+			this->_transport->send(message);
+		}
+		catch (const std::exception&)
+		{
+
+		}
+	}
 
 	void Peer::notify(std::string method, json& data)
 	{
@@ -200,16 +213,21 @@ namespace protoo
 	}
 
 
-	void Peer::_handleRequest(json request)
+	void Peer::_handleRequest(json& jsonRequest)
 	{
-		uint32_t id = request.value("id", 0);
-		_requests.insert(std::make_pair(id, request));
+		try
+		{
+			Request* request = new Request(this, jsonRequest);
 
-		// Notify the listener.
-		this->listener->OnPeerRequest(this, request);
+			this->listener->OnPeerRequest(this, request);
+		}
+		catch (const std::exception&)
+		{
+
+		}
 	}
 
-	void Peer::_handleResponse(json response)
+	void Peer::_handleResponse(json& response)
 	{
 		uint32_t id = response["id"].get<uint32_t>();
 
@@ -234,7 +252,7 @@ namespace protoo
 // 		}
 	}
 
-	void Peer::_handleNotification(json notification)
+	void Peer::_handleNotification(json& notification)
 	{
 		this->listener->OnPeerNotify(this, notification);
 	}

@@ -16,7 +16,7 @@ class DirectTransport;
 class WebRtcTransport;
 class PlainTransport;
 class PipeTransport;
-
+struct WebRtcTransportOptions;
 
 class MS_EXPORT Router : public EnhancedEventEmitter
 {
@@ -88,18 +88,7 @@ public:
 	/**
 	 * Create a WebRtcTransport.
 	 */
-	std::future<WebRtcTransport*> createWebRtcTransport(
-		json listenIps,
-		bool enableUdp = true,
-		bool enableTcp = false,
-		bool preferUdp = false,
-		bool preferTcp = false,
-		uint32_t initialAvailableOutgoingBitrate = 600000,
-		bool enableSctp = false,
-		json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
-		uint32_t maxSctpMessageSize = 262144,
-		json appData = json()
-	);
+	std::future<WebRtcTransport*> createWebRtcTransport(WebRtcTransportOptions& options);
 
 	/**
 	 * Create a PlainTransport.

@@ -246,7 +246,7 @@ std::future<json> Transport::getStats()
  * @abstract
  */
  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-std::future<void> Transport::connect(json params)
+std::future<void> Transport::connect(json& params)
 {
 	// Should not happen.
 	throw new Error("method not implemented in the subclass");
@@ -663,7 +663,7 @@ std::future<void> Transport::enableTraceEvent(std::vector<TransportTraceEventTyp
 {
 	MSC_DEBUG("pause()");
 
-	json reqData = { types };
+	json reqData = { { "types", types } };
 
 	co_await this->_channel->request(
 		"transport.enableTraceEvent", this->_internal, reqData);

@@ -206,20 +206,20 @@ std::future<json> Router::dump()
 /**
  * Create a WebRtcTransport.
  */
-std::future<WebRtcTransport*> Router::createWebRtcTransport(
-	json listenIps,
-	bool enableUdp/* = true*/,
-	bool enableTcp/* = false*/,
-	bool preferUdp/* = false*/,
-	bool preferTcp/* = false*/,
-	uint32_t initialAvailableOutgoingBitrate /*= 600000*/,
-	bool enableSctp/* = false*/,
-	json numSctpStreams/* = { { "OS", 1024 }, { "MIS", 1024 } }*/,
-	uint32_t maxSctpMessageSize/* = 262144*/,
-	json appData/* = json()*/
-)
+std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
 {
 	MSC_DEBUG("createWebRtcTransport()");
+
+	json& listenIps = options.listenIps;
+	bool enableUdp = options.enableUdp;
+	bool enableTcp = options.enableTcp;
+	bool preferUdp = options.preferUdp;
+	bool preferTcp = options.preferTcp;
+	uint32_t initialAvailableOutgoingBitrate = options.initialAvailableOutgoingBitrate;
+	bool enableSctp = options.enableSctp;
+	json numSctpStreams = options.numSctpStreams;
+	uint32_t maxSctpMessageSize = options.maxSctpMessageSize;
+	json appData = options.appData;
 
 	if (!listenIps.is_array())
 		throw new TypeError("missing listenIps");
@@ -262,7 +262,7 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(
 		{ "enableSctp", enableSctp },
 		{ "numSctpStreams", numSctpStreams },
 		{ "maxSctpMessageSize", maxSctpMessageSize },
-		{ "isDataChannel", true}
+		{ "isDataChannel", true }
 	};
 
 	json data =

@@ -37,7 +37,7 @@ public:
 	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
 
 protected:
-	std::future<void> _handleProtooRequest(protoo::Peer* peer, json& request, Accept& accept, Reject& reject);
+	std::future<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
 	std::list<protoo::Peer*> _getJoinedPeers(protoo::Peer* excludePeer = nullptr);
 	/**
 	 * Creates a mediasoup Consumer for the given mediasoup Producer.
@@ -49,7 +49,7 @@ protected:
 	/* Methods inherited from protoo::Peer::Listener. */
 public:
 	void OnPeerClose(protoo::Peer* peer) override;
-	void OnPeerRequest(protoo::Peer* peer, json& request) override;
+	void OnPeerRequest(protoo::Peer* peer, protoo::Request* request) override;
 	void OnPeerNotify(protoo::Peer* peer, json& notification) override;
 	
 protected:

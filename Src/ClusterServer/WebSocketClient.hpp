@@ -26,7 +26,7 @@ namespace protoo
 	public:
 		void Close(int code = 1000, std::string message = std::string());
 		bool closed();
-		//Defer send(const json& data);
+		void send(const json& data);
 
 	protected:
 		void setUserData(void* userData);

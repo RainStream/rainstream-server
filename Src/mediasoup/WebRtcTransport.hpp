@@ -30,53 +30,53 @@ struct WebRtcTransportOptions
 	 * Listening IP address or addresses in order of preference (first one is the
 	 * preferred one).
 	 */
-	TransportListenIp listenIps;
+	json listenIps;
 
 	/**
 	 * Listen in UDP. Default true.
 	 */
-	bool enableUdp;
+	bool enableUdp = true;
 
 	/**
 	 * Listen in TCP. Default false.
 	 */
-	bool enableTcp;
+	bool enableTcp = false;
 
 	/**
 	 * Prefer UDP. Default false.
 	 */
-	bool preferUdp;
+	bool preferUdp = false;
 
 	/**
 	 * Prefer TCP. Default false.
 	 */
-	bool preferTcp;
+	bool preferTcp = false;
 
 	/**
 	 * Initial available outgoing bitrate (in bps). Default 600000.
 	 */
-	uint32_t initialAvailableOutgoingBitrate;
+	uint32_t initialAvailableOutgoingBitrate  = 600000;
 
 	/**
 	 * Create a SCTP association. Default false.
 	 */
-	bool enableSctp;
+	bool enableSctp  = false;
 
 	/**
 	 * SCTP streams uint32_t.
 	 */
-	NumSctpStreams numSctpStreams;
+	json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } };
 
 	/**
 	 * Maximum allowed size for SCTP messages sent by DataProducers.
 	 * Default 262144.
 	 */
-	uint32_t maxSctpMessageSize;
+	uint32_t maxSctpMessageSize = 262144;
 
 	/**
 	 * Custom application data.
 	 */
-	json appData;
+	json appData = json::object();
 };
 
 struct IceParameters

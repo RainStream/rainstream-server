@@ -14,6 +14,7 @@
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Loop.cpp" />
     <ClCompile Include="config.cpp" />
+    <ClCompile Include="Request.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="handles\SignalsHandler.hpp">
@@ -28,6 +29,7 @@
     <ClInclude Include="Message.hpp" />
     <ClInclude Include="Loop.hpp" />
     <ClInclude Include="config.hpp" />
+    <ClInclude Include="Request.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">

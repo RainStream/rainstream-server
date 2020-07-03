@@ -39,7 +39,7 @@ namespace utils
 
 	std::string & AppendPrintf(std::string & dst, const char * format, ...);
 
-	std::string Printf(const char * format, ...);
+	MS_EXPORT std::string Printf(const char * format, ...);
 
 	std::string ToLowerCase(const std::string& str);
 
@@ -48,10 +48,26 @@ namespace utils
 	std::string join(const AStringVector& vec, const std::string & delimeter);
 
 	json clone(const json& item);
+
+	class Json
+	{
+	public:
+		static bool IsPositiveInteger(const json& value)
+		{
+			if (value.is_number_unsigned())
+				return true;
+			else if (value.is_number_integer())
+				return value.get<int64_t>() >= 0;
+			else
+				return false;
+		}
+	};
 }
 
 uint32_t setInterval(std::function<void(void)> func, int interval);
 void clearInterval(uint32_t identifier);
+
+
 
 std::string uuidv4();
 

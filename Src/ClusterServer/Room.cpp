@@ -2,6 +2,8 @@
 
 #include "Room.hpp"
 #include "config.hpp"
+#include "Peer.hpp"
+#include "Request.hpp"
 #include <Logger.hpp>
 #include <errors.hpp>
 #include <Worker.hpp>
@@ -27,10 +29,10 @@ std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId)
 	//const protooRoom = new protoo.Room();
 
 	// Router media codecs.
-	json mediaCodecs = config["mediasoup"]["routerOptions"];
+	json mediaCodecs = config["mediasoup"]["routerOptions"]["mediaCodecs"];
 
 	// Create a mediasoup Router.
-	Router* mediasoupRouter = co_await mediasoupWorker->createRouter({ mediaCodecs });
+	Router* mediasoupRouter = co_await mediasoupWorker->createRouter(mediaCodecs);
 
 	// Create a mediasoup AudioLevelObserver.
 // 	const audioLevelObserver = co_await mediasoupRouter.createAudioLevelObserver(
@@ -109,24 +111,6 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 	peer->data.consume = consume;
 	peer->data.joined = false;
 
-	peer->on("request", [=](json& request, Accept& accept, Reject& reject)
-	{
-		MSC_DEBUG(
-			"protoo Peer \"request\" event [method:%s, peerId:%s]",
-			request.value("method", "").c_str(), peer->id().c_str());
-
-		try
-		{
-			this->_handleProtooRequest(peer, request, accept, reject);
-		}
-		catch (std::exception& error)
-		{
-			MSC_ERROR("request failed:%s", error.what());
-
-			reject(500, error.what());
-		}
-	});
-
 	peer->on("close", [=]()
 	{
 		if (this->_closed)
@@ -170,18 +154,18 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 }
 
 /**
-	 * Handle protoo requests from browsers.
-	 *
-	 * @async
-	 */
-std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, Accept& accept, Reject& reject)
+* Handle protoo requests from browsers.
+*
+* @async
+*/
+std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* request)
 {
-	std::string method = request["method"];
-	json& data = request["data"];
+	std::string method = request->method;
+	json& data = request->data;
 
 	if (method == "getRouterRtpCapabilities")
 	{
-		accept(this->_mediasoupRouter->rtpCapabilities());
+		request->Accept(this->_mediasoupRouter->rtpCapabilities());
 	}
 	else if (method == "join")
 	{
@@ -222,7 +206,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 			}
 		}
 
-		accept(json{ { "peers", peerInfos } });
+		request->Accept(json{ { "peers", peerInfos } });
 
 		// Mark the new Peer as joined.
 		peer->data.joined = true;
@@ -291,7 +275,6 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		bool consuming = data["consuming"];
 		json sctpCapabilities = data["sctpCapabilities"];
 
-
 		json webRtcTransportOptions = config["mediasoup"]["webRtcTransportOptions"];
 		{
 // 			config.mediasoup.webRtcTransportOptions,
@@ -300,26 +283,22 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 // 			appData : { producing, consuming }
 		};
 
+		WebRtcTransportOptions options;
+		options.listenIps = webRtcTransportOptions["listenIps"];
+		options.initialAvailableOutgoingBitrate = webRtcTransportOptions["initialAvailableOutgoingBitrate"];
+		options.maxSctpMessageSize = webRtcTransportOptions["maxSctpMessageSize"];
+		options.enableSctp = sctpCapabilities.is_object();
+		options.numSctpStreams = sctpCapabilities.value("numStreams", json::object());
+		options.appData = { { "producing", producing }, { "consuming", consuming } };
+
 		if (forceTcp)
 		{
-			webRtcTransportOptions["enableUdp"] = false;
-			webRtcTransportOptions["enableTcp"] = true;
+			options.enableUdp = false;
+			options.enableUdp = true;
 		}
 
-		/*
-			json listenIp,
-		bool rtcpMux = true,
-		bool comedia = false,
-		bool enableSctp = false,
-		json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
-		uint32_t maxSctpMessageSize = 262144,
-		bool enableSrtp = false,
-		std::string srtpCryptoSuite = "AES_CM_128_HMAC_SHA1_80",
-		json appData = json::object()
-		*/
-
 		WebRtcTransport* transport = co_await this->_mediasoupRouter->createWebRtcTransport(
-			webRtcTransportOptions["listenIps"]);
+			options);
 
 		transport->on("sctpstatechange", [=](std::string sctpState)
 		{
@@ -364,7 +343,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		// Store the WebRtcTransport into the protoo Peer data Object.
 		peer->data.transports.insert(std::make_pair(transport->id(), transport));
 
-		accept(
+		request->Accept(
 			json{
 				{ "id", transport->id() },
 				{ "iceParameters", transport->iceParameters() },
@@ -396,9 +375,9 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		Transport* transport = peer->data.transports.at(transportId);
 
-		co_await transport->connect({ dtlsParameters });
+		co_await transport->connect(dtlsParameters);
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "restartIce")
 	{
@@ -411,7 +390,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		json iceParameters = co_await transport->restartIce();
 
-		accept(iceParameters);
+		request->Accept(iceParameters);
 	}
 	else if (method == "produce")
 	{
@@ -476,7 +455,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 				producer->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
 		});
 
-		accept(json{ { "id", producer->id() } });
+		request->Accept(json{ { "id", producer->id() } });
 
 		// Optimization: Create a server-side Consumer for each Peer.
 		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
@@ -517,7 +496,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		// Remove from its map.
 		peer->data.producers.erase(producer->id());
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "pauseProducer")
 	{
@@ -534,7 +513,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		co_await producer->pause();
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "resumeProducer")
 	{
@@ -551,7 +530,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		co_await producer->resume();
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "pauseConsumer")
 	{
@@ -568,7 +547,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		co_await consumer->pause();
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "resumeConsumer")
 	{
@@ -585,7 +564,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		co_await consumer->resume();
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "setConsumerPreferredLayers")
 	{
@@ -604,7 +583,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		co_await consumer->setPreferredLayers(spatialLayer, temporalLayer);
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "setConsumerPriority")
 	{
@@ -622,7 +601,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		co_await consumer->setPriority(priority);
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "requestConsumerKeyFrame")
 	{
@@ -639,7 +618,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		co_await consumer->requestKeyFrame();
 
-		accept(json());
+		request->Accept(json());
 	}
 	/*
 	else if (method == "produceData")
@@ -672,7 +651,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		// Store the Producer into the protoo Peer data Object.
 		peer->data.dataProducers.insert(dataProducer.id, dataProducer);
 
-		accept({ id: dataProducer.id });
+		request->Accept({ id: dataProducer.id });
 
 		std::string label = dataProducer.label;
 
@@ -732,7 +711,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 			}
 		}
 
-		accept(json());
+		request->Accept(json());
 	}
 	else if (method == "getTransportStats")
 	{
@@ -745,7 +724,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		json stats = co_await transport->getStats();
 
-		accept(stats);
+		request->Accept(stats);
 	}
 	else if (method == "getProducerStats")
 	{
@@ -758,7 +737,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		json stats = co_await producer->getStats();
 
-		accept(stats);
+		request->Accept(stats);
 	}
 	else if (method == "getConsumerStats")
 	{
@@ -771,7 +750,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		json stats = co_await consumer->getStats();
 
-		accept(stats);
+		request->Accept(stats);
 	}
 	/*
 	else if (method == "getDataProducerStats")
@@ -784,7 +763,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		const stats = co_await dataProducer.getStats();
 
-		accept(stats);
+		request->Accept(stats);
 	}
 	else if (method == "getDataConsumerStats")
 	{
@@ -796,7 +775,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		const stats = co_await dataConsumer.getStats();
 
-		accept(stats);
+		request->Accept(stats);
 	}	
 	else if (method == "applyNetworkThrottle")
 	{
@@ -828,7 +807,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 				downlink || DefaultDownlink,
 				rtt || DefaultRtt);
 
-			accept(json());
+			request->Accept(json());
 		}
 		catch (std::exception& error)
 		{
@@ -854,7 +833,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 			MSC_WARN("network throttle stopped");
 
-			accept(json());
+			request->Accept(json());
 		}
 		catch (std::exception& error)
 		{
@@ -868,7 +847,8 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 	{
 		MSC_ERROR("unknown request.method \"%s\"", method.c_str());
 
-		reject(500, "unknown request.method \"${request.method}\"");
+		request->Reject(500, utils::Printf("unknown request.method \"%s\"",
+			request->method.c_str()));
 	}
 }
 
@@ -1113,54 +1093,22 @@ void Room::OnPeerClose(protoo::Peer* peer)
 	// 				}, 5000);
 }
 
-void Room::OnPeerRequest(protoo::Peer* peer, json& request)
+void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
 {
-	uint32_t id = request.value("id", 0);
-	std::string method = request["method"].get<std::string>();
+	MSC_DEBUG(
+		"protoo Peer \"request\" event [method:%s, peerId:%s]",
+		request->method.c_str(), peer->id().c_str());
 
-	// 	DLOG(INFO) << "protoo "request" event [method:" << method << "peer:" << peer->id() << "]";
-	// 
-	// 	if (method == "mediasoup-request")
-	// 	{
-	// 		json mediasoupRequest = request["data"];
-	// 
-	// 		this->_handleMediasoupClientRequest(peer, id, mediasoupRequest);
-	// 	}
-	// 	else if (method == "mediasoup-notification")
-	// 	{
-	// 		peer->Accept(id, json::object());
-	// 
-	// 		json mediasoupNotification = request["data"];
-	// 
-	// 		this->_handleMediasoupClientNotification(
-	// 			peer, mediasoupNotification);
-	// 	}
-	// 	else if (method == "change-display-name")
-	// 	{
-	// 		peer->Accept(id, json::object());
-	// 
-	// 		std::string displayName = request["displayName"].get<std::string>();;
-	// 		rs::Peer* mediaPeer = peer->mediaPeer();
-	// 		std::string oldDisplayName = mediaPeer->appData()["displayName"].get<std::string>();
-	// 
-	// 		mediaPeer->appData()["displayName"] = displayName;
-	// 
-	// 		// Spread to others via protoo.
-	// 		spread("display-name-changed",
-	// 			{
-	// 				{ "peerName" , peer->id() },
-	// 				{ "displayName" , displayName },
-	// 				{ "oldDisplayName" , oldDisplayName }
-	// 			},
-	// 			{ peer->id() }
-	// 		);
-	// 	}
-	// 	else
-	// 	{
-	// 		LOG(ERROR) << "unknown request.method:" << method;
-	// 
-	// 		peer->Reject(id, 400, "unknown request.method " + method);
-	// 	}
+	try
+	{
+		this->_handleProtooRequest(peer, request);
+	}
+	catch (std::exception& error)
+	{
+		MSC_ERROR("request failed:%s", error.what());
+
+		request->Reject(500, error.what());
+	}
 }
 
 void Room::OnPeerNotify(protoo::Peer* peer, json& notification)

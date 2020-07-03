@@ -186,7 +186,7 @@ public:
 	 * @abstract
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	std::future<void> connect(json params);
+	virtual std::future<void> connect(json& params);
 
 	/**
 	 * Set maximum incoming bitrate for receiving media.

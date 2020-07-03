@@ -8,10 +8,10 @@ namespace protoo
 	class Message
 	{
 	public:
-		static json requestFactory(std::string method, const json& data);
-		static json successResponseFactory(const json& request, const json& data);
-		static json errorResponseFactory(const json& request, int errorCode, std::string errorReason);
-		static json notificationFactory(std::string method, const json& data);
+		static json createRequest(std::string method, const json& data);
+		static json createSuccessResponse(const json& request, const json& data);
+		static json createErrorResponse(const json& request, int errorCode, std::string errorReason);
+		static json createNotification(std::string method, const json& data);
 	};
 }
 
