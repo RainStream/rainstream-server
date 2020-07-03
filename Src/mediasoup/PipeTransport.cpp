@@ -175,9 +175,12 @@ std::future<void> PipeTransport::connect(
  *
  * @override
  */
-std::future<Consumer*> PipeTransport::consume(std::string producerId, json& appData/* = json()*/)
+std::future<Consumer*> PipeTransport::consume(ConsumerOptions& options)
 {
 	MSC_DEBUG("consume()");
+
+	std::string producerId = options.producerId;
+	json& appData = options.appData;
 
 	if (producerId.empty())
 		throw new TypeError("missing producerId");

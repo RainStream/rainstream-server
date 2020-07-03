@@ -101,7 +101,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x86-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;libeay32.lib;ssleay32.lib;getopt.lib;glog.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>

@@ -383,14 +383,15 @@ std::future<Producer*> Transport::produce(
  *
  * @virtual
  */
-std::future<Consumer*> Transport::consume(
-	std::string producerId,
-	json& rtpCapabilities,
-	bool paused/* = false*/,
-	json& preferredLayers/* = json()*/,
-	json& appData/* = json()*/)
+std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 {
 	MSC_DEBUG("consume()");
+
+	std::string producerId = options.producerId;
+	json& rtpCapabilities = options.rtpCapabilities;
+	bool paused = options.paused;
+	json& preferredLayers = options.preferredLayers;
+	json& appData = options.appData;
 
 	if (!appData.is_null() && !appData.is_object())
 		throw new TypeError("if given, appData must be an object");

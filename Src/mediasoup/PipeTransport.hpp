@@ -5,6 +5,7 @@
 class Producer;
 class Consumer;
 class PayloadChannel;
+struct ConsumerOptions;
 
 class MS_EXPORT PipeTransport : public Transport
 {
@@ -97,7 +98,7 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<Consumer*> consume(std::string producerId, json& appData = json());
+	std::future<Consumer*> consume(ConsumerOptions& options);
 
 private:
 	void _handleWorkerNotifications();

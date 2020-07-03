@@ -323,13 +323,13 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 
 		transport->on("sctpstatechange", [=](std::string sctpState)
 		{
-			MSC_DEBUG("WebRtcTransport \"sctpstatechange\" event [sctpState:%s]", sctpState);
+			MSC_DEBUG("WebRtcTransport \"sctpstatechange\" event [sctpState:%s]", sctpState.c_str());
 		});
 
 		transport->on("dtlsstatechange", [=](std::string dtlsState)
 		{
 			if (dtlsState == "failed" || dtlsState == "closed")
-				MSC_WARN("WebRtcTransport \"dtlsstatechange\" event [dtlsState:%s]", dtlsState);
+				MSC_WARN("WebRtcTransport \"dtlsstatechange\" event [dtlsState:%s]", dtlsState.c_str());
 		});
 
 		// NOTE: For testing.
@@ -339,8 +339,8 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		transport->on("trace", [=](json &trace)
 		{
 			MSC_DEBUG(
-				"transport \"trace\" event [transportId:%s, trace.type:%s, trace:%o]",
-				transport->id(), trace.value("type",""), trace.dump().c_str());
+				"transport \"trace\" event [transportId:%s, trace.type:%s, trace:%s]",
+				transport->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
 
 			if (trace["type"] == "bwe" && trace["direction"] == "out")
 			{
@@ -473,7 +473,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, json& request, 
 		{
 			MSC_DEBUG(
 				"producer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
-				producer->id().c_str(), trace.value("type", ""), trace.dump().c_str());
+				producer->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
 		});
 
 		accept(json{ { "id", producer->id() } });
@@ -937,11 +937,11 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 
 	try
 	{
-		consumer = co_await transport->consume(
-			producer->id(),
-			consumerPeer->data.rtpCapabilities,
-			true
-		);
+		ConsumerOptions options;
+		options.producerId = producer->id();
+		options.rtpCapabilities = consumerPeer->data.rtpCapabilities;
+		options.paused = true;
+		consumer = co_await transport->consume(options);
 	}
 	catch (std::exception& error)
 	{

@@ -90,6 +90,7 @@ class Consumer;
 class DataProducer;
 class DataConsumer;
 class PayloadChannel;
+struct ConsumerOptions;
 
 using GetRouterRtpCapabilities = std::function<json(void)>;
 using GetProducerById = std::function<Producer*(std::string)>;
@@ -209,13 +210,7 @@ public:
 	 *
 	 * @virtual
 	 */
-	virtual std::future<Consumer*> consume(
-		std::string producerId,
-		json& rtpCapabilities,
-		bool paused /*= false*/,
-		json& preferredLayers = json(),
-		json& appData = json()
-	);
+	virtual std::future<Consumer*> consume(ConsumerOptions& options);
 
 	/**
 	 * Create a DataProducer.
