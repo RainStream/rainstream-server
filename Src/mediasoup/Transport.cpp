@@ -434,8 +434,6 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 		{ "preferredLayers", preferredLayers }
 	};
 
-	MSC_DEBUG("reqData: %s", reqData.dump().c_str());
-
 	json status =
 		co_await this->_channel->request("transport.consume", internal, reqData);
 
