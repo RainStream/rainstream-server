@@ -99,6 +99,7 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 	try
 	{
 		peer = new protoo::Peer(peerId, transport, this);
+		this->_peers.insert(std::make_pair(peerId, peer));
 	}
 	catch (std::exception& error)
 	{
@@ -352,7 +353,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 				{ "sctpParameters", transport->sctpParameters() }
 			});
 
-		uint32_t maxIncomingBitrate = config["mediasoup"]["webRtcTransportOptions"];
+		uint32_t maxIncomingBitrate = config["mediasoup"]["webRtcTransportOptions"]["maxIncomingBitrate"];
 
 		// If set, apply max incoming bitrate limit.
 		if (maxIncomingBitrate)
