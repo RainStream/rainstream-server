@@ -277,12 +277,6 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		json sctpCapabilities = data["sctpCapabilities"];
 
 		json webRtcTransportOptions = config["mediasoup"]["webRtcTransportOptions"];
-		{
-// 			config.mediasoup.webRtcTransportOptions,
-// 			enableSctp     : Boolean(sctpCapabilities),
-// 			numSctpStreams : (sctpCapabilities || {}).numStreams,
-// 			appData : { producing, consuming }
-		};
 
 		WebRtcTransportOptions options;
 		options.listenIps = webRtcTransportOptions["listenIps"];
