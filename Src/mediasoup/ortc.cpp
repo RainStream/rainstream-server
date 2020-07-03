@@ -1832,11 +1832,15 @@ json getConsumableRtpParameters(std::string kind, json& params, json& caps, json
 		{
 			{ "mimeType", matchedCapCodec["mimeType"] },
 			{ "payloadType", matchedCapCodec["preferredPayloadType"] },
-			{ "clockRate", matchedCapCodec["clockRate"] },
-			{ "channels", matchedCapCodec["channels"] },
+			{ "clockRate", matchedCapCodec["clockRate"] },			
 			{ "parameters", codec["parameters"] }, // Keep the Producer codec parameters.
 			{ "rtcpFeedback", matchedCapCodec["rtcpFeedback"] }
 		};
+
+		if (matchedCapCodec.contains("channels") && matchedCapCodec.value("channels", 0))
+		{
+			consumableCodec["channels"] = matchedCapCodec["channels"];
+		}
 
 		consumableParams["codecs"].push_back(consumableCodec);
 
@@ -1925,7 +1929,7 @@ bool canConsume(json& consumableParams, json& caps)
 
 	for (auto& codec : consumableParams["codecs"])
 	{
-		json capCodecs = caps["codecs"];
+		json& capCodecs = caps["codecs"];
 
 		auto matchedCapCodecIt =
 			std::find_if(capCodecs.begin(), capCodecs.end(), [&](json& capCodec) {
@@ -2027,7 +2031,9 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
 	{
 		for (auto& codec : consumerParams["codecs"])
 		{
-			for (auto& fb : codec["rtcpFeedback"])
+			json rtcpFeedback = codec["rtcpFeedback"];
+			codec["rtcpFeedback"].clear();
+			for (auto& fb : rtcpFeedback)
 			{
 				if (fb["type"] != "goog-remb")
 				{
@@ -2040,7 +2046,9 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
 	{
 		for (auto& codec : consumerParams["codecs"])
 		{
-			for (auto& fb : codec["rtcpFeedback"])
+			json rtcpFeedback = codec["rtcpFeedback"];
+			codec["rtcpFeedback"].clear();
+			for (auto& fb : rtcpFeedback)
 			{
 				if (fb["type"] != "transport-cc")
 				{
@@ -2053,7 +2061,9 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
 	{
 		for (auto& codec : consumerParams["codecs"])
 		{
-			for (auto& fb : codec["rtcpFeedback"])
+			json rtcpFeedback = codec["rtcpFeedback"];
+			codec["rtcpFeedback"].clear();
+			for (auto& fb : rtcpFeedback)
 			{
 				if (fb["type"] != "transport-cc" &&
 					fb["type"] != "goog-remb")
@@ -2081,7 +2091,7 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
 	});
 
 	std::string scalabilityMode = encodingWithScalabilityModeIt != consumableParamsEncodings.end()
-		? (*encodingWithScalabilityModeIt)["encodingWithScalabilityModeIt"]
+		? (*encodingWithScalabilityModeIt)["scalabilityMode"]
 		: "";
 
 	// If there is simulast, mangle spatial layers in scalabilityMode.
@@ -2230,6 +2240,7 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 		return false;
 
 	// Match H264 parameters.
+	/*
 	if (aMimeType == "video/h264")
 	{
 		auto aPacketizationMode = getH264PacketizationMode(aCodec);
@@ -2241,43 +2252,43 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 		// If strict matching check profile-level-id.
 		if (strict)
 		{
-// 			webrtc::H264::CodecParameterMap aParameters;
-// 			webrtc::H264::CodecParameterMap bParameters;
-// 
-// 			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
-// 			aParameters["packetization-mode"] = std::to_string(aPacketizationMode);
-// 			aParameters["profile-level-id"] = getH264ProfileLevelId(aCodec);
-// 			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
-// 			bParameters["packetization-mode"] = std::to_string(bPacketizationMode);
-// 			bParameters["profile-level-id"] = getH264ProfileLevelId(bCodec);
-// 
-// 			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
-// 				return false;
-// 
-// 			webrtc::H264::CodecParameterMap newParameters;
-// 
-// 			try
-// 			{
-// 				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
-// 			}
-// 			catch (std::runtime_error)
-// 			{
-// 				return false;
-// 			}
-// 
-// 			if (modify)
-// 			{
-// 				auto profileLevelIdIt = newParameters.find("profile-level-id");
-// 
-// 				if (profileLevelIdIt != newParameters.end())
-// 					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
-// 				else
-// 					aCodec["parameters"].erase("profile-level-id");
-// 			}
+ 			webrtc::H264::CodecParameterMap aParameters;
+ 			webrtc::H264::CodecParameterMap bParameters;
+ 
+ 			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
+ 			aParameters["packetization-mode"] = std::to_string(aPacketizationMode);
+ 			aParameters["profile-level-id"] = getH264ProfileLevelId(aCodec);
+ 			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
+ 			bParameters["packetization-mode"] = std::to_string(bPacketizationMode);
+ 			bParameters["profile-level-id"] = getH264ProfileLevelId(bCodec);
+ 
+ 			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
+ 				return false;
+ 
+ 			webrtc::H264::CodecParameterMap newParameters;
+ 
+ 			try
+ 			{
+ 				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
+ 			}
+ 			catch (std::runtime_error)
+ 			{
+ 				return false;
+ 			}
+ 
+ 			if (modify)
+ 			{
+ 				auto profileLevelIdIt = newParameters.find("profile-level-id");
+ 
+ 				if (profileLevelIdIt != newParameters.end())
+ 					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
+ 				else
+ 					aCodec["parameters"].erase("profile-level-id");
+ 			}
 		}
 	}
 	// Match VP9 parameters.
-	else if (aMimeType == "video/vp9")
+	else*/ if (aMimeType == "video/vp9")
 	{
 		// If strict matching check profile-id.
 		if (strict)
