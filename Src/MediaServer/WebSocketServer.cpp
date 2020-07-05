@@ -9,7 +9,7 @@
 
 #include <uWS.h>
 
-#define SEC_WEBSOCKET_PROTOCOL "protoo"
+#define SEC_WEBSOCKET_PROTOCOL "secret-media"
 
 namespace protoo
 {
@@ -20,7 +20,11 @@ namespace protoo
 		//here must use default loop
 		hub = new uWS::Hub(0, true);
 
-		hub->onConnection([=](uWS::WebSocket<uWS::SERVER> *ws, uWS::HttpRequest req) 
+		hub->onError([](void *user) {
+			std::cout << "FAILURE: " << user << " should not emit error!" << std::endl;
+		});
+
+		hub->onConnection([=](uWS::WebSocket<uWS::CLIENT> *ws, uWS::HttpRequest req)
 		{
 			if (req.getHeader("sec-websocket-protocol").toString() != SEC_WEBSOCKET_PROTOCOL) {
 
@@ -41,7 +45,7 @@ namespace protoo
 			}
 		});
 
-		hub->onMessage([=](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length, uWS::OpCode opCode)
+		hub->onMessage([=](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length, uWS::OpCode opCode)
 		{
 			WebSocketClient* transport = (WebSocketClient*)ws->getUserData();
 			if (transport)
@@ -50,7 +54,7 @@ namespace protoo
 			}
 		});
 
-		hub->onDisconnection([=](uWS::WebSocket<uWS::SERVER> *ws, int code, char *message, size_t length)
+		hub->onDisconnection([=](uWS::WebSocket<uWS::CLIENT> *ws, int code, char *message, size_t length)
 		{
 			WebSocketClient* transport = (WebSocketClient*)ws->getUserData();
 			if (transport)
@@ -77,17 +81,13 @@ namespace protoo
 		}
 	}
 
-	bool WebSocketServer::Setup(const char *host, uint16_t port)
+	bool WebSocketServer::Connect(std::string url)
 	{
-		std::string cert, key;
+		std::map<std::string, std::string> extraHeaders;
+		extraHeaders.insert(std::make_pair("sec-websocket-protocol", SEC_WEBSOCKET_PROTOCOL));
 
-		if (tls.is_object())
-		{
-			cert = tls.value("cert", "");
-			key = tls.value("key", "");
-		}
+		hub->connect(url, (void*)this, extraHeaders);
 
-		uS::TLS::Context c = uS::TLS::createContext(cert, key);
-		return hub->listen(port, c, uS::ONLY_IPV4);
+		return true;
 	}
 }

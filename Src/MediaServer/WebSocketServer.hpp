@@ -29,7 +29,7 @@ namespace protoo
 		virtual	~WebSocketServer();
 
 	public:
-		bool Setup(const char *host, uint16_t port);
+		bool Connect(std::string url);
 
 	private:
 		json tls;
