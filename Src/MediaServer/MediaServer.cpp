@@ -128,7 +128,7 @@ MediaServer::MediaServer()
 	webSocketServer = new protoo::WebSocketServer(tls, this);
 	if (webSocketServer->Connect("wss://192.168.0.100:4000/?nodeId=testNodeId1"))
 	{
-		MSC_ERROR("WebSocket server running on port: %d", 4443);
+		MSC_ERROR("WebSocket server running on port: %d", 4000);
 	}
 
 	MSC_DEBUG("MediaServer Started");
