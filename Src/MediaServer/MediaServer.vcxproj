@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props" Condition="Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -18,184 +19,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Channel\Notifier.hpp" />
-    <ClInclude Include="Channel\Request.hpp" />
-    <ClInclude Include="Channel\UnixStreamSocket.hpp" />
-    <ClInclude Include="common.hpp" />
-    <ClInclude Include="DepLibSRTP.hpp" />
-    <ClInclude Include="DepLibUV.hpp" />
-    <ClInclude Include="DepLibWebRTC.hpp" />
-    <ClInclude Include="DepOpenSSL.hpp" />
-    <ClInclude Include="DepUsrSCTP.hpp" />
-    <ClInclude Include="handles\SignalsHandler.hpp" />
-    <ClInclude Include="handles\TcpConnection.hpp" />
-    <ClInclude Include="handles\TcpServer.hpp" />
-    <ClInclude Include="handles\Timer.hpp" />
-    <ClInclude Include="handles\UdpSocket.hpp" />
-    <ClInclude Include="handles\UnixStreamSocket.hpp" />
-    <ClInclude Include="Logger.hpp" />
-    <ClInclude Include="LogLevel.hpp" />
-    <ClInclude Include="MediaSoupErrors.hpp" />
-    <ClInclude Include="RTC\Codecs\H264.hpp" />
-    <ClInclude Include="RTC\Codecs\PayloadDescriptorHandler.hpp" />
-    <ClInclude Include="RTC\Codecs\Tools.hpp" />
-    <ClInclude Include="RTC\Codecs\VP8.hpp" />
-    <ClInclude Include="RTC\Codecs\VP9.hpp" />
-    <ClInclude Include="RTC\Consumer.hpp" />
-    <ClInclude Include="RTC\ConsumerListener.hpp" />
-    <ClInclude Include="RTC\DtlsTransport.hpp" />
-    <ClInclude Include="RTC\IceCandidate.hpp" />
-    <ClInclude Include="RTC\IceServer.hpp" />
-    <ClInclude Include="RTC\NackGenerator.hpp" />
-    <ClInclude Include="RTC\Parameters.hpp" />
-    <ClInclude Include="RTC\PlainRtpTransport.hpp" />
-    <ClInclude Include="RTC\Producer.hpp" />
-    <ClInclude Include="RTC\ProducerListener.hpp" />
-    <ClInclude Include="RTC\Router.hpp" />
-    <ClInclude Include="RTC\RTCP\Bye.hpp" />
-    <ClInclude Include="RTC\RTCP\CompoundPacket.hpp" />
-    <ClInclude Include="RTC\RTCP\Feedback.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackItem.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPs.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsAfb.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsFir.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsLei.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsPli.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsRemb.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsRpsi.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsSli.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsTst.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackPsVbcm.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackRtp.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackRtpEcn.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackRtpNack.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackRtpSrReq.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackRtpTllei.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackRtpTmmb.hpp" />
-    <ClInclude Include="RTC\RTCP\FeedbackRtpTransport.hpp" />
-    <ClInclude Include="RTC\RTCP\Packet.hpp" />
-    <ClInclude Include="RTC\RTCP\ReceiverReport.hpp" />
-    <ClInclude Include="RTC\RTCP\Sdes.hpp" />
-    <ClInclude Include="RTC\RTCP\SenderReport.hpp" />
-    <ClInclude Include="RTC\RTCP\XR.hpp" />
-    <ClInclude Include="RTC\RTCP\XrDelaySinceLastRr.hpp" />
-    <ClInclude Include="RTC\RTCP\XrReceiverReferenceTime.hpp" />
-    <ClInclude Include="RTC\RtpDataCounter.hpp" />
-    <ClInclude Include="RTC\RtpDictionaries.hpp" />
-    <ClInclude Include="RTC\RtpListener.hpp" />
-    <ClInclude Include="RTC\RtpMonitor.hpp" />
-    <ClInclude Include="RTC\RtpPacket.hpp" />
-    <ClInclude Include="RTC\RtpStream.hpp" />
-    <ClInclude Include="RTC\RtpStreamRecv.hpp" />
-    <ClInclude Include="RTC\RtpStreamSend.hpp" />
-    <ClInclude Include="RTC\SeqManager.hpp" />
-    <ClInclude Include="RTC\SrtpSession.hpp" />
-    <ClInclude Include="RTC\StunMessage.hpp" />
-    <ClInclude Include="RTC\TcpConnection.hpp" />
-    <ClInclude Include="RTC\TcpServer.hpp" />
-    <ClInclude Include="RTC\Transport.hpp" />
-    <ClInclude Include="RTC\TransportTuple.hpp" />
-    <ClInclude Include="RTC\UdpSocket.hpp" />
-    <ClInclude Include="RTC\WebRtcTransport.hpp" />
-    <ClInclude Include="Settings.hpp" />
-    <ClInclude Include="Utils.hpp" />
-    <ClInclude Include="Worker.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Channel\Notifier.cpp" />
-    <ClCompile Include="Channel\Request.cpp" />
-    <ClCompile Include="Channel\UnixStreamSocket.cpp" />
-    <ClCompile Include="DepLibSRTP.cpp" />
-    <ClCompile Include="DepLibUV.cpp" />
-    <ClCompile Include="DepLibWebRTC.cpp" />
-    <ClCompile Include="DepOpenSSL.cpp" />
-    <ClCompile Include="DepUsrSCTP.cpp" />
-    <ClCompile Include="handles\SignalsHandler.cpp" />
-    <ClCompile Include="handles\TcpConnection.cpp" />
-    <ClCompile Include="handles\TcpServer.cpp" />
-    <ClCompile Include="handles\Timer.cpp" />
-    <ClCompile Include="handles\UdpSocket.cpp" />
-    <ClCompile Include="handles\UnixStreamSocket.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="RTC\Codecs\H264.cpp" />
-    <ClCompile Include="RTC\Codecs\VP8.cpp" />
-    <ClCompile Include="RTC\Codecs\VP9.cpp" />
-    <ClCompile Include="RTC\Consumer.cpp" />
-    <ClCompile Include="RTC\DtlsTransport.cpp" />
-    <ClCompile Include="RTC\IceCandidate.cpp" />
-    <ClCompile Include="RTC\IceServer.cpp" />
-    <ClCompile Include="RTC\NackGenerator.cpp" />
-    <ClCompile Include="RTC\PlainRtpTransport.cpp" />
-    <ClCompile Include="RTC\Producer.cpp" />
-    <ClCompile Include="RTC\Router.cpp" />
-    <ClCompile Include="RTC\RTCP\Bye.cpp" />
-    <ClCompile Include="RTC\RTCP\CompoundPacket.cpp" />
-    <ClCompile Include="RTC\RTCP\Feedback.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPs.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsAfb.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsFir.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsLei.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsPli.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsRemb.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsRpsi.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsSli.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsTst.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackPsVbcm.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackRtp.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackRtpEcn.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackRtpNack.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackRtpSrReq.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackRtpTllei.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackRtpTmmb.cpp" />
-    <ClCompile Include="RTC\RTCP\FeedbackRtpTransport.cpp" />
-    <ClCompile Include="RTC\RTCP\Packet.cpp" />
-    <ClCompile Include="RTC\RTCP\ReceiverReport.cpp" />
-    <ClCompile Include="RTC\RTCP\Sdes.cpp" />
-    <ClCompile Include="RTC\RTCP\SenderReport.cpp" />
-    <ClCompile Include="RTC\RTCP\XR.cpp" />
-    <ClCompile Include="RTC\RTCP\XrDelaySinceLastRr.cpp" />
-    <ClCompile Include="RTC\RTCP\XrReceiverReferenceTime.cpp" />
-    <ClCompile Include="RTC\RtpDataCounter.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\Media.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\Parameters.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtcpFeedback.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtcpParameters.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtpCodecMimeType.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtpCodecParameters.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtpEncodingParameters.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtpHeaderExtensionParameters.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtpHeaderExtensionUri.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtpParameters.cpp" />
-    <ClCompile Include="RTC\RtpDictionaries\RtpRtxParameters.cpp" />
-    <ClCompile Include="RTC\RtpListener.cpp" />
-    <ClCompile Include="RTC\RtpMonitor.cpp" />
-    <ClCompile Include="RTC\RtpPacket.cpp" />
-    <ClCompile Include="RTC\RtpStream.cpp" />
-    <ClCompile Include="RTC\RtpStreamRecv.cpp" />
-    <ClCompile Include="RTC\RtpStreamSend.cpp" />
-    <ClCompile Include="RTC\SctpDictionaries\SctpStreamParameters.cpp" />
-    <ClCompile Include="RTC\SeqManager.cpp" />
-    <ClCompile Include="RTC\SrtpSession.cpp" />
-    <ClCompile Include="RTC\StunMessage.cpp" />
-    <ClCompile Include="RTC\TcpConnection.cpp" />
-    <ClCompile Include="RTC\TcpServer.cpp" />
-    <ClCompile Include="RTC\Transport.cpp" />
-    <ClCompile Include="RTC\TransportTuple.cpp" />
-    <ClCompile Include="RTC\UdpSocket.cpp" />
-    <ClCompile Include="RTC\WebRtcTransport.cpp" />
-    <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="Utils\Crypto.cpp" />
-    <ClCompile Include="Utils\File.cpp" />
-    <ClCompile Include="Utils\IP.cpp" />
-    <ClCompile Include="Utils\String.cpp" />
-    <ClCompile Include="Worker.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CA98FF2F-75D0-43B3-92A7-586520E95346}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>mediasoup</RootNamespace>
+    <RootNamespace>ClusterServer</RootNamespace>
     <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -240,7 +67,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -261,67 +87,77 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\$(Platform)\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x86-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\mediasoup;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\uWebSockets\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;getopt.lib;libuv.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\$(Platform)\lib;$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x86-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x86-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\$(Platform)\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\ServerSDK\include;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;getopt.lib;libuv.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\$(Platform)\lib;$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x64-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x64-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;uWS.lib;libeay32.lib;ssleay32.lib;getopt.lib;glog.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\$(Platform)\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x86-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\mediasoup;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\uWebSockets\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;getopt.lib;libuv.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\$(Platform)\lib;$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x86-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\lib\$(Platform);$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x86-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\openssl\$(Platform)\include;$(SolutionDir)Deps\libsrtp\srtp\include;$(SolutionDir)Deps\libsrtp\crypto\include;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\ServerSDK\include;$(SolutionDir)Deps;$(SolutionDir)Deps\netstring;$(SolutionDir)Deps\promise-cpp;$(SolutionDir)Deps\cxx-eventemitter;D:\Develop\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
@@ -329,10 +165,58 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;srtp2.lib;libcrypto.lib;libssl.lib;Crypt32.lib;netstring.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;getopt.lib;libuv.lib;jsoncpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Deps\openssl\$(Platform)\lib;$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Platform)\$(Configuration);D:\Develop\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>netstring.lib;ws2_32.lib;Iphlpapi.lib;Psapi.lib;Userenv.lib;libuv.lib;uWS.lib;libeay32.lib;ssleay32.lib;getopt.lib;glog.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/force %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="MediaServer.cpp" />
+    <ClCompile Include="config.cpp" />
+    <ClCompile Include="Loop.cpp" />
+    <ClCompile Include="Message.cpp" />
+    <ClCompile Include="Peer.cpp" />
+    <ClCompile Include="Request.cpp" />
+    <ClCompile Include="Room.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="DepLibUV.cpp" />
+    <ClCompile Include="handles\SignalsHandler.cpp" />
+    <ClCompile Include="WebSocketClient.cpp" />
+    <ClCompile Include="WebSocketServer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MediaServer.hpp" />
+    <ClInclude Include="config.hpp" />
+    <ClInclude Include="Loop.hpp" />
+    <ClInclude Include="Message.hpp" />
+    <ClInclude Include="Peer.hpp" />
+    <ClInclude Include="Request.hpp" />
+    <ClInclude Include="Room.hpp" />
+    <ClInclude Include="DepLibUV.hpp" />
+    <ClInclude Include="handles\SignalsHandler.hpp" />
+    <ClInclude Include="WebSocketClient.hpp" />
+    <ClInclude Include="WebSocketServer.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Deps\uWebSockets\uWebSockets.vcxproj">
+      <Project>{baf494b1-0081-4457-b7ce-72f2b7b01f69}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\mediasoup\mediasoup.vcxproj">
+      <Project>{57034427-4d2c-4bf0-832b-76f46602fd84}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props'))" />
+    <Error Condition="!Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets'))" />
+  </Target>
 </Project>

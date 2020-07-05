@@ -2,8 +2,7 @@
 #define MS_SIGNALS_HANDLER_HPP
 
 #include <uv.h>
-#include <string>
-#include <vector>
+#include "common.hpp"
 
 class SignalsHandler
 {
@@ -19,10 +18,12 @@ public:
 
 public:
 	explicit SignalsHandler(Listener* listener);
-	~SignalsHandler();
+
+private:
+	~SignalsHandler() = default;
 
 public:
-	void Close();
+	void Destroy();
 	void AddSignal(int signum, const std::string& name);
 
 	/* Callbacks fired by UV events. */
@@ -34,8 +35,6 @@ private:
 	Listener* listener{ nullptr };
 	// Allocated by this.
 	std::vector<uv_signal_t*> uvHandles;
-	// Others.
-	bool closed{ false };
 };
 
 #endif

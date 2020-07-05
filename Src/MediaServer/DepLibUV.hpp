@@ -11,37 +11,23 @@ public:
 	static void ClassDestroy();
 	static void PrintVersion();
 	static void RunLoop();
-	static uv_loop_t* GetLoop()
-	{
-		return DepLibUV::loop;
-	}
-	static uint64_t GetTimeMs()
-	{
-		return static_cast<uint64_t>(uv_hrtime() / 1000000u);
-	}
-	static uint64_t GetTimeUs()
-	{
-		return static_cast<uint64_t>(uv_hrtime() / 1000u);
-	}
-	static uint64_t GetTimeNs()
-	{
-		return uv_hrtime();
-	}
-	// Used within libwebrtc dependency which uses int64_t values for time
-	// representation.
-	static int64_t GetTimeMsInt64()
-	{
-		return static_cast<int64_t>(DepLibUV::GetTimeMs());
-	}
-	// Used within libwebrtc dependency which uses int64_t values for time
-	// representation.
-	static int64_t GetTimeUsInt64()
-	{
-		return static_cast<int64_t>(DepLibUV::GetTimeUs());
-	}
+	static uv_loop_t* GetLoop();
+	static uint64_t GetTime();
 
 private:
 	static uv_loop_t* loop;
 };
+
+/* Inline static methods. */
+
+inline uv_loop_t* DepLibUV::GetLoop()
+{
+	return DepLibUV::loop;
+}
+
+inline uint64_t DepLibUV::GetTime()
+{
+	return uv_now(DepLibUV::loop);
+}
 
 #endif

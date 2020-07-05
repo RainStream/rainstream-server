@@ -80,7 +80,7 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<json> getStats();
+	virtual std::future<json> getStats();
 
 	/**
 	 * Provide the PipeTransport remote parameters.

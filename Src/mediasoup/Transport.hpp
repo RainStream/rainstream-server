@@ -158,7 +158,7 @@ public:
 	/**
 	 * Close the Transport.
 	 */
-	void close();
+	virtual void close();
 
 	/**
 	 * Router was closed.
@@ -178,7 +178,7 @@ public:
 	 *
 	 * @abstract
 	 */
-	std::future<json> getStats();
+	virtual std::future<json> getStats();
 
 	/**
 	 * Provide the Transport remote parameters.
