@@ -150,6 +150,22 @@ void MediaServer::OnRoomClose(std::string roomId)
 void MediaServer::OnConnected(protoo::WebSocketClient* transport)
 {
 	connectionrequest(transport);
+
+	json data = {
+		{ "nodeId", "nodeId" },
+		{ "serviceType", "media_server" },
+		{ "url", "" },
+		{ "host", "" },
+		{ "ip", "" },
+		{ "port", 0 },
+		{ "maxRoomCount", 1000 },
+		{ "maxPeerCount", 4000 },
+		{ "activeRoomCount", 100 },
+		{ "activeRoomCount", 0 },
+		{ "status", 1 }
+	};
+	transport->request("registerNode", data);
+
 	/*
 	request:
 	{

@@ -23,6 +23,8 @@ namespace protoo
 		std::string url() const;
 		std::string addresss() const;
 
+		void request(std::string method, const json& internal = json::object(), const json& data = json::object());
+
 	public:
 		void Close(int code = 1000, std::string message = std::string());
 		bool closed();
@@ -33,6 +35,11 @@ namespace protoo
 		void onMessage(const std::string& message);
 		void onClosed(int code, const std::string& message);
 
+	protected:
+		void _handleRequest(json& jsonRequest);
+		void _handleResponse(json& response);
+		void _handleNotification(json& notification);
+
 	private:
 		void* userData { nullptr };
 
@@ -41,6 +48,8 @@ namespace protoo
 		std::string _address;
 		// Closed flag.
 		bool _closed = false;
+
+		uint32_t _nextId;
 	};
 }
 

@@ -11,6 +11,7 @@ namespace protoo
 {
 	WebSocketClient::WebSocketClient(std::string url)
 		: _url(url)
+		, _nextId(0)
 	{
 		
 	}
@@ -76,6 +77,27 @@ namespace protoo
 		return _address;
 	}
 
+	void WebSocketClient::request(std::string method, const json& internal, const json& data)
+	{
+		this->_nextId < 4294967295 ? ++this->_nextId : (this->_nextId = 1);
+
+		uint32_t id = this->_nextId;
+
+		MSC_DEBUG("request() [method \"%s\", id: \"%d\"]", method.c_str(), id);
+
+		if (this->_closed)
+			throw new InvalidStateError("Channel closed");
+
+		json request = {
+			{ "id",id },
+			{ "method", method },
+			{ "internal", internal },
+			{ "data", data }
+		};
+
+		this->send(request);
+	}
+
 	void WebSocketClient::setUserData(void* userData)
 	{
 		this->userData = userData;
@@ -86,6 +108,21 @@ namespace protoo
 
 	void WebSocketClient::onMessage(const std::string& message)
 	{
+		json data = json::parse(message);
+
+		if (data.value("request", false))
+		{
+			this->_handleRequest(data);
+		}
+		else if (data.value("response", false))
+		{
+			this->_handleResponse(data);
+		}
+		else if (data.count("notification"))
+		{
+			this->_handleNotification(data);
+		}
+
 		if (_listener)
 		{
 			_listener->onMessage(message);
@@ -98,5 +135,48 @@ namespace protoo
 		{
 			_listener->onClosed(code, message);
 		}
+	}
+
+	void WebSocketClient::_handleRequest(json& jsonRequest)
+	{
+// 		try
+// 		{
+// 			Request* request = new Request(this, jsonRequest);
+// 
+// 			this->listener->OnPeerRequest(this, request);
+// 		}
+// 		catch (const std::exception&)
+// 		{
+// 
+// 		}
+	}
+
+	void WebSocketClient::_handleResponse(json& response)
+	{
+		uint32_t id = response["id"].get<uint32_t>();
+
+// 		if (!this->_sents.count(id))
+// 		{
+// 			MSC_ERROR("received response does not match any sent request [id:%d]", id);
+// 
+// 			return;
+// 		}
+// 
+// 		std::promise<json> sent = std::move(this->_sents[id]);
+// 		this->_sents.erase(id);
+// 
+// 		if (response.count("ok") && response["ok"].get<bool>())
+// 		{
+// 			sent.set_value(response["data"]);
+// 		}
+// 		else
+// 		{
+// 			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
+// 		}
+	}
+
+	void WebSocketClient::_handleNotification(json& notification)
+	{
+		//this->listener->OnPeerNotify(this, notification);
 	}
 }
