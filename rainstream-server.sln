@@ -32,6 +32,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-mediasoup", "Test\test
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uWS", "Deps\uWebSockets\uWebSockets.vcxproj", "{BAF494B1-0081-4457-B7CE-72F2B7B01F69}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testwss", "Test\testwss\testwss.vcxproj", "{E6903CCF-64F9-4C35-A6B2-5393CE39B244}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BAF494B1-0081-4457-B7CE-72F2B7B01F69} = {BAF494B1-0081-4457-B7CE-72F2B7B01F69}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -120,6 +125,14 @@ Global
 		{BAF494B1-0081-4457-B7CE-72F2B7B01F69}.Release|x64.Build.0 = Release|x64
 		{BAF494B1-0081-4457-B7CE-72F2B7B01F69}.Release|x86.ActiveCfg = Release|Win32
 		{BAF494B1-0081-4457-B7CE-72F2B7B01F69}.Release|x86.Build.0 = Release|Win32
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244}.Debug|x64.ActiveCfg = Debug|x64
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244}.Debug|x64.Build.0 = Debug|x64
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244}.Debug|x86.ActiveCfg = Debug|Win32
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244}.Debug|x86.Build.0 = Debug|Win32
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244}.Release|x64.ActiveCfg = Release|x64
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244}.Release|x64.Build.0 = Release|x64
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244}.Release|x86.ActiveCfg = Release|Win32
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -135,6 +148,7 @@ Global
 		{57034427-4D2C-4BF0-832B-76F46602FD84} = {5798B984-AC33-4230-BE0E-75FA738DB80E}
 		{0BFD5DA4-ECCB-43CB-B0F2-0216A040C50E} = {8F919D19-442A-4526-91F7-2AF0E91E60B4}
 		{BAF494B1-0081-4457-B7CE-72F2B7B01F69} = {E51E1D81-17AE-46F8-B751-9C24F8E8ACB3}
+		{E6903CCF-64F9-4C35-A6B2-5393CE39B244} = {8F919D19-442A-4526-91F7-2AF0E91E60B4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {417EF106-5E0B-499C-AF76-A81F9E3C9B46}

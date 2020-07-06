@@ -17,8 +17,9 @@ namespace protoo
 		class Lisenter
 		{
 		public:
-			virtual void OnConnectRequest(WebSocketClient* transport) = 0;
-			virtual void OnConnectClosed(WebSocketClient* transport) = 0;
+			virtual void OnConnected(WebSocketClient* transport) = 0;
+			virtual void OnMesageReceiced(WebSocketClient* transport, std::string msg) = 0;
+			virtual void OnDisConnected(WebSocketClient* transport) = 0;
 		};
 	public:
 		explicit WebSocketServer(json tls, Lisenter* lisenter);

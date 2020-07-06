@@ -41,16 +41,22 @@ namespace protoo
 
 			if (lisenter)
 			{
-				lisenter->OnConnectRequest(transport);
+				lisenter->OnConnected(transport);
 			}
 		});
 
 		hub->onMessage([=](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length, uWS::OpCode opCode)
 		{
+			std::string msg(message, length);
 			WebSocketClient* transport = (WebSocketClient*)ws->getUserData();
 			if (transport)
 			{
-				transport->onMessage(std::string(message, length));
+				transport->onMessage(msg);
+			}
+
+			if (lisenter)
+			{
+				lisenter->OnMesageReceiced(transport, msg);
 			}
 		});
 
@@ -61,7 +67,7 @@ namespace protoo
 			{
 				if (lisenter)
 				{
-					lisenter->OnConnectClosed(transport);
+					lisenter->OnDisConnected(transport);
 				}
 
 				transport->onClosed(code, std::string(message, length));

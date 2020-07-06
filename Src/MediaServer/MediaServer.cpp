@@ -126,7 +126,7 @@ MediaServer::MediaServer()
 	};
 
 	webSocketServer = new protoo::WebSocketServer(tls, this);
-	if (webSocketServer->Connect("wss://192.168.0.100:4000/?nodeId=testNodeId1"))
+	if (webSocketServer->Connect("wss://192.168.0.100:4000/?roomId=k7ro96jn&peerId=itftusep"))
 	{
 		MSC_ERROR("WebSocket server running on port: %d", 4443);
 	}
@@ -147,9 +147,55 @@ void MediaServer::OnRoomClose(std::string roomId)
 	rooms_.erase(roomId);
 }
 
-void MediaServer::OnConnectRequest(protoo::WebSocketClient* transport)
+void MediaServer::OnConnected(protoo::WebSocketClient* transport)
 {
 	connectionrequest(transport);
+	/*
+	request:
+	{
+		"method": 'registerNode',
+		"data": {
+			"nodeId": "xxxxx",
+			"serviceType": "gateway"
+
+			"url": "",
+			"host": ‘test1.rtcmedia.secret.com:4443’,
+			"ip": "",
+			"port": 4443,
+			"maxRoomCount": 1000, 最大会议数
+			"maxPeerCount": 4000, 最大人数
+
+			"activeRoomCount": 100,
+			"activePeerCount": 0,
+			"status": 1
+		}
+	}
+
+	2.reportNodeOnline
+	周期性(如每分2分钟)汇报节点(包括gateway/signal_server类型)的在线信息
+	request:
+	{
+	"method": 'reportNodeOnline',
+		"data": {
+			"nodeId": "xxxxx",
+			"activeRoomCount": 100,
+			"activePeerCount": 0,
+			"status": 1
+		}
+	}
+
+
+	 */
+}
+
+void MediaServer::OnMesageReceiced(protoo::WebSocketClient* transport, std::string msg)
+{
+	MSC_DEBUG("OnMesageReceiced: %s", msg.c_str());
+}
+
+void MediaServer::OnDisConnected(protoo::WebSocketClient* transport)
+{
+
 }
 
 std::future<void> MediaServer::connectionrequest(protoo::WebSocketClient* transport)
@@ -175,11 +221,6 @@ std::future<void> MediaServer::connectionrequest(protoo::WebSocketClient* transp
 	room->handleConnection(peerId, true, transport);
 
 	co_return;
-}
-
-void MediaServer::OnConnectClosed(protoo::WebSocketClient* transport)
-{
-
 }
 
 void MediaServer::runMediasoupWorkers()

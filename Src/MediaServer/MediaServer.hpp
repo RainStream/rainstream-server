@@ -21,8 +21,9 @@ public:
 protected:
 	void OnRoomClose(std::string roomId);
 
-	void OnConnectRequest(protoo::WebSocketClient* transport) override;
-	void OnConnectClosed(protoo::WebSocketClient* transport) override;
+	virtual void OnConnected(protoo::WebSocketClient* transport) override;
+	virtual void OnMesageReceiced(protoo::WebSocketClient* transport, std::string msg) override;
+	virtual void OnDisConnected(protoo::WebSocketClient* transport) override;
 
 protected:
 	std::future<void> connectionrequest(protoo::WebSocketClient* transport);
