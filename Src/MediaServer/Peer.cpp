@@ -264,7 +264,7 @@ namespace protoo
 		}
 		else
 		{
-			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
+			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"].get<std::string>())));
 		}
 	}
 
