@@ -5,9 +5,13 @@
 #include <Worker.hpp>
 #include "Utils.hpp"
 #include "Room.hpp"
+#include "Request.hpp"
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"
 #include <regex>
+#include <uWS.h>
+
+#define NODE_ID "testNode1"
 
 class Url
 {
@@ -90,6 +94,7 @@ R"(
 /* Instance methods. */
 MediaServer::MediaServer()
 	: config(DefaultConfig)
+	, timer(nullptr)
 {
 // 	if (!Settings::configuration.configFile.empty())
 // 	{
@@ -126,7 +131,7 @@ MediaServer::MediaServer()
 	};
 
 	webSocketServer = new protoo::WebSocketServer(tls, this);
-	if (webSocketServer->Connect("wss://192.168.0.100:4000/?roomId=k7ro96jn&peerId=itftusep"))
+	if (webSocketServer->Connect("ws://192.168.0.100:4001"))
 	{
 		MSC_ERROR("WebSocket server running on port: %d", 4000);
 	}
@@ -149,10 +154,10 @@ void MediaServer::OnRoomClose(std::string roomId)
 
 void MediaServer::OnConnected(protoo::WebSocketClient* transport)
 {
-	connectionrequest(transport);
+	transport->setListener(this);
 
 	json data = {
-		{ "nodeId", "nodeId" },
+		{ "nodeId", NODE_ID },
 		{ "serviceType", "media_server" },
 		{ "url", "" },
 		{ "host", "" },
@@ -160,33 +165,13 @@ void MediaServer::OnConnected(protoo::WebSocketClient* transport)
 		{ "port", 0 },
 		{ "maxRoomCount", 1000 },
 		{ "maxPeerCount", 4000 },
-		{ "activeRoomCount", 100 },
 		{ "activeRoomCount", 0 },
+		{ "activePeerCount", 0 },
 		{ "status", 1 }
 	};
 	transport->request("registerNode", data);
 
 	/*
-	request:
-	{
-		"method": 'registerNode',
-		"data": {
-			"nodeId": "xxxxx",
-			"serviceType": "gateway"
-
-			"url": "",
-			"host": ‘test1.rtcmedia.secret.com:4443’,
-			"ip": "",
-			"port": 4443,
-			"maxRoomCount": 1000, 最大会议数
-			"maxPeerCount": 4000, 最大人数
-
-			"activeRoomCount": 100,
-			"activePeerCount": 0,
-			"status": 1
-		}
-	}
-
 	2.reportNodeOnline
 	周期性(如每分2分钟)汇报节点(包括gateway/signal_server类型)的在线信息
 	request:
@@ -199,44 +184,48 @@ void MediaServer::OnConnected(protoo::WebSocketClient* transport)
 			"status": 1
 		}
 	}
-
-
 	 */
 }
 
-void MediaServer::OnMesageReceiced(protoo::WebSocketClient* transport, std::string msg)
+std::future<void> MediaServer::OnRequest(protoo::WebSocketClient* transport, protoo::Request* request)
 {
-	MSC_DEBUG("OnMesageReceiced: %s", msg.c_str());
+	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
+		request->peerId.c_str(), request->roomId.c_str());
+
+	Room* room = co_await getOrCreateRoom(request->roomId);
+	co_await room->handleProtooRequest(transport, request);
+
+	co_return;
 }
 
-void MediaServer::OnDisConnected(protoo::WebSocketClient* transport)
+void MediaServer::OnClosed(int code, const std::string& message)
 {
 
 }
 
 std::future<void> MediaServer::connectionrequest(protoo::WebSocketClient* transport)
 {
-	std::string url = transport->url();
-
-	std::string roomId = Url::Request(url, "roomId");
-	std::string peerId = Url::Request(url, "peerId");
-
-	if (roomId.empty() || peerId.empty())
-	{
-		MSC_ERROR("Connection request without roomId and/or peerName");
-
-		transport->Close(400, "Connection request without roomId and/or peerName");
-
-		return;
-	}
-
-	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
-		peerId.c_str(), roomId.c_str());
-
-	Room* room = co_await getOrCreateRoom(roomId);
-	room->handleConnection(peerId, true, transport);
-
-	co_return;
+// 	std::string url = transport->url();
+// 
+// 	std::string roomId = Url::Request(url, "roomId");
+// 	std::string peerId = Url::Request(url, "peerId");
+// 
+// 	if (roomId.empty() || peerId.empty())
+// 	{
+// 		MSC_ERROR("Connection request without roomId and/or peerName");
+// 
+// 		transport->Close(400, "Connection request without roomId and/or peerName");
+// 
+// 		return;
+// 	}
+// 
+// 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
+// 		peerId.c_str(), roomId.c_str());
+// 
+// 	Room* room = co_await getOrCreateRoom(roomId);
+// 	room->handleConnection(peerId, true, transport);
+// 
+// 	co_return;
 }
 
 void MediaServer::runMediasoupWorkers()

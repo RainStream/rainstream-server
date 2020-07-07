@@ -3,10 +3,6 @@
 
 #include "common.hpp"
 
-namespace uWS {
-	struct Hub;
-}
-
 namespace protoo
 {
 	class WebSocketClient;
@@ -18,8 +14,6 @@ namespace protoo
 		{
 		public:
 			virtual void OnConnected(WebSocketClient* transport) = 0;
-			virtual void OnMesageReceiced(WebSocketClient* transport, std::string msg) = 0;
-			virtual void OnDisConnected(WebSocketClient* transport) = 0;
 		};
 	public:
 		explicit WebSocketServer(json tls, Lisenter* lisenter);
@@ -37,7 +31,6 @@ namespace protoo
 		Lisenter * lisenter{ nullptr };
 		// Closed flag.
 		bool _closed = false;
-		uWS::Hub *hub = nullptr;
 	};
 }
 

@@ -11,8 +11,8 @@ namespace protoo
 {
 	/* Instance methods. */
 
-	Request::Request(Peer* peer, json& jsonRequest)
-		: peer(peer)
+	Request::Request(WebSocketClient* client, json& jsonRequest)
+		: client(client)
 	{
 		MSC_TRACE();
 
@@ -29,6 +29,23 @@ namespace protoo
 			MSC_THROW_ERROR("missing method");
 
 		this->method = jsonMethodIt->get<std::string>();
+
+
+		auto jsonRoomIdIt = jsonRequest.find("roomId");
+
+		if (jsonRoomIdIt == jsonRequest.end() || !jsonRoomIdIt->is_string())
+			MSC_THROW_ERROR("missing roomId");
+
+		this->roomId = jsonRoomIdIt->get<std::string>();
+
+
+		auto jsonPeerIdIt = jsonRequest.find("peerId");
+
+		if (jsonPeerIdIt == jsonRequest.end() || !jsonPeerIdIt->is_string())
+			MSC_THROW_ERROR("missing peerId");
+
+		this->peerId = jsonPeerIdIt->get<std::string>();
+
 
 		auto jsonDataIt = jsonRequest.find("data");
 
@@ -56,7 +73,7 @@ namespace protoo
 		jsonResponse["id"] = this->id;
 		jsonResponse["accepted"] = true;
 
-		this->peer->Send(jsonResponse);
+		this->client->Send(jsonResponse);
 	}
 
 	void Request::Accept(json& data)
@@ -70,11 +87,14 @@ namespace protoo
 		json jsonResponse = {
 			{ "response", true },
 			{ "id" , id },
+			{ "method" , method },
+			{ "peerId" , peerId },
+			{ "roomId" , roomId },
 			{ "ok" , true },
 			{ "data" , data }
 		};
 
-		this->peer->Send(jsonResponse);
+		this->client->Send(jsonResponse);
 	}
 
 	void Request::Reject(int errorCode, std::string errorReason)
@@ -88,10 +108,13 @@ namespace protoo
 		json jsonResponse = {
 			{ "response", true },
 			{ "id" , id },
+			{ "method" , method },
+			{ "peerId" , peerId },
+			{ "roomId" , roomId },
 			{ "errorCode" , errorCode },
 			{ "errorReason" , errorReason }
 		};
 
-		this->peer->Send(jsonResponse);
+		this->client->Send(jsonResponse);
 	}
 }

@@ -6,7 +6,7 @@
 #include "Utils.hpp"
 #include <iostream>
 #include <fstream>
-
+#include "DepLibUV.hpp"
 #include <uWS.h>
 
 #define SEC_WEBSOCKET_PROTOCOL "secret-media"
@@ -18,7 +18,7 @@ namespace protoo
 		, tls(tls)
 	{
 		//here must use default loop
-		hub = new uWS::Hub(0, true);
+		auto hub = DepLibUV::GetHub();
 
 		hub->onError([](void *user) {
 			std::cout << "FAILURE: " << user << " should not emit error!" << std::endl;
@@ -53,11 +53,6 @@ namespace protoo
 			{
 				transport->onMessage(msg);
 			}
-
-			if (lisenter)
-			{
-				lisenter->OnMesageReceiced(transport, msg);
-			}
 		});
 
 		hub->onDisconnection([=](uWS::WebSocket<uWS::CLIENT> *ws, int code, char *message, size_t length)
@@ -65,12 +60,7 @@ namespace protoo
 			WebSocketClient* transport = (WebSocketClient*)ws->getUserData();
 			if (transport)
 			{
-				if (lisenter)
-				{
-					lisenter->OnDisConnected(transport);
-				}
-
-				transport->onClosed(code, std::string(message, length));
+				transport->OnClosed(code, std::string(message, length));
 				delete transport;
 			}
 
@@ -80,15 +70,13 @@ namespace protoo
 	
 	WebSocketServer::~WebSocketServer()
 	{
-		if (hub)
-		{
-			delete hub;
-			hub = nullptr;
-		}
+
 	}
 
 	bool WebSocketServer::Connect(std::string url)
 	{
+		auto hub = DepLibUV::GetHub();
+
 		std::map<std::string, std::string> extraHeaders;
 		extraHeaders.insert(std::make_pair("sec-websocket-protocol", SEC_WEBSOCKET_PROTOCOL));
 

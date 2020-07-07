@@ -80,78 +80,104 @@ void Room::close()
 	this->listener->OnRoomClose(_roomId);
 }
 
-void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport)
+std::future<void> Room::handleProtooRequest(protoo::WebSocketClient* transport, protoo::Request* request)
 {
-	if (this->_peers.count(peerId))
+	std::string peerId = request->peerId;
+	std::string method = request->method;
+
+	json& data = request->data;
+
+	if (method == "getRouterRtpCapabilities")
 	{
-		protoo::Peer* existingPeer = this->_peers.at(peerId);
-
-		MSC_WARN(
-			"handleProtooConnection() | there is already a protoo Peer with same peerId, closing it [peerId:%s]",
-			peerId.c_str());
-
-		existingPeer->close();
-	}
-
-	protoo::Peer* peer{ nullptr };
-
-	// Create a new protoo Peer with the given peerId.
-	try
-	{
-		peer = new protoo::Peer(peerId, transport, this);
-		this->_peers.insert(std::make_pair(peerId, peer));
-	}
-	catch (std::exception& error)
-	{
-		MSC_ERROR("protooRoom.createPeer() failed:%s", error.what());
-	}
-
-	// Use the peer->data object to store mediasoup related objects.
-
-	// Not joined after a custom protoo "join" request is later received.
-	peer->data.consume = consume;
-	peer->data.joined = false;
-
-	peer->on("close", [=]()
-	{
-		if (this->_closed)
-			return;
-
-		MSC_DEBUG("protoo Peer \"close\" event [peerId:%s]", peer->id().c_str());
-
-		// If the Peer was joined, notify all Peers.
-		if (peer->data.joined)
+		if (this->_peers.count(peerId))
 		{
-			for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
-			{
-				try
-				{
-					otherPeer->notify("peerClosed", json{ { "peerId", peer->id()} });
-				}
-				catch (const std::exception&)
-				{
+			protoo::Peer* existingPeer = this->_peers.at(peerId);
 
-				}
-			}
+			MSC_WARN(
+				"handleProtooConnection() | there is already a protoo Peer with same peerId, closing it [peerId:%s]",
+				peerId.c_str());
+
+			existingPeer->close();
 		}
 
-		// Iterate and close all mediasoup Transport associated to this Peer, so all
-		// its Producers and Consumers will also be closed.
-		for (auto[key, transport] : peer->data.transports)
+		protoo::Peer* peer{ nullptr };
+
+		// Create a new protoo Peer with the given peerId.
+		try
 		{
-			transport->close();
+			peer = new protoo::Peer(peerId, transport, this);
+			this->_peers.insert(std::make_pair(peerId, peer));
+		}
+		catch (std::exception& error)
+		{
+			MSC_ERROR("protooRoom.createPeer() failed:%s", error.what());
 		}
 
-		// If this is the latest Peer in the room, close the room.
-		if (this->_peers.size()== 0)
-		{
-			MSC_DEBUG(
-				"last Peer in the room left, closing the room [roomId:%s]",
-				this->_roomId.c_str());
+		// Use the peer->data object to store mediasoup related objects.
 
-			this->close();
+		// Not joined after a custom protoo "join" request is later received.
+		peer->data.consume = true;
+		peer->data.joined = false;
+
+
+		request->Accept(this->_mediasoupRouter->rtpCapabilities());
+	}
+	else
+	{
+		try
+		{
+			protoo::Peer* peer = this->_peers.at(peerId);
+
+			co_await _handleProtooRequest(peer, request);
 		}
-	});
+		catch (const std::exception&)
+		{
+
+		}
+	}
+
+	
+
+// 	peer->on("close", [=]()
+// 	{
+// 		if (this->_closed)
+// 			return;
+// 
+// 		MSC_DEBUG("protoo Peer \"close\" event [peerId:%s]", peer->id().c_str());
+// 
+// 		// If the Peer was joined, notify all Peers.
+// 		if (peer->data.joined)
+// 		{
+// 			for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
+// 			{
+// 				try
+// 				{
+// 					otherPeer->notify("peerClosed", json{ { "peerId", peer->id()} });
+// 				}
+// 				catch (const std::exception&)
+// 				{
+// 
+// 				}
+// 			}
+// 		}
+// 
+// 		// Iterate and close all mediasoup Transport associated to this Peer, so all
+// 		// its Producers and Consumers will also be closed.
+// 		for (auto[key, transport] : peer->data.transports)
+// 		{
+// 			transport->close();
+// 		}
+// 
+// 		// If this is the latest Peer in the room, close the room.
+// 		if (this->_peers.size()== 0)
+// 		{
+// 			MSC_DEBUG(
+// 				"last Peer in the room left, closing the room [roomId:%s]",
+// 				this->_roomId.c_str());
+// 
+// 			this->close();
+// 		}
+// 	});
 }
 
 /**

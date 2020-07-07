@@ -20,7 +20,7 @@ namespace protoo
 	class Request;
 	class WebSocketClient;
 
-	class Peer : public WebSocketClient::Listener , public EnhancedEventEmitter
+	class Peer : public EnhancedEventEmitter
 	{
 	public:
 		class Listener
@@ -66,13 +66,8 @@ namespace protoo
 
 	protected:
 		virtual void onMessage(const std::string& message);
-		virtual void onClosed(int code, const std::string& message);
+		virtual void OnClosed(int code, const std::string& message);
 
-	protected:
-		void _handleTransport();
-		void _handleRequest(json& jsonRequest);
-		void _handleResponse(json& response);
-		void _handleNotification(json& notification);
 
 	private:
 		std::string _peerName;

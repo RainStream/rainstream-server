@@ -34,7 +34,7 @@ public:
 	std::string id();
 	void close();
 
-	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
+	std::future<void> handleProtooRequest(protoo::WebSocketClient* transport, protoo::Request* request);
 
 protected:
 	std::future<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);

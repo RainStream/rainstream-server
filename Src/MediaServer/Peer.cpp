@@ -16,7 +16,7 @@ namespace protoo
 		, _transport(transport)
 		, listener(listener)
 	{
-		_handleTransport();
+		//_handleTransport();
 	}
 
 
@@ -158,7 +158,7 @@ namespace protoo
 	{
 		try
 		{
-			this->_transport->send(message);
+			this->_transport->Send(message);
 		}
 		catch (const std::exception&)
 		{
@@ -173,7 +173,7 @@ namespace protoo
 		MSC_DEBUG("notify() [method:%s]", method.c_str());
 
 		// This may throw.
-		this->_transport->send(notification);
+		this->_transport->Send(notification);
 	}
 
 	std::future<json> Peer::request(std::string method, json& data)
@@ -195,81 +195,81 @@ namespace protoo
 	void Peer::onMessage(const std::string& message)
 	{
 		json data = json::parse(message);
-
-		if (data.value("request",false))
-		{
-			this->_handleRequest(data);
-		}
-		else if (data.value("response", false))
-		{
-			this->_handleResponse(data);
-		}
-		else if (data.count("notification"))
-		{
-			this->_handleNotification(data);
-		}
+// 
+// 		if (data.value("request",false))
+// 		{
+// 			this->_handleRequest(data);
+// 		}
+// 		else if (data.value("response", false))
+// 		{
+// 			this->_handleResponse(data);
+// 		}
+// 		else if (data.count("notification"))
+// 		{
+// 			this->_handleNotification(data);
+// 		}
 	}
 
-	void Peer::onClosed(int code, const std::string& message)
+	void Peer::OnClosed(int code, const std::string& message)
 	{
 		this->close();
 	}
 
-	void Peer::_handleTransport()
-	{
-		if (this->_transport->closed())
-		{
-			this->_closed = true;
-			this->close();
-
-			return;
-		}
-
-		_transport->setListener(this);
-
-	}
-
-
-	void Peer::_handleRequest(json& jsonRequest)
-	{
-		try
-		{
-			Request* request = new Request(this, jsonRequest);
-
-			this->listener->OnPeerRequest(this, request);
-		}
-		catch (const std::exception&)
-		{
-
-		}
-	}
-
-	void Peer::_handleResponse(json& response)
-	{
-		uint32_t id = response["id"].get<uint32_t>();
-
-		if (!this->_sents.count(id))
-		{
-			MSC_ERROR("received response does not match any sent request [id:%d]", id);
-
-			return;
-		}
-
-		std::promise<json> sent = std::move(this->_sents[id]);
-		this->_sents.erase(id);
-
-		if (response.count("ok") && response["ok"].get<bool>())
-		{
-			sent.set_value(response["data"]);
-		}
-		else
-		{
-			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"].get<std::string>())));
-		}
-	}
-
-	void Peer::_handleNotification(json& notification)
-	{
-		this->listener->OnPeerNotify(this, notification);
-	}
+// 	void Peer::_handleTransport()
+// 	{
+// 		if (this->_transport->closed())
+// 		{
+// 			this->_closed = true;
+// 			this->close();
+// 
+// 			return;
+// 		}
+// 
+// 		_transport->setListener(this);
+// 
+// 	}
+// 
+// 
+// 	void Peer::_handleRequest(json& jsonRequest)
+// 	{
+// 		try
+// 		{
+// 			Request* request = new Request(this, jsonRequest);
+// 
+// 			this->listener->OnPeerRequest(this, request);
+// 		}
+// 		catch (const std::exception&)
+// 		{
+// 
+// 		}
+// 	}
+// 
+// 	void Peer::_handleResponse(json& response)
+// 	{
+// 		uint32_t id = response["id"].get<uint32_t>();
+// 
+// 		if (!this->_sents.count(id))
+// 		{
+// 			MSC_ERROR("received response does not match any sent request [id:%d]", id);
+// 
+// 			return;
+// 		}
+// 
+// 		std::promise<json> sent = std::move(this->_sents[id]);
+// 		this->_sents.erase(id);
+// 
+// 		if (response.count("ok") && response["ok"].get<bool>())
+// 		{
+// 			sent.set_value(response["data"]);
+// 		}
+// 		else
+// 		{
+// 			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"].get<std::string>())));
+// 		}
+// 	}
+// 
+// 	void Peer::_handleNotification(json& notification)
+// 	{
+// 		this->listener->OnPeerNotify(this, notification);
+// 	}
 }

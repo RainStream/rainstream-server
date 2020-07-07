@@ -4,7 +4,7 @@
 #include "Logger.hpp"
 #include "Utils.hpp"
 #include <errors.hpp>
-
+#include "Request.hpp"
 #include <uWS.h>
 
 namespace protoo
@@ -37,7 +37,7 @@ namespace protoo
 		}
 	}
 
-	void WebSocketClient::send(const json& data)
+	void WebSocketClient::Send(const json& data)
 	{
 		if (this->_closed)
 			MSC_THROW_ERROR("transport closed");
@@ -77,7 +77,7 @@ namespace protoo
 		return _address;
 	}
 
-	void WebSocketClient::request(std::string method, const json& internal, const json& data)
+	void WebSocketClient::request(std::string method, const json& data)
 	{
 		this->_nextId < 4294967295 ? ++this->_nextId : (this->_nextId = 1);
 
@@ -89,13 +89,13 @@ namespace protoo
 			throw new InvalidStateError("Channel closed");
 
 		json request = {
+			{ "request",true },
 			{ "id",id },
 			{ "method", method },
-			{ "internal", internal },
 			{ "data", data }
 		};
 
-		this->send(request);
+		this->Send(request);
 	}
 
 	void WebSocketClient::setUserData(void* userData)
@@ -122,33 +122,28 @@ namespace protoo
 		{
 			this->_handleNotification(data);
 		}
-
-		if (_listener)
-		{
-			_listener->onMessage(message);
-		}
 	}
 
-	void WebSocketClient::onClosed(int code, const std::string& message)
+	void WebSocketClient::OnClosed(int code, const std::string& message)
 	{
 		if (this->_listener)
 		{
-			_listener->onClosed(code, message);
+			_listener->OnClosed(code, message);
 		}
 	}
 
 	void WebSocketClient::_handleRequest(json& jsonRequest)
 	{
-// 		try
-// 		{
-// 			Request* request = new Request(this, jsonRequest);
-// 
-// 			this->listener->OnPeerRequest(this, request);
-// 		}
-// 		catch (const std::exception&)
-// 		{
-// 
-// 		}
+ 		try
+ 		{
+ 			Request* request = new Request(this, jsonRequest);
+ 
+ 			this->_listener->OnRequest(this, request);
+ 		}
+ 		catch (const std::exception&)
+ 		{
+ 
+ 		}
 	}
 
 	void WebSocketClient::_handleResponse(json& response)

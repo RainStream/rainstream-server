@@ -5,13 +5,12 @@
 
 namespace protoo
 {
-
-	class Peer;
+	class WebSocketClient;
 
 	class Request
 	{
 	public:
-		Request(Peer* peer, json& jsonRequest);
+		Request(WebSocketClient* client, json& jsonRequest);
 		virtual ~Request();
 
 		void Accept();
@@ -20,9 +19,11 @@ namespace protoo
 
 	public:
 		// Passed by argument.
-		Peer* peer{ nullptr };
+		WebSocketClient* client{ nullptr };
 		uint32_t id{ 0u };
 		std::string method;
+		std::string roomId;
+		std::string peerId;
 		json internal;
 		json data;
 		// Others.

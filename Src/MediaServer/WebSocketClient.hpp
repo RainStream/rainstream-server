@@ -5,6 +5,8 @@
 
 namespace protoo
 {
+	class Request;
+
 	class WebSocketClient
 	{
 		friend class WebSocketServer;
@@ -12,8 +14,8 @@ namespace protoo
 		class Listener
 		{
 		public:
-			virtual void onMessage(const std::string& message) = 0;
-			virtual void onClosed(int code, const std::string& message) = 0;
+			virtual std::future<void> OnRequest(WebSocketClient* transport, Request* request) = 0;
+			virtual void OnClosed(int code, const std::string& message) = 0;
 		};
 	public:
 		explicit WebSocketClient(std::string url);
@@ -23,17 +25,17 @@ namespace protoo
 		std::string url() const;
 		std::string addresss() const;
 
-		void request(std::string method, const json& internal = json::object(), const json& data = json::object());
+		void request(std::string method, const json& data = json::object());
 
 	public:
 		void Close(int code = 1000, std::string message = std::string());
 		bool closed();
-		void send(const json& data);
+		void Send(const json& data);
 
 	protected:
 		void setUserData(void* userData);
 		void onMessage(const std::string& message);
-		void onClosed(int code, const std::string& message);
+		void OnClosed(int code, const std::string& message);
 
 	protected:
 		void _handleRequest(json& jsonRequest);
