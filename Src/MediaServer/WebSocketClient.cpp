@@ -44,6 +44,8 @@ namespace protoo
 
 		std::string message = data.dump();
 
+		MSC_DEBUG("\r\n\r\nSend:%s\r\n\r\n", message.c_str());
+
 		try
 		{
 			uWS::WebSocket<uWS::CLIENT>* ws = static_cast <uWS::WebSocket<uWS::CLIENT>*>(userData);
@@ -108,6 +110,8 @@ namespace protoo
 
 	void WebSocketClient::onMessage(const std::string& message)
 	{
+		MSC_DEBUG("\r\n\r\nonMessage:%s\r\n\r\n", message.c_str());
+
 		json data = json::parse(message);
 
 		if (data.value("request", false))
