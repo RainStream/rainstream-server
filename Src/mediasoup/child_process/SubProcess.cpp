@@ -22,13 +22,14 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 {
 	SubProcess *subProcess = new SubProcess();
 
-	std::vector<char*> spawnArgs;
-	spawnArgs.push_back((char*)workerPath.c_str());
+	parameters.insert(parameters.begin(), workerPath);
+
+	char** args = new char*[parameters.size() + 1];
 	for (size_t i = 0; i < parameters.size(); ++i)
 	{
-		spawnArgs.push_back((char*)parameters[i].c_str());
+		args[i] = strdup(parameters[i].c_str());
 	}
-	spawnArgs.push_back("\0");
+	args[parameters.size()] = nullptr;
 
 	std::vector<uv_stdio_container_t> child_stdios;
 
@@ -99,8 +100,8 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 	}
 	subProcess->options.env[strEnvs.size()] = nullptr;
 
-	subProcess->options.args = spawnArgs.data();
-	subProcess->options.file = spawnArgs[0];
+	subProcess->options.args = args;
+	subProcess->options.file = args[0];
 	subProcess->options.stdio = child_stdios.data();
 	subProcess->options.stdio_count = child_stdios.size();
 	subProcess->options.exit_cb = onReqClose;
@@ -117,10 +118,10 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 		subProcess = nullptr;
 	}
 
-// 	if (subProcess->options.args) {
-// 		for (int i = 0; subProcess->options.args[i]; i++) free(subProcess->options.args[i]);
-// 		delete[] subProcess->options.args;
-// 	}
+	if (subProcess->options.args) {
+		for (int i = 0; subProcess->options.args[i]; i++) free(subProcess->options.args[i]);
+		delete[] subProcess->options.args;
+	}
 
 	if (subProcess->options.env) {
 		for (int i = 0; subProcess->options.env[i]; i++) free(subProcess->options.env[i]);

@@ -6,12 +6,11 @@
 #include "Utils.hpp"
 #include "Room.hpp"
 #include "Request.hpp"
+#include "Settings.hpp"
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"
 #include <regex>
 #include <uWS.h>
-
-#define NODE_ID "testNode1"
 
 class Url
 {
@@ -96,19 +95,6 @@ MediaServer::MediaServer()
 	: config(DefaultConfig)
 	, timer(nullptr)
 {
-// 	if (!Settings::configuration.configFile.empty())
-// 	{
-// 		std::ifstream in(Settings::configuration.configFile.c_str());
-// 		if (in.is_open())
-// 		{
-// 			json newConfig;
-// 			in >> newConfig;
-// 			in.close();
-// 
-// 			config = Object::assign(config, newConfig);
-// 		}
-// 	}
-
 	// rainstream server.
 	json rainstream = 
 	{
@@ -131,9 +117,9 @@ MediaServer::MediaServer()
 	};
 
 	webSocketServer = new protoo::WebSocketServer(tls, this);
-	if (webSocketServer->Connect("ws://192.168.0.100:4001"))
+	if (webSocketServer->Connect(Settings::configuration.serverUrl))
 	{
-		MSC_ERROR("WebSocket server running on port: %d", 4000);
+		MSC_ERROR("connect to server: %s", Settings::configuration.serverUrl.c_str());
 	}
 
 	MSC_DEBUG("MediaServer Started");
@@ -157,7 +143,7 @@ void MediaServer::OnConnected(protoo::WebSocketClient* transport)
 	transport->setListener(this);
 
 	json data = {
-		{ "nodeId", NODE_ID },
+		{ "nodeId", Settings::configuration.nodeId },
 		{ "serviceType", "media_server" },
 		{ "url", "" },
 		{ "host", "" },

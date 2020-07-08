@@ -15,6 +15,7 @@
     <ClCompile Include="config.cpp" />
     <ClCompile Include="Request.cpp" />
     <ClCompile Include="MediaServer.cpp" />
+    <ClCompile Include="Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="handles\SignalsHandler.hpp">
@@ -30,6 +31,7 @@
     <ClInclude Include="config.hpp" />
     <ClInclude Include="Request.hpp" />
     <ClInclude Include="MediaServer.hpp" />
+    <ClInclude Include="Settings.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">

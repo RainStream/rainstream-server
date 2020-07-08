@@ -4,7 +4,7 @@
 #include <Logger.hpp>
 #include "DepLibUV.hpp"
 #include "Loop.hpp"
-//#include "Settings.hpp"
+#include "Settings.hpp"
 #include "Utils.hpp"
 #include "MediaServer.hpp"
 #include <uv.h>
@@ -34,22 +34,17 @@ int main(int argc, char* argv[])
 	Logger::SetDefaultHandler();
 
 	// Setup the configuration.
-// 	try
-// 	{
-// 		Settings::SetConfiguration(argc, argv);
-// 	}
-// 	catch (const RainStreamError& error)
-// 	{
-// 		MSC_ERROR("configuration error: %s", error.what());
-// 
-// 		exitWithError();
-// 	}
-// 
-// 	// Print the effective configuration.
-// 	Settings::PrintConfiguration();
-
-	//	MS_DEBUG_TAG(info, "starting mediasoup-worker [pid:%ld]", (long)getpid());
-
+ 	try
+ 	{
+ 		Settings::SetConfiguration(argc, argv);
+ 	}
+ 	catch (const std::exception& error)
+ 	{
+ 		MSC_ERROR("configuration error: %s", error.what());
+ 
+ 		exitWithError();
+ 	}
+ 
 #if defined(MS_LITTLE_ENDIAN)
 	DLOG(INFO) << "Little-Endian CPU detected";
 #elif defined(MS_BIG_ENDIAN)
@@ -64,9 +59,14 @@ int main(int argc, char* argv[])
 	MSC_DEBUG("can not determine whether the architecture is 32 or 64 bits");
 #endif
 
+	// Print the effective configuration.
+	Settings::PrintConfiguration();
+	DepLibUV::PrintVersion();
+
 	try
 	{
-		init();
+		// Ignore some signals.
+		ignoreSignals();
 
 		// Set the Server socket (this will be handled and deleted by the Loop).
 		auto* server = new MediaServer();
@@ -89,50 +89,43 @@ int main(int argc, char* argv[])
 	}
 }
 
-
-void init()
-{
-	ignoreSignals();
-	DepLibUV::PrintVersion();
-
-	// Initialize static stuff.
-}
-
 void ignoreSignals()
 {
-	// 	MSC_TRACE();
-	// 
-	// 	int err;
-	// 	// clang-format off
-	// 	struct sigaction act{};
-	// 	std::map<std::string, int> ignoredSignals =
-	// 	{
-	// 		{ "PIPE", SIGPIPE },
-	// 		{ "HUP",  SIGHUP  },
-	// 		{ "ALRM", SIGALRM },
-	// 		{ "USR1", SIGUSR2 },
-	// 		{ "USR2", SIGUSR1}
-	// 	};
-	// 	// clang-format on
-	// 
-	// 	// Ignore clang-tidy cppcoreguidelines-pro-type-cstyle-cast.
-	// 	act.sa_handler = SIG_IGN; // NOLINT
-	// 	act.sa_flags   = 0;
-	// 	err            = sigfillset(&act.sa_mask);
-	// 	if (err != 0)
-	// 		MSC_THROW_ERROR("sigfillset() failed: %s", std::strerror(errno));
-	// 
-	// 	for (auto& ignoredSignal : ignoredSignals)
-	// 	{
-	// 		auto& sigName = ignoredSignal.first;
-	// 		int sigId     = ignoredSignal.second;
-	// 
-	// 		err = sigaction(sigId, &act, nullptr);
-	// 		if (err != 0)
-	// 		{
-	// 			MSC_THROW_ERROR("sigaction() failed for signal %s: %s", sigName.c_str(), std::strerror(errno));
-	// 		}
-	// 	}
+#ifndef _WIN32
+	MSC_TRACE();
+
+	int err;
+	struct sigaction act; // NOLINT(cppcoreguidelines-pro-type-member-init)
+
+	// clang-format off
+	std::map<std::string, int> ignoredSignals =
+	{
+		{ "PIPE", SIGPIPE },
+		{ "HUP",  SIGHUP  },
+		{ "ALRM", SIGALRM },
+		{ "USR1", SIGUSR1 },
+		{ "USR2", SIGUSR2 }
+	};
+	// clang-format on
+
+	act.sa_handler = SIG_IGN; // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+	act.sa_flags = 0;
+	err = sigfillset(&act.sa_mask);
+
+	if (err != 0)
+		MSC_THROW_ERROR("sigfillset() failed: %s", std::strerror(errno));
+
+	for (auto& kv : ignoredSignals)
+	{
+		auto& sigName = kv.first;
+		int sigId = kv.second;
+
+		err = sigaction(sigId, &act, nullptr);
+
+		if (err != 0)
+			MSC_THROW_ERROR("sigaction() failed for signal %s: %s", sigName.c_str(), std::strerror(errno));
+	}
+#endif
 }
 
 void destroy()
@@ -144,7 +137,7 @@ void destroy()
 void exitSuccess()
 {
 	// Wait a bit so peding messages to stdout/Channel arrive to the main process.
-	usleep(100000);
+	usleep(200);
 	// And exit with success status.
 	std::_Exit(EXIT_SUCCESS);
 }
@@ -152,7 +145,7 @@ void exitSuccess()
 void exitWithError()
 {
 	// Wait a bit so peding messages to stderr arrive to the main process.
-	usleep(100000);
+	usleep(200);
 	// And exit with error status.
 	std::_Exit(EXIT_FAILURE);
 }

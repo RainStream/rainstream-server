@@ -6,8 +6,7 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>
-    </LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--serverUrl=ws://192.168.0.100:4443 --nodeId=testNode1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

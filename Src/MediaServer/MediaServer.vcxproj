@@ -181,6 +181,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DepLibUV.cpp" />
     <ClCompile Include="handles\SignalsHandler.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="WebSocketClient.cpp" />
     <ClCompile Include="WebSocketServer.cpp" />
   </ItemGroup>
@@ -194,6 +195,7 @@
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="DepLibUV.hpp" />
     <ClInclude Include="handles\SignalsHandler.hpp" />
+    <ClInclude Include="Settings.hpp" />
     <ClInclude Include="WebSocketClient.hpp" />
     <ClInclude Include="WebSocketServer.hpp" />
   </ItemGroup>
