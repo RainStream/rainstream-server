@@ -101,7 +101,7 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 	subProcess->options.env[strEnvs.size()] = nullptr;
 
 	subProcess->options.args = args;
-	subProcess->options.file = args[0];
+	subProcess->options.file = strdup(workerPath.c_str());
 	subProcess->options.stdio = child_stdios.data();
 	subProcess->options.stdio_count = child_stdios.size();
 	subProcess->options.exit_cb = onReqClose;
@@ -118,15 +118,15 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 		subProcess = nullptr;
 	}
 
-	if (subProcess->options.args) {
-		for (int i = 0; subProcess->options.args[i]; i++) free(subProcess->options.args[i]);
-		delete[] subProcess->options.args;
+	if (args) {
+		for (int i = 0; args[i]; i++) free(args[i]);
+		delete[] args;
 	}
 
-	if (subProcess->options.env) {
-		for (int i = 0; subProcess->options.env[i]; i++) free(subProcess->options.env[i]);
-		delete[] subProcess->options.env;
-	}
+// 	if (subProcess->options.env) {
+// 		for (int i = 0; subProcess->options.env[i]; i++) free(subProcess->options.env[i]);
+// 		delete[] subProcess->options.env;
+// 	}
 
 	//delete[] subProcess->options.stdio;
 
