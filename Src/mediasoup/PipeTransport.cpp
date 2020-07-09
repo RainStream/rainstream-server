@@ -183,14 +183,14 @@ std::future<Consumer*> PipeTransport::consume(ConsumerOptions& options)
 	json& appData = options.appData;
 
 	if (producerId.empty())
-		throw new TypeError("missing producerId");
+		MSC_THROW_ERROR("missing producerId");
 	else if (!appData.is_null() && !appData.is_object())
-		throw new TypeError("if given, appData must be an object");
+		MSC_THROW_ERROR("if given, appData must be an object");
 
 	Producer* producer = this->_getProducerById(producerId);
 
 	if (!producer)
-		throw Error(utils::Printf("Producer with id \"${producerId}\" not found", producerId));
+		MSC_THROW_ERROR("Producer with id \"%s\" not found", producerId.c_str());
 
 	// This may throw.
 	json rtpParameters = ortc::getPipeConsumerRtpParameters(

@@ -117,4 +117,13 @@ namespace protoo
 
 		this->client->Send(jsonResponse);
 	}
+
+	void Request::Ignore()
+	{
+		MSC_TRACE();
+
+		MSC_ASSERT(!this->replied, "request already replied");
+
+		this->replied = true;
+	}
 }

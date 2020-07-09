@@ -136,7 +136,7 @@ std::future<json> Channel::request(std::string method, const json& internal, con
 	MSC_DEBUG("request() [method \"%s\", id: \"%d\"]", method.c_str(), id);
 
 	if (this->_closed)
-		throw new InvalidStateError("Channel closed");
+		MSC_THROW_INVALID_STATE_ERROR("Channel closed");
 
 	json request = {
 		{ "id",id },
@@ -148,7 +148,7 @@ std::future<json> Channel::request(std::string method, const json& internal, con
 	std::string nsPayload = _makePayload(request);
 
 	if (nsPayload.length() > NS_MESSAGE_MAX_LEN)
-		throw new Error("Channel request too big");
+		MSC_THROW_ERROR("Channel request too big");
 
 	// This may raise if closed or remote side ended.
 	try
@@ -157,7 +157,7 @@ std::future<json> Channel::request(std::string method, const json& internal, con
 	}
 	catch (std::exception error)
 	{
-		throw new Error("Channel request too big");
+		MSC_THROW_ERROR("Channel request too big");
 	}
 
 	std::promise<json> promise;

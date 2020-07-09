@@ -264,7 +264,7 @@ std::future<Router*> Worker::createRouter(
 	MSC_DEBUG("createRouter()");
 
 	if (!appData.is_null() && !appData.is_object())
-		throw new TypeError("if given, appData must be an object");
+		MSC_THROW_ERROR("if given, appData must be an object");
 
 	// This may throw.
 	json rtpCapabilities = ortc::generateRouterRtpCapabilities(mediaCodecs);

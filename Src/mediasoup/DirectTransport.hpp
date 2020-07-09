@@ -159,7 +159,7 @@ public:
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	std::future<void> setMaxIncomingBitrate(uint32_t bitrate)
 	{
-		throw new UnsupportedError(
+		MSC_THROW_UNSUPPORTED_ERROR(
 			"setMaxIncomingBitrate() not implemented in DirectTransport");
 	}
 
@@ -169,7 +169,7 @@ public:
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	std::future<Producer*> produce(ProducerOptions& options)
 	{
-		throw new UnsupportedError("produce() not implemented in DirectTransport");
+		MSC_THROW_UNSUPPORTED_ERROR("produce() not implemented in DirectTransport");
 	}
 
 	/**
@@ -178,7 +178,7 @@ public:
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	std::future<Consumer*> consume(ConsumerOptions options)
 	{
-		throw new UnsupportedError("consume() not implemented in DirectTransport");
+		MSC_THROW_UNSUPPORTED_ERROR("consume() not implemented in DirectTransport");
 	}
 
 private:

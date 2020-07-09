@@ -78,7 +78,7 @@ json Transport::appData()
  */
 void Transport::appData(json appData) // eslint-disable-line no-unused-vars
 {
-	throw new Error("cannot override appData object");
+	MSC_THROW_ERROR("cannot override appData object");
 }
 
 /**
@@ -237,7 +237,7 @@ std::future<json> Transport::dump()
 std::future<json> Transport::getStats()
 {
 	// Should not happen.
-	throw new Error("method not implemented in the subclass");
+	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
 /**
@@ -249,7 +249,7 @@ std::future<json> Transport::getStats()
 std::future<void> Transport::connect(json& params)
 {
 	// Should not happen.
-	throw new Error("method not implemented in the subclass");
+	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
 /**
@@ -282,11 +282,11 @@ std::future<Producer*> Transport::produce(
 	MSC_DEBUG("produce()");
 
 	if (!id.empty() && this->_producers.count(id))
-		throw new TypeError(utils::Printf("a Producer with same id \"${ %s }\" already exists", id.c_str()));
+		MSC_THROW_ERROR("a Producer with same id \"%s\" already exists", id.c_str());
 	else if (!kinds.count(kind))
-		throw new TypeError(utils::Printf("invalid kind \"${%s}\"", kind.c_str()));
+		MSC_THROW_ERROR("invalid kind \"%s\"", kind.c_str());
 	else if (!appData.is_null() && !appData.is_object())
-		throw new TypeError("if given, appData must be an object");
+		MSC_THROW_ERROR("if given, appData must be an object");
 
 	// This may throw.
 	ortc::validateRtpParameters(rtpParameters);
@@ -317,6 +317,8 @@ std::future<Producer*> Transport::produce(
 		{
 			this->_cnameForProducers = uuidv4().substr(0, 8);
 		}
+
+		MSC_DEBUG("this->_cnameForProducers:%s" , this->_cnameForProducers.c_str());
 
 		// Override Producer"s CNAME.
 		rtpParameters["rtcp"] = rtpParameters.value("rtcp", json::object());
@@ -394,7 +396,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 	json& appData = options.appData;
 
 	if (!appData.is_null() && !appData.is_object())
-		throw new TypeError("if given, appData must be an object");
+		MSC_THROW_ERROR("if given, appData must be an object");
 
 	// This may throw.
 	ortc::validateRtpCapabilities(rtpCapabilities);
@@ -402,7 +404,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 	Producer* producer = this->_getProducerById(producerId);
 
 	if (!producer)
-		throw Error(utils::Printf("Producer with id \"${%s}\" not found", producerId.c_str()));
+		MSC_THROW_ERROR("Producer with id \"%s\" not found", producerId.c_str());
 
 	// This may throw.
 	json rtpParameters = ortc::getConsumerRtpParameters(
@@ -480,9 +482,9 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
  // 		MSC_DEBUG("produceData()");
  // 
  // 		if (id && this->_dataProducers.has(id))
- // 			throw new TypeError(`a DataProducer with same id "${id}" already exists`);
+ // 			MSC_THROW_ERROR(`a DataProducer with same id "${id}" already exists`);
  // 		else if (!appData.is_null() && !appData.is_object())
- // 			throw new TypeError("if given, appData must be an object");
+ // 			MSC_THROW_ERROR("if given, appData must be an object");
  // 
  // 		let type: DataProducerType;
  // 
@@ -558,14 +560,14 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 	  // 		MSC_DEBUG("consumeData()");
 	  // 
 	  // 		if (!dataProducerId || typeof dataProducerId != "string")
-	  // 			throw new TypeError("missing dataProducerId");
+	  // 			MSC_THROW_ERROR("missing dataProducerId");
 	  // 		else if (!appData.is_null() && !appData.is_object())
-	  // 			throw new TypeError("if given, appData must be an object");
+	  // 			MSC_THROW_ERROR("if given, appData must be an object");
 	  // 
 	  // 		const dataProducer = this->_getDataProducerById(dataProducerId);
 	  // 
 	  // 		if (!dataProducer)
-	  // 			throw Error(`DataProducer with id "${dataProducerId}" not found`);
+	  // 			MSC_THROW_ERROR(`DataProducer with id "${dataProducerId}" not found`);
 	  // 
 	  // 		let type: DataConsumerType;
 	  // 		let sctpStreamParameters: SctpStreamParameters | undefined;
@@ -676,7 +678,7 @@ std::future<void> Transport::enableTraceEvent(std::vector<TransportTraceEventTyp
 // 			!this->_data["sctpParameters"]["MIS"].is_number()
 // 		)
 // 		{
-// 			throw new TypeError("missing data.sctpParameters.MIS");
+// 			MSC_THROW_ERROR("missing data.sctpParameters.MIS");
 // 		}
 // 
 // 		uint32_t numStreams = this->_data["sctpParameters"].value("MIS", 0);
@@ -698,5 +700,5 @@ std::future<void> Transport::enableTraceEvent(std::vector<TransportTraceEventTyp
 // 			}
 // 		}
 // 
-// 		throw new Error("no sctpStreamId available");
+// 		MSC_THROW_ERROR("no sctpStreamId available");
 // 	}

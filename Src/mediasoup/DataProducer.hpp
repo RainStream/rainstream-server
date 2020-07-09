@@ -181,7 +181,7 @@ private:
 	 */
 	void appData(json appData) // eslint-disable-line no-unused-vars
 	{
-		throw new Error("cannot override appData object");
+		MSC_THROW_ERROR("cannot override appData object");
 	}
 
 	/**
@@ -267,7 +267,7 @@ private:
 
 		if (typeof message != "string" && !Buffer.isBuffer(message))
 		{
-			throw new TypeError("message must be a string or a Buffer");
+			MSC_THROW_ERROR("message must be a string or a Buffer");
 		}
 
 		/*

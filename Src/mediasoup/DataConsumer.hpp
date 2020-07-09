@@ -191,7 +191,7 @@ private:
 	 */
 	void appData(json appData) // eslint-disable-line no-unused-vars
 	{
-		throw new Error("cannot override appData object");
+		MSC_THROW_ERROR("cannot override appData object");
 	}
 
 	/**

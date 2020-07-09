@@ -233,7 +233,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 			}
 		}
 
-		request->Accept(json{ { "peers", peerInfos } });
+		request->Ignore();
 
 		// Mark the new Peer as joined.
 		peer->data.joined = true;
@@ -273,24 +273,24 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 			});
 		*/
 		// Notify the new Peer to all other Peers.
-		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
-		{
-			try
-			{
-				otherPeer->notify(
-					"newPeer",
-					json{
-						{ "id", peer->id() },
-						{ "displayName", peer->data.displayName },
-						{ "device", peer->data.device }
-					});
-			}
-			catch (const std::exception&)
-			{
-
-			}
-				
-		}
+// 		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
+// 		{
+// 			try
+// 			{
+// 				otherPeer->notify(
+// 					"newPeer",
+// 					json{
+// 						{ "id", peer->id() },
+// 						{ "displayName", peer->data.displayName },
+// 						{ "device", peer->data.device }
+// 					});
+// 			}
+// 			catch (const std::exception&)
+// 			{
+// 
+// 			}
+// 				
+// 		}
 	}
 	else if (method == "createWebRtcTransport")
 	{
@@ -398,7 +398,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		co_await transport->connect(dtlsParameters);
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "restartIce")
 	{
@@ -517,7 +517,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		// Remove from its map.
 		peer->data.producers.erase(producer->id());
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "pauseProducer")
 	{
@@ -534,7 +534,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		co_await producer->pause();
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "resumeProducer")
 	{
@@ -551,7 +551,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		co_await producer->resume();
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "pauseConsumer")
 	{
@@ -568,7 +568,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		co_await consumer->pause();
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "resumeConsumer")
 	{
@@ -585,7 +585,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		co_await consumer->resume();
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "setConsumerPreferredLayers")
 	{
@@ -604,7 +604,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		co_await consumer->setPreferredLayers(spatialLayer, temporalLayer);
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "setConsumerPriority")
 	{
@@ -622,7 +622,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		co_await consumer->setPriority(priority);
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "requestConsumerKeyFrame")
 	{
@@ -639,7 +639,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		co_await consumer->requestKeyFrame();
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	/*
 	else if (method == "produceData")
@@ -732,7 +732,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 			}
 		}
 
-		request->Accept(json());
+		request->Accept(json::object());
 	}
 	else if (method == "getTransportStats")
 	{
@@ -828,7 +828,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 				downlink || DefaultDownlink,
 				rtt || DefaultRtt);
 
-			request->Accept(json());
+			request->Accept(json::object());
 		}
 		catch (std::exception& error)
 		{
@@ -854,7 +854,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 			MSC_WARN("network throttle stopped");
 
-			request->Accept(json());
+			request->Accept(json::object());
 		}
 		catch (std::exception& error)
 		{

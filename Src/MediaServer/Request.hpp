@@ -16,7 +16,7 @@ namespace protoo
 		void Accept();
 		void Accept(json& data);
 		void Reject(int errorCode, std::string errorReason);
-
+		void Ignore();
 	public:
 		// Passed by argument.
 		WebSocketClient* client{ nullptr };

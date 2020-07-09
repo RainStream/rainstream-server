@@ -150,16 +150,16 @@ void PayloadChannel::notify(
 	MSC_DEBUG("notify() [event:%s]", event.c_str());
 
 	if (this->_closed)
-		throw new InvalidStateError("PayloadChannel closed");
+		MSC_THROW_INVALID_STATE_ERROR("PayloadChannel closed");
 
 // 	const notification = { event, internal, data };
 // 	const ns1 = netstring.nsWrite(JSON.stringify(notification));
 // 	const ns2 = netstring.nsWrite(payload);
 // 
 // 	if (Buffer.byteLength(ns1) > NS_MESSAGE_MAX_LEN)
-// 		throw new Error("PayloadChannel notification too big");
+// 		MSC_THROW_ERROR("PayloadChannel notification too big");
 // 	else if (Buffer.byteLength(ns2) > NS_MESSAGE_MAX_LEN)
-// 		throw new Error("PayloadChannel payload too big");
+// 		MSC_THROW_ERROR("PayloadChannel payload too big");
 // 
 // 	try
 // 	{

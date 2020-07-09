@@ -78,7 +78,7 @@ json Router::appData()
  */
 void Router::appData(json appData) // eslint-disable-line no-unused-vars
 {
-	throw new Error("cannot override appData object");
+	MSC_THROW_ERROR("cannot override appData object");
 }
 
 /**
@@ -222,9 +222,9 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 	json appData = options.appData;
 
 	if (!listenIps.is_array())
-		throw new TypeError("missing listenIps");
+		MSC_THROW_ERROR("missing listenIps");
 	else if (!appData.is_null() && !appData.is_object())
-		throw new TypeError("if given, appData must be an object");
+		MSC_THROW_ERROR("if given, appData must be an object");
 
 	json tmpListenIps = json::array();
 	for (json& listenIp : listenIps)
@@ -243,7 +243,7 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 		}
 		else
 		{
-			throw new TypeError("wrong listenIp");
+			MSC_THROW_ERROR("wrong listenIp");
 		}
 	}
 
@@ -324,9 +324,9 @@ std::future<PlainTransport*> Router::createPlainTransport(
 	MSC_DEBUG("createPlainTransport()");
 
 	if (!listenIp)
-		throw new TypeError("missing listenIp");
+		MSC_THROW_ERROR("missing listenIp");
 	else if (!appData.is_null() && !appData.is_object())
-		throw new TypeError("if given, appData must be an object");
+		MSC_THROW_ERROR("if given, appData must be an object");
 
 	if (listenIp.is_string() && !listenIp.get<std::string>().empty())
 	{
@@ -342,7 +342,7 @@ std::future<PlainTransport*> Router::createPlainTransport(
 	}
 	else
 	{
-		throw new TypeError("wrong listenIp");
+		MSC_THROW_ERROR("wrong listenIp");
 	}
 
 	json internal = this->_internal;
@@ -417,9 +417,9 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	MSC_DEBUG("createPipeTransport()");
 
 	if (!listenIp)
-		throw new TypeError("missing listenIp");
+		MSC_THROW_ERROR("missing listenIp");
 	else if (!appData.is_null() && !appData.is_object())
-		throw new TypeError("if given, appData must be an object");
+		MSC_THROW_ERROR("if given, appData must be an object");
 
 	// 		if (typeof listenIp == "std::string" && listenIp)
 	// 		{
@@ -435,7 +435,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	// 		}
 	// 		else
 	// 		{
-	// 			throw new TypeError("wrong listenIp");
+	// 			MSC_THROW_ERROR("wrong listenIp");
 	// 		}
 
 	json internal = this->_internal;
@@ -569,13 +569,13 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	  // 	): Promise<PipeToRouterResult>
 	  // 	{
 	  // 		if (!producerId && !dataProducerId)
-	  // 			throw new TypeError("missing producerId or dataProducerId");
+	  // 			MSC_THROW_ERROR("missing producerId or dataProducerId");
 	  // 		else if (producerId && dataProducerId)
-	  // 			throw new TypeError("just producerId or dataProducerId can be given");
+	  // 			MSC_THROW_ERROR("just producerId or dataProducerId can be given");
 	  // 		else if (!router)
-	  // 			throw new TypeError("Router not found");
+	  // 			MSC_THROW_ERROR("Router not found");
 	  // 		else if (router == this)
-	  // 			throw new TypeError("cannot use this Router as destination");
+	  // 			MSC_THROW_ERROR("cannot use this Router as destination");
 	  // 
 	  // 		let producer: Producer | undefined;
 	  // 		let dataProducer: DataProducer | undefined;
@@ -585,14 +585,14 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	  // 			producer = this->_producers.get(producerId);
 	  // 
 	  // 			if (!producer)
-	  // 				throw new TypeError("Producer not found");
+	  // 				MSC_THROW_ERROR("Producer not found");
 	  // 		}
 	  // 		else if (dataProducerId)
 	  // 		{
 	  // 			dataProducer = this->_dataProducers.get(dataProducerId);
 	  // 
 	  // 			if (!dataProducer)
-	  // 				throw new TypeError("DataProducer not found");
+	  // 				MSC_THROW_ERROR("DataProducer not found");
 	  // 		}
 	  // 
 	  // 		// Here we may have to create a new PipeTransport pair to connect source and
@@ -771,7 +771,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	  // 		}
 	  // 		else
 	  // 		{
-	  // 			throw new Error("internal error");
+	  // 			MSC_THROW_ERROR("internal error");
 	  // 		}
 	  // 	}
 
@@ -790,7 +790,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 		   // 		MSC_DEBUG("createAudioLevelObserver()");
 		   // 
 		   // 		if (!appData.is_null() && !appData.is_object())
-		   // 			throw new TypeError("if given, appData must be an object");
+		   // 			MSC_THROW_ERROR("if given, appData must be an object");
 		   // 
 		   // 		json internal = { ...this->_internal, rtpObserverId: uuidv4() };
 		   // 		json reqData = { maxEntries, threshold, interval };
