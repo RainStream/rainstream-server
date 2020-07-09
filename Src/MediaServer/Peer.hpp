@@ -31,7 +31,7 @@ namespace protoo
 			virtual void OnPeerNotify(Peer* peer, json& notification) = 0;
 		};
 	public:
-		explicit Peer(std::string peerName, protoo::WebSocketClient* transport, Listener* listener);
+		explicit Peer(std::string peerId, std::string roomId, protoo::WebSocketClient* transport, Listener* listener);
 		virtual ~Peer();
 
 	public:
@@ -44,7 +44,7 @@ namespace protoo
 		void Send(const json& message);
 // 		Defer send(std::string method, json data);
 		void notify(std::string method, json& data);
-		std::future<json> request(std::string method, json& data);
+		std::future<void> request(std::string method, json& data);
 
 		struct Data
 		{
@@ -65,20 +65,18 @@ namespace protoo
 		} data;
 
 	protected:
-		virtual void onMessage(const std::string& message);
 		virtual void OnClosed(int code, const std::string& message);
 
 
 	private:
-		std::string _peerName;
+		std::string _peerId;
+		std::string _roomId;
 
 		Listener* listener{ nullptr };
 		WebSocketClient* _transport{ nullptr };
 
 		// Closed flag.
 		bool _closed = false;
-
-		std::unordered_map<uint32_t, std::promise<json> > _sents;
 	};
 }
 

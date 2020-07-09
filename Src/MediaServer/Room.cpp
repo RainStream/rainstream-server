@@ -105,7 +105,7 @@ std::future<void> Room::handleProtooRequest(protoo::WebSocketClient* transport, 
 		// Create a new protoo Peer with the given peerId.
 		try
 		{
-			peer = new protoo::Peer(peerId, transport, this);
+			peer = new protoo::Peer(peerId, this->_roomId ,transport, this);
 			this->_peers.insert(std::make_pair(peerId, peer));
 		}
 		catch (std::exception& error)
