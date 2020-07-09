@@ -318,8 +318,6 @@ std::future<Producer*> Transport::produce(
 			this->_cnameForProducers = uuidv4().substr(0, 8);
 		}
 
-		MSC_DEBUG("this->_cnameForProducers:%s" , this->_cnameForProducers.c_str());
-
 		// Override Producer"s CNAME.
 		rtpParameters["rtcp"] = rtpParameters.value("rtcp", json::object());
 		rtpParameters["rtcp"]["cname"] = this->_cnameForProducers;

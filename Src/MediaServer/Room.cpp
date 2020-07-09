@@ -119,8 +119,26 @@ std::future<void> Room::handleProtooRequest(protoo::WebSocketClient* transport, 
 		peer->data.consume = true;
 		peer->data.joined = false;
 
-
 		request->Accept(this->_mediasoupRouter->rtpCapabilities());
+	}
+	else if(method == "peerClose")
+	{
+		if (this->_peers.count(peerId))
+		{
+			protoo::Peer* existingPeer = this->_peers.at(peerId);
+
+			MSC_WARN(
+				"handleProtooConnection() | there is already a protoo Peer with same peerId, closing it [peerId:%s]",
+				peerId.c_str());
+
+			existingPeer->close();
+
+			request->Accept(json::object());
+		}
+		else
+		{
+			request->Reject(500, "peer not exist!");
+		}
 	}
 	else
 	{
@@ -130,9 +148,9 @@ std::future<void> Room::handleProtooRequest(protoo::WebSocketClient* transport, 
 
 			co_await _handleProtooRequest(peer, request);
 		}
-		catch (const std::exception&)
+		catch (const std::exception& error)
 		{
-
+			request->Reject(500, error.what());
 		}
 	}
 
@@ -143,7 +161,7 @@ std::future<void> Room::handleProtooRequest(protoo::WebSocketClient* transport, 
 // 		if (this->_closed)
 // 			return;
 // 
-// 		MSC_DEBUG("protoo Peer \"close\" event [peerId:%s]", peer->id().c_str());
+// 		MSC_DEBUG("protoo Peer 'close' event [peerId:%s]", peer->id().c_str());
 // 
 // 		// If the Peer was joined, notify all Peers.
 // 		if (peer->data.joined)
@@ -323,13 +341,13 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		transport->on("sctpstatechange", [=](std::string sctpState)
 		{
-			MSC_DEBUG("WebRtcTransport \"sctpstatechange\" event [sctpState:%s]", sctpState.c_str());
+			MSC_DEBUG("WebRtcTransport 'sctpstatechange' event [sctpState:%s]", sctpState.c_str());
 		});
 
 		transport->on("dtlsstatechange", [=](std::string dtlsState)
 		{
 			if (dtlsState == "failed" || dtlsState == "closed")
-				MSC_WARN("WebRtcTransport \"dtlsstatechange\" event [dtlsState:%s]", dtlsState.c_str());
+				MSC_WARN("WebRtcTransport 'dtlsstatechange' event [dtlsState:%s]", dtlsState.c_str());
 		});
 
 		// NOTE: For testing.
@@ -339,7 +357,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		transport->on("trace", [=](json &trace)
 		{
 			MSC_DEBUG(
-				"transport \"trace\" event [transportId:%s, trace.type:%s, trace:%s]",
+				"transport 'trace' event [transportId:%s, trace.type:%s, trace:%s]",
 				transport->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
 
 			if (trace["type"] == "bwe" && trace["direction"] == "out")
@@ -392,7 +410,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		json dtlsParameters = data["dtlsParameters"];
 
 		if (!peer->data.transports.count(transportId))
-			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
+			MSC_THROW_ERROR("transport with id '%s' not found", transportId.c_str());
 
 		Transport* transport = peer->data.transports.at(transportId);
 
@@ -405,7 +423,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string transportId = data["transportId"];
 
 		if (!peer->data.transports.count(transportId))
-			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
+			MSC_THROW_ERROR("transport with id '%s' not found", transportId.c_str());
 
 		WebRtcTransport* transport = dynamic_cast<WebRtcTransport*>(peer->data.transports.at(transportId));
 
@@ -425,7 +443,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		json appData = data["appData"];
 
 		if (!peer->data.transports.count(transportId))
-			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
+			MSC_THROW_ERROR("transport with id '%s' not found", transportId.c_str());
 
 		Transport* transport = peer->data.transports.at(transportId);
 
@@ -460,7 +478,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		producer->on("videoorientationchange", [=](json videoOrientation)
 		{
 			MSC_DEBUG(
-				"producer \"videoorientationchange\" event [producerId:%s, videoOrientation:%s]",
+				"producer 'videoorientationchange' event [producerId:%s, videoOrientation:%s]",
 				producer->id().c_str(), videoOrientation.dump().c_str());
 		});
 
@@ -472,7 +490,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		producer->on("trace", [=](json trace)
 		{
 			MSC_DEBUG(
-				"producer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
+				"producer 'trace' event [producerId:%s, trace.type:%s, trace:%s]",
 				producer->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
 		});
 
@@ -508,7 +526,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string producerId = data["producerId"];
 
 		if (!peer->data.producers.count(producerId))
-			MSC_THROW_ERROR("producer with id \"%s\" not found", producerId.c_str());
+			MSC_THROW_ERROR("producer with id '%s' not found", producerId.c_str());
 
 		Producer* producer = peer->data.producers.at(producerId);
 
@@ -528,7 +546,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string producerId = data["producerId"];
 
 		if (!peer->data.producers.count(producerId))
-			MSC_THROW_ERROR("producer with id \"%s\" not found", producerId.c_str());
+			MSC_THROW_ERROR("producer with id '%s' not found", producerId.c_str());
 
 		Producer* producer = peer->data.producers.at(producerId);
 
@@ -545,7 +563,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string producerId = data["producerId"];
 
 		if (!peer->data.producers.count(producerId))
-			MSC_THROW_ERROR("producer with id \"%s\" not found", producerId.c_str());
+			MSC_THROW_ERROR("producer with id '%s' not found", producerId.c_str());
 
 		Producer* producer = peer->data.producers.at(producerId);
 
@@ -562,7 +580,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string consumerId = data["consumerId"];		
 
 		if (!peer->data.consumers.count(consumerId))
-			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
+			MSC_THROW_ERROR("consumer with id '%s' not found", consumerId.c_str());
 
 		Consumer* consumer = peer->data.consumers.at(consumerId);
 
@@ -579,7 +597,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string consumerId = data["consumerId"];
 
 		if (!peer->data.consumers.count(consumerId))
-			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
+			MSC_THROW_ERROR("consumer with id '%s' not found", consumerId.c_str());
 
 		Consumer* consumer = peer->data.consumers.at(consumerId);
 
@@ -598,7 +616,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string consumerId = data["consumerId"];
 
 		if (!peer->data.consumers.count(consumerId))
-			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
+			MSC_THROW_ERROR("consumer with id '%s' not found", consumerId.c_str());
 
 		Consumer* consumer = peer->data.consumers.at(consumerId);
 
@@ -616,7 +634,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string consumerId = data["consumerId"];
 
 		if (!peer->data.consumers.count(consumerId))
-			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
+			MSC_THROW_ERROR("consumer with id '%s' not found", consumerId.c_str());
 
 		Consumer* consumer = peer->data.consumers.at(consumerId);
 
@@ -633,7 +651,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string consumerId = data["consumerId"];
 
 		if (!peer->data.consumers.count(consumerId))
-			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
+			MSC_THROW_ERROR("consumer with id '%s' not found", consumerId.c_str());
 
 		Consumer* consumer = peer->data.consumers.at(consumerId);
 
@@ -659,7 +677,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		const transport = peer->data.transports.get(transportId);
 
 		if (!transport)
-			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
+			MSC_THROW_ERROR("transport with id '%s' not found", transportId.c_str());
 
 		const dataProducer = co_await transport->produceData(
 			{
@@ -739,7 +757,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string transportId = data["transportId"];		
 
 		if (!peer->data.transports.count(transportId))
-			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
+			MSC_THROW_ERROR("transport with id '%s' not found", transportId.c_str());
 
 		Transport* transport = peer->data.transports.at(transportId);
 
@@ -752,7 +770,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string producerId = data["producerId"];
 
 		if (!peer->data.producers.count(producerId))
-			MSC_THROW_ERROR("producer with id \"%s\" not found", producerId.c_str());
+			MSC_THROW_ERROR("producer with id '%s' not found", producerId.c_str());
 
 		Producer* producer = peer->data.producers.at(producerId);
 
@@ -765,7 +783,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		std::string consumerId = data["consumerId"];
 
 		if (!peer->data.consumers.count(consumerId))
-			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
+			MSC_THROW_ERROR("consumer with id '%s' not found", consumerId.c_str());
 
 		Consumer* consumer = peer->data.consumers.at(consumerId);
 
@@ -866,9 +884,9 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 	*/
 	else
 	{
-		MSC_ERROR("unknown request.method \"%s\"", method.c_str());
+		MSC_ERROR("unknown request.method '%s'", method.c_str());
 
-		request->Reject(500, utils::Printf("unknown request.method \"%s\"",
+		request->Reject(500, utils::Printf("unknown request.method '%s'",
 			request->method.c_str()));
 	}
 }
@@ -1041,7 +1059,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	consumer->on("trace", [=](json& trace)
 	{
 		MSC_DEBUG(
-			"consumer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
+			"consumer 'trace' event [producerId:%s, trace.type:%s, trace:%s]",
 			consumer->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
 	});
 
@@ -1089,6 +1107,10 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 
 void Room::OnPeerClose(protoo::Peer* peer)
 {
+	if (this->_peers.count(peer->id()))
+	{
+		this->_peers.erase(peer->id());
+	}
 	// 	DLOG(INFO) << "protoo Peer "close" event [peer:" << peer->id() << "]";
 	// 
 	// 	rs::Peer* mediaPeer = peer->mediaPeer();
@@ -1117,7 +1139,7 @@ void Room::OnPeerClose(protoo::Peer* peer)
 void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
 {
 	MSC_DEBUG(
-		"protoo Peer \"request\" event [method:%s, peerId:%s]",
+		"protoo Peer 'request' event [method:%s, peerId:%s]",
 		request->method.c_str(), peer->id().c_str());
 
 	try

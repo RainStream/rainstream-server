@@ -51,6 +51,8 @@ namespace protoo
 
 		// Emit 'close' event.
 		this->listener->OnPeerClose(this);
+
+		delete this;
 	}
 
 // 	void Peer::Accept(uint32_t id, json& data)
