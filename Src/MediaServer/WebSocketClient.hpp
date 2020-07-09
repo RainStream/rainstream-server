@@ -25,12 +25,14 @@ namespace protoo
 		std::string url() const;
 		std::string addresss() const;
 
-		void request(std::string method, const json& data = json::object());
+		
 
 	public:
 		void Close(int code = 1000, std::string message = std::string());
 		bool closed();
 		void Send(const json& data);
+		void Register(std::string method, const json& data);
+		std::future<json> request(std::string peerId, std::string roomId, std::string method, const json& request = json::object());
 
 	protected:
 		void setUserData(void* userData);
@@ -52,6 +54,8 @@ namespace protoo
 		bool _closed = false;
 
 		uint32_t _nextId;
+
+		std::unordered_map<uint32_t, std::promise<json> > _sents;
 	};
 }
 

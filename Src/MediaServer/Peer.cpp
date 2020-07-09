@@ -179,19 +179,9 @@ namespace protoo
 		this->_transport->Send(notification);
 	}
 
-	std::future<void> Peer::request(std::string method, json& data)
+	std::future<json> Peer::request(std::string method, json& data)
 	{
-		json request = Message::createRequest(method, data);
-		request["roomId"] = _roomId;
-		request["peerId"] = _peerId;
-
-		uint32_t id = request["id"];
-
-		MSC_DEBUG("request() [method:%s, id:%d]", method.c_str(), id);
-
-		this->_transport->Send(request);
-
-		co_return;
+		return this->_transport->request(_peerId, _roomId, method, data);
 	}
 
 	void Peer::OnClosed(int code, const std::string& message)

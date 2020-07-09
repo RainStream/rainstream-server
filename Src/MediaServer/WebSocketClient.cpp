@@ -2,6 +2,7 @@
 
 #include "WebSocketClient.hpp"
 #include "Logger.hpp"
+#include "Message.hpp"
 #include "Utils.hpp"
 #include <errors.hpp>
 #include "Request.hpp"
@@ -79,7 +80,16 @@ namespace protoo
 		return _address;
 	}
 
-	void WebSocketClient::request(std::string method, const json& data)
+	void WebSocketClient::Register(std::string method, const json& data)
+	{
+		json request = Message::createRequest(method, data);
+
+		MSC_DEBUG("Register() [method:%s]", method.c_str());
+
+		this->Send(request);
+	}
+
+	std::future<json> WebSocketClient::request(std::string peerId, std::string roomId, std::string method, const json& data)
 	{
 		this->_nextId < 4294967295 ? ++this->_nextId : (this->_nextId = 1);
 
@@ -91,13 +101,20 @@ namespace protoo
 			throw new InvalidStateError("Channel closed");
 
 		json request = {
-			{ "request",true },
-			{ "id",id },
+			{ "request", true },
+			{ "id", id },
 			{ "method", method },
+			{ "peerId", peerId },
+			{ "roomId", roomId },
 			{ "data", data }
 		};
 
 		this->Send(request);
+
+		std::promise<json> promise;
+		this->_sents.insert(std::make_pair(id, std::move(promise)));
+
+		return this->_sents[id].get_future();
 	}
 
 	void WebSocketClient::setUserData(void* userData)
@@ -154,24 +171,24 @@ namespace protoo
 	{
 		uint32_t id = response["id"].get<uint32_t>();
 
-// 		if (!this->_sents.count(id))
-// 		{
-// 			MSC_ERROR("received response does not match any sent request [id:%d]", id);
-// 
-// 			return;
-// 		}
-// 
-// 		std::promise<json> sent = std::move(this->_sents[id]);
-// 		this->_sents.erase(id);
-// 
-// 		if (response.count("ok") && response["ok"].get<bool>())
-// 		{
-// 			sent.set_value(response["data"]);
-// 		}
-// 		else
-// 		{
-// 			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
-// 		}
+		if (!this->_sents.count(id))
+		{
+			MSC_ERROR("received response does not match any sent request [id:%d]", id);
+
+			return;
+		}
+
+		std::promise<json> sent = std::move(this->_sents[id]);
+		this->_sents.erase(id);
+
+		if (response.count("ok") && response["ok"].get<bool>())
+		{
+			sent.set_value(response["data"]);
+		}
+		else
+		{
+			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
+		}
 	}
 
 	void WebSocketClient::_handleNotification(json& notification)

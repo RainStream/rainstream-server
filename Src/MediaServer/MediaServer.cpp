@@ -155,7 +155,7 @@ void MediaServer::OnConnected(protoo::WebSocketClient* transport)
 		{ "activePeerCount", 0 },
 		{ "status", 1 }
 	};
-	transport->request("registerNode", data);
+	transport->Register("registerNode", data);
 
 	/*
 	2.reportNodeOnline
