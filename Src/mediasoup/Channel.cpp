@@ -125,6 +125,8 @@ void Channel::close()
 // 			try { this->_consumerSocket.destroy(); }
 // 			catch (error) {}
 // 		}, 200);
+
+	delete this;
 }
 
 std::future<json> Channel::request(std::string method, const json& internal, const json& data)
@@ -189,7 +191,7 @@ void Channel::_processMessage(const json& msg)
 		this->_sents.erase(id);
 
 		if (msg.value("accepted", false))
-			sent.set_value(msg["data"]);
+			sent.set_value(msg.value("data",json::object()));
 		else if (msg.value("rejected", false))
 			sent.set_exception(std::make_exception_ptr(Error(msg["reason"].get<std::string>())));
 

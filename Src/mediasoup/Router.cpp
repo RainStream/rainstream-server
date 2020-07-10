@@ -114,12 +114,12 @@ void Router::close()
 
 	}
 
-
 	// Close every Transport.
 	for (auto &[key, transport] : this->_transports)
 	{
 		transport->routerClosed();
 	}
+
 	this->_transports.clear();
 
 	// Clear the Producers map.
@@ -145,6 +145,8 @@ void Router::close()
 
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 /**
@@ -189,6 +191,8 @@ void Router::workerClosed()
 
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 /**

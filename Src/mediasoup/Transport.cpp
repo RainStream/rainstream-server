@@ -49,6 +49,11 @@ Transport::Transport(
 	this->_getDataProducerById = getDataProducerById;
 }
 
+Transport::~Transport()
+{
+
+}
+
 /**
  * Transport id.
  */

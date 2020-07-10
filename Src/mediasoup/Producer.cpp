@@ -159,6 +159,8 @@ void Producer::close()
 
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 /**
@@ -182,6 +184,8 @@ void Producer::transportClosed()
 
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 /**

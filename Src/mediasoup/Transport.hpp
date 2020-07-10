@@ -122,6 +122,8 @@ public:
 		GetDataProducerById getDataProducerById
 	);
 
+	virtual ~Transport();
+
 	/**
 	 * Transport id.
 	 */

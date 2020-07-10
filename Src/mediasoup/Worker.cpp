@@ -216,6 +216,8 @@ void Worker::close()
 
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 uint32_t Worker::pid()

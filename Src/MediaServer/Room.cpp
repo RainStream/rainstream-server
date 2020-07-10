@@ -68,16 +68,17 @@ std::string Room::id()
 
 void Room::close()
 {
-	//DLOG(INFO) << "close()");
+	MSC_DEBUG("close()");
 
 	this->_closed = true;
 
-	// Close the mediasoup Room.
-// 	if (this->_mediaRoom)
-// 		this->_mediaRoom->close();
+	// Close the mediasoup Router.
+	this->_mediasoupRouter->close();
 
 	// Emit "close" event.
-	this->listener->OnRoomClose(_roomId);
+	this->emit("close");
+
+	delete this;
 }
 
 std::future<void> Room::handleProtooRequest(protoo::WebSocketClient* transport, protoo::Request* request)
@@ -1066,7 +1067,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	// Send a protoo request to the remote Peer with Consumer parameters.
 	try
 	{
-		co_await consumerPeer->request(
+		/*co_await*/ consumerPeer->request(
 			"newConsumer",
 			json{
 				{ "peerId", producerPeer->id() },
@@ -1111,29 +1112,25 @@ void Room::OnPeerClose(protoo::Peer* peer)
 	{
 		this->_peers.erase(peer->id());
 	}
-	// 	DLOG(INFO) << "protoo Peer "close" event [peer:" << peer->id() << "]";
-	// 
-	// 	rs::Peer* mediaPeer = peer->mediaPeer();
-	// 
-	// 	if (mediaPeer && !mediaPeer->closed())
-	// 		mediaPeer->close();
+	
+	MSC_DEBUG("protoo Peer \"close\" event [peer:%s]", peer->id().c_str());
 
-		// If this is the latest peer in the room, close the room.
-		// However wait a bit (for reconnections).
-	// 				setTimeout([=]()
-	// 				{
-	// 					if (this->_mediaRoom && this->_mediaRoom->closed())
-	// 						return;
-	// 
-	// 					if (this->_mediaRoom->peers.length == 0)
-	// 					{
-	// 						DLOG(INFO) << 
-	// 							"last peer in the room left, closing the room [roomId:"%s"]",
-	// 							this->_roomId);
-	// 
-	// 						this->close();
-	// 					}
-	// 				}, 5000);
+	// Iterate and close all mediasoup Transport associated to this Peer, so all
+// its Producers and Consumers will also be closed.
+	for (auto[key, transport] : peer->data.transports)
+	{
+		transport->close();
+	}
+
+	// If this is the latest Peer in the room, close the room.
+	if (this->_peers.size() == 0)
+	{
+		MSC_DEBUG(
+			"last Peer in the room left, closing the room [roomId:%s]",
+			this->_roomId.c_str());
+
+		this->close();
+	}
 }
 
 void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
