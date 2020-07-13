@@ -356,19 +356,19 @@ void Consumer::_handleWorkerNotifications()
 	{
 		if (event == "producerclose")
 		{
-			// 				if (this->_closed)
-			// 					return;
-			// 
-			// 				this->_closed = true;
-			// 
-			// 				// Remove notification subscriptions.
-			// 				this->_channel->removeAllListeners(this->_internal["consumerId"]);
-			// 
-			// 				this->emit("@producerclose");
-			// 				this->safeEmit("producerclose");
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("close");
+			if (this->_closed)
+				return;
+
+			this->_closed = true;
+
+			// Remove notification subscriptions.
+			this->_channel->removeAllListeners(this->_internal["consumerId"]);
+
+			this->emit("@producerclose");
+			this->safeEmit("producerclose");
+
+			// Emit observer event.
+			this->_observer->safeEmit("close");
 		}
 		else if (event == "producerpause")
 		{
