@@ -172,7 +172,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MediaServer.cpp" />
-    <ClCompile Include="config.cpp" />
     <ClCompile Include="Loop.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Peer.cpp" />
@@ -187,7 +186,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MediaServer.hpp" />
-    <ClInclude Include="config.hpp" />
     <ClInclude Include="Loop.hpp" />
     <ClInclude Include="Message.hpp" />
     <ClInclude Include="Peer.hpp" />

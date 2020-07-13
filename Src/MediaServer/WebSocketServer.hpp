@@ -16,7 +16,7 @@ namespace protoo
 			virtual void OnConnected(WebSocketClient* transport) = 0;
 		};
 	public:
-		explicit WebSocketServer(json tls, Lisenter* lisenter);
+		explicit WebSocketServer(Lisenter* lisenter);
 		WebSocketServer& operator=(const WebSocketServer&) = delete;
 		WebSocketServer(const WebSocketServer&) = delete;
 
@@ -27,7 +27,6 @@ namespace protoo
 		bool Connect(std::string url);
 
 	private:
-		json tls;
 		Lisenter * lisenter{ nullptr };
 		// Closed flag.
 		bool _closed = false;

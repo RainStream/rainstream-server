@@ -12,7 +12,6 @@
     <ClCompile Include="Peer.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Loop.cpp" />
-    <ClCompile Include="config.cpp" />
     <ClCompile Include="Request.cpp" />
     <ClCompile Include="MediaServer.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -28,7 +27,6 @@
     <ClInclude Include="Peer.hpp" />
     <ClInclude Include="Message.hpp" />
     <ClInclude Include="Loop.hpp" />
-    <ClInclude Include="config.hpp" />
     <ClInclude Include="Request.hpp" />
     <ClInclude Include="MediaServer.hpp" />
     <ClInclude Include="Settings.hpp" />

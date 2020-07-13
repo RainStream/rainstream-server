@@ -13,9 +13,8 @@
 
 namespace protoo
 {
-	WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
+	WebSocketServer::WebSocketServer(Lisenter* lisenter)
 		: lisenter(lisenter)
-		, tls(tls)
 	{
 		//here must use default loop
 		auto hub = DepLibUV::GetHub();

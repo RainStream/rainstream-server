@@ -1,9 +1,9 @@
 #define MSC_CLASS "Room"
 
 #include "Room.hpp"
-#include "config.hpp"
 #include "Peer.hpp"
 #include "Request.hpp"
+#include "Settings.hpp"
 #include <Logger.hpp>
 #include <errors.hpp>
 #include <Worker.hpp>
@@ -15,6 +15,8 @@
 #include "Utils.hpp"
 #include "WebSocketClient.hpp"
 #include <math.h>
+#include <iostream>
+#include <fstream>
 
 const uint32_t MAX_BITRATE = 3000000;
 const uint32_t MIN_BITRATE = 50000;
@@ -27,6 +29,9 @@ std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId)
 
 	// Create a protoo Room instance.
 	//const protooRoom = new protoo.Room();
+	json config;
+	std::ifstream in(Settings::configuration.configFile.c_str());
+	in >> config;
 
 	// Router media codecs.
 	json mediaCodecs = config["mediasoup"]["routerOptions"]["mediaCodecs"];
@@ -321,6 +326,9 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		bool consuming = data["consuming"];
 		json sctpCapabilities = data["sctpCapabilities"];
 
+		json config;
+		std::ifstream in(Settings::configuration.configFile.c_str());
+		in >> config;
 		json webRtcTransportOptions = config["mediasoup"]["webRtcTransportOptions"];
 
 		WebRtcTransportOptions options;
@@ -1067,7 +1075,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	// Send a protoo request to the remote Peer with Consumer parameters.
 	try
 	{
-		/*co_await*/ consumerPeer->request(
+		co_await consumerPeer->request(
 			"newConsumer",
 			json{
 				{ "peerId", producerPeer->id() },

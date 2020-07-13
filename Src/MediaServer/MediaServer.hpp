@@ -46,8 +46,6 @@ protected:
 
 private:
 
-	json config;
-
 	protoo::WebSocketServer* webSocketServer = nullptr;
 
 	std::vector<Worker*> mediasoupWorkers;
