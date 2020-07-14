@@ -127,7 +127,7 @@ std::future<void> Room::handleProtooRequest(protoo::WebSocketClient* transport, 
 
 		request->Accept(this->_mediasoupRouter->rtpCapabilities());
 	}
-	else if(method == "peerClose")
+	else if(method == "peerClosed")
 	{
 		if (this->_peers.count(peerId))
 		{
