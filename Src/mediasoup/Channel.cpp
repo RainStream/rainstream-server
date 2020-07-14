@@ -60,7 +60,7 @@ Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 				MSC_ERROR("unexpected data: %s", nsPayload.c_str());
 			}
 		}
-		catch (std::exception error)
+		catch (const std::exception& error)
 		{
 			MSC_ERROR("received invalid message : %s" , error.what());
 		}

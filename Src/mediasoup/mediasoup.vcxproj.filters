@@ -75,6 +75,9 @@
     <ClCompile Include="PayloadChannel.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="EnhancedEventEmitter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="child_process\PipeStreamSocket.hpp">
@@ -119,9 +122,6 @@
     <ClInclude Include="DirectTransport.hpp">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="EnhancedEventEmitter.hpp">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="ortc.hpp">
       <Filter>include</Filter>
     </ClInclude>
@@ -162,6 +162,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="scalabilityModes.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="EnhancedEventEmitter.hpp">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

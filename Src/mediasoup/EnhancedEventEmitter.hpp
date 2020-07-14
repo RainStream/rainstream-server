@@ -9,11 +9,6 @@ class MS_EXPORT EnhancedEventEmitter : public EventEmitter
 {
 public:
 
-	EnhancedEventEmitter()
-	{
-		
-	}
-
 	template <typename ... Arg>
 	bool safeEmit(const std::string& event, Arg&& ... args)
 	{
@@ -41,10 +36,4 @@ public:
 // 		));
 // 	}
 
-	void removeAllListeners(std::string event)
-	{
-		std::unique_lock<std::mutex> locker(_events_mtx);
-
-		events.erase(event);
-	}
 };

@@ -133,9 +133,7 @@ std::future<void> Room::handleProtooRequest(protoo::WebSocketClient* transport, 
 		{
 			protoo::Peer* existingPeer = this->_peers.at(peerId);
 
-			MSC_WARN(
-				"handleProtooConnection() | there is already a protoo Peer with same peerId, closing it [peerId:%s]",
-				peerId.c_str());
+			MSC_DEBUG("protoo Peer \"close\" event [peerId:%s]", peerId.c_str());
 
 			existingPeer->close();
 

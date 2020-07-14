@@ -1,4 +1,4 @@
-﻿//
+//
 //  EventEmitter.hpp
 //  EventEmitter
 //
@@ -48,7 +48,7 @@ public:
      */
     template <typename Function>
     void on(const std::string& event, Function&& lambda) {
-        std::unique_lock<std::mutex> locker(_events_mtx);
+        std::unique_lock<std::recursive_mutex> locker(_events_mtx);
         events[event].emplace_back(new Functor{std::forward<Function>(lambda)}, false);
     }
     
@@ -60,7 +60,7 @@ public:
      */
     template <typename Function>
     void once(const std::string& event, Function&& lambda) {
-        std::unique_lock<std::mutex> locker(_events_mtx);
+        std::unique_lock<std::recursive_mutex> locker(_events_mtx);
         events[event].emplace_back(new Functor{std::forward<Function>(lambda)}, true);
     }
     
@@ -71,8 +71,8 @@ public:
      */
     template <typename ... Arg>
     void emit(const std::string& event, Arg&& ... args) {
-        std::unique_lock<std::mutex> locker(_events_mtx);
-        std::vector<EventListener>& listeners = events[event];
+        std::unique_lock<std::recursive_mutex> locker(_events_mtx);
+        std::vector<EventListener> listeners = events[event];
         std::vector<std::vector<EventListener>::iterator> once_listener;
         for (auto listener = listeners.begin(); listener != listeners.end(); listener++) {
             Functor * on = std::get<0>(*listener);
@@ -90,6 +90,12 @@ public:
             listeners.erase(iterator);
         });
         listeners.shrink_to_fit();
+
+		//may event has been removed
+		if (events.count(event))
+		{
+			events[event] = listeners;
+		}
     }
     
     /**
@@ -98,11 +104,19 @@ public:
      *  @param event  Event name
      */
     size_t listener_count(const std::string& event) {
-        std::unique_lock<std::mutex> locker(_events_mtx);
+        std::unique_lock<std::recursive_mutex> locker(_events_mtx);
         auto event_listeners = events.find(event);
         if (event_listeners == events.end()) return 0;
-        return events[event].size();;
+        return events[event].size();
     }
+
+	void removeAllListeners(std::string event)
+	{
+		std::unique_lock<std::recursive_mutex> locker(_events_mtx);
+
+		events.erase(event);
+	}
+
     
 protected:
     /**
@@ -120,7 +134,7 @@ protected:
     /**
      *  @brief Mutex for events
      */
-    std::mutex _events_mtx;
+	std::recursive_mutex _events_mtx;
 };
 
 #endif /* EVENTEMITTER_HPP */

@@ -109,9 +109,6 @@ void MediaServer::OnConnected(protoo::WebSocketClient* transport)
 
 std::future<void> MediaServer::OnRequest(protoo::WebSocketClient* transport, protoo::Request* request)
 {
-	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
-		request->peerId.c_str(), request->roomId.c_str());
-
 	Room* room = co_await getOrCreateRoom(request->roomId);
 	co_await room->handleProtooRequest(transport, request);
 
@@ -145,7 +142,7 @@ std::future<void> MediaServer::connectionrequest(protoo::WebSocketClient* transp
 // 	Room* room = co_await getOrCreateRoom(roomId);
 // 	room->handleConnection(peerId, true, transport);
 // 
-// 	co_return;
+ 	co_return;
 }
 
 void MediaServer::runMediasoupWorkers()

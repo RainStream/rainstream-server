@@ -125,17 +125,19 @@ void Transport::close()
 	}
 
 	// Close every Producer.
-	for (auto &[key, producer] : this->_producers)
+	auto producers = this->_producers;
+	for (auto &[key, producer] : producers)
 	{
-		producer->transportClosed();
-
 		// Must tell the Router.
 		this->emit("@producerclose", producer);
+
+		producer->transportClosed();
 	}
 	this->_producers.clear();
 
 	// Close every Consumer.
-	for (auto &[key, consumer] : this->_consumers)
+	auto consumers = this->_consumers;
+	for (auto &[key, consumer] : consumers)
 	{
 		consumer->transportClosed();
 	}

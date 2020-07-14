@@ -362,7 +362,7 @@ void Consumer::_handleWorkerNotifications()
 			this->_closed = true;
 
 			// Remove notification subscriptions.
-			this->_channel->removeAllListeners(this->_internal["consumerId"]);
+			this->_channel->removeAllListeners(this->_internal["consumerId"].get<std::string>());
 
 			this->emit("@producerclose");
 			this->safeEmit("producerclose");

@@ -34,10 +34,10 @@ WebRtcTransport::WebRtcTransport(const json& internal,
 		{ "iceParameters"    , data["iceParameters"] },
 		{ "iceCandidates"    , data["iceCandidates"] },
 		{ "iceState"         , data["iceState"] },
-		{ "iceSelectedTuple" , data["iceSelectedTuple"] },
+		{ "iceSelectedTuple" , data.value("iceSelectedTuple",json()) },
 		{ "dtlsParameters"   , data["dtlsParameters"] },
 		{ "dtlsState"        , data["dtlsState"] },
-		{ "dtlsRemoteCert"   , data["dtlsRemoteCert"] },
+		{ "dtlsRemoteCert"   , data.value("dtlsRemoteCert","") },
 		{ "sctpParameters"   , data["sctpParameters"] },
 		{ "sctpState"        , data["sctpState"] }
 	};
@@ -257,29 +257,29 @@ void WebRtcTransport::_handleWorkerNotifications()
 		}
 		else if (event == "iceselectedtuplechange")
 		{
-			// 				const iceSelectedTuple = data.iceSelectedTuple as TransportTuple;
-			// 
-			// 				this->_data.iceSelectedTuple = iceSelectedTuple;
-			// 
-			// 				this->safeEmit("iceselectedtuplechange", iceSelectedTuple);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("iceselectedtuplechange", iceSelectedTuple);
+			const json& iceSelectedTuple = data["iceSelectedTuple"];
+
+			this->_data["iceSelectedTuple"] = iceSelectedTuple;
+
+			this->safeEmit("iceselectedtuplechange", iceSelectedTuple);
+
+			// Emit observer event.
+			this->_observer->safeEmit("iceselectedtuplechange", iceSelectedTuple);
 		}
 		else if (event == "dtlsstatechange")
 		{
-			// 				const dtlsState = data.dtlsState as DtlsState;
-			// 				const dtlsRemoteCert = data.dtlsRemoteCert as string;
-			// 
-			// 				this->_data.dtlsState = dtlsState;
-			// 
-			// 				if (dtlsState == "connected")
-			// 					this->_data.dtlsRemoteCert = dtlsRemoteCert;
-			// 
-			// 				this->safeEmit("dtlsstatechange", dtlsState);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("dtlsstatechange", dtlsState);
+			std::string dtlsState = data["dtlsState"];
+			std::string dtlsRemoteCert = data.value("dtlsRemoteCert","");
+
+			this->_data["dtlsState"] = dtlsState;
+
+			if (dtlsState == "connected")
+				this->_data["dtlsRemoteCert"] = dtlsRemoteCert;
+
+			this->safeEmit("dtlsstatechange", dtlsState);
+
+			// Emit observer event.
+			this->_observer->safeEmit("dtlsstatechange", dtlsState);
 		}
 		else if (event == "sctpstatechange")
 		{
