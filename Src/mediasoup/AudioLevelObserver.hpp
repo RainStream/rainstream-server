@@ -79,7 +79,7 @@ public:
 private:
 	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal.value("rtpObserverId",""), [=](std::string event, json data)
+		this->_channel->on(this->_internal.value("rtpObserverId",""), [=](std::string event, const json& data)
 		{
 		
 			if(event == "volumes")

@@ -238,27 +238,27 @@ std::future<Consumer*> PipeTransport::consume(ConsumerOptions& options)
 
 void PipeTransport::_handleWorkerNotifications()
 {
-	this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
+	this->_channel->on(this->_internal["transportId"], [=](std::string event, const json& data)
 	{
 		if (event == "sctpstatechange")
 		{
-			// 				const sctpState = data.sctpState as SctpState;
-			// 
-			// 				this->_data.sctpState = sctpState;
-			// 
-			// 				this->safeEmit("sctpstatechange", sctpState);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("sctpstatechange", sctpState);
+			std::string sctpState = data["sctpState"];
+
+			this->_data["sctpState"] = sctpState;
+
+			this->safeEmit("sctpstatechange", sctpState);
+
+			// Emit observer event.
+			this->_observer->safeEmit("sctpstatechange", sctpState);
 		}
 		else if (event == "trace")
 		{
-			// 				const trace = data as TransportTraceEventData;
-			// 
-			// 				this->safeEmit("trace", trace);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("trace", trace);
+			const json& trace = data;
+
+			this->safeEmit("trace", trace);
+
+			// Emit observer event.
+			this->_observer->safeEmit("trace", trace);
 		}
 		else
 		{

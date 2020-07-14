@@ -242,18 +242,18 @@ std::future<json> WebRtcTransport::restartIce()
 
 void WebRtcTransport::_handleWorkerNotifications()
 {
-	this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
+	this->_channel->on(this->_internal["transportId"], [=](std::string event, const json& data)
 	{
 		if (event == "icestatechange")
 		{
-			// 				const iceState = data.iceState as IceState;
-			// 
-			// 				this->_data.iceState = iceState;
-			// 
-			// 				this->safeEmit("icestatechange", iceState);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("icestatechange", iceState);
+			const json& iceState = data["iceState"];
+
+			this->_data["iceState"] = iceState;
+
+			this->safeEmit("icestatechange", iceState);
+
+			// Emit observer event.
+			this->_observer->safeEmit("icestatechange", iceState);
 		}
 		else if (event == "iceselectedtuplechange")
 		{
@@ -283,23 +283,23 @@ void WebRtcTransport::_handleWorkerNotifications()
 		}
 		else if (event == "sctpstatechange")
 		{
-			// 				const sctpState = data.sctpState as SctpState;
-			// 
-			// 				this->_data.sctpState = sctpState;
-			// 
-			// 				this->safeEmit("sctpstatechange", sctpState);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("sctpstatechange", sctpState);
+			std::string sctpState = data["sctpState"];
+
+			this->_data["sctpState"] = sctpState;
+
+			this->safeEmit("sctpstatechange", sctpState);
+
+			// Emit observer event.
+			this->_observer->safeEmit("sctpstatechange", sctpState);
 		}
 		else if (event == "trace")
 		{
-			// 				const trace = data as TransportTraceEventData;
-			// 
-			// 				this->safeEmit("trace", trace);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("trace", trace);
+			const json& trace = data;
+
+			this->safeEmit("trace", trace);
+
+			// Emit observer event.
+			this->_observer->safeEmit("trace", trace);
 		}
 		else
 		{

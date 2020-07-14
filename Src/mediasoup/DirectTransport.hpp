@@ -184,7 +184,7 @@ public:
 private:
 	void _handleWorkerNotifications()
 	{
-		this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
+		this->_channel->on(this->_internal["transportId"], [=](std::string event, const json& data)
 		{
 			if (event == "trace")
 			{

@@ -273,7 +273,7 @@ private:
 
 	private _handleWorkerNotifications(): void
 	{
-		this->_channel->on(this->_internal["dataConsumerId"], [=](std::string event)
+		this->_channel->on(this->_internal["dataConsumerId"], [=](std::string event, const json& data)
 		{	
 			if(event == "dataproducerclose")
 			{

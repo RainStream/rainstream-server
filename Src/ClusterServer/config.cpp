@@ -77,7 +77,7 @@ R"(
 			[
 				{
 					"ip"          : "0.0.0.0",
-					"announcedIp" : "192.168.0.100"
+					"announcedIp" : "192.168.0.101"
 				}
 			],
 			"initialAvailableOutgoingBitrate" : 1000000,
@@ -91,7 +91,7 @@ R"(
 			"listenIp" :
 			{
 				"ip"          : "0.0.0.0",
-				"announcedIp" : "192.168.0.100"
+				"announcedIp" : "192.168.0.101"
 			},
 			"maxSctpMessageSize" : 262144
 		}

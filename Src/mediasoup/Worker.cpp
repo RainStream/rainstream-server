@@ -85,7 +85,7 @@ Worker::Worker(json settings)
 	bool spawnDone = false;
 
 	// Listen for "running" notification.
-	this->_channel->once(std::to_string(this->_pid), [&](std::string event, json data)
+	this->_channel->once(std::to_string(this->_pid), [&](std::string event, const json& data)
 	{
 		if (!spawnDone && event == "running")
 		{

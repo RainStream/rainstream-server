@@ -95,7 +95,7 @@ bool Producer::paused()
 /**
  * Producer score list.
  */
-std::vector<ProducerScore> Producer::score()
+json Producer::score()
 {
 	return this->_score;
 }
@@ -264,36 +264,36 @@ std::future<void> Producer::enableTraceEvent(std::vector<ProducerTraceEventType>
 
 void Producer::_handleWorkerNotifications()
 {
-	this->_channel->on(this->_internal["producerId"].get<std::string>(), [=](std::string event, json& data = json::object())
+	this->_channel->on(this->_internal["producerId"].get<std::string>(), [=](std::string event, json& data)
 	{
 		if (event == "score")
 		{
-			// 				const score = data as ProducerScore[];
-			// 
-			// 				this->_score = score;
-			// 
-			// 				this->safeEmit("score", score);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("score", score);
+			const json& score = data;
+
+			this->_score = score;
+
+			this->safeEmit("score", score);
+
+			// Emit observer event.
+			this->_observer->safeEmit("score", score);
 		}
 		else if (event == "videoorientationchange")
 		{
-			// 				const videoOrientation = data as ProducerVideoOrientation;
-			// 
-			// 				this->safeEmit("videoorientationchange", videoOrientation);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("videoorientationchange", videoOrientation);
+			const json& videoOrientation = data;
+
+			this->safeEmit("videoorientationchange", videoOrientation);
+
+			// Emit observer event.
+			this->_observer->safeEmit("videoorientationchange", videoOrientation);
 		}
 		else if (event == "trace")
 		{
-			// 				const trace = data as ProducerTraceEventData;
-			// 
-			// 				this->safeEmit("trace", trace);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("trace", trace);
+			const json& trace = data;
+
+			this->safeEmit("trace", trace);
+
+			// Emit observer event.
+			this->_observer->safeEmit("trace", trace);
 		}
 		else
 		{

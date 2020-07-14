@@ -197,7 +197,7 @@ public:
 	/**
 	 * Producer score list.
 	 */
-	std::vector<ProducerScore> score();
+	json score();
 
 	/**
 	 * App custom data.
@@ -281,7 +281,7 @@ private:
 		bool _paused = false;
 
 		// Current score.
-		std::vector<ProducerScore> _score;
+		json _score;
 
 		// Observer instance.
 		EnhancedEventEmitter* _observer = new EnhancedEventEmitter();

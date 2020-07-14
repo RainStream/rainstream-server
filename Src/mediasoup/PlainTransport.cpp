@@ -188,49 +188,49 @@ std::future<void> PlainTransport::connect(
 
 void PlainTransport::_handleWorkerNotifications()
 {
-	this->_channel->on(this->_internal["transportId"], [=](std::string event, json data)
+	this->_channel->on(this->_internal["transportId"], [=](std::string event, const json& data)
 	{
 		if (event == "tuple")
 		{
-			// 				const tuple = data.tuple as TransportTuple;
-			// 
-			// 				this->_data.tuple = tuple;
-			// 
-			// 				this->safeEmit("tuple", tuple);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("tuple", tuple);
+			const json& tuple = data["tuple"];
+
+			this->_data["tuple"] = tuple;
+
+			this->safeEmit("tuple", tuple);
+
+			// Emit observer event.
+			this->_observer->safeEmit("tuple", tuple);
 		}
 		else if (event == "rtcptuple")
 		{
-			// 				const rtcpTuple = data.rtcpTuple as TransportTuple;
-			// 
-			// 				this->_data.rtcpTuple = rtcpTuple;
-			// 
-			// 				this->safeEmit("rtcptuple", rtcpTuple);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("rtcptuple", rtcpTuple);
+			const json& rtcpTuple = data["rtcpTuple"];
+
+			this->_data["rtcpTuple"] = rtcpTuple;
+
+			this->safeEmit("rtcptuple", rtcpTuple);
+
+			// Emit observer event.
+			this->_observer->safeEmit("rtcptuple", rtcpTuple);
 		}
 		else if (event == "sctpstatechange")
 		{
-			// 				const sctpState = data.sctpState as SctpState;
-			// 
-			// 				this->_data.sctpState = sctpState;
-			// 
-			// 				this->safeEmit("sctpstatechange", sctpState);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("sctpstatechange", sctpState);
+			std::string sctpState = data["sctpState"];
+
+			this->_data["sctpState"] = sctpState;
+
+			this->safeEmit("sctpstatechange", sctpState);
+
+			// Emit observer event.
+			this->_observer->safeEmit("sctpstatechange", sctpState);
 		}
 		else if (event == "trace")
 		{
-			// 				const trace = data as TransportTraceEventData;
-			// 
-			// 				this->safeEmit("trace", trace);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("trace", trace);
+			const json& trace = data;
+
+			this->safeEmit("trace", trace);
+
+			// Emit observer event.
+			this->_observer->safeEmit("trace", trace);
 		}
 		else
 		{

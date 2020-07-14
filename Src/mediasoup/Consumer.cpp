@@ -352,7 +352,7 @@ std::future<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType>
 
 void Consumer::_handleWorkerNotifications()
 {
-	this->_channel->on(this->_internal["consumerId"], [=](std::string event, json data)
+	this->_channel->on(this->_internal["consumerId"], [=](std::string event, const json& data)
 	{
 		if (event == "producerclose")
 		{
@@ -372,64 +372,62 @@ void Consumer::_handleWorkerNotifications()
 		}
 		else if (event == "producerpause")
 		{
-			// 				if (this->_producerPaused)
-			// 					break;
-			// 
-			// 				bool wasPaused = this->_paused || this->_producerPaused;
-			// 
-			// 				this->_producerPaused = true;
-			// 
-			// 				this->safeEmit("producerpause");
-			// 
-			// 				// Emit observer event.
-			// 				if (!wasPaused)
-			// 					this->_observer->safeEmit("pause");
+			if (this->_producerPaused)
+				return;
+
+			bool wasPaused = (this->_paused || this->_producerPaused);
+
+			this->_producerPaused = true;
+
+			this->safeEmit("producerpause");
+
+			// Emit observer event.
+			if (!wasPaused)
+				this->_observer->safeEmit("pause");
 		}
 		else if (event == "producerresume")
 		{
-			// 				if (!this->_producerPaused)
-			// 					break;
-			// 
-			// 				bool wasPaused = this->_paused || this->_producerPaused;
-			// 
-			// 				this->_producerPaused = false;
-			// 
-			// 				this->safeEmit("producerresume");
-			// 
-			// 				// Emit observer event.
-			// 				if (wasPaused && !this->_paused)
-			// 					this->_observer->safeEmit("resume");
+			if (!this->_producerPaused)
+				return;
+
+			bool wasPaused = (this->_paused || this->_producerPaused);
+
+			this->_producerPaused = false;
+
+			this->safeEmit("producerresume");
+
+			// Emit observer event.
+			if (wasPaused && !this->_paused)
+				this->_observer->safeEmit("resume");
 		}
 		else if (event == "score")
 		{
-			// 				const score = data as ConsumerScore;
-			// 
-			// 				this->_score = score;
-			// 
-			// 				this->safeEmit("score", score);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("score", score);
+			this->_score = data;
+
+			this->safeEmit("score", this->_score);
+
+			// Emit observer event.
+			this->_observer->safeEmit("score", this->_score);
 		}
 		else if (event == "layerschange")
 		{
-			// 				const layers = data as ConsumerLayers | undefined;
-			// 
-			// 				this->_currentLayers = layers;
-			// 
-			// 				this->safeEmit("layerschange", layers);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("layerschange", layers);
+			ConsumerLayers layers = data;
+
+			this->_currentLayers = layers;
+
+			this->safeEmit("layerschange", layers);
+
+			// Emit observer event.
+			this->_observer->safeEmit("layerschange", layers);
 		}
 		else if (event == "trace")
 		{
-			// 				const trace = data as ConsumerTraceEventData;
-			// 
-			// 				this->safeEmit("trace", trace);
-			// 
-			// 				// Emit observer event.
-			// 				this->_observer->safeEmit("trace", trace);
+			const json& trace = data;
+
+			this->safeEmit("trace", trace);
+
+			// Emit observer event.
+			this->_observer->safeEmit("trace", trace);
 		}
 		else
 		{
