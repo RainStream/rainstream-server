@@ -299,8 +299,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 // 		{
 // 			try
 // 			{
-// 				otherPeer->notify(
-// 					"newPeer",
+// 				otherPeer->notify("newPeer",
 // 					json{
 // 						{ "id", peer->id() },
 // 						{ "displayName", peer->data.displayName },
@@ -743,8 +742,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		{
 			try
 			{
-				otherPeer->notify(
-					"peerDisplayNameChanged",
+				otherPeer->notify("peerDisplayNameChanged",
 					json{
 						{ "peerId", peer->id() },
 						{ "displayName", displayName },
@@ -1044,8 +1042,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	{
 		try
 		{
-			consumerPeer->notify(
-				"consumerLayersChanged",
+			consumerPeer->notify("consumerLayersChanged",
 				json{
 					{ "consumerId", consumer->id() },
 					{ "spatialLayer",  !layers.is_null() ? layers["spatialLayer"] : json() },
@@ -1094,8 +1091,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 
 		try
 		{
-			consumerPeer->notify(
-				"consumerScore",
+			consumerPeer->notify("consumerScore",
 				json{
 					{ "consumerId", consumer->id() },
 					{ "score", consumer->score() }

@@ -270,6 +270,8 @@ std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 
 	co_await this->_channel->request(
 		"transport.setMaxIncomingBitrate", this->_internal, reqData);
+
+	co_return;
 }
 
 /**
