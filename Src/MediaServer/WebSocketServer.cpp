@@ -4,11 +4,13 @@
 #include "WebSocketClient.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
+#include "errors.hpp"
 #include <iostream>
 #include <fstream>
 #include "DepLibUV.hpp"
 #include <uWS.h>
 
+#define RECONNECT_TIMER 10
 #define SEC_WEBSOCKET_PROTOCOL "secret-media"
 
 namespace protoo
@@ -19,19 +21,16 @@ namespace protoo
 		//here must use default loop
 		auto hub = DepLibUV::GetHub();
 
-		hub->onError([](void *user) {
-			std::cout << "FAILURE: " << user << " should not emit error!" << std::endl;
+		timer_ = new uS::Timer(hub->getLoop());
+		timer_->setData(this);
+
+		hub->onError([=](void *user) {
+			WebSocketServer * pThis = static_cast<WebSocketServer*>(user);
+			pThis->onDisConnected();
 		});
 
 		hub->onConnection([=](uWS::WebSocket<uWS::CLIENT> *ws, uWS::HttpRequest req)
 		{
-			if (req.getHeader("sec-websocket-protocol").toString() != SEC_WEBSOCKET_PROTOCOL) {
-
-				ws->close(403, "Invalid/missing Sec-WebSocket-Protocol");
-
-				return;
-			}
-
 			std::string url = req.getUrl().toString();
 
 			WebSocketClient* transport = new WebSocketClient(url);
@@ -64,23 +63,52 @@ namespace protoo
 			}
 
 			ws->setUserData(nullptr);
+
+			this->onDisConnected();
 		});
 	}
 	
 	WebSocketServer::~WebSocketServer()
 	{
-
+		timer_->close();
 	}
 
 	bool WebSocketServer::Connect(std::string url)
 	{
+		if (url.empty())
+		{
+			return false;
+		}
+
+		url_ = url;
+
+		doConnect();
+
+		return true;
+	}
+
+	void  WebSocketServer::doConnect()
+	{
+		timer_->stop();
+
 		auto hub = DepLibUV::GetHub();
 
 		std::map<std::string, std::string> extraHeaders;
 		extraHeaders.insert(std::make_pair("sec-websocket-protocol", SEC_WEBSOCKET_PROTOCOL));
 
-		hub->connect(url, (void*)this, extraHeaders);
-
-		return true;
+		hub->connect(url_, (void*)this, extraHeaders);
 	}
+
+	void  WebSocketServer::onDisConnected()
+	{
+		MSC_ERROR("connect to websocket server error! Try to reconnect after %d seconds", RECONNECT_TIMER);
+
+		timer_->start([](uS::Timer *timer)
+		{
+			WebSocketServer *pThis = static_cast<WebSocketServer*>(timer->getData());
+			pThis->doConnect();
+
+		}, RECONNECT_TIMER, RECONNECT_TIMER);
+	}
+
 }

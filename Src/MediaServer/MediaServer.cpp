@@ -63,7 +63,7 @@ MediaServer::MediaServer()
 
 MediaServer::~MediaServer()
 {
-
+	delete webSocketServer;
 }
 
 void MediaServer::OnRoomClose(std::string roomId)
