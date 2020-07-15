@@ -150,9 +150,9 @@ void Producer::close()
 	{
 		this->_channel->request("producer.close", this->_internal);
 	}
-	catch (const std::exception&)
+	catch (const std::exception& error)
 	{
-
+		MSC_ERROR("Channel::request method \"producer.close\" with error %s", error.what());
 	}
 
 	this->emit("@close");

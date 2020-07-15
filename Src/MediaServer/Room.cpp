@@ -540,7 +540,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		producer->close();
 
 		// Remove from its map.
-		peer->data.producers.erase(producer->id());
+		peer->data.producers.erase(producerId);
 
 		request->Accept(json::object());
 	}
