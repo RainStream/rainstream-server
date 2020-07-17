@@ -358,32 +358,32 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		// NOTE: For testing.
 		// co_await transport->enableTraceEvent([ "probation", "bwe" ]);
-		co_await transport->enableTraceEvent({ "bwe" });
+		 co_await transport->enableTraceEvent({ "bwe" });
 
-		transport->on("trace", [=](json &trace)
-		{
-			MSC_DEBUG(
-				"transport 'trace' event [transportId:%s, trace.type:%s, trace:%s]",
-				transport->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
-
-			if (trace["type"] == "bwe" && trace["direction"] == "out")
-			{
-				try
-				{
-					peer->notify(
-						"downlinkBwe",
-						json{
-							{ "desiredBitrate", trace["info"]["desiredBitrate"] },
-							{ "effectiveDesiredBitrate", trace["info"]["effectiveDesiredBitrate"] },
-							{ "availableBitrate", trace["info"]["availableBitrate"] }
-						});
-				}
-				catch (const std::exception&)
-				{
-
-				}
-			}
-		});
+ 		transport->on("trace", [=](json &trace)
+ 		{
+ 			MSC_DEBUG(
+ 				"transport 'trace' event [transportId:%s, trace.type:%s, trace:%s]",
+ 				transport->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
+ 
+ 			if (trace["type"] == "bwe" && trace["direction"] == "out")
+ 			{
+ 				try
+ 				{
+ 					peer->notify(
+ 						"downlinkBwe",
+ 						json{
+ 							{ "desiredBitrate", trace["info"]["desiredBitrate"] },
+ 							{ "effectiveDesiredBitrate", trace["info"]["effectiveDesiredBitrate"] },
+ 							{ "availableBitrate", trace["info"]["availableBitrate"] }
+ 						});
+ 				}
+ 				catch (const std::exception&)
+ 				{
+ 
+ 				}
+ 			}
+ 		});
 
 		// Store the WebRtcTransport into the protoo Peer data Object.
 		peer->data.transports.insert(std::make_pair(transport->id(), transport));
@@ -1045,8 +1045,8 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 			consumerPeer->notify("consumerLayersChanged",
 				json{
 					{ "consumerId", consumer->id() },
-					{ "spatialLayer",  !layers.is_null() ? layers["spatialLayer"] : json() },
-					{ "temporalLayer",  !layers.is_null() ? layers["temporalLayer"] : json() }
+					{ "spatialLayer",  !layers.is_null() ? layers["spatialLayer"] : 0 },
+					{ "temporalLayer",  !layers.is_null() ? layers["temporalLayer"] : 0 }
 				});
 		}
 		catch (const std::exception&)

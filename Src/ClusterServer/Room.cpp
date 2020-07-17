@@ -308,7 +308,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 
 		// NOTE: For testing.
 		// co_await transport->enableTraceEvent([ "probation", "bwe" ]);
-		co_await transport->enableTraceEvent({ "bwe" });
+		//co_await transport->enableTraceEvent({ "bwe" });
 
 		transport->on("trace", [=](json &trace)
 		{

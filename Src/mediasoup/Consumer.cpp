@@ -411,7 +411,7 @@ void Consumer::_handleWorkerNotifications()
 		}
 		else if (event == "layerschange")
 		{
-			ConsumerLayers layers = data;
+			const json& layers = data;
 
 			this->_currentLayers = layers;
 
