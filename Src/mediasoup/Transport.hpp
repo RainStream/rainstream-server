@@ -27,7 +27,7 @@ struct TransportTuple
 {
 	TransportTuple()
 		: localPort(0)
-		, remoteIp(0)
+		, remoteIp()
 	{
 
 	}

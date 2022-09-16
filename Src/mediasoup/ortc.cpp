@@ -45,7 +45,7 @@ namespace ortc
 	 * fields with default values.
 	 * It throws if invalid.
 	 */
-	void validateRtpCapabilities(json& caps)
+	void validateRtpCapabilities(const json& caps)
 	{
 		MSC_TRACE();
 
@@ -93,7 +93,7 @@ namespace ortc
 	 * fields with default values.
 	 * It throws if invalid.
 	 */
-	void validateRtpCodecCapability(json& codec)
+	void validateRtpCodecCapability(const json& codec)
 	{
 		MSC_TRACE();
 
@@ -1920,7 +1920,7 @@ json getConsumableRtpParameters(std::string kind, json& params, json& caps, json
 /**
  * Check whether the given RTP capabilities can consume the given Producer.
  */
-bool canConsume(json& consumableParams, json& caps)
+bool canConsume(const json& consumableParams, const json& caps)
 {
 	// This may throw.
 	validateRtpCapabilities(caps);
@@ -1929,7 +1929,7 @@ bool canConsume(json& consumableParams, json& caps)
 
 	for (auto& codec : consumableParams["codecs"])
 	{
-		json& capCodecs = caps["codecs"];
+		const  json& capCodecs = caps["codecs"];
 
 		auto matchedCapCodecIt =
 			std::find_if(capCodecs.begin(), capCodecs.end(), [&](json& capCodec) {
@@ -2137,7 +2137,7 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
  * It keeps all original consumable encodings and removes support for BWE. If
  * enableRtx is false, it also removes RTX and NACK support.
  */
-json getPipeConsumerRtpParameters(json& consumableParams, bool enableRtx/* = false*/)
+json getPipeConsumerRtpParameters(const json& consumableParams, bool enableRtx/* = false*/)
 {
 	json consumerParams =
 	{
