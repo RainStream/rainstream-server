@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props" Condition="Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\bitrate_constraints.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\network_state_predictor.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\bitrate_settings.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\field_trial_based_config.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\goog_cc_factory.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\network_control.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\network_types.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\webrtc_key_value_config.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\data_rate.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\data_size.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\frequency.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\timestamp.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\time_delta.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\call\rtp_transport_controller_send.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\call\rtp_transport_controller_send_interface.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\mediasoup_helpers.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\bitrate_controller\loss_based_bandwidth_estimation.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\bitrate_controller\send_side_bandwidth_estimation.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\acknowledged_bitrate_estimator.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\alr_detector.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\bitrate_estimator.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\congestion_window_pushback_controller.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\delay_based_bwe.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\delay_increase_detector_interface.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\goog_cc_network_control.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\link_capacity_estimator.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\median_slope_estimator.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\probe_bitrate_estimator.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\probe_controller.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\trendline_estimator.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\control_handler.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\send_time_history.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\transport_feedback_adapter.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\include\module_common_types_public.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\bitrate_prober.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\interval_budget.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\paced_sender.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\packet_router.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\aimd_rate_control.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\include\bwe_defines.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\include\remote_bitrate_estimator.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\inter_arrival.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\overuse_detector.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\overuse_estimator.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\remote_bitrate_estimator_abs_send_time.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\rtp_rtcp\include\rtp_rtcp_defines.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\rtp_rtcp\source\rtp_packet\transport_feedback.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\constructor_magic.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\alr_experiment.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\field_trial_parser.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\field_trial_units.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\rate_control_settings.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\network\sent_packet.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\percentile_filter.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\safe_compare.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\safe_conversions.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\safe_conversions_impl.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\safe_minmax.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\rate_statistics.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\system\unused.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\type_traits.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\units\unit_base.h" />
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\system_wrappers\source\field_trial.h" />
+    <ClInclude Include="include\ChannelMessageHandlers.hpp" />
+    <ClInclude Include="include\Channel\ChannelNotifier.hpp" />
+    <ClInclude Include="include\Channel\ChannelRequest.hpp" />
+    <ClInclude Include="include\Channel\ChannelSocket.hpp" />
+    <ClInclude Include="include\common.hpp" />
+    <ClInclude Include="include\DepLibSRTP.hpp" />
+    <ClInclude Include="include\DepLibUV.hpp" />
+    <ClInclude Include="include\DepLibWebRTC.hpp" />
+    <ClInclude Include="include\DepOpenSSL.hpp" />
+    <ClInclude Include="include\DepUsrSCTP.hpp" />
+    <ClInclude Include="include\handles\SignalsHandler.hpp" />
+    <ClInclude Include="include\handles\TcpConnectionHandler.hpp" />
+    <ClInclude Include="include\handles\TcpServerHandler.hpp" />
+    <ClInclude Include="include\handles\Timer.hpp" />
+    <ClInclude Include="include\handles\UdpSocketHandler.hpp" />
+    <ClInclude Include="include\handles\UnixStreamSocket.hpp" />
+    <ClInclude Include="include\lib.hpp" />
+    <ClInclude Include="include\Logger.hpp" />
+    <ClInclude Include="include\LogLevel.hpp" />
+    <ClInclude Include="include\MediaSoupErrors.hpp" />
+    <ClInclude Include="include\PayloadChannel\PayloadChannelNotification.hpp" />
+    <ClInclude Include="include\PayloadChannel\PayloadChannelNotifier.hpp" />
+    <ClInclude Include="include\PayloadChannel\PayloadChannelRequest.hpp" />
+    <ClInclude Include="include\PayloadChannel\PayloadChannelSocket.hpp" />
+    <ClInclude Include="include\RTC\ActiveSpeakerObserver.hpp" />
+    <ClInclude Include="include\RTC\AudioLevelObserver.hpp" />
+    <ClInclude Include="include\RTC\BweType.hpp" />
+    <ClInclude Include="include\RTC\Codecs\H264.hpp" />
+    <ClInclude Include="include\RTC\Codecs\H264_SVC.hpp" />
+    <ClInclude Include="include\RTC\Codecs\Opus.hpp" />
+    <ClInclude Include="include\RTC\Codecs\PayloadDescriptorHandler.hpp" />
+    <ClInclude Include="include\RTC\Codecs\Tools.hpp" />
+    <ClInclude Include="include\RTC\Codecs\VP8.hpp" />
+    <ClInclude Include="include\RTC\Codecs\VP9.hpp" />
+    <ClInclude Include="include\RTC\Consumer.hpp" />
+    <ClInclude Include="include\RTC\DataConsumer.hpp" />
+    <ClInclude Include="include\RTC\DataProducer.hpp" />
+    <ClInclude Include="include\RTC\DirectTransport.hpp" />
+    <ClInclude Include="include\RTC\DtlsTransport.hpp" />
+    <ClInclude Include="include\RTC\IceCandidate.hpp" />
+    <ClInclude Include="include\RTC\IceServer.hpp" />
+    <ClInclude Include="include\RTC\KeyFrameRequestManager.hpp" />
+    <ClInclude Include="include\RTC\NackGenerator.hpp" />
+    <ClInclude Include="include\RTC\Parameters.hpp" />
+    <ClInclude Include="include\RTC\PipeConsumer.hpp" />
+    <ClInclude Include="include\RTC\PipeTransport.hpp" />
+    <ClInclude Include="include\RTC\PlainTransport.hpp" />
+    <ClInclude Include="include\RTC\PortManager.hpp" />
+    <ClInclude Include="include\RTC\Producer.hpp" />
+    <ClInclude Include="include\RTC\RateCalculator.hpp" />
+    <ClInclude Include="include\RTC\Router.hpp" />
+    <ClInclude Include="include\RTC\RTCP\Bye.hpp" />
+    <ClInclude Include="include\RTC\RTCP\CompoundPacket.hpp" />
+    <ClInclude Include="include\RTC\RTCP\Feedback.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackItem.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPs.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsAfb.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsFir.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsLei.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsPli.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsRemb.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsRpsi.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsSli.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsTst.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsVbcm.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtp.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpEcn.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpNack.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpSrReq.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpTllei.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpTmmb.hpp" />
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpTransport.hpp" />
+    <ClInclude Include="include\RTC\RTCP\Packet.hpp" />
+    <ClInclude Include="include\RTC\RTCP\ReceiverReport.hpp" />
+    <ClInclude Include="include\RTC\RTCP\Sdes.hpp" />
+    <ClInclude Include="include\RTC\RTCP\SenderReport.hpp" />
+    <ClInclude Include="include\RTC\RTCP\XR.hpp" />
+    <ClInclude Include="include\RTC\RTCP\XrDelaySinceLastRr.hpp" />
+    <ClInclude Include="include\RTC\RTCP\XrReceiverReferenceTime.hpp" />
+    <ClInclude Include="include\RTC\RtpDictionaries.hpp" />
+    <ClInclude Include="include\RTC\RtpHeaderExtensionIds.hpp" />
+    <ClInclude Include="include\RTC\RtpListener.hpp" />
+    <ClInclude Include="include\RTC\RtpObserver.hpp" />
+    <ClInclude Include="include\RTC\RtpPacket.hpp" />
+    <ClInclude Include="include\RTC\RtpProbationGenerator.hpp" />
+    <ClInclude Include="include\RTC\RtpStream.hpp" />
+    <ClInclude Include="include\RTC\RtpStreamRecv.hpp" />
+    <ClInclude Include="include\RTC\RtpStreamSend.hpp" />
+    <ClInclude Include="include\RTC\RtxStream.hpp" />
+    <ClInclude Include="include\RTC\SctpAssociation.hpp" />
+    <ClInclude Include="include\RTC\SctpDictionaries.hpp" />
+    <ClInclude Include="include\RTC\SctpListener.hpp" />
+    <ClInclude Include="include\RTC\SenderBandwidthEstimator.hpp" />
+    <ClInclude Include="include\RTC\SeqManager.hpp" />
+    <ClInclude Include="include\RTC\SimpleConsumer.hpp" />
+    <ClInclude Include="include\RTC\SimulcastConsumer.hpp" />
+    <ClInclude Include="include\RTC\SrtpSession.hpp" />
+    <ClInclude Include="include\RTC\StunPacket.hpp" />
+    <ClInclude Include="include\RTC\SvcConsumer.hpp" />
+    <ClInclude Include="include\RTC\TcpConnection.hpp" />
+    <ClInclude Include="include\RTC\TcpServer.hpp" />
+    <ClInclude Include="include\RTC\Transport.hpp" />
+    <ClInclude Include="include\RTC\TransportCongestionControlClient.hpp" />
+    <ClInclude Include="include\RTC\TransportCongestionControlServer.hpp" />
+    <ClInclude Include="include\RTC\TransportTuple.hpp" />
+    <ClInclude Include="include\RTC\TrendCalculator.hpp" />
+    <ClInclude Include="include\RTC\UdpSocket.hpp" />
+    <ClInclude Include="include\RTC\WebRtcServer.hpp" />
+    <ClInclude Include="include\RTC\WebRtcTransport.hpp" />
+    <ClInclude Include="include\Settings.hpp" />
+    <ClInclude Include="include\Utils.hpp" />
+    <ClInclude Include="include\Worker.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\network_state_predictor.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\bitrate_settings.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\field_trial_based_config.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\goog_cc_factory.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\network_types.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\data_rate.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\data_size.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\frequency.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\timestamp.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\time_delta.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\call\rtp_transport_controller_send.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\bitrate_controller\loss_based_bandwidth_estimation.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\bitrate_controller\send_side_bandwidth_estimation.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\acknowledged_bitrate_estimator.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\alr_detector.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\bitrate_estimator.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\congestion_window_pushback_controller.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\delay_based_bwe.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\goog_cc_network_control.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\link_capacity_estimator.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\median_slope_estimator.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\probe_bitrate_estimator.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\probe_controller.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\trendline_estimator.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\control_handler.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\send_time_history.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\transport_feedback_adapter.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\bitrate_prober.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\interval_budget.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\paced_sender.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\aimd_rate_control.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\bwe_defines.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\inter_arrival.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\overuse_detector.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\overuse_estimator.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\remote_bitrate_estimator_abs_send_time.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\rtp_rtcp\include\rtp_rtcp_defines.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\alr_experiment.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\field_trial_parser.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\field_trial_units.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\rate_control_settings.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\network\sent_packet.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\rate_statistics.cc" />
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\system_wrappers\source\field_trial.cc" />
+    <ClCompile Include="src\ChannelMessageHandlers.cpp" />
+    <ClCompile Include="src\Channel\ChannelNotifier.cpp" />
+    <ClCompile Include="src\Channel\ChannelRequest.cpp" />
+    <ClCompile Include="src\Channel\ChannelSocket.cpp" />
+    <ClCompile Include="src\DepLibSRTP.cpp" />
+    <ClCompile Include="src\DepLibUV.cpp" />
+    <ClCompile Include="src\DepLibWebRTC.cpp" />
+    <ClCompile Include="src\DepOpenSSL.cpp" />
+    <ClCompile Include="src\DepUsrSCTP.cpp" />
+    <ClCompile Include="src\handles\SignalsHandler.cpp" />
+    <ClCompile Include="src\handles\TcpConnectionHandler.cpp" />
+    <ClCompile Include="src\handles\TcpServerHandler.cpp" />
+    <ClCompile Include="src\handles\Timer.cpp" />
+    <ClCompile Include="src\handles\UdpSocketHandler.cpp" />
+    <ClCompile Include="src\handles\UnixStreamSocket.cpp" />
+    <ClCompile Include="src\lib.cpp" />
+    <ClCompile Include="src\Logger.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MediaSoupErrors.cpp" />
+    <ClCompile Include="src\PayloadChannel\PayloadChannelNotification.cpp" />
+    <ClCompile Include="src\PayloadChannel\PayloadChannelNotifier.cpp" />
+    <ClCompile Include="src\PayloadChannel\PayloadChannelRequest.cpp" />
+    <ClCompile Include="src\PayloadChannel\PayloadChannelSocket.cpp" />
+    <ClCompile Include="src\RTC\ActiveSpeakerObserver.cpp" />
+    <ClCompile Include="src\RTC\AudioLevelObserver.cpp" />
+    <ClCompile Include="src\RTC\Codecs\H264.cpp" />
+    <ClCompile Include="src\RTC\Codecs\H264_SVC.cpp" />
+    <ClCompile Include="src\RTC\Codecs\Opus.cpp" />
+    <ClCompile Include="src\RTC\Codecs\VP8.cpp" />
+    <ClCompile Include="src\RTC\Codecs\VP9.cpp" />
+    <ClCompile Include="src\RTC\Consumer.cpp" />
+    <ClCompile Include="src\RTC\DataConsumer.cpp" />
+    <ClCompile Include="src\RTC\DataProducer.cpp" />
+    <ClCompile Include="src\RTC\DirectTransport.cpp" />
+    <ClCompile Include="src\RTC\DtlsTransport.cpp" />
+    <ClCompile Include="src\RTC\IceCandidate.cpp" />
+    <ClCompile Include="src\RTC\IceServer.cpp" />
+    <ClCompile Include="src\RTC\KeyFrameRequestManager.cpp" />
+    <ClCompile Include="src\RTC\NackGenerator.cpp" />
+    <ClCompile Include="src\RTC\PipeConsumer.cpp" />
+    <ClCompile Include="src\RTC\PipeTransport.cpp" />
+    <ClCompile Include="src\RTC\PlainTransport.cpp" />
+    <ClCompile Include="src\RTC\PortManager.cpp" />
+    <ClCompile Include="src\RTC\Producer.cpp" />
+    <ClCompile Include="src\RTC\RateCalculator.cpp" />
+    <ClCompile Include="src\RTC\Router.cpp" />
+    <ClCompile Include="src\RTC\RTCP\Bye.cpp" />
+    <ClCompile Include="src\RTC\RTCP\CompoundPacket.cpp" />
+    <ClCompile Include="src\RTC\RTCP\Feedback.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPs.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsAfb.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsFir.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsLei.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsPli.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsRemb.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsRpsi.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsSli.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsTst.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsVbcm.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtp.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpEcn.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpNack.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpSrReq.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpTllei.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpTmmb.cpp" />
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpTransport.cpp" />
+    <ClCompile Include="src\RTC\RTCP\Packet.cpp" />
+    <ClCompile Include="src\RTC\RTCP\ReceiverReport.cpp" />
+    <ClCompile Include="src\RTC\RTCP\Sdes.cpp" />
+    <ClCompile Include="src\RTC\RTCP\SenderReport.cpp" />
+    <ClCompile Include="src\RTC\RTCP\XR.cpp" />
+    <ClCompile Include="src\RTC\RTCP\XrDelaySinceLastRr.cpp" />
+    <ClCompile Include="src\RTC\RTCP\XrReceiverReferenceTime.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\Media.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\Parameters.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtcpFeedback.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtcpParameters.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpCodecMimeType.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpCodecParameters.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpEncodingParameters.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpHeaderExtensionParameters.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpHeaderExtensionUri.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpParameters.cpp" />
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpRtxParameters.cpp" />
+    <ClCompile Include="src\RTC\RtpListener.cpp" />
+    <ClCompile Include="src\RTC\RtpObserver.cpp" />
+    <ClCompile Include="src\RTC\RtpPacket.cpp" />
+    <ClCompile Include="src\RTC\RtpProbationGenerator.cpp" />
+    <ClCompile Include="src\RTC\RtpStream.cpp" />
+    <ClCompile Include="src\RTC\RtpStreamRecv.cpp" />
+    <ClCompile Include="src\RTC\RtpStreamSend.cpp" />
+    <ClCompile Include="src\RTC\RtxStream.cpp" />
+    <ClCompile Include="src\RTC\SctpAssociation.cpp" />
+    <ClCompile Include="src\RTC\SctpDictionaries\SctpStreamParameters.cpp" />
+    <ClCompile Include="src\RTC\SctpListener.cpp" />
+    <ClCompile Include="src\RTC\SenderBandwidthEstimator.cpp" />
+    <ClCompile Include="src\RTC\SeqManager.cpp" />
+    <ClCompile Include="src\RTC\SimpleConsumer.cpp" />
+    <ClCompile Include="src\RTC\SimulcastConsumer.cpp" />
+    <ClCompile Include="src\RTC\SrtpSession.cpp" />
+    <ClCompile Include="src\RTC\StunPacket.cpp" />
+    <ClCompile Include="src\RTC\SvcConsumer.cpp" />
+    <ClCompile Include="src\RTC\TcpConnection.cpp" />
+    <ClCompile Include="src\RTC\TcpServer.cpp" />
+    <ClCompile Include="src\RTC\Transport.cpp" />
+    <ClCompile Include="src\RTC\TransportCongestionControlClient.cpp" />
+    <ClCompile Include="src\RTC\TransportCongestionControlServer.cpp" />
+    <ClCompile Include="src\RTC\TransportTuple.cpp" />
+    <ClCompile Include="src\RTC\TrendCalculator.cpp" />
+    <ClCompile Include="src\RTC\UdpSocket.cpp" />
+    <ClCompile Include="src\RTC\WebRtcServer.cpp" />
+    <ClCompile Include="src\RTC\WebRtcTransport.cpp" />
+    <ClCompile Include="src\Settings.cpp" />
+    <ClCompile Include="src\Utils\Crypto.cpp" />
+    <ClCompile Include="src\Utils\File.cpp" />
+    <ClCompile Include="src\Utils\IP.cpp" />
+    <ClCompile Include="src\Utils\String.cpp" />
+    <ClCompile Include="src\Worker.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{bdf90305-5bdc-4ce0-9548-03793f94d37e}</ProjectGuid>
+    <RootNamespace>libmediasoup</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)OutDir\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)IntDir\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;NOMINMAX;MS_LITTLE_ENDIAN;_SILENCE_CXX20_CISO646_REMOVED_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>./include;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Deps\libwebrtc;$(SolutionDir)Deps\libwebrtc\libwebrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NOMINMAX;MS_LITTLE_ENDIAN;_SILENCE_CXX20_CISO646_REMOVED_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>./include;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Deps\libwebrtc;$(SolutionDir)Deps\libwebrtc\libwebrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_DEBUG;_LIB;NOMINMAX;MS_LITTLE_ENDIAN;_SILENCE_CXX20_CISO646_REMOVED_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>./include;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Deps\libwebrtc;$(SolutionDir)Deps\libwebrtc\libwebrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;NOMINMAX;MS_LITTLE_ENDIAN;_SILENCE_CXX20_CISO646_REMOVED_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>./include;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Deps\libwebrtc;$(SolutionDir)Deps\libwebrtc\libwebrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.props'))" />
+    <Error Condition="!Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets'))" />
+  </Target>
+</Project>

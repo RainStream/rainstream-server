@@ -1,0 +1,1152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{c23cd297-64cb-4f3f-a2c0-664f2bee1b20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{82fe7f40-3e62-4c83-806c-7716ff94fbcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\Channel">
+      <UniqueIdentifier>{e34c7f65-4631-4bfa-a015-a3aee1684c9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\handles">
+      <UniqueIdentifier>{e82c31a0-2531-4e85-a7d4-54c1ca2cf862}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\PayloadChannel">
+      <UniqueIdentifier>{cbb1d66a-8cac-4ba9-8edb-6a4aa76d87c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\RTC">
+      <UniqueIdentifier>{08dff2c8-3543-4e91-9697-ab204792901e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\RTC\Codecs">
+      <UniqueIdentifier>{c7180727-614a-4fd7-a29f-d565b758aa48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\RTC\RTCP">
+      <UniqueIdentifier>{d5bdd43b-a141-424d-9f00-a28b74b17b11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Channel">
+      <UniqueIdentifier>{f0fa28ee-93ee-41f0-9d6a-4989f5299b79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\handles">
+      <UniqueIdentifier>{47d043df-2acc-46ac-9d00-4bd77d5fe584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\PayloadChannel">
+      <UniqueIdentifier>{2d2efebd-274e-4478-aa99-81dc3ce22b57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\RTC">
+      <UniqueIdentifier>{fc0e8e7b-10c6-4ba0-8bbb-04b770f48584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Utils">
+      <UniqueIdentifier>{b8ff4673-a785-4c21-af12-2bfd0ee4e3d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\RTC\Codecs">
+      <UniqueIdentifier>{b1ba43f9-c4f8-4e21-9b6a-76db1bee5685}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\RTC\RTCP">
+      <UniqueIdentifier>{5794f88d-fced-469b-8cd5-742465b4981f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\RTC\RtpDictionaries">
+      <UniqueIdentifier>{cddc1f10-3b1a-4014-835e-6866c2916f35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\RTC\SctpDictionaries">
+      <UniqueIdentifier>{52e22d5b-ec6d-4691-ad63-194c57941cb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc">
+      <UniqueIdentifier>{b4482604-181c-4e40-bb8b-414261739c4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\api">
+      <UniqueIdentifier>{7c63b0fb-656d-42ed-8063-80e1ae7694e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\api\transport">
+      <UniqueIdentifier>{bfa00cfd-8583-4842-b825-c112bed69af8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\api\units">
+      <UniqueIdentifier>{b721f154-0a9e-4b51-bade-563702dec4a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\call">
+      <UniqueIdentifier>{142b1770-f88c-4686-ae41-a1c76feb6fab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules">
+      <UniqueIdentifier>{64700e44-00b9-42ef-bcfd-7b12dd934106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\bitrate_controller">
+      <UniqueIdentifier>{8e9832fa-bce9-4bbe-9aa5-c09ab29eb059}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\congestion_controller">
+      <UniqueIdentifier>{f9aa1fd7-ece2-493c-82c1-d672156c0729}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\congestion_controller\goog_cc">
+      <UniqueIdentifier>{81fbbb59-76b4-470c-9d4a-56726140c737}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\congestion_controller\rtp">
+      <UniqueIdentifier>{7ba2fd95-d114-4d3f-94a0-2bf0e4f92178}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\include">
+      <UniqueIdentifier>{a9538e15-c2ea-41ae-9482-9ba8e577f477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\pacing">
+      <UniqueIdentifier>{351df054-c3bd-4dc8-88bf-ecf6c95c729c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\remote_bitrate_estimator">
+      <UniqueIdentifier>{5f8c2178-b1b1-42ec-b170-735dada2f759}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\remote_bitrate_estimator\include">
+      <UniqueIdentifier>{720d8c30-0a59-418b-92e7-f384f434df3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\rtp_rtcp">
+      <UniqueIdentifier>{8911fcf9-d0b9-48e4-94a2-1d227903a9d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\rtp_rtcp\include">
+      <UniqueIdentifier>{59b2947f-2708-496e-a474-6af38a7ad2b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\rtp_rtcp\source">
+      <UniqueIdentifier>{aa2f5223-b386-49eb-8d3d-4863d509d345}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\modules\rtp_rtcp\source\rtp_packet">
+      <UniqueIdentifier>{63bbcce8-d843-4b48-91ab-f3d7590a6819}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\rtc_base">
+      <UniqueIdentifier>{64445d43-5caf-4d7a-9a19-e7e810924731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\rtc_base\experiments">
+      <UniqueIdentifier>{91df4108-fe5a-4f95-aa92-2b237a20145f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\rtc_base\network">
+      <UniqueIdentifier>{8aa6c2c7-0cb8-4dd0-b653-acde62762005}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\rtc_base\numerics">
+      <UniqueIdentifier>{5b405e5b-e9a4-4250-92f1-c19b25b19166}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\rtc_base\system">
+      <UniqueIdentifier>{4a3e748b-6b79-4a6f-bb37-6b1dbefc7b64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\rtc_base\units">
+      <UniqueIdentifier>{817f62e7-8fc0-4e78-8c54-1f4594f5916f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\system_wrappers">
+      <UniqueIdentifier>{698f5edd-b66c-4b9c-abbb-963d60e996a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libwebrtc\system_wrappers\source">
+      <UniqueIdentifier>{6118438c-2df4-4b18-80d1-ea0b82fd9271}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\ChannelMessageHandlers.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\common.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DepLibSRTP.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DepLibUV.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DepLibWebRTC.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DepOpenSSL.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DepUsrSCTP.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lib.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Logger.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LogLevel.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MediaSoupErrors.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Settings.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Utils.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Worker.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Channel\ChannelNotifier.hpp">
+      <Filter>include\Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Channel\ChannelRequest.hpp">
+      <Filter>include\Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Channel\ChannelSocket.hpp">
+      <Filter>include\Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="include\handles\SignalsHandler.hpp">
+      <Filter>include\handles</Filter>
+    </ClInclude>
+    <ClInclude Include="include\handles\TcpConnectionHandler.hpp">
+      <Filter>include\handles</Filter>
+    </ClInclude>
+    <ClInclude Include="include\handles\TcpServerHandler.hpp">
+      <Filter>include\handles</Filter>
+    </ClInclude>
+    <ClInclude Include="include\handles\Timer.hpp">
+      <Filter>include\handles</Filter>
+    </ClInclude>
+    <ClInclude Include="include\handles\UdpSocketHandler.hpp">
+      <Filter>include\handles</Filter>
+    </ClInclude>
+    <ClInclude Include="include\handles\UnixStreamSocket.hpp">
+      <Filter>include\handles</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PayloadChannel\PayloadChannelNotification.hpp">
+      <Filter>include\PayloadChannel</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PayloadChannel\PayloadChannelNotifier.hpp">
+      <Filter>include\PayloadChannel</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PayloadChannel\PayloadChannelRequest.hpp">
+      <Filter>include\PayloadChannel</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PayloadChannel\PayloadChannelSocket.hpp">
+      <Filter>include\PayloadChannel</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\ActiveSpeakerObserver.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\AudioLevelObserver.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\BweType.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Consumer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\DataConsumer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\DataProducer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\DirectTransport.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\DtlsTransport.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\IceCandidate.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\IceServer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\KeyFrameRequestManager.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\NackGenerator.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Parameters.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\PipeConsumer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\PipeTransport.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\PlainTransport.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\PortManager.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Producer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RateCalculator.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Router.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpDictionaries.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpHeaderExtensionIds.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpListener.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpObserver.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpPacket.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpProbationGenerator.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpStream.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpStreamRecv.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtpStreamSend.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RtxStream.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SctpAssociation.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SctpDictionaries.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SctpListener.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SenderBandwidthEstimator.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SeqManager.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SimpleConsumer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SimulcastConsumer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SrtpSession.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\StunPacket.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\SvcConsumer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\TcpConnection.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\TcpServer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Transport.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\TransportCongestionControlClient.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\TransportCongestionControlServer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\TransportTuple.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\TrendCalculator.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\UdpSocket.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\WebRtcServer.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\WebRtcTransport.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Codecs\H264.hpp">
+      <Filter>include\RTC\Codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Codecs\H264_SVC.hpp">
+      <Filter>include\RTC\Codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Codecs\Opus.hpp">
+      <Filter>include\RTC\Codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Codecs\PayloadDescriptorHandler.hpp">
+      <Filter>include\RTC\Codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Codecs\Tools.hpp">
+      <Filter>include\RTC\Codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Codecs\VP8.hpp">
+      <Filter>include\RTC\Codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Codecs\VP9.hpp">
+      <Filter>include\RTC\Codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\Bye.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\CompoundPacket.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\Feedback.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackItem.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPs.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsAfb.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsFir.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsLei.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsPli.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsRemb.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsRpsi.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsSli.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsTst.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackPsVbcm.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtp.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpEcn.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpNack.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpSrReq.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpTllei.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpTmmb.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\FeedbackRtpTransport.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\Packet.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\ReceiverReport.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\Sdes.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\SenderReport.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\XR.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\XrDelaySinceLastRr.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\RTCP\XrReceiverReferenceTime.hpp">
+      <Filter>include\RTC\RTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\mediasoup_helpers.h">
+      <Filter>libwebrtc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\bitrate_constraints.h">
+      <Filter>libwebrtc\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\network_state_predictor.h">
+      <Filter>libwebrtc\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\bitrate_settings.h">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\field_trial_based_config.h">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\goog_cc_factory.h">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\network_control.h">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\network_types.h">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\webrtc_key_value_config.h">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\data_rate.h">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\data_size.h">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\frequency.h">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\time_delta.h">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\api\units\timestamp.h">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\call\rtp_transport_controller_send.h">
+      <Filter>libwebrtc\call</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\call\rtp_transport_controller_send_interface.h">
+      <Filter>libwebrtc\call</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\bitrate_controller\loss_based_bandwidth_estimation.h">
+      <Filter>libwebrtc\modules\bitrate_controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\bitrate_controller\send_side_bandwidth_estimation.h">
+      <Filter>libwebrtc\modules\bitrate_controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\acknowledged_bitrate_estimator.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\alr_detector.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\bitrate_estimator.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\congestion_window_pushback_controller.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\delay_based_bwe.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\delay_increase_detector_interface.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\goog_cc_network_control.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\link_capacity_estimator.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\median_slope_estimator.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\probe_bitrate_estimator.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\probe_controller.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\trendline_estimator.h">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\control_handler.h">
+      <Filter>libwebrtc\modules\congestion_controller\rtp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\send_time_history.h">
+      <Filter>libwebrtc\modules\congestion_controller\rtp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\transport_feedback_adapter.h">
+      <Filter>libwebrtc\modules\congestion_controller\rtp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\include\module_common_types_public.h">
+      <Filter>libwebrtc\modules\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\bitrate_prober.h">
+      <Filter>libwebrtc\modules\pacing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\interval_budget.h">
+      <Filter>libwebrtc\modules\pacing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\paced_sender.h">
+      <Filter>libwebrtc\modules\pacing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\packet_router.h">
+      <Filter>libwebrtc\modules\pacing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\aimd_rate_control.h">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\inter_arrival.h">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\overuse_detector.h">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\overuse_estimator.h">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\remote_bitrate_estimator_abs_send_time.h">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\include\bwe_defines.h">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\include\remote_bitrate_estimator.h">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\rtp_rtcp\include\rtp_rtcp_defines.h">
+      <Filter>libwebrtc\modules\rtp_rtcp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\modules\rtp_rtcp\source\rtp_packet\transport_feedback.h">
+      <Filter>libwebrtc\modules\rtp_rtcp\source\rtp_packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\constructor_magic.h">
+      <Filter>libwebrtc\rtc_base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\rate_statistics.h">
+      <Filter>libwebrtc\rtc_base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\type_traits.h">
+      <Filter>libwebrtc\rtc_base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\alr_experiment.h">
+      <Filter>libwebrtc\rtc_base\experiments</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\field_trial_parser.h">
+      <Filter>libwebrtc\rtc_base\experiments</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\field_trial_units.h">
+      <Filter>libwebrtc\rtc_base\experiments</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\rate_control_settings.h">
+      <Filter>libwebrtc\rtc_base\experiments</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\network\sent_packet.h">
+      <Filter>libwebrtc\rtc_base\network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\percentile_filter.h">
+      <Filter>libwebrtc\rtc_base\numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\safe_compare.h">
+      <Filter>libwebrtc\rtc_base\numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\safe_conversions.h">
+      <Filter>libwebrtc\rtc_base\numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\safe_conversions_impl.h">
+      <Filter>libwebrtc\rtc_base\numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\numerics\safe_minmax.h">
+      <Filter>libwebrtc\rtc_base\numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\system\unused.h">
+      <Filter>libwebrtc\rtc_base\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\units\unit_base.h">
+      <Filter>libwebrtc\rtc_base\units</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\system_wrappers\source\field_trial.h">
+      <Filter>libwebrtc\system_wrappers\source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ChannelMessageHandlers.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepLibSRTP.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepLibUV.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepLibWebRTC.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepOpenSSL.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepUsrSCTP.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lib.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Logger.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MediaSoupErrors.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Settings.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Worker.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Channel\ChannelNotifier.cpp">
+      <Filter>src\Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Channel\ChannelRequest.cpp">
+      <Filter>src\Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Channel\ChannelSocket.cpp">
+      <Filter>src\Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handles\SignalsHandler.cpp">
+      <Filter>src\handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handles\TcpConnectionHandler.cpp">
+      <Filter>src\handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handles\TcpServerHandler.cpp">
+      <Filter>src\handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handles\Timer.cpp">
+      <Filter>src\handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handles\UdpSocketHandler.cpp">
+      <Filter>src\handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handles\UnixStreamSocket.cpp">
+      <Filter>src\handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\Crypto.cpp">
+      <Filter>src\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\File.cpp">
+      <Filter>src\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\IP.cpp">
+      <Filter>src\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utils\String.cpp">
+      <Filter>src\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PayloadChannel\PayloadChannelNotification.cpp">
+      <Filter>src\PayloadChannel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PayloadChannel\PayloadChannelNotifier.cpp">
+      <Filter>src\PayloadChannel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PayloadChannel\PayloadChannelRequest.cpp">
+      <Filter>src\PayloadChannel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PayloadChannel\PayloadChannelSocket.cpp">
+      <Filter>src\PayloadChannel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\ActiveSpeakerObserver.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\AudioLevelObserver.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Consumer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\DataConsumer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\DataProducer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\DirectTransport.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\DtlsTransport.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\IceCandidate.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\IceServer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\KeyFrameRequestManager.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\NackGenerator.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\PipeConsumer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\PipeTransport.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\PlainTransport.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\PortManager.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Producer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RateCalculator.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Router.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpListener.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpObserver.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpPacket.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpProbationGenerator.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpStream.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpStreamRecv.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpStreamSend.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtxStream.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SctpAssociation.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SctpListener.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SenderBandwidthEstimator.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SeqManager.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SimpleConsumer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SimulcastConsumer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SrtpSession.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\StunPacket.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SvcConsumer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\TcpConnection.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\TcpServer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Transport.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\TransportCongestionControlClient.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\TransportCongestionControlServer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\TransportTuple.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\TrendCalculator.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\UdpSocket.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\WebRtcServer.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\WebRtcTransport.cpp">
+      <Filter>src\RTC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Codecs\H264.cpp">
+      <Filter>src\RTC\Codecs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Codecs\H264_SVC.cpp">
+      <Filter>src\RTC\Codecs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Codecs\Opus.cpp">
+      <Filter>src\RTC\Codecs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Codecs\VP8.cpp">
+      <Filter>src\RTC\Codecs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Codecs\VP9.cpp">
+      <Filter>src\RTC\Codecs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\SctpDictionaries\SctpStreamParameters.cpp">
+      <Filter>src\RTC\SctpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\Media.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\Parameters.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtcpFeedback.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtcpParameters.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpCodecMimeType.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpCodecParameters.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpEncodingParameters.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpHeaderExtensionParameters.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpHeaderExtensionUri.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpParameters.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RtpDictionaries\RtpRtxParameters.cpp">
+      <Filter>src\RTC\RtpDictionaries</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\Bye.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\CompoundPacket.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\Feedback.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPs.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsAfb.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsFir.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsLei.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsPli.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsRemb.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsRpsi.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsSli.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsTst.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackPsVbcm.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtp.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpEcn.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpNack.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpSrReq.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpTllei.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpTmmb.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\FeedbackRtpTransport.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\Packet.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\ReceiverReport.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\Sdes.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\SenderReport.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\XR.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\XrDelaySinceLastRr.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\RTCP\XrReceiverReferenceTime.cpp">
+      <Filter>src\RTC\RTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\network_state_predictor.cc">
+      <Filter>libwebrtc\api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\bitrate_settings.cc">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\field_trial_based_config.cc">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\goog_cc_factory.cc">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\transport\network_types.cc">
+      <Filter>libwebrtc\api\transport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\data_rate.cc">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\data_size.cc">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\frequency.cc">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\time_delta.cc">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\api\units\timestamp.cc">
+      <Filter>libwebrtc\api\units</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\call\rtp_transport_controller_send.cc">
+      <Filter>libwebrtc\call</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\bitrate_controller\loss_based_bandwidth_estimation.cc">
+      <Filter>libwebrtc\modules\bitrate_controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\bitrate_controller\send_side_bandwidth_estimation.cc">
+      <Filter>libwebrtc\modules\bitrate_controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\acknowledged_bitrate_estimator.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\alr_detector.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\bitrate_estimator.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\congestion_window_pushback_controller.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\delay_based_bwe.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\goog_cc_network_control.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\link_capacity_estimator.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\median_slope_estimator.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\probe_bitrate_estimator.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\probe_controller.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\goog_cc\trendline_estimator.cc">
+      <Filter>libwebrtc\modules\congestion_controller\goog_cc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\control_handler.cc">
+      <Filter>libwebrtc\modules\congestion_controller\rtp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\send_time_history.cc">
+      <Filter>libwebrtc\modules\congestion_controller\rtp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\congestion_controller\rtp\transport_feedback_adapter.cc">
+      <Filter>libwebrtc\modules\congestion_controller\rtp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\bitrate_prober.cc">
+      <Filter>libwebrtc\modules\pacing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\interval_budget.cc">
+      <Filter>libwebrtc\modules\pacing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\pacing\paced_sender.cc">
+      <Filter>libwebrtc\modules\pacing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\aimd_rate_control.cc">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\bwe_defines.cc">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\inter_arrival.cc">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\overuse_detector.cc">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\overuse_estimator.cc">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\remote_bitrate_estimator\remote_bitrate_estimator_abs_send_time.cc">
+      <Filter>libwebrtc\modules\remote_bitrate_estimator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\modules\rtp_rtcp\include\rtp_rtcp_defines.cc">
+      <Filter>libwebrtc\modules\rtp_rtcp\include</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\rate_statistics.cc">
+      <Filter>libwebrtc\rtc_base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\alr_experiment.cc">
+      <Filter>libwebrtc\rtc_base\experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\field_trial_parser.cc">
+      <Filter>libwebrtc\rtc_base\experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\field_trial_units.cc">
+      <Filter>libwebrtc\rtc_base\experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\experiments\rate_control_settings.cc">
+      <Filter>libwebrtc\rtc_base\experiments</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\network\sent_packet.cc">
+      <Filter>libwebrtc\rtc_base\network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\system_wrappers\source\field_trial.cc">
+      <Filter>libwebrtc\system_wrappers\source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

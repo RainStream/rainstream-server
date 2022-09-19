@@ -30,7 +30,11 @@
 *.exe
 *.out
 *.app
-/.vs
+*.pdb
+*.idb
+*.ilk
+*.exp
+*.vs
 /IntDir
 /Lib
-/Deps/promise-cpp/build/msvc/.vs
+
