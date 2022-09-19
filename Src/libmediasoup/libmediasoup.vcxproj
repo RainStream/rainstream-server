@@ -258,7 +258,6 @@
     <ClCompile Include="src\handles\UnixStreamSocket.cpp" />
     <ClCompile Include="src\lib.cpp" />
     <ClCompile Include="src\Logger.cpp" />
-    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MediaSoupErrors.cpp" />
     <ClCompile Include="src\PayloadChannel\PayloadChannelNotification.cpp" />
     <ClCompile Include="src\PayloadChannel\PayloadChannelNotifier.cpp" />
