@@ -4,8 +4,8 @@
 
 namespace ortc
 {
-	void validateRtpCapabilities(const json& caps);
-	void validateRtpCodecCapability(const json& codec);
+	void validateRtpCapabilities(json& caps);
+	void validateRtpCodecCapability(json& codec);
 	void validateRtcpFeedback(json& fb);
 	void validateRtpHeaderExtension(json& ext);
 	void validateRtpParameters(json& params);
@@ -17,7 +17,7 @@ namespace ortc
 	void validateNumSctpStreams(json& numStreams);
 	void validateSctpParameters(json& params);
 	void validateSctpStreamParameters(json& params);
-	json generateRouterRtpCapabilities(json& mediaCodecs = json::array());
+	json generateRouterRtpCapabilities(json& mediaCodecs);
 	json getProducerRtpParametersMapping(json& params, json& caps);
 	json getConsumableRtpParameters(std::string kind, json& params, json& caps, json& rtpMapping);
 	bool canConsume(const json& consumableParams, const json& caps);

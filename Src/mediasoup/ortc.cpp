@@ -23,7 +23,7 @@ static const std::string ProbatorMid("probator");
 
 // Static functions declaration.
 static bool isRtxCodec(const json& codec);
-static bool matchCodecs(json& aCodec, const json& bCodec, bool strict = false, bool modify = false);
+static bool matchCodecs(json& aCodec, json& bCodec, bool strict = false, bool modify = false);
 static bool matchHeaderExtensions(const json& aExt, const json& bExt);
 static json reduceRtcpFeedback(const json& codecA, const json& codecB);
 static uint8_t getH264PacketizationMode(const json& codec);
@@ -45,7 +45,7 @@ namespace ortc
 	 * fields with default values.
 	 * It throws if invalid.
 	 */
-	void validateRtpCapabilities(const json& caps)
+	void validateRtpCapabilities(json& caps)
 	{
 		MSC_TRACE();
 
@@ -93,7 +93,7 @@ namespace ortc
 	 * fields with default values.
 	 * It throws if invalid.
 	 */
-	void validateRtpCodecCapability(const json& codec)
+	void validateRtpCodecCapability(json& codec)
 	{
 		MSC_TRACE();
 
@@ -1587,7 +1587,7 @@ namespace ortc
 			json clonedSupportedCodec = clonedSupportedRtpCapabilities["codecs"];
 
 			auto matchedSupportedCodecIt = std::find_if(
-				clonedSupportedCodec.begin(), clonedSupportedCodec.end(), [&](const json& supportedCodec) {
+				clonedSupportedCodec.begin(), clonedSupportedCodec.end(), [&](json& supportedCodec) {
 				return matchCodecs(mediaCodec, supportedCodec, false);
 			});
 
@@ -1705,7 +1705,7 @@ namespace ortc
 			// Search for the same media codec in capabilities.
 			json& capsCodecs = caps["codecs"];
 			auto matchedCapCodecIt = std::find_if(
-				capsCodecs.begin(), capsCodecs.end(), [&](const json& capCodec) {
+				capsCodecs.begin(), capsCodecs.end(), [&](json& capCodec) {
 				return matchCodecs(codec, capCodec, true, true);
 			});
 
@@ -1920,7 +1920,7 @@ json getConsumableRtpParameters(std::string kind, json& params, json& caps, json
 /**
  * Check whether the given RTP capabilities can consume the given Producer.
  */
-bool canConsume(const json& consumableParams, const json& caps)
+bool canConsume(json& consumableParams, json& caps)
 {
 	// This may throw.
 	validateRtpCapabilities(caps);
@@ -1932,7 +1932,7 @@ bool canConsume(const json& consumableParams, const json& caps)
 		const  json& capCodecs = caps["codecs"];
 
 		auto matchedCapCodecIt =
-			std::find_if(capCodecs.begin(), capCodecs.end(), [&](json& capCodec) {
+			std::find_if(capCodecs.begin(), capCodecs.end(), [&](json capCodec) {
 			return matchCodecs(capCodec, codec, true);
 		});
 
@@ -1979,7 +1979,7 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
 	{
 		json& capsCodecs = caps["codecs"];
 		auto matchedCapCodecIt = std::find_if(
-			capsCodecs.begin(), capsCodecs.end(), [&](const json& capCodec) {
+			capsCodecs.begin(), capsCodecs.end(), [&](json& capCodec) {
 			return matchCodecs(codec, capCodec, true);
 		});
 
@@ -2215,7 +2215,7 @@ static bool isRtxCodec(const json& codec)
 	return std::regex_match(mimeType, match, RtxMimeTypeRegex);
 }
 
-static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modify)
+static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 {
 	MSC_TRACE();
 

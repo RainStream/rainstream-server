@@ -50,6 +50,7 @@ typedef SSIZE_T ssize_t;
 #include <future>
 #include <condition_variable>
 
+#include <fstream>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
