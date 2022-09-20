@@ -36,6 +36,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmediasoup", "Src\libmedi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mediasoup-worker", "Src\mediasoup-worker\mediasoup-worker.vcxproj", "{B6EF8D89-6CDD-4464-866A-44CC4A120886}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mediasoup-runner", "Src\mediasoup-runner\mediasoup-runner.vcxproj", "{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -140,6 +142,14 @@ Global
 		{B6EF8D89-6CDD-4464-866A-44CC4A120886}.Release|x64.Build.0 = Release|x64
 		{B6EF8D89-6CDD-4464-866A-44CC4A120886}.Release|x86.ActiveCfg = Release|Win32
 		{B6EF8D89-6CDD-4464-866A-44CC4A120886}.Release|x86.Build.0 = Release|Win32
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}.Debug|x64.ActiveCfg = Debug|x64
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}.Debug|x64.Build.0 = Debug|x64
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}.Debug|x86.ActiveCfg = Debug|Win32
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}.Debug|x86.Build.0 = Debug|Win32
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}.Release|x64.ActiveCfg = Release|x64
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}.Release|x64.Build.0 = Release|x64
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}.Release|x86.ActiveCfg = Release|Win32
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -157,6 +167,7 @@ Global
 		{BAF494B1-0081-4457-B7CE-72F2B7B01F69} = {E51E1D81-17AE-46F8-B751-9C24F8E8ACB3}
 		{BDF90305-5BDC-4CE0-9548-03793F94D37E} = {5798B984-AC33-4230-BE0E-75FA738DB80E}
 		{B6EF8D89-6CDD-4464-866A-44CC4A120886} = {5798B984-AC33-4230-BE0E-75FA738DB80E}
+		{BB9A36B9-6EED-4649-A4E0-E2D13CF7779E} = {5798B984-AC33-4230-BE0E-75FA738DB80E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {417EF106-5E0B-499C-AF76-A81F9E3C9B46}
