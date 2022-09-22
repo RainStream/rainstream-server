@@ -169,7 +169,7 @@ namespace protoo
 		}
 	}
 
-	void Peer::notify(std::string method, json& data)
+	void Peer::notify(std::string method, const json& data)
 	{
 		json notification = Message::createNotification(method, data);
 		notification["roomId"] = _roomId;

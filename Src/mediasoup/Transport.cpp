@@ -413,9 +413,11 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 	if (!producer)
 		MSC_THROW_ERROR("Producer with id \"%s\" not found", producerId.c_str());
 
+	json consumableRtpParameters = producer->consumableRtpParameters();
+
 	// This may throw.
 	json rtpParameters = ortc::getConsumerRtpParameters(
-		producer->consumableRtpParameters(), rtpCapabilities);
+		consumableRtpParameters, rtpCapabilities);
 
 	// Set MID.
 	rtpParameters["mid"] = utils::Printf("%ud", this->_nextMidForConsumers++);
