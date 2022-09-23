@@ -203,12 +203,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Deps\libsrtp\srtp\srtp2.vcxproj">
-      <Project>{eef031cb-fed8-451e-a471-91ec8d4f6750}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Deps\netstring\netstring.vcxproj">
-      <Project>{b96c88a2-38a4-4310-b7b2-f507c60c28bd}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\Deps\uWebSockets\uWebSockets.vcxproj">
       <Project>{baf494b1-0081-4457-b7ce-72f2b7b01f69}</Project>
     </ProjectReference>

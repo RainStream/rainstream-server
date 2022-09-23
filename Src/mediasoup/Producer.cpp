@@ -148,7 +148,9 @@ void Producer::close()
 
 	try
 	{
-		this->_channel->request("producer.close", this->_internal);
+		json reqData = { { "producerId", this->_internal["producerId"] } };
+
+		this->_channel->request("transport.closeProducer", this->_internal["transportId"], reqData);
 	}
 	catch (const std::exception& error)
 	{
@@ -195,7 +197,7 @@ std::future<json> Producer::dump()
 {
 	MSC_DEBUG("dump()");
 
-	json ret = co_await this->_channel->request("producer.dump", this->_internal);
+	json ret = co_await this->_channel->request("producer.dump", this->_internal["producerId"]);
 
 	co_return ret;
 }
@@ -207,7 +209,7 @@ std::future<json> Producer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
-	json ret = co_await this->_channel->request("producer.getStats", this->_internal);
+	json ret = co_await this->_channel->request("producer.getStats", this->_internal["producerId"]);
 
 	co_return ret;
 }
@@ -221,7 +223,7 @@ std::future<void> Producer::pause()
 
 	bool wasPaused = this->_paused;
 
-	co_await this->_channel->request("producer.pause", this->_internal);
+	co_await this->_channel->request("producer.pause", this->_internal["producerId"]);
 
 	this->_paused = true;
 
@@ -239,7 +241,7 @@ std::future<void> Producer::resume()
 
 	bool wasPaused = this->_paused;
 
-	co_await this->_channel->request("producer.resume", this->_internal);
+	co_await this->_channel->request("producer.resume", this->_internal["producerId"]);
 
 	this->_paused = false;
 
@@ -258,7 +260,7 @@ std::future<void> Producer::enableTraceEvent(std::vector<ProducerTraceEventType>
 	json reqData = { {"types", types } };
 
 	co_await this->_channel->request(
-		"producer.enableTraceEvent", this->_internal, reqData);
+		"producer.enableTraceEvent", this->_internal["producerId"], reqData);
 }
 
 

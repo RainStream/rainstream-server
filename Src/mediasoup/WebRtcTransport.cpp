@@ -200,7 +200,7 @@ std::future<json> WebRtcTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
 
-	json ret = co_await this->_channel->request("transport.getStats", this->_internal);
+	json ret = co_await this->_channel->request("transport.getStats", this->_internal["transportId"]);
 
 	co_return ret;
 }
@@ -217,7 +217,7 @@ std::future<void> WebRtcTransport::connect(json& dtlsParameters)
 	json reqData = { { "dtlsParameters", dtlsParameters } };
 
 	json data =
-		co_await this->_channel->request("transport.connect", this->_internal, reqData);
+		co_await this->_channel->request("transport.connect", this->_internal["transportId"], reqData);
 
 	// Update data.
 	this->_data["dtlsParameters"]["role"] = data["dtlsLocalRole"];
@@ -231,13 +231,13 @@ std::future<json> WebRtcTransport::restartIce()
 	MSC_DEBUG("restartIce()");
 
 	json data =
-		co_await this->_channel->request("transport.restartIce", this->_internal);
+		co_await this->_channel->request("transport.restartIce", this->_internal["transportId"]);
 
 	json iceParameters = data["iceParameters"];
 
 	this->_data["iceParameters"] = iceParameters;
 
-	return iceParameters;
+	co_return iceParameters;
 }
 
 void WebRtcTransport::_handleWorkerNotifications()

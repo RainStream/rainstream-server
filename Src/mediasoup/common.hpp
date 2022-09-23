@@ -60,6 +60,7 @@ using json = nlohmann::json;
 #  define MS_DECL_IMPORT __declspec(dllimport)
 #endif
 
+#define undefined std::nullopt
 
 
 #ifndef MS_STATIC

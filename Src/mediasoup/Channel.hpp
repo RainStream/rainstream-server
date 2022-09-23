@@ -12,12 +12,10 @@ public:
 
 	void close();
 
-	std::future<json> request(std::string method, const json& internal = json::object(), const json& data = json::object());
+	std::future<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
 
 protected:
 	void _processMessage(const json& msg);
-
-	std::string _makePayload(const json& msg);
 
 private:
 	std::unordered_map<uint32_t, std::promise<json> > _sents;

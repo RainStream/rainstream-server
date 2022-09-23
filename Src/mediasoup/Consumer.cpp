@@ -176,7 +176,7 @@ void Consumer::close()
 
 	try
 	{
-		this->_channel->request("consumer.close", this->_internal);
+		this->_channel->request("consumer.close", this->_internal["transportId"]);
 	}
 	catch (const std::exception&)
 	{
@@ -223,7 +223,7 @@ std::future<json> Consumer::dump()
 {
 	MSC_DEBUG("dump()");
 
-	json ret = co_await this->_channel->request("consumer.dump", this->_internal);
+	json ret = co_await this->_channel->request("consumer.dump", this->_internal["consumerId"]);
 
 	co_return ret;
 }
@@ -235,7 +235,7 @@ std::future<json> Consumer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
-	json ret = co_await  this->_channel->request("consumer.getStats", this->_internal);
+	json ret = co_await  this->_channel->request("consumer.getStats", this->_internal["consumerId"]);
 
 	co_return ret;
 }
@@ -249,7 +249,7 @@ std::future<void> Consumer::pause()
 
 	bool wasPaused = this->_paused || this->_producerPaused;
 
-	co_await this->_channel->request("consumer.pause", this->_internal);
+	co_await this->_channel->request("consumer.pause", this->_internal["consumerId"]);
 
 	this->_paused = true;
 
@@ -267,7 +267,7 @@ std::future<void> Consumer::resume()
 
 	bool wasPaused = this->_paused || this->_producerPaused;
 
-	co_await this->_channel->request("consumer.resume", this->_internal);
+	co_await this->_channel->request("consumer.resume", this->_internal["consumerId"]);
 
 	this->_paused = false;
 
@@ -292,7 +292,7 @@ std::future<void> Consumer::setPreferredLayers(
 	};
 
 	json data = co_await this->_channel->request(
-		"consumer.setPreferredLayers", this->_internal, reqData);
+		"consumer.setPreferredLayers", this->_internal["consumerId"], reqData);
 
 	this->_preferredLayers = data /*|| undefined*/;
 }
@@ -307,7 +307,7 @@ std::future<void> Consumer::setPriority(int priority)
 	json reqData = { { "priority" , priority } };
 
 	json data = co_await this->_channel->request(
-		"consumer.setPriority", this->_internal, reqData);
+		"consumer.setPriority", this->_internal["consumerId"], reqData);
 
 	this->_priority = data["priority"];
 }
@@ -322,7 +322,7 @@ std::future<void> Consumer::unsetPriority()
 	json reqData = { { "priority" , 1 } };
 
 	json data = co_await this->_channel->request(
-		"consumer.setPriority", this->_internal, reqData);
+		"consumer.setPriority", this->_internal["consumerId"], reqData);
 
 	this->_priority = data["priority"];
 }
@@ -334,7 +334,7 @@ std::future<void> Consumer::requestKeyFrame()
 {
 	MSC_DEBUG("requestKeyFrame()");
 
-	co_await this->_channel->request("consumer.requestKeyFrame", this->_internal);
+	co_await this->_channel->request("consumer.requestKeyFrame", this->_internal["consumerId"]);
 }
 
 /**
@@ -347,7 +347,7 @@ std::future<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType>
 	json reqData = { types };
 
 	co_await this->_channel->request(
-		"consumer.enableTraceEvent", this->_internal, reqData);
+		"consumer.enableTraceEvent", this->_internal["consumerId"], reqData);
 }
 
 void Consumer::_handleWorkerNotifications()

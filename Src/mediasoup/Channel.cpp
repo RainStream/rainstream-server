@@ -6,7 +6,6 @@
 #include "utils.hpp"
 #include "errors.hpp"
 #include "child_process/Socket.hpp"
-#include <netstring.h>
 
 
 // netstring length for a 4194304 bytes payload.
@@ -129,7 +128,7 @@ void Channel::close()
 	delete this;
 }
 
-std::future<json> Channel::request(std::string method, const json& internal, const json& data)
+std::future<json> Channel::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)
 {
 	this->_nextId < 4294967295 ? ++this->_nextId : (this->_nextId = 1);
 
@@ -137,25 +136,25 @@ std::future<json> Channel::request(std::string method, const json& internal, con
 
 	MSC_DEBUG("request() [method \"%s\", id: \"%d\"]", method.c_str(), id);
 
-	if (this->_closed)
-		MSC_THROW_INVALID_STATE_ERROR("Channel closed");
+	if (!handlerId.has_value())
+	{
+		handlerId = "undefined";
+	}
 
-	json request = {
-		{ "id",id },
-		{ "method", method },
-		{ "internal", internal },
-		{ "data", data }
-	};
+	std::string payload = data.is_null() ? "undefined" : data.dump();
 
-	std::string nsPayload = _makePayload(request);
+	std::string request = Utils::Printf("%u:%s:%s:%s", id, method.c_str(), handlerId.value().c_str(), payload.c_str());
 
-	if (nsPayload.length() > NS_MESSAGE_MAX_LEN)
+	if (request.length() > NS_MESSAGE_MAX_LEN)
 		MSC_THROW_ERROR("Channel request too big");
+
+	int size = request.size();
 
 	// This may raise if closed or remote side ended.
 	try
 	{
-		this->_producerSocket->Write(nsPayload);
+		this->_producerSocket->Write((const uint8_t*)(int*)(&size), sizeof(size));
+		this->_producerSocket->Write((const uint8_t*)request.data(), size);
 	}
 	catch (std::exception error)
 	{
@@ -209,34 +208,3 @@ void Channel::_processMessage(const json& msg)
 		MSC_ERROR("received message is not a Response nor a Notification");
 	}
 }
-
-std::string Channel::_makePayload(const json& msg)
-{
-	std::string nsPayload;
-	size_t nsPayloadLen;
-	size_t nsNumLen;
-	size_t nsLen;
-
-	nsPayload = msg.dump();
-	nsPayloadLen = nsPayload.length();
-
-	if (nsPayloadLen == 0)
-	{
-		nsNumLen = 1;
-		WriteBuffer[0] = '0';
-		WriteBuffer[1] = ':';
-		WriteBuffer[2] = ',';
-	}
-	else
-	{
-		nsNumLen = static_cast<size_t>(std::ceil(std::log10(static_cast<double>(nsPayloadLen) + 1)));
-		std::sprintf(reinterpret_cast<char*>(WriteBuffer), "%zu:", nsPayloadLen);
-		std::memcpy(WriteBuffer + nsNumLen + 1, nsPayload.c_str(), nsPayloadLen);
-		WriteBuffer[nsNumLen + nsPayloadLen + 1] = ',';
-	}
-
-	nsLen = nsNumLen + nsPayloadLen + 2;
-
-	return std::string((char*)WriteBuffer, nsLen);
-}
-

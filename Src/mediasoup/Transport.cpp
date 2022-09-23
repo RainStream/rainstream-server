@@ -117,7 +117,7 @@ void Transport::close()
 
 	try
 	{
-		this->_channel->request("transport.close", this->_internal);
+		this->_channel->request("router.closeTransport", this->_internal["routerId"]);
 	}
 	catch (const std::exception&)
 	{
@@ -231,7 +231,7 @@ std::future<json> Transport::dump()
 {
 	MSC_DEBUG("dump()");
 
-	json ret = co_await this->_channel->request("transport.dump", this->_internal);
+	json ret = co_await this->_channel->request("transport.dump", this->_internal["transportId"]);
 
 	co_return ret;
 }
@@ -269,7 +269,7 @@ std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 	json reqData = { {"bitrate", bitrate} };
 
 	co_await this->_channel->request(
-		"transport.setMaxIncomingBitrate", this->_internal, reqData);
+		"transport.setMaxIncomingBitrate", this->_internal["transportId"], reqData);
 
 	co_return;
 }
@@ -384,7 +384,7 @@ std::future<Producer*> Transport::produce(
 	// Emit observer event.
 	this->_observer->safeEmit("newproducer", producer);
 
-	return producer;
+	co_return producer;
 }
 
 /**
@@ -446,7 +446,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 	};
 
 	json status =
-		co_await this->_channel->request("transport.consume", internal, reqData);
+		co_await this->_channel->request("transport.consume", this->_internal["transportId"], reqData);
 
 	json data = {
 		{ "kind", producer->kind() },
@@ -472,7 +472,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 	// Emit observer event.
 	this->_observer->safeEmit("newconsumer", consumer);
 
-	return consumer;
+	co_return consumer;
 }
 
 /**
@@ -677,7 +677,7 @@ std::future<void> Transport::enableTraceEvent(std::vector<TransportTraceEventTyp
 	json reqData = { { "types", types } };
 
 	co_await this->_channel->request(
-		"transport.enableTraceEvent", this->_internal, reqData);
+		"transport.enableTraceEvent", this->_internal["transportId"], reqData);
 }
 
 // 	uint32_t Transport::_getNextSctpStreamId()

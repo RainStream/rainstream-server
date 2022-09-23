@@ -8,9 +8,6 @@
 #include <cstdio>  // sprintf()
 #include <cstring> // std::memmove()
 #include <sstream> // std::ostringstream
-extern "C" {
-#include <netstring.h>
-}
 
 
 /* Static. */

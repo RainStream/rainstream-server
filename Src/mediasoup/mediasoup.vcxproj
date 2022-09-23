@@ -224,11 +224,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Deps\netstring\netstring.vcxproj">
-      <Project>{b96c88a2-38a4-4310-b7b2-f507c60c28bd}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets')" />

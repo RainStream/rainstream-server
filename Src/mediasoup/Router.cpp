@@ -107,7 +107,9 @@ void Router::close()
 
 	try
 	{
-		this->_channel->request("router.close", this->_internal);
+		json reqData = { { "routerId", this->_internal["routerId"] } };
+
+		this->_channel->request("worker.closeRouter", undefined, reqData);
 	}
 	catch (const std::exception&)
 	{
@@ -202,7 +204,7 @@ std::future<json> Router::dump()
 {
 	MSC_DEBUG("dump()");
 
-	json ret = co_await this->_channel->request("router.dump", this->_internal);
+	json ret = co_await this->_channel->request("router.dump", this->_internal["routerId"]);
 
 	co_return ret;
 }
@@ -270,7 +272,7 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 	};
 
 	json data =
-		co_await this->_channel->request("router.createWebRtcTransport", internal, reqData);
+		co_await this->_channel->request("router.createWebRtcTransport", this->_internal["routerId"], reqData);
 
 	WebRtcTransport* transport = new WebRtcTransport(
 		internal,
@@ -307,7 +309,7 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 			// Emit observer event.
 	this->_observer->safeEmit("newtransport", transport);
 
-	return transport;
+	co_return transport;
 }
 
 /**
@@ -365,7 +367,7 @@ std::future<PlainTransport*> Router::createPlainTransport(
 	};
 
 	json data =
-		co_await this->_channel->request("router.createPlainTransport", internal, reqData);
+		co_await this->_channel->request("router.createPlainTransport", this->_internal["routerId"], reqData);
 
 	PlainTransport* transport = new PlainTransport(
 		internal,
@@ -402,7 +404,7 @@ std::future<PlainTransport*> Router::createPlainTransport(
 			// Emit observer event.
 	this->_observer->safeEmit("newtransport", transport);
 
-	return transport;
+	co_return transport;
 }
 
 /**
@@ -457,7 +459,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 
 
 	json data =
-		co_await this->_channel->request("router.createPipeTransport", internal, reqData);
+		co_await this->_channel->request("router.createPipeTransport", this->_internal["routerId"], reqData);
 
 	PipeTransport* transport = new PipeTransport(
 		internal,
@@ -493,7 +495,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 			// Emit observer event.
 	this->_observer->safeEmit("newtransport", transport);
 
-	return transport;
+	co_return transport;
 }
 
 /**

@@ -44,7 +44,7 @@ std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId)
 // 
 // 	const bot = co_await Bot.create({ mediasoupRouter });
 
-	return new Room(
+	co_return new Room(
 		roomId,
 		mediasoupRouter);
 }
@@ -73,11 +73,11 @@ void Room::close()
 	this->_closed = true;
 
 	// Close the mediasoup Room.
-// 	if (this->_mediaRoom)
-// 		this->_mediaRoom->close();
+	//this->_mediasoupRouter->close();
 
 	// Emit "close" event.
-	this->listener->OnRoomClose(_roomId);
+	if(this->listener)
+		this->listener->OnRoomClose(_roomId);
 }
 
 void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport)
@@ -1086,6 +1086,7 @@ void Room::OnPeerClose(protoo::Peer* peer)
 	// 						this->close();
 	// 					}
 	// 				}, 5000);
+
 }
 
 void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)

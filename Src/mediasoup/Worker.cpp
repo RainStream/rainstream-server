@@ -273,13 +273,13 @@ std::future<Router*> Worker::createRouter(
 	// This may throw.
 	json rtpCapabilities = ortc::generateRouterRtpCapabilities(mediaCodecs);
 
-	json internal = { { "routerId", uuidv4() } };
+	json reqData = { { "routerId", uuidv4() } };
 
-	co_await this->_channel->request("worker.createRouter", internal);
+	co_await this->_channel->request("worker.createRouter", undefined, reqData);
 
 	json data = { { "rtpCapabilities", rtpCapabilities } };
 	Router* router = new Router(
-		internal,
+		{ {"routerId", reqData["routerId"]}},
 		data,
 		this->_channel,
 		this->_payloadChannel,
@@ -291,5 +291,5 @@ std::future<Router*> Worker::createRouter(
 	// Emit observer event.
 	this->_observer->safeEmit("newrouter", router);
 
-	return router;
+	co_return router;
 }

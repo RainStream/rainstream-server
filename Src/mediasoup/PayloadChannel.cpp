@@ -2,10 +2,6 @@
 
 #include "common.hpp"
 #include "PayloadChannel.hpp"
-extern "C" {
-#include <netstring.h>
-}
-
 #include "Logger.hpp"
 #include "errors.hpp"
 #include "child_process/Socket.hpp"
@@ -29,64 +25,7 @@ PayloadChannel::PayloadChannel(Socket* producerSocket,
 	// Read PayloadChannel notifications from the worker.
 	this->_consumerSocket->on("data", [=](const std::string& nsPayload)
 	{
-// 		if (!this->_recvBuffer)
-// 		{
-// 			this->_recvBuffer = buffer;
-// 		}
-// 		else
-// 		{
-// 			this->_recvBuffer = Buffer.concat(
-// 				[this->_recvBuffer, buffer],
-// 				this->_recvBuffer.length + buffer.length);
-// 		}
-// 
-// 		if (this->_recvBuffer!.length > NS_PAYLOAD_MAX_LEN)
-// 		{
-// 			MSC_ERROR("receiving buffer is full, discarding all data into it");
-// 
-// 			// Reset the buffer and exit.
-// 			this->_recvBuffer = undefined;
-// 
-// 			return;
-// 		}
-// 
-// 		while (true) // eslint-disable-line no-constant-condition
-// 		{
-// 			let nsPayload;
-// 
-// 			try
-// 			{
-// 				nsPayload = netstring.nsPayload(this->_recvBuffer);
-// 			}
-// 			catch (error)
-// 			{
-// 				MSC_ERROR(
-// 					"invalid netstring data received from the worker process: %s",
-// 					String(error));
-// 
-// 				// Reset the buffer and exit.
-// 				this->_recvBuffer = undefined;
-// 
-// 				return;
-// 			}
-// 
-// 			// Incomplete netstring message.
-// 			if (nsPayload == = -1)
-// 				return;
-// 
-// 			this->_processData(nsPayload);
-// 
-// 			// Remove the read payload from the buffer.
-// 			this->_recvBuffer =
-// 				this->_recvBuffer!.slice(netstring.nsLength(this->_recvBuffer));
-// 
-// 			if (!this->_recvBuffer.length)
-// 			{
-// 				this->_recvBuffer = undefined;
-// 
-// 				return;
-// 			}
-// 		}
+
 	});
 
 	this->_consumerSocket->on("end", [=]() {

@@ -147,7 +147,7 @@ std::future<json> PlainTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
 
-	json ret = co_await  this->_channel->request("transport.getStats", this->_internal);
+	json ret = co_await  this->_channel->request("transport.getStats", this->_internal["transportId"]);
 
 	co_return ret;
 }
@@ -174,7 +174,7 @@ std::future<void> PlainTransport::connect(
 	};
 
 	json data =
-		co_await this->_channel->request("transport.connect", this->_internal, reqData);
+		co_await this->_channel->request("transport.connect", this->_internal["transportId"], reqData);
 
 	// Update data.
 	if (data.count("tuple"))

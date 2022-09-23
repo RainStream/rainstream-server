@@ -139,7 +139,7 @@ std::future<json> PipeTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
 
-	json ret = co_await this->_channel->request("transport.getStats", this->_internal);
+	json ret = co_await this->_channel->request("transport.getStats", this->_internal["transportId"]);
 
 	co_return ret;
 }
@@ -164,7 +164,7 @@ std::future<void> PipeTransport::connect(
 	};
 
 	json data =
-		co_await this->_channel->request("transport.connect", this->_internal, reqData);
+		co_await this->_channel->request("transport.connect", this->_internal["transportId"], reqData);
 
 	// Update data.
 	this->_data["tuple"] = data["tuple"];
@@ -202,6 +202,8 @@ std::future<Consumer*> PipeTransport::consume(ConsumerOptions& options)
 
 	json reqData =
 	{
+		{ "consumerId", uuidv4() },
+		{ "producerId", producerId },
 		{ "kind"                   , producer->kind() },
 		{ "rtpParameters"          , rtpParameters },
 		{ "type"                   , "pipe" },
@@ -209,7 +211,7 @@ std::future<Consumer*> PipeTransport::consume(ConsumerOptions& options)
 	};
 
 	json status =
-		co_await this->_channel->request("transport.consume", internal, reqData);
+		co_await this->_channel->request("transport.consume", this->_internal["transportId"], reqData);
 
 	json data = {
 		{ "kind", producer->kind() },
@@ -233,7 +235,7 @@ std::future<Consumer*> PipeTransport::consume(ConsumerOptions& options)
 	// Emit observer event.
 	this->_observer->safeEmit("newconsumer", consumer);
 
-	return consumer;
+	co_return consumer;
 }
 
 void PipeTransport::_handleWorkerNotifications()
