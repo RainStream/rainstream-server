@@ -56,6 +56,13 @@ struct ConsumerLayers
 
 	}
 
+	ConsumerLayers(const ConsumerLayers& layers)
+		: spatialLayer(layers.spatialLayer)
+		, temporalLayer(layers.temporalLayer)
+	{
+
+	}
+
 	ConsumerLayers(const json& data)
 		: ConsumerLayers()
 	{

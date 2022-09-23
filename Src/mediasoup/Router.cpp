@@ -841,7 +841,8 @@ bool Router::canConsume(std::string producerId, json& rtpCapabilities)
 
 	try
 	{
-		return ortc::canConsume(producer->consumableRtpParameters(), rtpCapabilities);
+		json consumableRtpParameters = producer->consumableRtpParameters();
+		return ortc::canConsume(consumableRtpParameters, rtpCapabilities);
 	}
 	catch (std::exception& error)
 	{

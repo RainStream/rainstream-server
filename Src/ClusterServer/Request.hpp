@@ -15,7 +15,7 @@ namespace protoo
 		virtual ~Request();
 
 		void Accept();
-		void Accept(json& data);
+		void Accept(const json& data);
 		void Reject(int errorCode, std::string errorReason);
 
 	public:

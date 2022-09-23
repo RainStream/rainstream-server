@@ -59,7 +59,7 @@ namespace protoo
 		this->peer->Send(jsonResponse);
 	}
 
-	void Request::Accept(json& data)
+	void Request::Accept(const json& data)
 	{
 		MSC_TRACE();
 

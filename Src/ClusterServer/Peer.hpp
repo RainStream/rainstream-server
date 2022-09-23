@@ -43,8 +43,8 @@ namespace protoo
 
 		void Send(const json& message);
 // 		Defer send(std::string method, json data);
-		void notify(std::string method, json& data);
-		std::future<json> request(std::string method, json& data);
+		void notify(std::string method, const json& data);
+		std::future<json> request(std::string method, const json& data);
 
 		struct Data
 		{

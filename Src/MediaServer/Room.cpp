@@ -49,7 +49,7 @@ std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId)
 // 
 // 	const bot = co_await Bot.create({ mediasoupRouter });
 
-	return new Room(
+	co_return new Room(
 		roomId,
 		mediasoupRouter);
 }
@@ -971,7 +971,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	{
 		MSC_WARN("_createConsumer() | transport.consume():%s", error.what());
 
-		return;
+		co_return;
 	}
 
 	// Store the Consumer into the protoo consumerPeer data Object.
@@ -1040,19 +1040,19 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 
 	consumer->on("layerschange", [=](json& layers)
 	{
-		try
-		{
-			consumerPeer->notify("consumerLayersChanged",
-				json{
-					{ "consumerId", consumer->id() },
-					{ "spatialLayer",  !layers.is_null() ? layers["spatialLayer"] : 0 },
-					{ "temporalLayer",  !layers.is_null() ? layers["temporalLayer"] : 0 }
-				});
-		}
-		catch (const std::exception&)
-		{
-
-		}
+			try
+			{
+				json data{
+						{ "consumerId", consumer->id() },
+						{ "spatialLayer",  !layers.is_null() ? layers.value("spatialLayer", 0) : 0},
+						{ "temporalLayer",  !layers.is_null() ? layers.value("temporalLayer", 0) : 0 }
+				};
+				consumerPeer->notify("consumerLayersChanged", data);
+			}
+			catch (const std::exception&)
+			{
+				
+			}
 	});
 
 	// NOTE: For testing.
@@ -1070,9 +1070,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	// Send a protoo request to the remote Peer with Consumer parameters.
 	try
 	{
-		co_await consumerPeer->request(
-			"newConsumer",
-			json{
+		json data{
 				{ "peerId", producerPeer->id() },
 				{ "producerId", producer->id() },
 				{ "id", consumer->id() },
@@ -1081,7 +1079,9 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 				{ "type", consumer->type() },
 				{ "appData", producer->appData() },
 				{ "producerPaused", consumer->producerPaused() }
-			});
+		};
+		co_await consumerPeer->request(
+			"newConsumer", data);
 
 		// Now that we got the positive response from the remote endpoint, resume
 		// the Consumer so the remote endpoint will receive the a first RTP packet

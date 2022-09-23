@@ -261,7 +261,7 @@ std::future<json> Worker::getResourceUsage()
 }
 
 std::future<Router*> Worker::createRouter(
-	json& mediaCodecs, json& appData/* = json()*/)
+	json& mediaCodecs, const json& appData/* = json()*/)
 {
 	MSC_DEBUG("createRouter()");
 

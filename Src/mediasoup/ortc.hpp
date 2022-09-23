@@ -20,7 +20,7 @@ namespace ortc
 	json generateRouterRtpCapabilities(json& mediaCodecs);
 	json getProducerRtpParametersMapping(json& params, json& caps);
 	json getConsumableRtpParameters(std::string kind, json& params, json& caps, json& rtpMapping);
-	bool canConsume(const json& consumableParams, const json& caps);
+	bool canConsume(json& consumableParams, json& caps);
 	json getConsumerRtpParameters(json& consumableParams, json& caps);
 	json getPipeConsumerRtpParameters(const json& consumableParams, bool enableRtx = false);
 }

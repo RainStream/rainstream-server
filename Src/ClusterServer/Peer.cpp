@@ -166,7 +166,7 @@ namespace protoo
 		}
 	}
 
-	void Peer::notify(std::string method, json& data)
+	void Peer::notify(std::string method, const json& data)
 	{
 		json notification = Message::createNotification(method, data);
 
@@ -176,7 +176,7 @@ namespace protoo
 		this->_transport->send(notification);
 	}
 
-	std::future<json> Peer::request(std::string method, json& data)
+	std::future<json> Peer::request(std::string method, const json& data)
 	{
 		json request = Message::createRequest(method, data);
 

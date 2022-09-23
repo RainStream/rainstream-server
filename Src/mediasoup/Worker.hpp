@@ -29,7 +29,7 @@ public:
 	/**
 	 * Create a Router.
 	 */
-	std::future<Router*> createRouter(json& mediaCodecs, json& appData/* = json::object()*/);
+	std::future<Router*> createRouter(json& mediaCodecs, const json& appData = json::object());
 
 private:
 	SubProcess* _child{ nullptr };
