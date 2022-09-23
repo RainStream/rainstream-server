@@ -165,6 +165,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ActiveSpeakerObserver.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="child_process\PipeStreamSocket.cpp" />
     <ClCompile Include="child_process\Socket.cpp" />
@@ -183,10 +184,12 @@
     <ClCompile Include="supportedRtpCapabilities.cpp" />
     <ClCompile Include="Transport.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="WebRtcServer.cpp" />
     <ClCompile Include="WebRtcTransport.cpp" />
     <ClCompile Include="Worker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ActiveSpeakerObserver.hpp" />
     <ClInclude Include="AudioLevelObserver.hpp" />
     <ClInclude Include="Channel.hpp" />
     <ClInclude Include="child_process\PipeStreamSocket.hpp" />
@@ -214,6 +217,7 @@
     <ClInclude Include="supportedRtpCapabilities.hpp" />
     <ClInclude Include="Transport.hpp" />
     <ClInclude Include="utils.hpp" />
+    <ClInclude Include="WebRtcServer.hpp" />
     <ClInclude Include="WebRtcTransport.hpp" />
     <ClInclude Include="Worker.hpp" />
   </ItemGroup>

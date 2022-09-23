@@ -78,6 +78,12 @@
     <ClCompile Include="EnhancedEventEmitter.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="ActiveSpeakerObserver.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WebRtcServer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="child_process\PipeStreamSocket.hpp">
@@ -165,6 +171,12 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="EnhancedEventEmitter.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ActiveSpeakerObserver.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="WebRtcServer.hpp">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
