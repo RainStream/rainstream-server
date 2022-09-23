@@ -922,7 +922,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	{
 		MSC_WARN("_createConsumer() | transport.consume():%s", error.what());
 
-		return;
+		co_return;
 	}
 
 	// Store the Consumer into the protoo consumerPeer data Object.

@@ -891,7 +891,7 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 	{
 		MSC_ERROR("unknown request.method '%s'", method.c_str());
 
-		request->Reject(500, utils::Printf("unknown request.method '%s'",
+		request->Reject(500, Utils::Printf("unknown request.method '%s'",
 			request->method.c_str()));
 	}
 }

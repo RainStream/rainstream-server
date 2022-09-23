@@ -18,7 +18,7 @@ namespace protoo
 
 		auto jsonIdIt = jsonRequest.find("id");
 
-		if (jsonIdIt == jsonRequest.end() || !utils::Json::IsPositiveInteger(*jsonIdIt))
+		if (jsonIdIt == jsonRequest.end() || !Utils::Json::IsPositiveInteger(*jsonIdIt))
 			MSC_THROW_ERROR("missing id");
 
 		this->id = jsonIdIt->get<uint32_t>();
