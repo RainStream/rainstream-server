@@ -24,9 +24,9 @@ namespace protoo
 		{
 			if (req.getHeader("sec-websocket-protocol").toString() != SEC_WEBSOCKET_PROTOCOL) {
 
-				ws->close(403, "Invalid/missing Sec-WebSocket-Protocol");
+				//ws->close(403, "Invalid/missing Sec-WebSocket-Protocol");
 
-				return;
+				//return;
 			}
 
 			std::string url = req.getUrl().toString();

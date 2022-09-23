@@ -9,7 +9,7 @@ using AStringVector = std::vector<std::string>;
 /** Evaluates to the uint32_t of elements in an array (compile-time!) */
 #define ARRAYCOUNT(X) (sizeof(X) / sizeof(*(X)))
 
-namespace utils
+namespace Utils
 {
 	inline uint32_t generateRandomNumber(uint32_t min = 10000000, uint32_t max = 99999999)
 	{
@@ -60,6 +60,35 @@ namespace utils
 				return value.get<int64_t>() >= 0;
 			else
 				return false;
+		}
+	};
+
+	class Byte
+	{
+	public:
+		/**
+		 * Getters below get value in Host Byte Order.
+		 * Setters below set value in Network Byte Order.
+		 */
+		static uint8_t Get1Byte(const uint8_t* data, size_t i)
+		{
+			return data[i];
+		}
+
+		static uint16_t Get2Bytes(const uint8_t* data, size_t i)
+		{
+			return uint16_t{ data[i + 1] } | uint16_t{ data[i] } << 8;
+		}
+
+		static uint32_t Get3Bytes(const uint8_t* data, size_t i)
+		{
+			return uint32_t{ data[i + 2] } | uint32_t{ data[i + 1] } << 8 | uint32_t{ data[i] } << 16;
+		}
+
+		static uint32_t Get4Bytes(const uint8_t* data, size_t i)
+		{
+			return uint32_t{ data[i] } | uint32_t{ data[i + 1] } << 8 |
+				uint32_t{ data[i + 2] } << 16 | uint32_t{ data[i + 3] } << 24;
 		}
 	};
 }

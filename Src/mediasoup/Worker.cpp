@@ -42,42 +42,44 @@ Worker::Worker(json settings)
 	std::string dtlsPrivateKeyFile = settings.value("dtlsPrivateKeyFile", "");
 
 	if (!logLevel.empty())
-		spawnArgs.push_back(utils::Printf("--logLevel=%s", logLevel.c_str()));
+		spawnArgs.push_back(Utils::Printf("--logLevel=%s", logLevel.c_str()));
 
 	for (auto& logTag : logTags)
 	{
 		if (logTag.is_string() && !std::string(logTag).empty())
-			spawnArgs.push_back(utils::Printf("--logTag=%s", std::string(logTag).c_str()));
+			spawnArgs.push_back(Utils::Printf("--logTag=%s", std::string(logTag).c_str()));
 	}
 
 	if (rtcMinPort > 0)
-		spawnArgs.push_back(utils::Printf("--rtcMinPort=%d", rtcMinPort));
+		spawnArgs.push_back(Utils::Printf("--rtcMinPort=%d", rtcMinPort));
 
 	if (rtcMaxPort > 0)
-		spawnArgs.push_back(utils::Printf("--rtcMaxPort=%d", rtcMaxPort));
+		spawnArgs.push_back(Utils::Printf("--rtcMaxPort=%d", rtcMaxPort));
 
 	if (!dtlsCertificateFile.empty())
-		spawnArgs.push_back(utils::Printf("--dtlsCertificateFile=%s", dtlsCertificateFile.c_str()));
+		spawnArgs.push_back(Utils::Printf("--dtlsCertificateFile=%s", dtlsCertificateFile.c_str()));
 
 	if (!dtlsPrivateKeyFile.empty())
-		spawnArgs.push_back(utils::Printf("--dtlsPrivateKeyFile=%s", dtlsPrivateKeyFile.c_str()));
+		spawnArgs.push_back(Utils::Printf("--dtlsPrivateKeyFile=%s", dtlsPrivateKeyFile.c_str()));
 
 	json spawnOptions = {
 		{ "env", { {"MEDIASOUP_VERSION", __MEDIASOUP_VERSION__} } },
 		{ "detached", false },
 		{ "stdio", { "ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"} },
-		{ "windowsHide", true }
+		{ "windowsHide", false }
 	};
 
 	this->_child = SubProcess::spawn(WORK_PATH, spawnArgs, spawnOptions);
 
 	this->_pid = this->_child->pid();
 
-	this->_channel = new Channel(this->_child->stdio()[3],
+	this->_channel = new Channel(
+		this->_child->stdio()[3],
 		this->_child->stdio()[4],
 		this->_pid);
 
-	this->_payloadChannel = new PayloadChannel(this->_child->stdio()[5],
+	this->_payloadChannel = new PayloadChannel(
+		this->_child->stdio()[5],
 		this->_child->stdio()[6]);
 
 	this->_appData = settings.value("appData", json());

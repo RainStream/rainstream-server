@@ -88,7 +88,7 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 	if (options.contains("env") && options["env"].is_object())
 	{
 		for (auto& el : options["env"].items()) {
-			std::string env = utils::Printf("%s=%s", el.key().c_str(), std::string(el.value()).c_str());
+			std::string env = Utils::Printf("%s=%s", el.key().c_str(), std::string(el.value()).c_str());
 			strEnvs.push_back(env);
 		}
 	}

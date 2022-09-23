@@ -199,7 +199,7 @@ void Channel::_processMessage(const json& msg)
 	// If a Notification emit it to the corresponding entity.
 	else if (msg.count("targetId") && msg.count("event"))
 	{
-		std::string targetId = msg["targetId"].get<std::string>();
+		std::string targetId =std::to_string(msg["targetId"].get<uint32_t>());
 
 		this->emit(targetId, msg["event"].get<std::string>(), msg.value("data", json()));
 	}

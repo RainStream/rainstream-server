@@ -2,7 +2,7 @@
 #include "common.hpp"
 #include "utils.hpp"
 
-namespace utils
+namespace Utils
 {
 	std::string & AppendVPrintf(std::string & str, const char * format, va_list args)
 	{

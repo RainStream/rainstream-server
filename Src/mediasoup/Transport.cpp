@@ -420,7 +420,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 		consumableRtpParameters, rtpCapabilities);
 
 	// Set MID.
-	rtpParameters["mid"] = utils::Printf("%ud", this->_nextMidForConsumers++);
+	rtpParameters["mid"] = Utils::Printf("%ud", this->_nextMidForConsumers++);
 
 	// We use up to 8 bytes for MID (string).
 	if (this->_nextMidForConsumers == 100000000)

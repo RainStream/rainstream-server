@@ -11,7 +11,7 @@ namespace protoo
 		json request =
 		{
 			{ "request" , true },
-			{ "id" , utils::generateRandomNumber() },
+			{ "id" , Utils::generateRandomNumber() },
 			{ "method" , method },
 			{ "data", data.is_null() ? json::object() : data }
 		};

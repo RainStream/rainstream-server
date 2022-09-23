@@ -183,7 +183,7 @@
     <ClCompile Include="scalabilityModes.cpp" />
     <ClCompile Include="supportedRtpCapabilities.cpp" />
     <ClCompile Include="Transport.cpp" />
-    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="WebRtcServer.cpp" />
     <ClCompile Include="WebRtcTransport.cpp" />
     <ClCompile Include="Worker.cpp" />
@@ -216,7 +216,7 @@
     <ClInclude Include="SrtpParameters.hpp" />
     <ClInclude Include="supportedRtpCapabilities.hpp" />
     <ClInclude Include="Transport.hpp" />
-    <ClInclude Include="utils.hpp" />
+    <ClInclude Include="Utils.hpp" />
     <ClInclude Include="WebRtcServer.hpp" />
     <ClInclude Include="WebRtcTransport.hpp" />
     <ClInclude Include="Worker.hpp" />

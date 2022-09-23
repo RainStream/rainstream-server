@@ -1571,7 +1571,7 @@ namespace ortc
 		if (!mediaCodecs.is_array())
 			MSC_THROW_TYPE_ERROR("mediaCodecs must be an Array");
 
-		json clonedSupportedRtpCapabilities = utils::clone(supportedRtpCapabilities);
+		json clonedSupportedRtpCapabilities = Utils::clone(supportedRtpCapabilities);
 		std::list<int> dynamicPayloadTypes = DynamicPayloadTypes;
 		json caps =
 		{
@@ -1599,7 +1599,7 @@ namespace ortc
 			}
 
 			// Clone the supported codec.
-			json codec = utils::clone(*matchedSupportedCodecIt);
+			json codec = Utils::clone(*matchedSupportedCodecIt);
 
 			// If the given media codec has preferredPayloadType, keep it.
 			if (mediaCodec["preferredPayloadType"].is_number_integer())
@@ -1772,7 +1772,7 @@ namespace ortc
 		}
 
 		// Generate encodings mapping.
-		uint32_t mappedSsrc = utils::generateRandomNumber();
+		uint32_t mappedSsrc = Utils::generateRandomNumber();
 
 		for (auto& encoding : params["encodings"])
 		{
@@ -1889,7 +1889,7 @@ json getConsumableRtpParameters(std::string kind, json& params, json& caps, json
 	}
 
 	// Clone Producer encodings since we'll mangle them.
-	json consumableEncodings = utils::clone(params["encodings"]);
+	json consumableEncodings = Utils::clone(params["encodings"]);
 
 	for (int i = 0; i < consumableEncodings.size(); ++i)
 	{
@@ -1971,7 +1971,7 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
 		validateRtpCodecCapability(capCodec);
 	}
 
-	json consumableCodecs = utils::clone(consumableParams["codecs"]);
+	json consumableCodecs = Utils::clone(consumableParams["codecs"]);
 
 	bool rtxSupported = false;
 
@@ -2076,11 +2076,11 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
 
 	json consumerEncoding =
 	{
-		{ "ssrc", utils::generateRandomNumber() }
+		{ "ssrc", Utils::generateRandomNumber() }
 	};
 
 	if (rtxSupported)
-		consumerEncoding["rtx"] = { { "ssrc", utils::generateRandomNumber() } };
+		consumerEncoding["rtx"] = { { "ssrc", Utils::generateRandomNumber() } };
 
 	// If any of the consumableParams.encodings has scalabilityMode, process it
 	// (assume all encodings have the same value).
@@ -2099,7 +2099,7 @@ json getConsumerRtpParameters(json& consumableParams, json& caps)
 	{
 		int temporalLayers = parseScalabilityMode(scalabilityMode)["temporalLayers"];
 
-		scalabilityMode = utils::Printf("S%dT%d", consumableParams["encodings"].size(), temporalLayers);
+		scalabilityMode = Utils::Printf("S%dT%d", consumableParams["encodings"].size(), temporalLayers);
 	}
 
 	if (!scalabilityMode.empty())
@@ -2148,7 +2148,7 @@ json getPipeConsumerRtpParameters(const json& consumableParams, bool enableRtx/*
 	};
 
 	json consumableCodecs =
-		utils::clone(consumableParams["codecs"]);
+		Utils::clone(consumableParams["codecs"]);
 
 	for (auto& codec : consumableCodecs)
 	{
@@ -2185,7 +2185,7 @@ json getPipeConsumerRtpParameters(const json& consumableParams, bool enableRtx/*
 		}
 	}
 
-	json consumableEncodings = utils::clone(consumableParams["encodings"]);
+	json consumableEncodings = Utils::clone(consumableParams["encodings"]);
 
 	for (auto& encoding : consumableEncodings)
 	{
