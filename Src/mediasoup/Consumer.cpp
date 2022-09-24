@@ -3,6 +3,7 @@
 #include "common.hpp"
 #include "Consumer.hpp"
 #include "Channel.hpp"
+#include "PayloadChannel.hpp"
 #include "Logger.hpp"
 #include "errors.hpp"
 
@@ -11,157 +12,108 @@ Consumer::Consumer(
 	json internal,
 	json data,
 	Channel* channel,
+	PayloadChannel* payloadChannel,
 	json appData,
 	bool paused,
 	bool producerPaused,
 	json score/* = json()*/,
 	ConsumerLayers preferredLayers/* = ConsumerLayers()*/)
 	: _observer(new EnhancedEventEmitter())
+	, _internal(internal)
+	, _data(data)
+	, _channel(channel)
+	, _payloadChannel(payloadChannel)
+	, _appData(appData)
+	, _paused(paused)
+	, _producerPaused(producerPaused)
+	, _score(score)
+	, _preferredLayers(preferredLayers)
 {
 	MSC_DEBUG("constructor()");
-
-	this->_internal = internal;
-	this->_data = data;
-	this->_channel = channel;
-	this->_appData = appData;
-	this->_paused = paused;
-	this->_producerPaused = producerPaused;
-	this->_score = score;
-	this->_preferredLayers = preferredLayers;
 
 	this->_handleWorkerNotifications();
 }
 
-/**
- * Consumer id.
- */
 std::string Consumer::id()
 {
 	return this->_internal["consumerId"];
 }
 
-/**
- * Associated Producer id.
- */
 std::string Consumer::producerId()
 {
 	return this->_internal["producerId"];
 }
 
-/**
- * Whether the Consumer is closed.
- */
 bool Consumer::closed()
 {
 	return this->_closed;
 }
 
-/**
- * Media kind.
- */
 std::string Consumer::kind()
 {
 	return this->_data["kind"];
 }
 
-/**
- * RTP parameters.
- */
 json Consumer::rtpParameters()
 {
 	return this->_data["rtpParameters"];
 }
 
-/**
- * Consumer type.
- */
 ConsumerType Consumer::type()
 {
 	return this->_data["type"];
 }
 
-/**
- * Whether the Consumer is paused.
- */
 bool Consumer::paused()
 {
 	return this->_paused;
 }
 
-/**
- * Whether the associate Producer is paused.
- */
 bool Consumer::producerPaused()
 {
 	return this->_producerPaused;
 }
 
-/**
- * Current priority.
- */
 int Consumer::priority()
 {
 	return this->_priority;
 }
 
-/**
- * Consumer score.
- */
 json Consumer::score()
 {
 	return this->_score;
 }
 
-/**
- * Preferred video layers.
- */
 ConsumerLayers Consumer::preferredLayers()
 {
 	return this->_preferredLayers;
 }
 
-/**
- * Current video layers.
- */
 ConsumerLayers Consumer::currentLayers()
 {
 	return this->_currentLayers;
 }
 
-/**
- * App custom data.
- */
 json Consumer::appData()
 {
 	return this->_appData;
 }
 
-/**
- * Invalid setter.
- */
 void Consumer::appData(json appData) // eslint-disable-line no-unused-vars
 {
 	MSC_THROW_ERROR("cannot override appData object");
 }
 
-/**
- * Observer.
- *
- * @emits close
- * @emits pause
- * @emits resume
- * @emits score - (score: ConsumerScore)
- * @emits layerschange - (layers: ConsumerLayers | undefined)
- * @emits trace - (trace: ConsumerTraceEventData)
- */
 EnhancedEventEmitter* Consumer::observer()
 {
 	return this->_observer;
 }
 
-/**
- * Close the Consumer.
- */
+Channel* Consumer::channelForTesting()
+{
+	return this->_channel;
+}
+
 void Consumer::close()
 {
 	if (this->_closed)
@@ -173,10 +125,14 @@ void Consumer::close()
 
 	// Remove notification subscriptions.
 	this->_channel->removeAllListeners(this->_internal["consumerId"]);
+	this->_payloadChannel->removeAllListeners(this->_internal["consumerId"]);
 
 	try
 	{
-		this->_channel->request("consumer.close", this->_internal["transportId"]);
+		json reqData = { 
+			{"consumerId", this->_internal["consumerId"] }
+		};
+		this->_channel->request("transport.closeConsumer", this->_internal["transportId"], reqData);
 	}
 	catch (const std::exception&)
 	{
@@ -184,18 +140,12 @@ void Consumer::close()
 	}
 
 	this->emit("@close");
-
 	// Emit observer event.
 	this->_observer->safeEmit("close");
 
 	delete this;
 }
 
-/**
- * Transport was closed.
- *
- * @private
- */
 void Consumer::transportClosed()
 {
 	if (this->_closed)
@@ -207,9 +157,9 @@ void Consumer::transportClosed()
 
 	// Remove notification subscriptions.
 	this->_channel->removeAllListeners(this->_internal["consumerId"]);
+	this->_payloadChannel->removeAllListeners(this->_internal["consumerId"]);
 
 	this->safeEmit("transportclose");
-
 	// Emit observer event.
 	this->_observer->safeEmit("close");
 

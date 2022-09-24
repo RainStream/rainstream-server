@@ -28,6 +28,20 @@ struct WebRtcServerListenInfo
 	 * Listening port.
 	 */
 	uint16_t port;
+
+	operator json() const 
+	{
+		json data = {
+			{ "protocol", protocol },
+			{ "ip", ip },
+			{ "port", port },
+		};
+
+		if (announcedIp.has_value())
+			data["announcedIp"] = announcedIp.value();
+
+		return data;
+	}
 };
 
 struct WebRtcServerOptions
@@ -44,7 +58,7 @@ struct WebRtcServerOptions
 };
 
 
-class WebRtcServer : public EnhancedEventEmitter
+class MS_EXPORT WebRtcServer : public EnhancedEventEmitter
 {
 public:
 	WebRtcServer(const json& internal, Channel* channel, const json& appData);

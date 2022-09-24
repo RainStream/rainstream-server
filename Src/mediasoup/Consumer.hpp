@@ -3,6 +3,7 @@
 #include "EnhancedEventEmitter.hpp"
 
 class Channel;
+class PayloadChannel;
 
 struct ConsumerOptions
 {
@@ -215,6 +216,7 @@ public:
 		json internal,
 		json data,
 		Channel* channel,
+		PayloadChannel* payloadChannel,
 		json appData,
 		bool paused,
 		bool producerPaused,
@@ -302,6 +304,11 @@ public:
 	 * @emits trace - (trace: ConsumerTraceEventData)
 	 */
 	EnhancedEventEmitter* observer();
+	/**
+	 * @private
+	 * Just for testing purposes.
+	 */
+	Channel* channelForTesting();
 
 	/**
 	 * Close the Consumer.
@@ -369,37 +376,28 @@ private:
 private:
 	// Internal data.
 	json _internal;
-
 	// Consumer data.
 	json _data;
-
 	// Channel instance.
 	Channel* _channel;
-
+	// PayloadChannel instance.
+	PayloadChannel* _payloadChannel;
 	// Closed flag.
 	bool _closed = false;
-
 	// Custom app data.
 	json _appData;
-
 	// Paused flag.
 	bool _paused = false;
-
 	// Associated Producer paused flag.
 	bool _producerPaused = false;
-
 	// Current priority.
 	uint32_t _priority = 1;
-
 	// Current score.
 	json _score;
-
 	// Preferred layers.
 	ConsumerLayers _preferredLayers;
-
 	// Curent layers.
 	ConsumerLayers _currentLayers;
-
 	// Observer instance.
 	EnhancedEventEmitter* _observer{ nullptr };
 };

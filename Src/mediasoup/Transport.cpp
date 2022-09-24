@@ -458,6 +458,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 		internal,
 		data,
 		this->_channel,
+		this->_payloadChannel,
 		appData,
 		status["paused"],
 		status["producerPaused"],

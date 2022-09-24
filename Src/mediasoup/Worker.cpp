@@ -10,6 +10,7 @@
 #include "Router.hpp"
 #include "ortc.hpp"
 #include "PayloadChannel.hpp"
+#include "WebRtcServer.hpp"
 #include "child_process/SubProcess.hpp"
 
 #define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
@@ -182,6 +183,38 @@ Worker::Worker(json settings)
 // 	});
 }
 
+uint32_t Worker::pid() {
+	return this->_pid;
+}
+
+bool Worker::closed() {
+	return this->_closed;
+}
+
+bool Worker::died() {
+	return this->_died;
+}
+
+json Worker::appData() {
+	return this->_appData;
+}
+
+void Worker::appData(json appData) {
+	MSC_THROW_ERROR("cannot override appData object");
+}
+
+EnhancedEventEmitter* Worker::observer() {
+	return this->_observer;
+}
+
+std::set<WebRtcServer*> Worker::webRtcServersForTesting() {
+	return this->_webRtcServers;
+}
+
+std::set<Router*> Worker::routersForTesting() {
+	return this->_routers;
+}
+
 void Worker::close()
 {
 	if (this->_closed)
@@ -222,11 +255,6 @@ void Worker::close()
 	delete this;
 }
 
-uint32_t Worker::pid()
-{
-	return _pid;
-}
-
 std::future<json> Worker::dump()
 {
 	MSC_DEBUG("dump()");
@@ -235,23 +263,6 @@ std::future<json> Worker::dump()
 
 	co_return ret;
 }
-// 
-// 	Defer Worker::updateSettings(json& spawnOptions)
-// 	{
-// 		DLOG(INFO) << "updateSettings() [spawnOptions:" << spawnOptions.dump() << "]";
-// 
-// 		co_return this->_channel->request("worker.updateSettings", nullptr, spawnOptions)
-// 			.then([=]()
-// 		{
-// 			DLOG(INFO) << "\"worker.updateSettings\" request succeeded";
-// 		})
-// 			.fail([=](Error error)
-// 		{
-// 			LOG(ERROR) << "\"worker.updateSettings\" request failed:"<< error.ToString();
-// 
-// 			throw error;
-// 		});
-// 	}
 
 std::future<json> Worker::getResourceUsage()
 {
@@ -260,6 +271,46 @@ std::future<json> Worker::getResourceUsage()
 	json ret = co_await this->_channel->request("worker.getResourceUsage");
 
 	co_return ret;
+}
+
+std::future<void> Worker::updateSettings(std::string logLevel, std::vector<std::string> logTags)
+{
+	MSC_DEBUG("updateSettings()");
+
+	json reqData = {
+		{"logLevel", logLevel},
+		{"logTags", logTags}
+	};
+
+	co_await this->_channel->request("worker.updateSettings", undefined, reqData);
+}
+
+
+
+std::future<WebRtcServer*> Worker::createWebRtcServer(const WebRtcServerOptions& options) {
+	MSC_DEBUG("createWebRtcServer()");
+
+	if (!options.appData.is_object())
+		MSC_THROW_TYPE_ERROR("if given, appData must be an object");
+
+	json reqData = {
+		{ "webRtcServerId", uuidv4() },
+		{ "listenInfos", options.listenInfos }
+	};
+
+	co_await this->_channel->request("worker.createWebRtcServer", undefined, reqData);
+
+	WebRtcServer* webRtcServer = new WebRtcServer(
+		{ {"webRtcServerId",  reqData["webRtcServerId"] }},
+		 this->_channel, options.appData);
+
+	this->_webRtcServers.insert(webRtcServer);
+
+	webRtcServer->on("@close", [=]() { this->_webRtcServers.erase(webRtcServer); });
+	// Emit observer event.
+	this->_observer->safeEmit("newwebrtcserver", webRtcServer);
+
+	co_return webRtcServer;
 }
 
 std::future<Router*> Worker::createRouter(
@@ -292,4 +343,36 @@ std::future<Router*> Worker::createRouter(
 	this->_observer->safeEmit("newrouter", router);
 
 	co_return router;
+}
+
+void Worker::workerDied(const Error& error)
+{
+	if (this->_closed)
+		return;
+
+	MSC_DEBUG("died()[error:%s]", error.ToString().c_str());
+
+	this->_closed = true;
+	this->_died = true;
+
+	// Close the Channel instance.
+	this->_channel->close();
+	// Close the PayloadChannel instance.
+	this->_payloadChannel->close();
+
+	// Close every Router.
+	for (Router* router : this->_routers) {
+		router->workerClosed();
+	}
+	this->_routers.clear();
+
+	// Close every WebRtcServer.
+	for (WebRtcServer* webRtcServer : this->_webRtcServers) {
+		webRtcServer->workerClosed();
+	}
+	this->_webRtcServers.clear();
+
+	this->safeEmit("died", error);
+	// Emit observer event.
+	this->_observer->safeEmit("close");
 }

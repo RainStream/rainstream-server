@@ -1,6 +1,5 @@
 #pragma once 
 
-// import { AwaitQueue } from "awaitqueue";
 #include "EnhancedEventEmitter.hpp"
 
 class Channel;
@@ -38,58 +37,45 @@ public:
 	 * Router id.
 	 */
 	std::string id();
-
 	/**
 	 * Whether the Router is closed.
 	 */
 	bool closed();
-
 	/**
 	 * RTC capabilities of the Router.
 	 */
 	json rtpCapabilities();
-
 	/**
 	 * App custom data.
 	 */
 	json appData();
-
 	/**
 	 * Invalid setter.
 	 */
 	void appData(json appData);
-
 	/**
-	 * Observer.
-	 *
-	 * @emits close
-	 * @emits newtransport - (transport: Transport)
-	 * @emits newrtpobserver - (rtpObserver: RtpObserver)
+	 * @private
+	 * Just for testing purposes.
 	 */
 	EnhancedEventEmitter* observer();
-
 	/**
 	 * Close the Router.
 	 */
 	void close();
-
 	/**
 	 * Worker was closed.
 	 *
 	 * @private
 	 */
 	void workerClosed();
-
 	/**
 	 * Dump Router.
 	 */
 	std::future<json> dump();
-
 	/**
 	 * Create a WebRtcTransport.
 	 */
 	std::future<WebRtcTransport*> createWebRtcTransport(WebRtcTransportOptions& options);
-
 	/**
 	 * Create a PlainTransport.
 	 */
@@ -104,7 +90,6 @@ public:
 		std::string srtpCryptoSuite = "AES_CM_128_HMAC_SHA1_80",
 		json appData = json::object()
 	);
-
 	/**
 	 * Create a PipeTransport.
 	 */
@@ -117,43 +102,26 @@ public:
 		bool enableSrtp = false,
 		json appData = json()
 	);
-
 	/**
 	 * Create a DirectTransport.
 	 */
-// 	std::future<DirectTransport*> createDirectTransport(
-// 		uint32_t maxMessageSize = 262144,
-// 		json appData = json::object()
-// 	);
-
+	//createDirectTransport({ maxMessageSize, appData } ? : DirectTransportOptions) : Promise<DirectTransport>;
 	/**
 	 * Pipes the given Producer or DataProducer into another Router in same host.
 	 */
-// 	std::future<PipeToRouterResult*> pipeToRouter(
-// 		{
-// 			producerId,
-// 			dataProducerId,
-// 			router,
-// 			listenIp = "127.0.0.1",
-// 			enableSctp = true,
-// 			numSctpStreams = { OS: 1024, MIS: 1024 },
-// 			enableRtx = false,
-// 			enableSrtp = false
-// 		}: PipeToRouterOptions
-// 	);
-
+	//pipeToRouter({ producerId, dataProducerId, router, listenIp, enableSctp, numSctpStreams, enableRtx, enableSrtp }: PipeToRouterOptions) : Promise<PipeToRouterResult>;
+	/**
+	 * @private
+	 */
+	//addPipeTransportPair(pipeTransportPairKey: string, pipeTransportPairPromise : Promise<PipeTransportPair>) : void;
+	/**
+	 * Create an ActiveSpeakerObserver
+	 */
+	//createActiveSpeakerObserver({ interval, appData } ? : ActiveSpeakerObserverOptions) : Promise<ActiveSpeakerObserver>;
 	/**
 	 * Create an AudioLevelObserver.
 	 */
-// 	std::future<AudioLevelObserver*> createAudioLevelObserver(
-// 		{
-// 			maxEntries = 1,
-// 			threshold = -80,
-// 			interval = 1000,
-// 			appData = {}
-// 		}: AudioLevelObserverOptions = {}
-// 	);
-
+	//createAudioLevelObserver({ maxEntries, threshold, interval, appData } ? : AudioLevelObserverOptions) : Promise<AudioLevelObserver>;
 	/**
 	 * Check whether the given RTP capabilities can consume the given Producer.
 	 */
@@ -162,41 +130,27 @@ public:
 private:
 	// Internal data.
 	json _internal;
-
 	// Router data.
 	json _data;
-
 	// Channel instance.
 	Channel* _channel;
-
 	// PayloadChannel instance.
 	PayloadChannel* _payloadChannel;
-
 	// Closed flag.
 	bool _closed = false;
-
 	// Custom app data.
 	json _appData;
-
 	// Transports map.
 	std::map<std::string, Transport*> _transports;
-
 	// Producers map.
 	std::map<std::string, Producer*> _producers;
-
 	// RtpObservers map.
 	std::map<std::string, RtpObserver*> _rtpObservers;
-
 	// DataProducers map.
 	std::map<std::string, DataProducer*> _dataProducers;
-
-	// Router to PipeTransport map.
-	std::map<Router*, PipeTransport*> _mapRouterPipeTransports;
-
-	// AwaitQueue instance to make pipeToRouter tasks happen sequentially.
-	// 	readonly _pipeToRouterQueue =
-	// 		new AwaitQueue({ ClosedErrorClass: InvalidStateError });
-
+	// Map of PipeTransport pair Promises indexed by the id of the Router in
+	// which pipeToRouter() was called.
+	//std::map<std::string, DataProducer*> _mapRouterPairPipeTransportPairPromise;
 	// Observer instance.
 	EnhancedEventEmitter* _observer;
 };
