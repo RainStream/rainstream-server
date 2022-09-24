@@ -5,7 +5,7 @@
 #include "Logger.hpp"
 #include "errors.hpp"
 #include "Channel.hpp"
-
+#include "PayloadChannel.hpp"
 
 /**
  * @private
@@ -18,18 +18,18 @@
 Producer::Producer(json internal,
 	json data,
 	Channel* channel,
+	PayloadChannel* payloadChannel,
 	json appData,
-	bool paused
-)
+	bool paused)
 	: _observer(new EnhancedEventEmitter())
+	, _internal(internal)
+	, _data(data)
+	, _channel(channel)
+	, _payloadChannel(payloadChannel)
+	, _appData(appData)
+	, _paused(paused)
 {
 	MSC_DEBUG("constructor()");
-
-	this->_internal = internal;
-	this->_data = data;
-	this->_channel = channel;
-	this->_appData = appData;
-	this->_paused = paused;
 
 	this->_handleWorkerNotifications();
 }
@@ -116,19 +116,14 @@ void Producer::appData(json appData) // eslint-disable-line no-unused-vars
 	MSC_THROW_ERROR("cannot override appData object");
 }
 
-/**
- * Observer.
- *
- * @emits close
- * @emits pause
- * @emits resume
- * @emits score - (score: ProducerScore[])
- * @emits videoorientationchange - (videoOrientation: ProducerVideoOrientation)
- * @emits trace - (trace: ProducerTraceEventData)
- */
 EnhancedEventEmitter* Producer::observer()
 {
 	return this->_observer;
+}
+
+Channel* Producer::channelForTesting()
+{
+	return this->_channel;
 }
 
 /**
@@ -145,31 +140,24 @@ void Producer::close()
 
 	// Remove notification subscriptions.
 	this->_channel->removeAllListeners(this->_internal["producerId"]);
+	this->_payloadChannel->removeAllListeners(this->_internal["producerId"]);
 
 	try
 	{
 		json reqData = { { "producerId", this->_internal["producerId"] } };
-
 		this->_channel->request("transport.closeProducer", this->_internal["transportId"], reqData);
 	}
 	catch (const std::exception& error)
 	{
-		MSC_ERROR("Channel::request method \"producer.close\" with error %s", error.what());
 	}
 
 	this->emit("@close");
-
 	// Emit observer event.
 	this->_observer->safeEmit("close");
 
 	delete this;
 }
 
-/**
- * Transport was closed.
- *
- * @private
- */
 void Producer::transportClosed()
 {
 	if (this->_closed)
@@ -181,18 +169,15 @@ void Producer::transportClosed()
 
 	// Remove notification subscriptions.
 	this->_channel->removeAllListeners(this->_internal["producerId"]);
+	this->_payloadChannel->removeAllListeners(this->_internal["producerId"]);
 
 	this->safeEmit("transportclose");
-
 	// Emit observer event.
 	this->_observer->safeEmit("close");
 
 	delete this;
 }
 
-/**
- * Dump Producer.
- */
 std::future<json> Producer::dump()
 {
 	MSC_DEBUG("dump()");
@@ -232,9 +217,6 @@ std::future<void> Producer::pause()
 		this->_observer->safeEmit("pause");
 }
 
-/**
- * Resume the Producer.
- */
 std::future<void> Producer::resume()
 {
 	MSC_DEBUG("resume()");
@@ -250,9 +232,6 @@ std::future<void> Producer::resume()
 		this->_observer->safeEmit("resume");
 }
 
-/**
- * Enable "trace" event.
- */
 std::future<void> Producer::enableTraceEvent(std::vector<ProducerTraceEventType> types)
 {
 	MSC_DEBUG("enableTraceEvent()");
@@ -263,6 +242,12 @@ std::future<void> Producer::enableTraceEvent(std::vector<ProducerTraceEventType>
 		"producer.enableTraceEvent", this->_internal["producerId"], reqData);
 }
 
+//send(rtpPacket) {
+//	if (!Buffer.isBuffer(rtpPacket)) {
+//		throw new TypeError('rtpPacket must be a Buffer');
+//	}
+//	this.#payloadChannel.notify('producer.send', this.#internal.producerId, undefined, rtpPacket);
+//}
 
 void Producer::_handleWorkerNotifications()
 {
@@ -275,7 +260,6 @@ void Producer::_handleWorkerNotifications()
 			this->_score = score;
 
 			this->safeEmit("score", score);
-
 			// Emit observer event.
 			this->_observer->safeEmit("score", score);
 		}
@@ -284,7 +268,6 @@ void Producer::_handleWorkerNotifications()
 			const json& videoOrientation = data;
 
 			this->safeEmit("videoorientationchange", videoOrientation);
-
 			// Emit observer event.
 			this->_observer->safeEmit("videoorientationchange", videoOrientation);
 		}
@@ -293,7 +276,6 @@ void Producer::_handleWorkerNotifications()
 			const json& trace = data;
 
 			this->safeEmit("trace", trace);
-
 			// Emit observer event.
 			this->_observer->safeEmit("trace", trace);
 		}

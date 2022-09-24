@@ -119,7 +119,8 @@ SubProcess* SubProcess::spawn(std::string workerPath, AStringVector parameters, 
 	}
 
 	if (args) {
-		for (int i = 0; args[i]; i++) free(args[i]);
+		for (int i = 0; args[i]; i++) 
+			free(args[i]);
 		delete[] args;
 	}
 

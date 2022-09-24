@@ -196,15 +196,15 @@ namespace protoo
 	{
 		json data = json::parse(message);
 
-		if (data.value("request",false))
+		if (data.contains("request") && data["request"].is_boolean() && data.value("request", false))
 		{
 			this->_handleRequest(data);
 		}
-		else if (data.value("response", false))
+		else if (data.contains("response") && data["response"].is_boolean() && data.value("response", false))
 		{
 			this->_handleResponse(data);
 		}
-		else if (data.count("notification"))
+		else if (data.contains("notification"))
 		{
 			this->_handleNotification(data);
 		}

@@ -138,6 +138,7 @@ struct ProducerStat
 using ProducerType = std::string; // = "simple" | "simulcast" | "svc";
 
 class Channel;
+class PayloadChannel;
 
 class MS_EXPORT Producer : public EnhancedEventEmitter
 {
@@ -153,74 +154,61 @@ public:
 	Producer(json internal,
 		json data,
 		Channel* channel,
+		PayloadChannel* payloadChannel,
 		json appData,
 		bool paused
 	);
-
 	/**
 	 * Producer id.
 	 */
 	std::string id();
-
 	/**
 	 * Whether the Producer is closed.
 	 */
 	bool closed();
-
 	/**
 	 * Media kind.
 	 */
 	std::string kind();
-
 	/**
 	 * RTP parameters.
 	 */
 	json rtpParameters();
-
 	/**
 	 * Producer type.
 	 */
 	ProducerType type();
-
 	/**
 	 * Consumable RTP parameters.
 	 *
 	 * @private
 	 */
 	json consumableRtpParameters();
-
 	/**
 	 * Whether the Producer is paused.
 	 */
 	bool paused();
-
 	/**
 	 * Producer score list.
 	 */
 	json score();
-
 	/**
 	 * App custom data.
 	 */
 	json appData();
-
 	/**
 	 * Invalid setter.
 	 */
 	void appData(json appData);
-
 	/**
 	 * Observer.
-	 *
-	 * @emits close
-	 * @emits pause
-	 * @emits resume
-	 * @emits score - (score: ProducerScore[])
-	 * @emits videoorientationchange - (videoOrientation: ProducerVideoOrientation)
-	 * @emits trace - (trace: ProducerTraceEventData)
 	 */
 	EnhancedEventEmitter* observer();
-
+	/**
+	 * @private
+	 * Just for testing purposes.
+	 */
+	Channel* channelForTesting();
 	/**
 	 * Close the Producer.
 	 */
@@ -258,31 +246,28 @@ public:
 	 */
 	std::future<void> enableTraceEvent(std::vector<ProducerTraceEventType> types);
 
+	//void send(rtpPacket);
+
 private:
 	void _handleWorkerNotifications();
 
 private:
 	// Internal data.
-	json _internal;		
-
+	json _internal;
 	// Producer data.
-	json _data;		
-
+	json _data;
 	// Channel instance.
 	Channel* _channel;
-
+	// PayloadChannel instance.
+	PayloadChannel* _payloadChannel;
 	// Closed flag.
 	bool _closed = false;
-
 	// Custom app data.
-	json _appData = json();
-
+	json _appData;
 	// Paused flag.
 	bool _paused = false;
-
 	// Current score.
 	json _score;
-
 	// Observer instance.
 	EnhancedEventEmitter* _observer;
 };

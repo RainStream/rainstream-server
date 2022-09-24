@@ -14,13 +14,12 @@ const int  NS_PAYLOAD_MAX_LEN = 4194304;
 
 static uint8_t WriteBuffer[NS_MESSAGE_MAX_LEN];
 
+
 Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
+	: _producerSocket(producerSocket)
+	, _consumerSocket(consumerSocket)
 {
 	MSC_DEBUG("constructor()");
-
-	this->_producerSocket = producerSocket;
-	this->_consumerSocket = consumerSocket;
-
 
 	// Read Channel responses/notifications from the worker.
 	this->_consumerSocket->on("data", [=](const std::string& nsPayload)
@@ -37,31 +36,31 @@ Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 
 				// 68 = "D" (a debug log).
 			case 68:
-				MSC_DEBUG("%s", nsPayload.substr(1).c_str());
+				MSC_DEBUG("[pid:%d] %s", pid, nsPayload.substr(1).c_str());
 				break;
 
 				// 87 = "W" (a warning log).
 			case 87:
-				MSC_WARN("%s", nsPayload.substr(1).c_str());
+				MSC_WARN("[pid:%d] %s", pid, nsPayload.substr(1).c_str());
 				break;
 
 				// 69 = "E" (an error log).
 			case 69:
-				MSC_ERROR("%s", nsPayload.substr(1).c_str());
+				MSC_ERROR("[pid:%d] %s", pid, nsPayload.substr(1).c_str());
 				break;
 				// 88 = "X" (a dump log).
 			case 88:
 				// eslint-disable-next-line no-console
-				MSC_DEBUG("%s", nsPayload.substr(1).c_str());
+				MSC_DUMP("%s", nsPayload.substr(1).c_str());
 				break;
 
 			default:
-				MSC_ERROR("unexpected data: %s", nsPayload.c_str());
+				MSC_WARN("worker[pid:%d] unexpected data: %s", pid, nsPayload.c_str());
 			}
 		}
 		catch (const std::exception& error)
 		{
-			MSC_ERROR("received invalid message : %s" , error.what());
+			MSC_ERROR("received invalid message from the worker process: %s" , error.what());
 		}
 
 	});
@@ -101,29 +100,28 @@ void Channel::close()
 	this->_closed = true;
 
 	// Close every pending sent.
-// 		for (auto sent : this->_sents)
-// 		{
-// 			sent.second.clear();
-// 		}
+	for (auto& [key, sent] : this->_sents)
+	{
+		sent.set_exception(std::make_exception_ptr(Error("Channel closed")));
+	}
 
-// 		// Remove event listeners but leave a fake "error" hander to avoid
-// 		// propagation.
-// 		this->_consumerSocket->removeAllListeners("end");
-// 		this->_consumerSocket->removeAllListeners("error");
-// 		this->_consumerSocket->on("error", () = > {});
-// 
-// 		this->_producerSocket->removeAllListeners("end");
-// 		this->_producerSocket->removeAllListeners("error");
-// 		this->_producerSocket->on("error", () = > {});
-// 
-// 		// Destroy the socket after a while to allow pending incoming messages.
-// 		setTimeout(() = >
-// 		{
-// 			try { this->_producerSocket.destroy(); }
-// 			catch (error) {}
-// 			try { this->_consumerSocket.destroy(); }
-// 			catch (error) {}
-// 		}, 200);
+	// Remove event listeners but leave a fake "error" hander to avoid
+	// propagation.
+	this->_consumerSocket->removeAllListeners("end");
+	this->_consumerSocket->removeAllListeners("error");
+	this->_consumerSocket->on("error", []() {});
+	this->_producerSocket->removeAllListeners("end");
+	this->_producerSocket->removeAllListeners("error");
+	this->_producerSocket->on("error", []() {});
+
+	// Destroy the socket after a while to allow pending incoming messages.
+	// 		setTimeout(() = >
+	// 		{
+	// 			try { this->_producerSocket.destroy(); }
+	// 			catch (error) {}
+	// 			try { this->_consumerSocket.destroy(); }
+	// 			catch (error) {}
+	// 		}, 200);
 
 	delete this;
 }
@@ -174,26 +172,40 @@ void Channel::_processMessage(const json& msg)
 	{
 		uint32_t id = msg["id"].get<uint32_t>();
 
-		if (msg.count("accepted") && msg["accepted"].get<bool>())
-			MSC_DEBUG("request succeeded [id:\"%d\"]",id);
-		else
-			MSC_ERROR("request failed [id:\"%d\"] reason:%s]", 
-				id, msg["reason"].get<std::string>().c_str());
-
 		if (!this->_sents.count(id))
 		{
-			MSC_ERROR("received Response does not match any sent Request");
+			MSC_ERROR("received response does not match any sent request [id:%d]", id);
 			return;
 		}
 
 		std::promise<json> sent = std::move(this->_sents[id]);
 		this->_sents.erase(id);
 
-		if (msg.value("accepted", false))
-			sent.set_value(msg.value("data",json::object()));
-		else if (msg.value("rejected", false))
-			sent.set_exception(std::make_exception_ptr(Error(msg["reason"].get<std::string>())));
+		if (msg.count("accepted") && msg["accepted"].get<bool>())
+		{
+			MSC_DEBUG("request succeeded [id:\"%d\"]", id);
+			sent.set_value(msg.value("data", json::object()));
+		}
+		else if (msg.count("error"))
+		{
+			std::string error = msg["error"];
+			std::string reason = msg["reason"];
 
+			MSC_WARN("request failed [id:\"%d\"] reason:%s]", id, reason.c_str());
+
+			if (error == "TypeError")
+			{
+				sent.set_exception(std::make_exception_ptr(TypeError(reason)));
+			}
+			else
+			{
+				sent.set_exception(std::make_exception_ptr(Error(reason)));
+			}
+		}
+		else
+		{
+			MSC_ERROR("received response is not accepted nor rejected[method:, id:%d]",  id);
+		}
 	}
 	// If a Notification emit it to the corresponding entity.
 	else if (msg.count("targetId") && msg.count("event"))

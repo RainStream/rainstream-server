@@ -7,6 +7,7 @@
 #include "errors.hpp"
 #include "Logger.hpp"
 #include "Channel.hpp"
+#include "PayloadChannel.hpp"
 #include "Producer.hpp"
 #include "Consumer.hpp"
 //#include "PayloadChannel.hpp"
@@ -33,76 +34,49 @@ Transport::Transport(
 	const json& appData,
 	GetRouterRtpCapabilities getRouterRtpCapabilities,
 	GetProducerById getProducerById,
-	GetDataProducerById getDataProducerById
-)
+	GetDataProducerById getDataProducerById)
 	: _observer(new EnhancedEventEmitter())
+	, _internal(internal)
+	, _data(data)
+	, _channel(channel)
+	, _payloadChannel(payloadChannel)
+	, _appData(appData)
+	, _getRouterRtpCapabilities(getRouterRtpCapabilities)
+	, _getProducerById(getProducerById)
+	, _getDataProducerById(getDataProducerById)
 {
 	MSC_DEBUG("constructor()");
-
-	this->_internal = internal;
-	this->_data = data;
-	this->_channel = channel;
-	this->_payloadChannel = payloadChannel;
-	this->_appData = appData;
-	this->_getRouterRtpCapabilities = getRouterRtpCapabilities;
-	this->_getProducerById = getProducerById;
-	this->_getDataProducerById = getDataProducerById;
 }
 
 Transport::~Transport()
 {
-
 }
 
-/**
- * Transport id.
- */
 std::string Transport::id()
 {
 	return this->_internal["transportId"];
 }
 
-/**
- * Whether the Transport is closed.
- */
 bool Transport::closed()
 {
 	return this->_closed;
 }
 
-/**
- * App custom data.
- */
 json Transport::appData()
 {
 	return this->_appData;
 }
 
-/**
- * Invalid setter.
- */
 void Transport::appData(json appData) // eslint-disable-line no-unused-vars
 {
 	MSC_THROW_ERROR("cannot override appData object");
 }
 
-/**
- * Observer.
- *
- * @emits close
- * @emits newproducer - (producer: Producer)
- * @emits newconsumer - (producer: Producer)
- * @emits newdataproducer - (dataProducer: DataProducer)
- * @emits newdataconsumer - (dataProducer: DataProducer)
- */
 EnhancedEventEmitter* Transport::observer()
 {
 	return this->_observer;
 }
 
-/**
- * Close the Transport.
- */
 void Transport::close()
 {
 	if (this->_closed)
@@ -114,6 +88,7 @@ void Transport::close()
 
 	// Remove notification subscriptions.
 	this->_channel->removeAllListeners(this->_internal["transportId"]);
+	this->_payloadChannel->removeAllListeners(this->_internal["transportId"]);
 
 	try
 	{
@@ -121,57 +96,46 @@ void Transport::close()
 	}
 	catch (const std::exception&)
 	{
-
 	}
 
 	// Close every Producer.
-	auto producers = this->_producers;
-	for (auto &[key, producer] : producers)
+	for (auto &[key, producer] : this->_producers)
 	{
+		producer->transportClosed();
 		// Must tell the Router.
 		this->emit("@producerclose", producer);
-
-		producer->transportClosed();
 	}
 	this->_producers.clear();
 
 	// Close every Consumer.
-	auto consumers = this->_consumers;
-	for (auto &[key, consumer] : consumers)
+	for (auto &[key, consumer] : this->_consumers)
 	{
 		consumer->transportClosed();
 	}
 	this->_consumers.clear();
 
-	// 		// Close every DataProducer.
-	// 		for (DataProducer* dataProducer : this->_dataProducers)
-	// 		{
-	// 			dataProducer->transportClosed();
-	// 
-	// 			// Must tell the Router.
-	// 			this->emit("@dataproducerclose", dataProducer);
-	// 		}
-	// 		this->_dataProducers.clear();
-	// 
-	// 		// Close every DataConsumer.
-	// 		for (DataConsumer* dataConsumer : this->_dataConsumers)
-	// 		{
-	// 			dataConsumer->transportClosed();
-	// 		}
-	// 		this->_dataConsumers.clear();
+	//// Close every DataProducer.
+	//for (DataProducer* dataProducer : this->_dataProducers)
+	//{
+	//	dataProducer->transportClosed();
+
+	//	// Must tell the Router.
+	//	this->emit("@dataproducerclose", dataProducer);
+	//}
+	//this->_dataProducers.clear();
+
+	//// Close every DataConsumer.
+	//for (DataConsumer* dataConsumer : this->_dataConsumers)
+	//{
+	//	dataConsumer->transportClosed();
+	//}
+	//this->_dataConsumers.clear();
 
 	this->emit("@close");
-
 	// Emit observer event.
 	this->_observer->safeEmit("close");
 }
 
-/**
- * Router was closed.
- *
- * @private
- * @virtual
- */
 void Transport::routerClosed()
 {
 	if (this->_closed)
@@ -183,6 +147,7 @@ void Transport::routerClosed()
 
 	// Remove notification subscriptions.
 	this->_channel->removeAllListeners(this->_internal["transportId"]);
+	this->_payloadChannel->removeAllListeners(this->_internal["transportId"]);
 
 	// Close every Producer.
 	for (auto &[key, producer] : this->_producers)
@@ -202,31 +167,76 @@ void Transport::routerClosed()
 	this->_consumers.clear();
 
 	// Close every DataProducer.
-// 		for (DataProducer* dataProducer : this->_dataProducers)
-// 		{
-// 			dataProducer->transportClosed();
-// 
-// 			// NOTE: No need to tell the Router since it already knows (it has
-// 			// been closed in fact).
-// 		}
-// 		this->_dataProducers.clear();
-// 
-// 		// Close every DataConsumer.
-// 		for (DataConsumer* dataConsumer : this->_dataConsumers)
-// 		{
-// 			dataConsumer->transportClosed();
-// 		}
-// 		this->_dataConsumers.clear();
+	//for (DataProducer* dataProducer : this->_dataProducers)
+	//{
+	//	dataProducer->transportClosed();
+
+	//	// NOTE: No need to tell the Router since it already knows (it has
+	//	// been closed in fact).
+	//}
+	//this->_dataProducers.clear();
+
+	//// Close every DataConsumer.
+	//for (DataConsumer* dataConsumer : this->_dataConsumers)
+	//{
+	//	dataConsumer->transportClosed();
+	//}
+	//this->_dataConsumers.clear();
 
 	this->safeEmit("routerclose");
-
 	// Emit observer event.
 	this->_observer->safeEmit("close");
 }
 
-/**
- * Dump Transport.
- */
+void Transport::listenServerClosed()
+{
+	if (this->_closed)
+		return;
+
+	MSC_DEBUG("routerClosed()");
+
+	this->_closed = true;
+
+	// Remove notification subscriptions.
+	this->_channel->removeAllListeners(this->_internal["transportId"]);
+	this->_payloadChannel->removeAllListeners(this->_internal["transportId"]);
+
+	// Close every Producer.
+	for (auto& [key, producer] : this->_producers)
+	{
+		producer->transportClosed();
+		// NOTE: No need to tell the Router since it already knows (it has
+		// been closed in fact).
+	}
+	this->_producers.clear();
+
+	// Close every Consumer.
+	for (auto& [key, consumer] : this->_consumers)
+	{
+		consumer->transportClosed();
+	}
+	this->_consumers.clear();
+	//// Close every DataProducer.
+	//for (const dataProducer of this->dataProducers.values()) {
+	//	dataProducer.transportClosed();
+	//	// NOTE: No need to tell the Router since it already knows (it has
+	//	// been closed in fact).
+	//}
+	//this->dataProducers.clear();
+	//// Close every DataConsumer.
+	//for (const dataConsumer of this->dataConsumers.values()) {
+	//	dataConsumer.transportClosed();
+	//}
+	//this->dataConsumers.clear();
+	// Need to emit this event to let the parent Router know since
+	// transport.listenServerClosed() is called by the listen server.
+	// NOTE: Currently there is just WebRtcServer for WebRtcTransports.
+	this->emit("@listenserverclose");
+	this->safeEmit("listenserverclose");
+	// Emit observer event.
+	this->_observer->safeEmit("close");
+}
+
 std::future<json> Transport::dump()
 {
 	MSC_DEBUG("dump()");
@@ -236,32 +246,18 @@ std::future<json> Transport::dump()
 	co_return ret;
 }
 
-/**
- * Get Transport stats.
- *
- * @abstract
- */
 std::future<json> Transport::getStats()
 {
 	// Should not happen.
 	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
-/**
- * Provide the Transport remote parameters.
- *
- * @abstract
- */
- // eslint-disable-next-line @typescript-eslint/no-unused-vars
 std::future<void> Transport::connect(json& params)
 {
 	// Should not happen.
 	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
-/**
- * Set maximum incoming bitrate for receiving media.
- */
 std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 {
 	MSC_DEBUG("setMaxIncomingBitrate() [bitrate:%d]", bitrate);
@@ -274,9 +270,16 @@ std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 	co_return;
 }
 
-/**
- * Create a Producer.
- */
+std::future<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
+	MSC_DEBUG("setMaxOutgoingBitrate() [bitrate:%d]", bitrate);
+
+	json reqData = { {"bitrate", bitrate} };
+
+	co_await this->_channel->request("transport.setMaxOutgoingBitrate", this->_internal["transportId"], reqData);
+
+	co_return;
+}
+
 std::future<Producer*> Transport::produce(
 	std::string id,
 	std::string kind,
@@ -291,11 +294,11 @@ std::future<Producer*> Transport::produce(
 	MSC_DEBUG("produce()");
 
 	if (!id.empty() && this->_producers.count(id))
-		MSC_THROW_ERROR("a Producer with same id \"%s\" already exists", id.c_str());
+		MSC_THROW_TYPE_ERROR("a Producer with same id \"%s\" already exists", id.c_str());
 	else if (!kinds.count(kind))
-		MSC_THROW_ERROR("invalid kind \"%s\"", kind.c_str());
+		MSC_THROW_TYPE_ERROR("invalid kind \"%s\"", kind.c_str());
 	else if (!appData.is_null() && !appData.is_object())
-		MSC_THROW_ERROR("if given, appData must be an object");
+		MSC_THROW_TYPE_ERROR("if given, appData must be an object");
 
 	// This may throw.
 	ortc::validateRtpParameters(rtpParameters);
@@ -368,6 +371,7 @@ std::future<Producer*> Transport::produce(
 		internal,
 		data,
 		this->_channel,
+		this->_payloadChannel,
 		appData,
 		paused
 	);

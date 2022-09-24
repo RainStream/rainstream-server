@@ -312,7 +312,8 @@ void Consumer::_handleWorkerNotifications()
 			this->_closed = true;
 
 			// Remove notification subscriptions.
-			this->_channel->removeAllListeners(this->_internal["consumerId"].get<std::string>());
+			this->_channel->removeAllListeners(this->_internal["consumerId"]);
+			this->_payloadChannel->removeAllListeners(this->_internal["consumerId"]);
 
 			this->emit("@producerclose");
 			this->safeEmit("producerclose");
@@ -378,6 +379,20 @@ void Consumer::_handleWorkerNotifications()
 
 			// Emit observer event.
 			this->_observer->safeEmit("trace", trace);
+		}
+		else
+		{
+			MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
+		}
+	});
+
+	this->_payloadChannel->on(this->_internal["consumerId"], [=](std::string event, const json& data, std::string payload) {
+		if (event == "rtp")
+		{
+			if (this->_closed)
+				return;
+			/*const packet = payload;
+			this.safeEmit('rtp', packet);*/
 		}
 		else
 		{

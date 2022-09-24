@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 	MSC_DEBUG("can not determine whether the architecture is 32 or 64 bits");
 #endif
 
-	try
+	//try
 	{
 		init();
 
@@ -80,12 +80,12 @@ int main(int argc, char* argv[])
 		destroy();
 		exitSuccess();
 	}
-	catch (const std::exception& error)
+	//catch (const std::exception& error)
 	{
-		MSC_DEBUG("failure exit: %s", error.what());
+		//MSC_DEBUG("failure exit: %s", error.what());
 
-		destroy();
-		exitWithError();
+		//destroy();
+		//exitWithError();
 	}
 }
 

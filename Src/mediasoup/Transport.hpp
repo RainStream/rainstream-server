@@ -169,7 +169,13 @@ public:
 	 * @virtual
 	 */
 	void routerClosed();
-
+	/**
+	 * Listen server was closed (this just happens in WebRtcTransports when their
+	 * associated WebRtcServer is closed).
+	 *
+	 * @private
+	 */
+	void listenServerClosed();
 	/**
 	 * Dump Transport.
 	 */
@@ -189,12 +195,14 @@ public:
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	virtual std::future<void> connect(json& params);
-
 	/**
 	 * Set maximum incoming bitrate for receiving media.
 	 */
 	std::future<void> setMaxIncomingBitrate(uint32_t bitrate);
-
+	/**
+	 * Set maximum outgoing bitrate for sending media.
+	 */
+	std::future<void> setMaxOutgoingBitrate(uint32_t bitrate);
 	/**
 	 * Create a Producer.
 	 */
@@ -250,55 +258,39 @@ public:
 protected:
 	// Internal data.
 	json _internal;
-
 	// Transport data. This is set by the subclass.
 	json _data;
-
 	// Channel instance.
 	Channel* _channel;
-
 	// PayloadChannel instance.
 	PayloadChannel* _payloadChannel;
-
 	// Close flag.
 	bool _closed = false;
-
 	// Custom app data.
 	json _appData;
-
 	// Method to retrieve Router RTP capabilities.
 	GetRouterRtpCapabilities _getRouterRtpCapabilities;
-
 	// Method to retrieve a Producer.
 	GetProducerById _getProducerById;
-
 	// Method to retrieve a DataProducer.
 	GetDataProducerById _getDataProducerById;
-
 	// Producers map.
 	std::map<std::string, Producer*> _producers;
-
 	// Consumers map.
 	std::map<std::string, Consumer*> _consumers;
-
 	// DataProducers map.
 	std::map<std::string, DataProducer*> _dataProducers;
-
 	// DataConsumers map.
 	std::map<std::string, DataConsumer*> _dataConsumers;
-
 	// RTCP CNAME for Producers.
 	std::string _cnameForProducers;
 
 	// Next MID for Consumers. It"s converted into string when used.
 	uint32_t _nextMidForConsumers = 0;
-
 	// Buffer with available SCTP stream ids.
 	//Buffer _sctpStreamIds;
-
 	// Next SCTP stream id.
 	uint32_t _nextSctpStreamId = 0;
-
 	// Observer instance.
 	EnhancedEventEmitter* _observer;
 };
