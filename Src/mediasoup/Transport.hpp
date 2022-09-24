@@ -300,6 +300,5 @@ protected:
 	uint32_t _nextSctpStreamId = 0;
 
 	// Observer instance.
-	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
-
+	EnhancedEventEmitter* _observer;
 };

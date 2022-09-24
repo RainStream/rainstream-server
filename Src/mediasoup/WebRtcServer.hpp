@@ -114,5 +114,5 @@ private:
 	std::map<std::string, WebRtcTransport*> _webRtcTransports;
 
 	// Observer instance.
-	//observer = new EnhancedEventEmitter<WebRtcServerObserverEvents>();
+	EnhancedEventEmitter* _observer;
 };

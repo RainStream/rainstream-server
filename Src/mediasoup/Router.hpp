@@ -198,5 +198,5 @@ private:
 	// 		new AwaitQueue({ ClosedErrorClass: InvalidStateError });
 
 	// Observer instance.
-	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
+	EnhancedEventEmitter* _observer;
 };

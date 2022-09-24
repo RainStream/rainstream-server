@@ -261,30 +261,29 @@ public:
 private:
 	void _handleWorkerNotifications();
 
-	private:
-		// Internal data.
-		json _internal;		
+private:
+	// Internal data.
+	json _internal;		
 
-		// Producer data.
-		json _data;		
+	// Producer data.
+	json _data;		
 
-		// Channel instance.
-		Channel* _channel;
+	// Channel instance.
+	Channel* _channel;
 
-		// Closed flag.
-		bool _closed = false;
+	// Closed flag.
+	bool _closed = false;
 
-		// Custom app data.
-		json _appData = json();
+	// Custom app data.
+	json _appData = json();
 
-		// Paused flag.
-		bool _paused = false;
+	// Paused flag.
+	bool _paused = false;
 
-		// Current score.
-		json _score;
+	// Current score.
+	json _score;
 
-		// Observer instance.
-		EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
-
+	// Observer instance.
+	EnhancedEventEmitter* _observer;
 };
 

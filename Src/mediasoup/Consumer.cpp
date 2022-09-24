@@ -16,7 +16,7 @@ Consumer::Consumer(
 	bool producerPaused,
 	json score/* = json()*/,
 	ConsumerLayers preferredLayers/* = ConsumerLayers()*/)
-	: EnhancedEventEmitter()
+	: _observer(new EnhancedEventEmitter())
 {
 	MSC_DEBUG("constructor()");
 

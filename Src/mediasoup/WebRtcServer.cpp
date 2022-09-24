@@ -9,10 +9,10 @@
 
 
 WebRtcServer::WebRtcServer(const json& internal, Channel* channel, const json& appData)
-	: EnhancedEventEmitter()
-	, _internal(internal)
+	: _internal(internal)
 	, _channel(channel)
 	, _appData(appData)
+	, _observer(new EnhancedEventEmitter())
 {
 	MSC_DEBUG("constructor()");
 }
@@ -75,7 +75,7 @@ void WebRtcServer::close()
 	this->emit("@close");
 
 	// Emit observer event.
-	//this->_observer.safeEmit("close");
+	this->_observer->safeEmit("close");
 }
 
 void WebRtcServer::workerClosed()
@@ -94,7 +94,7 @@ void WebRtcServer::workerClosed()
 	this->safeEmit("workerclose");
 
 	// Emit observer event.
-	//this->_observer.safeEmit("close");
+	this->_observer->safeEmit("close");
 }
 
 std::future<json> WebRtcServer::dump()
@@ -111,13 +111,13 @@ void WebRtcServer::handleWebRtcTransport(WebRtcTransport* webRtcTransport)
 	this->_webRtcTransports.insert(std::pair(webRtcTransport->id(), webRtcTransport));
 
 	// Emit observer event.
-	//this->_observer.safeEmit("webrtctransporthandled", webRtcTransport);
+	this->_observer->safeEmit("webrtctransporthandled", webRtcTransport);
 
 	webRtcTransport->on("@close", [=]()
 	{
 		this->_webRtcTransports.erase(webRtcTransport->id());
 
 		// Emit observer event.
-		//this->_observer.safeEmit("webrtctransportunhandled", webRtcTransport);
+		this->_observer->safeEmit("webrtctransportunhandled", webRtcTransport);
 	});
 }

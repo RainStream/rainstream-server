@@ -401,6 +401,6 @@ private:
 	ConsumerLayers _currentLayers;
 
 	// Observer instance.
-	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
+	EnhancedEventEmitter* _observer{ nullptr };
 };
 

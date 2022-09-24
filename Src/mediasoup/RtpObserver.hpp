@@ -39,7 +39,40 @@ protected:
 	GetProducerById _getProducerById;
 
 	// Observer instance.
-	EnhancedEventEmitter* _observer = new EnhancedEventEmitter();
+	EnhancedEventEmitter* _observer;
+	// Internal data.
+private:
+	json _internal;
+	// 	{
+	//		std::string routerId;
+	// 		std::string transportId;
+	// 		std::string dataProducerId;
+	// 		std::string dataConsumerId;
+	// 	};
+
+		// DataConsumer data.
+	json _data;
+	// 	{
+	// 		type: DataConsumerType;
+	// 		sctpStreamParameters?: SctpStreamParameters;
+	// 		std::string label;
+	// 		std::string protocol;
+	// 	};
+
+		// Channel instance.
+	Channel* _channel;
+
+	// PayloadChannel instance.
+	PayloadChannel* _payloadChannel;
+
+	// Closed flag.
+	bool _closed = false;
+
+	// Custom app data.
+	json _appData;
+
+	// Observer instance.
+	EnhancedEventEmitter* _observer{ nullptr };
 
 public:
 	/**
@@ -55,7 +88,6 @@ public:
 		json appData,
 		GetProducerById getProducerById
 	)
-		: EnhancedEventEmitter()
 	{
 		MSC_DEBUG("constructor()");
 

@@ -15,7 +15,6 @@ const int NS_PAYLOAD_MAX_LEN = 4194304;
 
 PayloadChannel::PayloadChannel(Socket* producerSocket,
 	Socket* consumerSocket)
-	: EnhancedEventEmitter()
 {
 	MSC_DEBUG("constructor()");
 

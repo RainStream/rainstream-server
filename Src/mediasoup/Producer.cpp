@@ -21,7 +21,7 @@ Producer::Producer(json internal,
 	json appData,
 	bool paused
 )
-	: EnhancedEventEmitter()
+	: _observer(new EnhancedEventEmitter())
 {
 	MSC_DEBUG("constructor()");
 

@@ -35,7 +35,7 @@ Transport::Transport(
 	GetProducerById getProducerById,
 	GetDataProducerById getDataProducerById
 )
-	: EnhancedEventEmitter()
+	: _observer(new EnhancedEventEmitter())
 {
 	MSC_DEBUG("constructor()");
 

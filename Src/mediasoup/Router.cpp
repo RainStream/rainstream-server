@@ -30,7 +30,7 @@ Router::Router(
 	PayloadChannel* payloadChannel,
 	json appData
 )
-	: EnhancedEventEmitter()
+	: _observer(new EnhancedEventEmitter())
 {
 	MSC_DEBUG("constructor()");
 
