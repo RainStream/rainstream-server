@@ -208,7 +208,7 @@ public:
 	/**
 	 * Pause the RtpObserver.
 	 */
-	std::future<void> pause()
+	cppcoro::task<void> pause()
 	{
 		MSC_DEBUG("pause()");
 
@@ -226,7 +226,7 @@ public:
 	/**
 	 * Resume the RtpObserver.
 	 */
-	std::future<void> resume()
+	cppcoro::task<void> resume()
 	{
 		MSC_DEBUG("resume()");
 
@@ -244,7 +244,7 @@ public:
 	/**
 	 * Add a Producer to the RtpObserver.
 	 */
-	std::future<void> addProducer(std::string producerId)
+	cppcoro::task<void> addProducer(std::string producerId)
 	{
 		MSC_DEBUG("addProducer()");
 
@@ -261,7 +261,7 @@ public:
 	/**
 	 * Remove a Producer from the RtpObserver.
 	 */
-	std::future<void> removeProducer(std::string producerId)
+	cppcoro::task<void> removeProducer(std::string producerId)
 	{
 		MSC_DEBUG("removeProducer()");
 

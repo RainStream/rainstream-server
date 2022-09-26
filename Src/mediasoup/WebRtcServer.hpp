@@ -104,7 +104,7 @@ public:
 	/**
 	 * Dump WebRtcServer.
 	 */
-	std::future<json> dump();
+	cppcoro::task<json> dump();
 
 	/**
 	 * @private

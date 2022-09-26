@@ -6,6 +6,7 @@
 #include "utils.hpp"
 #include "errors.hpp"
 #include "child_process/Socket.hpp"
+#include <cppcoro/async_auto_reset_event.hpp>
 
 
 // netstring length for a 4194304 bytes payload.
@@ -102,7 +103,7 @@ void Channel::close()
 	// Close every pending sent.
 	for (auto& [key, sent] : this->_sents)
 	{
-		sent.set_exception(std::make_exception_ptr(Error("Channel closed")));
+		//sent.set_exception(std::make_exception_ptr(Error("Channel closed")));
 	}
 
 	// Remove event listeners but leave a fake "error" hander to avoid
@@ -126,7 +127,7 @@ void Channel::close()
 	delete this;
 }
 
-std::future<json> Channel::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)
+cppcoro::task<json> Channel::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)
 {
 	this->_nextId < 4294967295 ? ++this->_nextId : (this->_nextId = 1);
 
@@ -159,10 +160,38 @@ std::future<json> Channel::request(std::string method, std::optional<std::string
 		MSC_THROW_ERROR("Channel request too big");
 	}
 
-	std::promise<json> promise;
-	this->_sents.insert(std::make_pair(id, std::move(promise)));
+	cppcoro::async_auto_reset_event send_event;
+	std::promise<json> t_promise;
 
-	return this->_sents[id].get_future();
+	SendEventPtr sendEvent(new SendEvent
+		{
+			.method = method,
+			.pResolve = [&](json data)
+			{
+				t_promise.set_value(data);
+				send_event.set();
+			},
+			.pReject = [&](const std::exception_ptr& e)
+			{
+				t_promise.set_exception(e);
+				send_event.set();
+			}
+		});
+
+	this->_sents.insert(std::make_pair(id, sendEvent));
+
+	co_await send_event;
+
+	try
+	{
+		json response = t_promise.get_future().get();
+
+		co_return response;
+	}
+	catch (const std::exception& e)
+	{
+		std::rethrow_exception(std::make_exception_ptr(e));
+	}
 }
 
 void Channel::_processMessage(const json& msg)
@@ -178,13 +207,14 @@ void Channel::_processMessage(const json& msg)
 			return;
 		}
 
-		std::promise<json> sent = std::move(this->_sents[id]);
+		SendEventPtr sent = this->_sents[id];
 		this->_sents.erase(id);
 
 		if (msg.count("accepted") && msg["accepted"].get<bool>())
 		{
-			MSC_DEBUG("request succeeded [id:\"%d\"]", id);
-			sent.set_value(msg.value("data", json::object()));
+			json data = msg.value("data", json::object());
+			MSC_DEBUG("request succeeded [method:%s, id:%d]", sent->method.c_str(), id);
+			sent->pResolve(data);
 		}
 		else if (msg.count("error"))
 		{
@@ -195,11 +225,11 @@ void Channel::_processMessage(const json& msg)
 
 			if (error == "TypeError")
 			{
-				sent.set_exception(std::make_exception_ptr(TypeError(reason)));
+				sent->pReject(std::make_exception_ptr(TypeError(reason)));
 			}
 			else
 			{
-				sent.set_exception(std::make_exception_ptr(Error(reason)));
+				sent->pReject(std::make_exception_ptr(Error(reason)));
 			}
 		}
 		else

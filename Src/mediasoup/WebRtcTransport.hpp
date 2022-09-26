@@ -311,19 +311,19 @@ public:
 	 *
 	 * @override
 	 */
-	virtual std::future<json> getStats();
+	virtual cppcoro::task<json> getStats();
 
 	/**
 	 * Provide the WebRtcTransport remote parameters.
 	 *
 	 * @override
 	 */
-	std::future<void> connect(json& dtlsParameters);
+	cppcoro::task<void> connect(json& dtlsParameters);
 
 	/**
 	 * Restart ICE.
 	 */
-	std::future<json> restartIce();
+	cppcoro::task<json> restartIce();
 
 private:
 	void _handleWorkerNotifications();

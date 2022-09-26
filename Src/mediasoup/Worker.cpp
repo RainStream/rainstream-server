@@ -255,7 +255,7 @@ void Worker::close()
 	delete this;
 }
 
-std::future<json> Worker::dump()
+cppcoro::task<json> Worker::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -264,7 +264,7 @@ std::future<json> Worker::dump()
 	co_return ret;
 }
 
-std::future<json> Worker::getResourceUsage()
+cppcoro::task<json> Worker::getResourceUsage()
 {
 	MSC_DEBUG("getResourceUsage()");
 
@@ -273,7 +273,7 @@ std::future<json> Worker::getResourceUsage()
 	co_return ret;
 }
 
-std::future<void> Worker::updateSettings(std::string logLevel, std::vector<std::string> logTags)
+cppcoro::task<void> Worker::updateSettings(std::string logLevel, std::vector<std::string> logTags)
 {
 	MSC_DEBUG("updateSettings()");
 
@@ -287,7 +287,7 @@ std::future<void> Worker::updateSettings(std::string logLevel, std::vector<std::
 
 
 
-std::future<WebRtcServer*> Worker::createWebRtcServer(const WebRtcServerOptions& options) {
+cppcoro::task<WebRtcServer*> Worker::createWebRtcServer(const WebRtcServerOptions& options) {
 	MSC_DEBUG("createWebRtcServer()");
 
 	if (!options.appData.is_object())
@@ -313,7 +313,7 @@ std::future<WebRtcServer*> Worker::createWebRtcServer(const WebRtcServerOptions&
 	co_return webRtcServer;
 }
 
-std::future<Router*> Worker::createRouter(
+cppcoro::task<Router*> Worker::createRouter(
 	json& mediaCodecs, const json& appData/* = json()*/)
 {
 	MSC_DEBUG("createRouter()");

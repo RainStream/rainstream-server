@@ -187,6 +187,7 @@
     <ClCompile Include="WebSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AwaitQueue.hpp" />
     <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="Loop.hpp" />

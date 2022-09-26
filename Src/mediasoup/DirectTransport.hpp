@@ -136,7 +136,7 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<json> getStats()
+	cppcoro::task<json> getStats()
 	{
 		MSC_DEBUG("getStats()");
 
@@ -148,7 +148,7 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<void> connect()
+	cppcoro::task<void> connect()
 	{
 		MSC_DEBUG("connect()");
 	}
@@ -157,7 +157,7 @@ public:
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	std::future<void> setMaxIncomingBitrate(uint32_t bitrate)
+	cppcoro::task<void> setMaxIncomingBitrate(uint32_t bitrate)
 	{
 		MSC_THROW_UNSUPPORTED_ERROR(
 			"setMaxIncomingBitrate() not implemented in DirectTransport");
@@ -167,7 +167,7 @@ public:
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	std::future<Producer*> produce(ProducerOptions& options)
+	cppcoro::task<Producer*> produce(ProducerOptions& options)
 	{
 		MSC_THROW_UNSUPPORTED_ERROR("produce() not implemented in DirectTransport");
 	}
@@ -176,7 +176,7 @@ public:
 	 * @override
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	std::future<Consumer*> consume(ConsumerOptions options)
+	cppcoro::task<Consumer*> consume(ConsumerOptions options)
 	{
 		MSC_THROW_UNSUPPORTED_ERROR("consume() not implemented in DirectTransport");
 	}

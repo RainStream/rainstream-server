@@ -71,15 +71,15 @@ public:
 	/**
 	 * Dump Router.
 	 */
-	std::future<json> dump();
+	cppcoro::task<json> dump();
 	/**
 	 * Create a WebRtcTransport.
 	 */
-	std::future<WebRtcTransport*> createWebRtcTransport(WebRtcTransportOptions& options);
+	cppcoro::task<WebRtcTransport*> createWebRtcTransport(WebRtcTransportOptions& options);
 	/**
 	 * Create a PlainTransport.
 	 */
-	std::future<PlainTransport*> createPlainTransport(
+	cppcoro::task<PlainTransport*> createPlainTransport(
 		json listenIp,
 		bool rtcpMux = true,
 		bool comedia = false,
@@ -93,7 +93,7 @@ public:
 	/**
 	 * Create a PipeTransport.
 	 */
-	std::future<PipeTransport*> createPipeTransport(
+	cppcoro::task<PipeTransport*> createPipeTransport(
 		json listenIp,
 		bool enableSctp = false,
 		json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },

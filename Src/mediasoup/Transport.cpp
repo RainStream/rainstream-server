@@ -237,7 +237,7 @@ void Transport::listenServerClosed()
 	this->_observer->safeEmit("close");
 }
 
-std::future<json> Transport::dump()
+cppcoro::task<json> Transport::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -246,19 +246,19 @@ std::future<json> Transport::dump()
 	co_return ret;
 }
 
-std::future<json> Transport::getStats()
+cppcoro::task<json> Transport::getStats()
 {
 	// Should not happen.
 	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
-std::future<void> Transport::connect(json& params)
+cppcoro::task<void> Transport::connect(json& params)
 {
 	// Should not happen.
 	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
-std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
+cppcoro::task<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 {
 	MSC_DEBUG("setMaxIncomingBitrate() [bitrate:%d]", bitrate);
 
@@ -270,7 +270,7 @@ std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 	co_return;
 }
 
-std::future<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
+cppcoro::task<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
 	MSC_DEBUG("setMaxOutgoingBitrate() [bitrate:%d]", bitrate);
 
 	json reqData = { {"bitrate", bitrate} };
@@ -280,7 +280,7 @@ std::future<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
 	co_return;
 }
 
-std::future<Producer*> Transport::produce(
+cppcoro::task<Producer*> Transport::produce(
 	std::string id,
 	std::string kind,
 	json rtpParameters,
@@ -396,7 +396,7 @@ std::future<Producer*> Transport::produce(
  *
  * @virtual
  */
-std::future<Consumer*> Transport::consume(ConsumerOptions& options)
+cppcoro::task<Consumer*> Transport::consume(ConsumerOptions& options)
 {
 	MSC_DEBUG("consume()");
 
@@ -483,7 +483,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 /**
  * Create a DataProducer.
  */
- // 	std::future<DataProducer*> Transport::produceData(
+ // 	cppcoro::task<DataProducer*> Transport::produceData(
  // 		{
  // 			id = undefined,
  // 			sctpStreamParameters,
@@ -561,7 +561,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 	 /**
 	  * Create a DataConsumer.
 	  */
-	  // 	std::future<DataConsumer*> Transport::consumeData(
+	  // 	cppcoro::task<DataConsumer*> Transport::consumeData(
 	  // 		{
 	  // 			dataProducerId,
 	  // 			ordered,
@@ -675,7 +675,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 		  /**
 		   * Enable "trace" event.
 		   */
-std::future<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> types)
+cppcoro::task<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> types)
 {
 	MSC_DEBUG("pause()");
 

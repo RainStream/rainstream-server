@@ -30,6 +30,7 @@
     <ClInclude Include="Loop.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="Request.hpp" />
+    <ClInclude Include="AwaitQueue.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">

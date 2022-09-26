@@ -169,7 +169,7 @@ void Consumer::transportClosed()
 /**
  * Dump Consumer.
  */
-std::future<json> Consumer::dump()
+cppcoro::task<json> Consumer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -181,7 +181,7 @@ std::future<json> Consumer::dump()
 /**
  * Get Consumer stats.
  */
-std::future<json> Consumer::getStats()
+cppcoro::task<json> Consumer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -193,7 +193,7 @@ std::future<json> Consumer::getStats()
 /**
  * Pause the Consumer.
  */
-std::future<void> Consumer::pause()
+cppcoro::task<void> Consumer::pause()
 {
 	MSC_DEBUG("pause()");
 
@@ -211,7 +211,7 @@ std::future<void> Consumer::pause()
 /**
  * Resume the Consumer.
  */
-std::future<void> Consumer::resume()
+cppcoro::task<void> Consumer::resume()
 {
 	MSC_DEBUG("resume()");
 
@@ -229,7 +229,7 @@ std::future<void> Consumer::resume()
 /**
  * Set preferred video layers.
  */
-std::future<void> Consumer::setPreferredLayers(
+cppcoro::task<void> Consumer::setPreferredLayers(
 	int spatialLayer,
 	int temporalLayer
 )
@@ -250,7 +250,7 @@ std::future<void> Consumer::setPreferredLayers(
 /**
  * Set priority.
  */
-std::future<void> Consumer::setPriority(int priority)
+cppcoro::task<void> Consumer::setPriority(int priority)
 {
 	MSC_DEBUG("setPriority()");
 
@@ -265,7 +265,7 @@ std::future<void> Consumer::setPriority(int priority)
 /**
  * Unset priority.
  */
-std::future<void> Consumer::unsetPriority()
+cppcoro::task<void> Consumer::unsetPriority()
 {
 	MSC_DEBUG("unsetPriority()");
 
@@ -280,7 +280,7 @@ std::future<void> Consumer::unsetPriority()
 /**
  * Request a key frame to the Producer.
  */
-std::future<void> Consumer::requestKeyFrame()
+cppcoro::task<void> Consumer::requestKeyFrame()
 {
 	MSC_DEBUG("requestKeyFrame()");
 
@@ -290,7 +290,7 @@ std::future<void> Consumer::requestKeyFrame()
 /**
  * Enable "trace" event.
  */
-std::future<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
+cppcoro::task<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
 {
 	MSC_DEBUG("enableTraceEvent()");
 

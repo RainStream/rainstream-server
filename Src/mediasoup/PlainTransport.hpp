@@ -125,14 +125,14 @@ public:
 	 *
 	 * @override
 	 */
-	virtual std::future<json> getStats();
+	virtual cppcoro::task<json> getStats();
 
 	/**
 	 * Provide the PlainTransport remote parameters.
 	 *
 	 * @override
 	 */
-	std::future<void> connect(
+	cppcoro::task<void> connect(
 		std::string ip,
 		uint32_t port,
 		uint32_t rtcpPort,

@@ -325,27 +325,27 @@ public:
 	/**
 	 * Dump Consumer.
 	 */
-	std::future<json> dump();
+	cppcoro::task<json> dump();
 
 	/**
 	 * Get Consumer stats.
 	 */
-	std::future<json> getStats();
+	cppcoro::task<json> getStats();
 
 	/**
 	 * Pause the Consumer.
 	 */
-	std::future<void> pause();
+	cppcoro::task<void> pause();
 
 	/**
 	 * Resume the Consumer.
 	 */
-	std::future<void> resume();
+	cppcoro::task<void> resume();
 
 	/**
 	 * Set preferred video layers.
 	 */
-	std::future<void> setPreferredLayers(
+	cppcoro::task<void> setPreferredLayers(
 		int spatialLayer,
 		int temporalLayer
 	);
@@ -353,22 +353,22 @@ public:
 	/**
 	 * Set priority.
 	 */
-	std::future<void> setPriority(int priority);
+	cppcoro::task<void> setPriority(int priority);
 
 	/**
 	 * Unset priority.
 	 */
-	std::future<void> unsetPriority();
+	cppcoro::task<void> unsetPriority();
 
 	/**
 	 * Request a key frame to the Producer.
 	 */
-	std::future<void> requestKeyFrame();
+	cppcoro::task<void> requestKeyFrame();
 
 	/**
 	 * Enable "trace" event.
 	 */
-	std::future<void> enableTraceEvent(std::vector<ConsumerTraceEventType> types);
+	cppcoro::task<void> enableTraceEvent(std::vector<ConsumerTraceEventType> types);
 
 private:
 	void _handleWorkerNotifications();
