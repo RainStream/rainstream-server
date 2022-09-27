@@ -3,9 +3,7 @@
 #include <list>
 
 #include <Logger.hpp>
-#include <cppcoro/task.hpp>
 #include <cppcoro/single_consumer_event.hpp>
-#include <cppcoro/async_mutex.hpp>
 #include <cppcoro/sync_wait.hpp>
 
 #ifdef _WIN32

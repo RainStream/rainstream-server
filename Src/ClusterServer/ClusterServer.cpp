@@ -127,8 +127,8 @@ ClusterServer::ClusterServer()
 		{ "key"  , config["tls"]["key"] }
 	};
 
-	webSocketServer = new protoo::WebSocketServer(tls, this);
-	if (webSocketServer->Setup("127.0.0.1", 4443))
+	_webSocketServer = new protoo::WebSocketServer(tls, this);
+	if (_webSocketServer->Setup("127.0.0.1", 4443))
 	{
 		MSC_ERROR("WebSocket server running on port: %d", 4443);
 	}
@@ -146,7 +146,7 @@ ClusterServer::~ClusterServer()
 void ClusterServer::OnRoomClose(std::string roomId)
 {
 	MSC_DEBUG("Room has closed [roomId:\"%s\"]", roomId.c_str());
-	rooms_.erase(roomId);
+	_rooms.erase(roomId);
 }
 
 void ClusterServer::OnConnectRequest(protoo::WebSocketClient* transport)
@@ -173,7 +173,7 @@ void ClusterServer::connectionrequest(protoo::WebSocketClient* transport)
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	this->queue_.push([=]()->std::future<void>
+	this->_queue.push([=]()->std::future<void>
 		{
 			Room* room = co_await getOrCreateRoom(roomId);
 
@@ -181,15 +181,6 @@ void ClusterServer::connectionrequest(protoo::WebSocketClient* transport)
 
 			room->handleConnection(peerId, true, transport);
 		});
-
-	try {
-		
-		
-	}
-	catch (std::exception& e)
-	{
-		MSC_ERROR("room creation or room joining failed:%s", e.what());
-	}
 }
 
 void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
@@ -221,7 +212,7 @@ void ClusterServer::runMediasoupWorkers()
 			//setTimeout(() = > process.exit(1), 2000);
 		});
 
-		mediasoupWorkers.push_back(worker);
+		_mediasoupWorkers.push_back(worker);
 
 		// Log worker resource usage every X seconds.
 // 		setInterval(async() = >
@@ -235,9 +226,9 @@ void ClusterServer::runMediasoupWorkers()
 
 Worker* ClusterServer::getMediasoupWorker()
 {
-	Worker* worker = mediasoupWorkers[nextMediasoupWorkerIdx];
+	Worker* worker = _mediasoupWorkers[nextMediasoupWorkerIdx];
 
-	if (++nextMediasoupWorkerIdx == mediasoupWorkers.size())
+	if (++nextMediasoupWorkerIdx == _mediasoupWorkers.size())
 		nextMediasoupWorkerIdx = 0;
 
 	return worker;
@@ -248,7 +239,7 @@ std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
 	Room* room;
 
 	// If the Room does not exist create a new one.
-	if (!rooms_.count(roomId))
+	if (!_rooms.count(roomId))
 	{
 		MSC_DEBUG("creating a new Room [roomId:%s]", roomId.c_str());
 
@@ -256,12 +247,12 @@ std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
 
 		room = co_await Room::create(mediasoupWorker, roomId);
 
-		rooms_.insert(std::make_pair(roomId, room));
-		room->on("close", [=]() { rooms_.erase(roomId); });
+		_rooms.insert(std::make_pair(roomId, room));
+		room->on("close", [=]() { _rooms.erase(roomId); });
 	}
 	else
 	{
-		room = rooms_.at(roomId);
+		room = _rooms.at(roomId);
 	}
 
 	co_return room;

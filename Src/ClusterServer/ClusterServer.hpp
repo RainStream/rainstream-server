@@ -41,13 +41,13 @@ private:
 
 	json config;
 
-	protoo::WebSocketServer* webSocketServer = nullptr;
+	protoo::WebSocketServer* _webSocketServer = nullptr;
 
-	std::vector<Worker*> mediasoupWorkers;
+	std::vector<Worker*> _mediasoupWorkers;
 
-	std::map<std::string, Room*> rooms_;
+	std::map<std::string, Room*> _rooms;
 
-	AwaitQueue<void> queue_;
+	AwaitQueue<void> _queue;
 };
 
 #endif
