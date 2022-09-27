@@ -9,6 +9,8 @@
 #include "WebSocketClient.hpp"
 #include <regex>
 
+int gIndex = 0;
+
 class Url
 {
 public:
@@ -152,7 +154,7 @@ void ClusterServer::OnConnectRequest(protoo::WebSocketClient* transport)
 	connectionrequest(transport);
 }
 
-std::future<void> ClusterServer::connectionrequest(protoo::WebSocketClient* transport)
+void ClusterServer::connectionrequest(protoo::WebSocketClient* transport)
 {
 	std::string url = transport->url();
 
@@ -171,12 +173,18 @@ std::future<void> ClusterServer::connectionrequest(protoo::WebSocketClient* tran
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
+	this->queue_.push([=]()->std::future<void>
+		{
+			Room* room = co_await getOrCreateRoom(roomId);
+
+			MSC_DEBUG("get sync room %s for peer %s %d", roomId.c_str(), peerId.c_str(), ++gIndex);
+
+			room->handleConnection(peerId, true, transport);
+		});
+
 	try {
-		Room* room = co_await getOrCreateRoom(roomId);
-
-		MSC_DEBUG("get sync room %s, %s", roomId.c_str(), peerId.c_str());
-
-		room->handleConnection(peerId, true, transport);
+		
+		
 	}
 	catch (std::exception& e)
 	{
@@ -237,8 +245,6 @@ Worker* ClusterServer::getMediasoupWorker()
 
 std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
 {
-	cppcoro::async_mutex_lock lock = co_await mutex_.scoped_lock_async();
-
 	Room* room;
 
 	// If the Room does not exist create a new one.

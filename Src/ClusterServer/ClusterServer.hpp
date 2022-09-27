@@ -4,7 +4,6 @@
 #include <common.hpp>
 #include "WebSocketServer.hpp"
 #include "AwaitQueue.hpp"
-#include <cppcoro/async_mutex.hpp>
 
 
 namespace protoo
@@ -28,7 +27,7 @@ protected:
 	void OnConnectClosed(protoo::WebSocketClient* transport) override;
 
 protected:
-	std::future<void> connectionrequest(protoo::WebSocketClient* transport);
+	void connectionrequest(protoo::WebSocketClient* transport);
 
 	void runMediasoupWorkers();
 	/**
@@ -46,7 +45,6 @@ private:
 
 	std::vector<Worker*> mediasoupWorkers;
 
-	cppcoro::async_mutex mutex_;
 	std::map<std::string, Room*> rooms_;
 
 	AwaitQueue<void> queue_;

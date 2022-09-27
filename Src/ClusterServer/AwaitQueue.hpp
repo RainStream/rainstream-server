@@ -1,9 +1,10 @@
 #pragma once
 
 #include <list>
-#include <thread>
+
+#include <Logger.hpp>
 #include <cppcoro/task.hpp>
-#include <cppcoro/async_auto_reset_event.hpp>
+#include <cppcoro/single_consumer_event.hpp>
 #include <cppcoro/async_mutex.hpp>
 #include <cppcoro/sync_wait.hpp>
 
@@ -18,17 +19,12 @@ class AwaitQueue
 public:
 	AwaitQueue()
 	{
-		thread_ = std::thread([=]()
-			{
-				cppcoro::task<void> starter = start();
-				cppcoro::sync_wait(starter);
-			});
-		
+		_allWorks = start();
 	}
 
 	int size()
 	{
-		return this->pendingTasks.size();
+		return this->_pendingTasks.size();
 	}
 
 	void close()
@@ -37,44 +33,18 @@ public:
 			return;
 
 		this->closed = true;
-
-		/*for (const pendingTask of this->pendingTasks)
-		{
-			pendingTask.stopped = true;
-			pendingTask.reject(new this->ClosedErrorClass("AwaitQueue closed"));
-		}
-
-		 Enpty the pending tasks array.
-		this->pendingTasks.length = 0;*/
 	}
 
-	void push(cppcoro::task<T>&& task)
+	void push(std::function<std::future<T>(void)>&& task)
 	{
 		if (this->closed)
-			//throw new this->ClosedErrorClass("AwaitQueue closed");
 			return;
 
-		this->pendingTasks.push_back(std::move(task));
+		this->_pendingTasks.push_back(std::move(task));
 
-		event.set();
-	}
+		MSC_DEBUG("push task for size: [%d]", this->_pendingTasks.size());
 
-	void removeTask(int idx)
-	{
-		/*if (idx == = 0)
-		{
-			throw new TypeError("cannot remove task with index 0");
-		}
-
-		const pendingTask = this->pendingTasks[idx];
-
-		if (!pendingTask)
-			return;
-
-		this->pendingTasks.splice(idx, 1);
-
-		pendingTask.reject(
-			new this->RemovedTaskErrorClass("task removed from the queue"));*/
+		this->_event.set();
 	}
 
 	void stop()
@@ -82,57 +52,45 @@ public:
 		if (this->closed)
 			return;
 
-		this->event.set();
+		this->closed = true;
 
-		//for (const pendingTask of this->pendingTasks)
-		//{
-		//	pendingTask.stopped = true;
-		//	pendingTask.reject(new this->StoppedErrorClass("AwaitQueue stopped"));
-		//}
-
-		//// Enpty the pending tasks array.
-		//this->pendingTasks.length = 0;
-	}
-
-	void dump()
-	{
-		
+		this->_event.set();
 	}
 
 protected:
-	cppcoro::task<void> start()
+	std::future<void> start()
 	{
-		auto startWaiter = [&]() -> cppcoro::task<>
+		while (!this->closed)
 		{
-			while (!this->closed)
-			{
-				co_await event;
+			co_await _event;
 
-				if (this->closed)
-					co_return;
+			if (this->closed)
+				co_return;
 
-				if (!this->pendingTasks.size())
-					continue;
+			if (!this->_pendingTasks.size())
+				continue;
 
-				cppcoro::task<T> task = std::move(this->pendingTasks.front());
-				this->pendingTasks.pop_front();
+			MSC_DEBUG("run task [%d] for size: [%d]", ++index, this->_pendingTasks.size());
 
-				co_await task;
-			}
-		};
+			std::function<std::future<T>(void)> task = std::move(this->_pendingTasks.front());
+			this->_pendingTasks.pop_front();
 
-		co_await startWaiter();
+			co_await task();
+		}
+
+		co_return;
 	}
 
 private:
+	int index = 0;
 	// Closed flag.
 	bool closed = false;
 
 	// Queue of pending tasks.
-	std::list<cppcoro::task<T>> pendingTasks;
+	std::list<std::function<std::future<T>(void)>> _pendingTasks;
 
-	cppcoro::async_auto_reset_event event;
+	cppcoro::single_consumer_event _event;
 
-	std::thread thread_;
+	std::future<void> _allWorks;
 };
 
