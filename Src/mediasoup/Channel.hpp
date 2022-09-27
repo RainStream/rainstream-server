@@ -12,19 +12,10 @@ public:
 
 	void close();
 
-	cppcoro::task<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
+	std::future<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
 
 protected:
 	void _processMessage(const json& msg);
-
-	struct SendEvent
-	{
-		std::string method;
-		std::function<void(const json&)> pResolve;
-		std::function<void(const std::exception_ptr&)> pReject;
-	};
-
-	using SendEventPtr = std::shared_ptr<SendEvent>;
 
 private:
 	// Closed flag.
@@ -36,5 +27,5 @@ private:
 	// Next id for messages sent to the worker process.
 	int32_t _nextId = 0;
 	// Map of pending sent requests.
-	std::unordered_map<uint32_t, SendEventPtr> _sents;
+	std::unordered_map<uint32_t, std::promise<json> > _sents;
 };

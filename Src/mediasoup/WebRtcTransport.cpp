@@ -196,7 +196,7 @@ void WebRtcTransport::routerClosed()
  *
  * @override
  */
-cppcoro::task<json> WebRtcTransport::getStats()
+std::future<json> WebRtcTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -210,7 +210,7 @@ cppcoro::task<json> WebRtcTransport::getStats()
  *
  * @override
  */
-cppcoro::task<void> WebRtcTransport::connect(json& dtlsParameters)
+std::future<void> WebRtcTransport::connect(json& dtlsParameters)
 {
 	MSC_DEBUG("connect()");
 
@@ -226,7 +226,7 @@ cppcoro::task<void> WebRtcTransport::connect(json& dtlsParameters)
 /**
  * Restart ICE.
  */
-cppcoro::task<json> WebRtcTransport::restartIce()
+std::future<json> WebRtcTransport::restartIce()
 {
 	MSC_DEBUG("restartIce()");
 

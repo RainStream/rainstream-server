@@ -171,10 +171,17 @@ std::future<void> ClusterServer::connectionrequest(protoo::WebSocketClient* tran
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	Room* room = co_await getOrCreateRoom(roomId);
-	room->handleConnection(peerId, true, transport);
+	try {
+		Room* room = co_await getOrCreateRoom(roomId);
 
-	co_return;
+		MSC_DEBUG("get sync room %s, %s", roomId.c_str(), peerId.c_str());
+
+		room->handleConnection(peerId, true, transport);
+	}
+	catch (std::exception& e)
+	{
+		MSC_ERROR("room creation or room joining failed:%s", e.what());
+	}
 }
 
 void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
@@ -230,6 +237,8 @@ Worker* ClusterServer::getMediasoupWorker()
 
 std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
 {
+	cppcoro::async_mutex_lock lock = co_await mutex_.scoped_lock_async();
+
 	Room* room;
 
 	// If the Room does not exist create a new one.

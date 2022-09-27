@@ -224,27 +224,27 @@ public:
 	/**
 	 * Dump Producer.
 	 */
-	cppcoro::task<json> dump();
+	std::future<json> dump();
 
 	/**
 	 * Get Producer stats.
 	 */
-	cppcoro::task<json> getStats();
+	std::future<json> getStats();
 
 	/**
 	 * Pause the Producer.
 	 */
-	cppcoro::task<void> pause();
+	std::future<void> pause();
 
 	/**
 	 * Resume the Producer.
 	 */
-	cppcoro::task<void> resume();
+	std::future<void> resume();
 
 	/**
 	 * Enable "trace" event.
 	 */
-	cppcoro::task<void> enableTraceEvent(std::vector<ProducerTraceEventType> types);
+	std::future<void> enableTraceEvent(std::vector<ProducerTraceEventType> types);
 
 	//void send(rtpPacket);
 

@@ -169,7 +169,7 @@ void Consumer::transportClosed()
 /**
  * Dump Consumer.
  */
-cppcoro::task<json> Consumer::dump()
+std::future<json> Consumer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -181,7 +181,7 @@ cppcoro::task<json> Consumer::dump()
 /**
  * Get Consumer stats.
  */
-cppcoro::task<json> Consumer::getStats()
+std::future<json> Consumer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -193,7 +193,7 @@ cppcoro::task<json> Consumer::getStats()
 /**
  * Pause the Consumer.
  */
-cppcoro::task<void> Consumer::pause()
+std::future<void> Consumer::pause()
 {
 	MSC_DEBUG("pause()");
 
@@ -211,7 +211,7 @@ cppcoro::task<void> Consumer::pause()
 /**
  * Resume the Consumer.
  */
-cppcoro::task<void> Consumer::resume()
+std::future<void> Consumer::resume()
 {
 	MSC_DEBUG("resume()");
 
@@ -229,7 +229,7 @@ cppcoro::task<void> Consumer::resume()
 /**
  * Set preferred video layers.
  */
-cppcoro::task<void> Consumer::setPreferredLayers(
+std::future<void> Consumer::setPreferredLayers(
 	int spatialLayer,
 	int temporalLayer
 )
@@ -250,7 +250,7 @@ cppcoro::task<void> Consumer::setPreferredLayers(
 /**
  * Set priority.
  */
-cppcoro::task<void> Consumer::setPriority(int priority)
+std::future<void> Consumer::setPriority(int priority)
 {
 	MSC_DEBUG("setPriority()");
 
@@ -265,7 +265,7 @@ cppcoro::task<void> Consumer::setPriority(int priority)
 /**
  * Unset priority.
  */
-cppcoro::task<void> Consumer::unsetPriority()
+std::future<void> Consumer::unsetPriority()
 {
 	MSC_DEBUG("unsetPriority()");
 
@@ -280,7 +280,7 @@ cppcoro::task<void> Consumer::unsetPriority()
 /**
  * Request a key frame to the Producer.
  */
-cppcoro::task<void> Consumer::requestKeyFrame()
+std::future<void> Consumer::requestKeyFrame()
 {
 	MSC_DEBUG("requestKeyFrame()");
 
@@ -290,7 +290,7 @@ cppcoro::task<void> Consumer::requestKeyFrame()
 /**
  * Enable "trace" event.
  */
-cppcoro::task<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
+std::future<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
 {
 	MSC_DEBUG("enableTraceEvent()");
 

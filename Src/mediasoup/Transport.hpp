@@ -179,14 +179,14 @@ public:
 	/**
 	 * Dump Transport.
 	 */
-	cppcoro::task<json> dump();
+	std::future<json> dump();
 
 	/**
 	 * Get Transport stats.
 	 *
 	 * @abstract
 	 */
-	virtual cppcoro::task<json> getStats();
+	virtual std::future<json> getStats();
 
 	/**
 	 * Provide the Transport remote parameters.
@@ -194,19 +194,19 @@ public:
 	 * @abstract
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	virtual cppcoro::task<void> connect(json& params);
+	virtual std::future<void> connect(json& params);
 	/**
 	 * Set maximum incoming bitrate for receiving media.
 	 */
-	cppcoro::task<void> setMaxIncomingBitrate(uint32_t bitrate);
+	std::future<void> setMaxIncomingBitrate(uint32_t bitrate);
 	/**
 	 * Set maximum outgoing bitrate for sending media.
 	 */
-	cppcoro::task<void> setMaxOutgoingBitrate(uint32_t bitrate);
+	std::future<void> setMaxOutgoingBitrate(uint32_t bitrate);
 	/**
 	 * Create a Producer.
 	 */
-	cppcoro::task<Producer*> produce(
+	std::future<Producer*> produce(
 		std::string id,
 		std::string kind,
 		json rtpParameters,
@@ -220,12 +220,12 @@ public:
 	 *
 	 * @virtual
 	 */
-	virtual cppcoro::task<Consumer*> consume(ConsumerOptions& options);
+	virtual std::future<Consumer*> consume(ConsumerOptions& options);
 
 	/**
 	 * Create a DataProducer.
 	 */
-// 	cppcoro::task<DataProducer*> produceData(
+// 	std::future<DataProducer*> produceData(
 // 		{
 // 			id = undefined,
 // 			sctpStreamParameters,
@@ -238,7 +238,7 @@ public:
 	/**
 	 * Create a DataConsumer.
 	 */
-// 	cppcoro::task<DataConsumer*> consumeData(
+// 	std::future<DataConsumer*> consumeData(
 // 		{
 // 			dataProducerId,
 // 			ordered,
@@ -251,7 +251,7 @@ public:
 	/**
 	 * Enable "trace" event.
 	 */
-	cppcoro::task<void> enableTraceEvent(std::vector<TransportTraceEventType> types);
+	std::future<void> enableTraceEvent(std::vector<TransportTraceEventType> types);
 
 // 	uint32_t _getNextSctpStreamId();
 

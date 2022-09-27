@@ -54,10 +54,6 @@ typedef SSIZE_T ssize_t;
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-#include <cppcoro/config.hpp>
-#include <cppcoro/task.hpp>
-#include <cppcoro/shared_task.hpp>
-
 #ifdef _MSC_VER
 #  define MS_DECL_EXPORT __declspec(dllexport)
 #  define MS_DECL_IMPORT __declspec(dllimport)

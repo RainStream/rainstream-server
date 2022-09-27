@@ -147,7 +147,7 @@ void Router::workerClosed()
 	delete this;
 }
 
-cppcoro::task<json> Router::dump()
+std::future<json> Router::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -156,7 +156,7 @@ cppcoro::task<json> Router::dump()
 	co_return ret;
 }
 
-cppcoro::task<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
+std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
 {
 	MSC_DEBUG("createWebRtcTransport()");
 
@@ -256,7 +256,7 @@ cppcoro::task<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOpt
 	co_return transport;
 }
 
-cppcoro::task<PlainTransport*> Router::createPlainTransport(
+std::future<PlainTransport*> Router::createPlainTransport(
 	json listenIp,
 	bool rtcpMux/* = true*/,
 	bool comedia/* = false*/,
@@ -348,7 +348,7 @@ cppcoro::task<PlainTransport*> Router::createPlainTransport(
 	co_return transport;
 }
 
-cppcoro::task<PipeTransport*> Router::createPipeTransport(
+std::future<PipeTransport*> Router::createPipeTransport(
 	json listenIp,
 	bool enableSctp/* = false*/,
 	json numSctpStreams/* = { { "OS", 1024 }, { "MIS", 1024 } }*/,

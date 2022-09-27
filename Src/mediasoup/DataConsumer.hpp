@@ -220,7 +220,7 @@ class DataConsumer : public EnhancedEventEmitter
 	/**
 	 * Dump DataConsumer.
 	 */
-	cppcoro::task<json> dump()
+	std::future<json> dump()
 	{
 		MSC_DEBUG("dump()");
 

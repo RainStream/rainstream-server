@@ -29,7 +29,7 @@ public:
 		}
 	}
 
-// 	cppcoro::task<json> safeEmitAsPromise(event, ...args: any[])
+// 	std::future<json> safeEmitAsPromise(event, ...args: any[])
 // 	{
 // 		return new Promise((resolve, reject) => (
 // 			this->safeEmit(event, ...args, resolve, reject)

@@ -3,6 +3,9 @@
 
 #include <common.hpp>
 #include "WebSocketServer.hpp"
+#include "AwaitQueue.hpp"
+#include <cppcoro/async_mutex.hpp>
+
 
 namespace protoo
 {
@@ -42,7 +45,11 @@ private:
 	protoo::WebSocketServer* webSocketServer = nullptr;
 
 	std::vector<Worker*> mediasoupWorkers;
+
+	cppcoro::async_mutex mutex_;
 	std::map<std::string, Room*> rooms_;
+
+	AwaitQueue<void> queue_;
 };
 
 #endif

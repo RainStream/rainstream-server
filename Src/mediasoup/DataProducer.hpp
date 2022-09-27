@@ -273,7 +273,7 @@ private:
 	/**
 	 * Dump DataProducer.
 	 */
-	cppcoro::task<json> dump()
+	std::future<json> dump()
 	{
 		MSC_DEBUG("dump()");
 

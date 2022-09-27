@@ -58,23 +58,23 @@ public:
 	/**
 	* Dump Worker.
 	*/
-	cppcoro::task<json> dump();
+	std::future<json> dump();
 	/**
 	 * Get mediasoup-worker process resource usage.
 	 */
-	cppcoro::task<json> getResourceUsage();
+	std::future<json> getResourceUsage();
 	/**
 	 * Update settings.
 	 */
-	cppcoro::task<void> updateSettings(std::string logLevel, std::vector<std::string> logTags);
+	std::future<void> updateSettings(std::string logLevel, std::vector<std::string> logTags);
 	/**
 	 * Create a WebRtcServer.
 	 */
-	cppcoro::task<WebRtcServer*> createWebRtcServer(const WebRtcServerOptions& options);
+	std::future<WebRtcServer*> createWebRtcServer(const WebRtcServerOptions& options);
 	/**
 	 * Create a Router.
 	 */
-	cppcoro::task<Router*> createRouter(json& mediaCodecs, const json& appData = json::object());
+	std::future<Router*> createRouter(json& mediaCodecs, const json& appData = json::object());
 
 private:
 	void workerDied(const Error &error);
