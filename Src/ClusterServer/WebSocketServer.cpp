@@ -4,90 +4,106 @@
 #include "WebSocketClient.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
-#include <iostream>
-#include <fstream>
+#include "Utility.hpp"
 
-#include <uWS.h>
+
+namespace protoo {
+
+const int SSL = 1;
 
 #define SEC_WEBSOCKET_PROTOCOL "protoo"
 
-namespace protoo
+
+WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
+	: _lisenter(lisenter)
+	, _tls(tls)
 {
-	WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
-		: lisenter(lisenter)
-		, tls(tls)
-	{
-		//here must use default loop
-		hub = new uWS::Hub(0, true);
+	std::string cert, key, phrase;
 
-		hub->onConnection([=](uWS::WebSocket<uWS::SERVER> *ws, uWS::HttpRequest req) 
-		{
-			if (req.getHeader("sec-websocket-protocol").toString() != SEC_WEBSOCKET_PROTOCOL) {
+	if (_tls.is_object()) {
+		cert = _tls.value("cert", "");
+		key = _tls.value("key", "");
+		phrase = _tls.value("phrase", "");
+	}
 
-				//ws->close(403, "Invalid/missing Sec-WebSocket-Protocol");
+	uWS::SSLApp({
+		.key_file_name = key.c_str(),
+		.cert_file_name = cert.c_str(),
+		.passphrase = phrase.c_str()
+	}).ws<PeerSocketData>("/*", {
+		/* Settings */
+		.compression = uWS::CompressOptions(uWS::DEDICATED_COMPRESSOR_4KB | uWS::DEDICATED_DECOMPRESSOR),
+		.maxPayloadLength = 100 * 1024 * 1024,
+		.idleTimeout = 16,
+		.maxBackpressure = 100 * 1024 * 1024,
+		.closeOnBackpressureLimit = false,
+		.resetIdleTimeoutOnSend = false,
+		.sendPingsAutomatically = true,
+		/* Handlers */
+		.upgrade = [=](auto* res, auto* req, auto* context) {
 
-				//return;
-			}
-
-			std::string url = req.getUrl().toString();
+			std::string roomId(req->getQuery("roomId"));
+			std::string peerId(req->getQuery("peerId"));
+			std::string protocol(req->getHeader("sec-websocket-protocol"));
+			std::string url(req->getUrl());
 
 			WebSocketClient* transport = new WebSocketClient(url);
-			transport->setUserData(ws);
-			ws->setUserData(transport);
 
-			if (lisenter)
-			{
-				lisenter->OnConnectRequest(transport);
+			res->template upgrade<PeerSocketData>({
+				.peerId = roomId,
+				.roomId = peerId,
+				.protocol = protocol,
+				.transport = transport
+			}, req->getHeader("sec-websocket-key"),
+				req->getHeader("sec-websocket-protocol"),
+				req->getHeader("sec-websocket-extensions"),
+				context);
+
+			if (_lisenter) {
+				_lisenter->OnConnectRequest(transport);
 			}
-		});
+		},
+		.open = [=](auto* ws) {
+			PeerSocketData* peerData = ws->getUserData();
+			WebSocketClient* transport = peerData->transport;
 
-		hub->onMessage([=](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length, uWS::OpCode opCode)
-		{
-			WebSocketClient* transport = (WebSocketClient*)ws->getUserData();
-			if (transport)
-			{
-				transport->onMessage(std::string(message, length));
+			if (transport) {
+				transport->setUserData(ws);
 			}
-		});
+			uWS::WebSocket<true, true, PeerSocketData>* www = ws;
 
-		hub->onDisconnection([=](uWS::WebSocket<uWS::SERVER> *ws, int code, char *message, size_t length)
-		{
-			WebSocketClient* transport = (WebSocketClient*)ws->getUserData();
-			if (transport)
-			{
-				if (lisenter)
-				{
-					lisenter->OnConnectClosed(transport);
+		},
+		.message = [=](auto* ws, std::string_view message, uWS::OpCode opCode) {
+			PeerSocketData* peerData = ws->getUserData();
+			WebSocketClient* transport = peerData->transport;
+		},
+		.close = [=](auto* ws, int code, std::string_view message) {
+			PeerSocketData* peerData = ws->getUserData();
+			WebSocketClient* transport = peerData->transport;
+
+			if (transport) {
+				if (_lisenter) {
+					_lisenter->OnConnectClosed(transport);
 				}
 
-				transport->onClosed(code, std::string(message, length));
+				transport->onClosed(code, std::string(message));
 				delete transport;
 			}
-
-			ws->setUserData(nullptr);
-		});
-	}
-	
-	WebSocketServer::~WebSocketServer()
-	{
-		if (hub)
-		{
-			delete hub;
-			hub = nullptr;
 		}
-	}
-
-	bool WebSocketServer::Setup(const char *host, uint16_t port)
-	{
-		std::string cert, key;
-
-		if (tls.is_object())
-		{
-			cert = tls.value("cert", "");
-			key = tls.value("key", "");
+	}).listen(9001, [](auto* listen_socket) {
+		if (listen_socket) {
+			std::cout << "Listening on port " << 9001 << std::endl;
 		}
+	}).run();
+}
 
-		uS::TLS::Context c = uS::TLS::createContext(cert, key);
-		return hub->listen(port, c, uS::ONLY_IPV4);
-	}
+WebSocketServer::~WebSocketServer()
+{
+
+}
+
+bool WebSocketServer::Setup(const char* host, uint16_t port)
+{
+	return true;
+}
 }

@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="handles\SignalsHandler.cpp">
-      <Filter>handles</Filter>
-    </ClCompile>
     <ClCompile Include="DepLibUV.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Room.cpp" />
@@ -15,11 +12,11 @@
     <ClCompile Include="Loop.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="Request.cpp" />
+    <ClCompile Include="handles\SignalsHandler.cpp">
+      <Filter>handles</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="handles\SignalsHandler.hpp">
-      <Filter>handles</Filter>
-    </ClInclude>
     <ClInclude Include="DepLibUV.hpp" />
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="ClusterServer.hpp" />
@@ -31,6 +28,10 @@
     <ClInclude Include="config.hpp" />
     <ClInclude Include="Request.hpp" />
     <ClInclude Include="AwaitQueue.hpp" />
+    <ClInclude Include="handles\SignalsHandler.hpp">
+      <Filter>handles</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">

@@ -4,104 +4,101 @@
 #include "Logger.hpp"
 #include "Utils.hpp"
 #include <errors.hpp>
+#include <uwebsockets/App.h>
+#include <uwebsockets/WebSocket.h>
 
-#include <uWS.h>
+namespace protoo {
 
-namespace protoo
+WebSocketClient::WebSocketClient(std::string url)
+	: _url(url)
 {
-	WebSocketClient::WebSocketClient(std::string url)
-		: _url(url)
+
+}
+
+WebSocketClient::~WebSocketClient()
+{
+
+}
+
+void WebSocketClient::Close(int code, std::string message)
+{
+	if (_closed)
 	{
-		
+		return;
 	}
 
-	WebSocketClient::~WebSocketClient()
+	_closed = true;
+
+	if (userData)
 	{
-
+		uWS::WebSocket<true, true, PeerSocketData>* ws = static_cast <uWS::WebSocket<true, true, PeerSocketData>*>(userData);
+		ws->end(code, message.c_str());
 	}
+}
 
-	void WebSocketClient::Close(int code, std::string message)
+void WebSocketClient::send(const json& data)
+{
+	if (this->_closed)
+		MSC_THROW_ERROR("transport closed");
+
+	std::string message = data.dump();
+
+	try
 	{
-		if (_closed)
-		{
-			return;
-		}
-
-		_closed = true;
-
-		if (userData)
-		{
-			uWS::WebSocket<uWS::SERVER>* ws = static_cast <uWS::WebSocket<uWS::SERVER>*>(userData);
-			ws->close(code, message.c_str());
-		}
+		uWS::WebSocket<true, true, PeerSocketData>* ws = static_cast <uWS::WebSocket<true, true, PeerSocketData>*>(userData);
+		ws->send(message, uWS::OpCode::BINARY);
 	}
-
-	void WebSocketClient::send(const json& data)
+	catch (std::exception& error)
 	{
-		if (this->_closed)
-			MSC_THROW_ERROR("transport closed");
+		MSC_ERROR("send() failed:%s", error.what());
 
-		std::string message = data.dump();
-
-		try
-		{
-			uWS::WebSocket<uWS::SERVER>* ws = static_cast <uWS::WebSocket<uWS::SERVER>*>(userData);
-			ws->send(message.c_str());
-		}
-		catch (std::exception& error)
-		{
-			MSC_ERROR("send() failed:%s", error.what());
-
-			throw error;
-		}
+		throw error;
 	}
+}
 
-	bool WebSocketClient::closed()
+bool WebSocketClient::closed()
+{
+	return this->_closed;
+}
+
+void WebSocketClient::setListener(Listener* listener)
+{
+	_listener = listener;
+}
+
+std::string WebSocketClient::url() const
+{
+	return _url;
+}
+
+std::string WebSocketClient::addresss() const
+{
+	return _address;
+}
+
+void WebSocketClient::setUserData(void* userData)
+{
+	this->userData = userData;
+
+	uWS::WebSocket<true, true, PeerSocketData>* ws = static_cast <uWS::WebSocket<true, true, PeerSocketData>*>(userData);
+	_address = std::string(ws->getRemoteAddress());
+
+	//LOG(INFO) << "WebSocketClient connected with [IP:" << _address << "]";
+}
+
+void WebSocketClient::onMessage(const std::string& message)
+{
+	if (_listener)
 	{
-		return this->_closed;
+		_listener->onMessage(message);
 	}
+}
 
-	void WebSocketClient::setListener(Listener* listener)
+void WebSocketClient::onClosed(int code, const std::string& message)
+{
+	if (this->_listener)
 	{
-		_listener = listener;
+		_listener->onClosed(code, message);
 	}
-
-	std::string WebSocketClient::url() const
-	{
-		return _url;
-	}
-
-	std::string WebSocketClient::addresss() const
-	{
-		return _address;
-	}
-
-	void WebSocketClient::setUserData(void* userData)
-	{
-		this->userData = userData;
-
-		uWS::WebSocket<uWS::SERVER>* ws = static_cast <uWS::WebSocket<uWS::SERVER>*>(userData);
-		_address = ws->getAddress().address;
-
-		//LOG(INFO) << "WebSocketClient connected with [IP:" << _address << "]";
-	}
-
-	void WebSocketClient::onMessage(const std::string& message)
-	{
-		//DLOG(INFO) << "recv Message from " << userData << " says :" << message;
-
-		if (_listener)
-		{
-			_listener->onMessage(message);
-		}
-	}
-
-	void WebSocketClient::onClosed(int code, const std::string& message)
-	{
-		//LOG(INFO) << "WebSocketClient disconnected with [IP:" << _address << "]";
-		if (this->_listener)
-		{
-			_listener->onClosed(code, message);
-		}
-	}
+}
 }

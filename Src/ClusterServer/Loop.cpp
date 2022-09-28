@@ -47,7 +47,7 @@ void Loop::Close()
 
 	// Close the SignalsHandler.
 	if (this->signalsHandler != nullptr)
-		this->signalsHandler->Destroy();
+		this->signalsHandler->Close();
 
 }
 
