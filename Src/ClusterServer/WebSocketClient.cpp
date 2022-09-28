@@ -46,7 +46,7 @@ void WebSocketClient::send(const json& data)
 	try
 	{
 		uWS::WebSocket<true, true, PeerSocketData>* ws = static_cast <uWS::WebSocket<true, true, PeerSocketData>*>(userData);
-		ws->send(message, uWS::OpCode::BINARY);
+		ws->send(message, uWS::OpCode::TEXT);
 	}
 	catch (std::exception& error)
 	{

@@ -22,8 +22,9 @@ R"(
 	"domain" : "127.0.0.1",
 	"tls" :
 	{
-		"cert" : "certs/fullchain.pem",
-		"key" : "certs/privkey.pem"
+		"cert" : "./certs/cert.pem",
+		"key"  : "./certs/key.pem",
+		"phrase" : "1234"
 	},
 	"rainstream" :
 	{
@@ -97,7 +98,8 @@ ClusterServer::ClusterServer()
 	json tls =
 	{
 		{ "cert" , config["tls"]["cert"] },
-		{ "key"  , config["tls"]["key"] }
+		{ "key"  , config["tls"]["key"] },
+		{ "phrase"  , config["tls"]["phrase"] }
 	};
 
 	_webSocketServer = new protoo::WebSocketServer(tls, this);

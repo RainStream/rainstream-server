@@ -4,6 +4,7 @@
 #include "DepLibUV.hpp"
 #include <Logger.hpp>
 #include <cstdlib> // std::abort()
+#include <uwebsockets/App.h>
 
 /* Static variables. */
 
@@ -49,5 +50,5 @@ void DepLibUV::RunLoop()
 	if (DepLibUV::loop == nullptr)
 		MSC_ABORT("DepLibUV::loop was not allocated");
 
-	uv_run(DepLibUV::loop, UV_RUN_DEFAULT);
+	uWS::Loop::get()->run();
 }

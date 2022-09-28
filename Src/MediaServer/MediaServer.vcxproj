@@ -203,9 +203,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Deps\uWebSockets\uWebSockets.vcxproj">
-      <Project>{baf494b1-0081-4457-b7ce-72f2b7b01f69}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\mediasoup\mediasoup.vcxproj">
       <Project>{57034427-4d2c-4bf0-832b-76f46602fd84}</Project>
     </ProjectReference>

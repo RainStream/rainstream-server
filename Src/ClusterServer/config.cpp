@@ -12,8 +12,9 @@ R"(
 		"listenPort" : 4443,
 		"tls"        :
 		{
-			"cert" : "./certs/fullchain.pem",
-			"key"  : "./certs/privkey.pem"
+			"cert" : "./certs/cert.pem",
+			"key"  : "./certs/key.pem",
+			"phrase" : "1234"
 		}
 	},
 	"mediasoup" :

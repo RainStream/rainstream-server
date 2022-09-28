@@ -92,7 +92,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;MS_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\mediasoup;$(SolutionDir)Deps;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\uWebSockets\src;$(SolutionDir)Deps\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\mediasoup;$(SolutionDir)Deps;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
@@ -133,7 +133,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;MS_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\mediasoup;$(SolutionDir)Deps;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\uWebSockets\src;$(SolutionDir)Deps\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\mediasoup;$(SolutionDir)Deps;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
@@ -205,9 +205,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Deps\uWebSockets\uWebSockets.vcxproj">
-      <Project>{baf494b1-0081-4457-b7ce-72f2b7b01f69}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\mediasoup\mediasoup.vcxproj">
       <Project>{57034427-4d2c-4bf0-832b-76f46602fd84}</Project>
     </ProjectReference>

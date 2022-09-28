@@ -5,7 +5,6 @@
 #include <uwebsockets/App.h>
 #include <uwebsockets/WebSocket.h>
 
-
 namespace protoo {
 
 class WebSocketClient;
@@ -40,7 +39,7 @@ private:
 	bool _closed = false;
 	//uWS::Hub *hub = nullptr;
 
-	uWS::SSLApp _app;
+	uWS::App* _app{ nullptr };
 };
 }
 #endif

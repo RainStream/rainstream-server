@@ -2,6 +2,7 @@
 
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"
+#include "DepLibUV.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
 #include "Utility.hpp"
@@ -9,7 +10,7 @@
 
 namespace protoo {
 
-const int SSL = 1;
+//const int SSL = 1;
 
 #define SEC_WEBSOCKET_PROTOCOL "protoo"
 
@@ -18,6 +19,9 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 	: _lisenter(lisenter)
 	, _tls(tls)
 {
+	uv_loop_t* uv_loop = DepLibUV::GetLoop();
+	uWS::Loop* loop = uWS::Loop::get(uv_loop);
+
 	std::string cert, key, phrase;
 
 	if (_tls.is_object()) {
@@ -26,11 +30,13 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 		phrase = _tls.value("phrase", "");
 	}
 
-	uWS::SSLApp({
+	_app = new uWS::App(/*{
 		.key_file_name = key.c_str(),
 		.cert_file_name = cert.c_str(),
 		.passphrase = phrase.c_str()
-	}).ws<PeerSocketData>("/*", {
+	}*/);
+
+	_app->ws<PeerSocketData>("/*", {
 		/* Settings */
 		.compression = uWS::CompressOptions(uWS::DEDICATED_COMPRESSOR_4KB | uWS::DEDICATED_DECOMPRESSOR),
 		.maxPayloadLength = 100 * 1024 * 1024,
@@ -45,9 +51,9 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 			std::string roomId(req->getQuery("roomId"));
 			std::string peerId(req->getQuery("peerId"));
 			std::string protocol(req->getHeader("sec-websocket-protocol"));
-			std::string url(req->getUrl());
+			std::string query(req->getQuery());
 
-			WebSocketClient* transport = new WebSocketClient(url);
+			WebSocketClient* transport = new WebSocketClient(query);
 
 			res->template upgrade<PeerSocketData>({
 				.peerId = roomId,
@@ -70,12 +76,14 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 			if (transport) {
 				transport->setUserData(ws);
 			}
-			uWS::WebSocket<true, true, PeerSocketData>* www = ws;
-
 		},
 		.message = [=](auto* ws, std::string_view message, uWS::OpCode opCode) {
 			PeerSocketData* peerData = ws->getUserData();
 			WebSocketClient* transport = peerData->transport;
+
+			if (transport) {
+				transport->onMessage(std::string(message));
+			}
 		},
 		.close = [=](auto* ws, int code, std::string_view message) {
 			PeerSocketData* peerData = ws->getUserData();
@@ -90,20 +98,23 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 				delete transport;
 			}
 		}
-	}).listen(9001, [](auto* listen_socket) {
-		if (listen_socket) {
-			std::cout << "Listening on port " << 9001 << std::endl;
-		}
-	}).run();
+	});
 }
 
 WebSocketServer::~WebSocketServer()
 {
-
+	delete _app;
 }
 
 bool WebSocketServer::Setup(const char* host, uint16_t port)
 {
+	_app->listen(port, [=](auto* listen_socket) {
+		if (!listen_socket) {
+			MSC_ABORT("websocket listening on port %d error", port);
+		}
+		});
+
 	return true;
 }
+
 }
