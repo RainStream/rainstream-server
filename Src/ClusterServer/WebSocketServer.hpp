@@ -39,7 +39,7 @@ private:
 	bool _closed = false;
 	//uWS::Hub *hub = nullptr;
 
-	uWS::App* _app{ nullptr };
+	uWS::SSLApp* _app{ nullptr };
 };
 }
 #endif

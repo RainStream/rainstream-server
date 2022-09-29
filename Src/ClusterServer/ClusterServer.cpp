@@ -22,9 +22,9 @@ R"(
 	"domain" : "127.0.0.1",
 	"tls" :
 	{
-		"cert" : "./certs/cert.pem",
-		"key"  : "./certs/key.pem",
-		"phrase" : "1234"
+		"cert" : "certs/fullchain.pem",
+		"key"  : "certs/privkey.pem",
+		"phrase" : ""
 	},
 	"rainstream" :
 	{

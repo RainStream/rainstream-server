@@ -30,13 +30,18 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 		phrase = _tls.value("phrase", "");
 	}
 
-	_app = new uWS::App(/*{
+	_app = new uWS::SSLApp({
+		/* There are example certificates in uWebSockets.js repo */
 		.key_file_name = key.c_str(),
 		.cert_file_name = cert.c_str(),
 		.passphrase = phrase.c_str()
-	}*/);
+		});
 
-	_app->ws<PeerSocketData>("/*", {
+	_app->get("/*", [](auto* res, auto*/*req*/) {
+
+		res->end("Hello world!");
+
+	}).ws<PeerSocketData>("/*", {
 		/* Settings */
 		.compression = uWS::CompressOptions(uWS::DEDICATED_COMPRESSOR_4KB | uWS::DEDICATED_DECOMPRESSOR),
 		.maxPayloadLength = 100 * 1024 * 1024,
