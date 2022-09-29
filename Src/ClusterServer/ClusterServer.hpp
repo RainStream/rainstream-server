@@ -23,12 +23,10 @@ public:
 protected:
 	void OnRoomClose(std::string roomId);
 
-	void OnConnectRequest(protoo::WebSocketClient* transport) override;
+	void OnConnectRequest(std::string requestUrl, protoo::FnAccept accept, protoo::FnReject reject) override;
 	void OnConnectClosed(protoo::WebSocketClient* transport) override;
 
 protected:
-	void connectionrequest(protoo::WebSocketClient* transport);
-
 	void runMediasoupWorkers();
 	/**
 	 * Get next mediasoup Worker.

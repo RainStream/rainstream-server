@@ -8,10 +8,6 @@ namespace protoo{
 class WebSocketClient;
 
 struct PeerSocketData {
-	/* Fill with user data */
-	std::string peerId;
-	std::string roomId;
-	std::string protocol;
 	WebSocketClient* transport{ nullptr };
 };
 

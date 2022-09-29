@@ -124,23 +124,16 @@ void ClusterServer::OnRoomClose(std::string roomId)
 	_rooms.erase(roomId);
 }
 
-void ClusterServer::OnConnectRequest(protoo::WebSocketClient* transport)
+void ClusterServer::OnConnectRequest(std::string requestUrl, protoo::FnAccept accept, protoo::FnReject reject)
 {
-	connectionrequest(transport);
-}
-
-void ClusterServer::connectionrequest(protoo::WebSocketClient* transport)
-{
-	std::string url = transport->url();
-
-	std::string roomId = Url::Request(url, "roomId");
-	std::string peerId = Url::Request(url, "peerId");
+	std::string roomId = Url::Request(requestUrl, "roomId");
+	std::string peerId = Url::Request(requestUrl, "peerId");
 
 	if (roomId.empty() || peerId.empty())
 	{
 		MSC_ERROR("Connection request without roomId and/or peerName");
 
-		transport->Close(400, "Connection request without roomId and/or peerName");
+		reject(Error("Connection request without roomId and/or peerName"));
 
 		return;
 	}
@@ -149,14 +142,17 @@ void ClusterServer::connectionrequest(protoo::WebSocketClient* transport)
 		peerId.c_str(), roomId.c_str());
 
 	this->_queue.push([=]()->std::future<void>
-		{
-			Room* room = co_await getOrCreateRoom(roomId);
+	{
+		Room* room = co_await getOrCreateRoom(roomId);
 
-			MSC_DEBUG("get sync room %s for peer %s %d", roomId.c_str(), peerId.c_str(), ++gIndex);
+		MSC_DEBUG("get sync room %s for peer %s %d", roomId.c_str(), peerId.c_str(), ++gIndex);
 
-			room->handleConnection(peerId, true, transport);
-		});
+		auto transport = accept();
+
+		room->handleConnection(peerId, true, transport);
+	});
 }
+
 
 void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
 {

@@ -2,6 +2,7 @@
 #define WEBSOCKET_SERVER_HPP
 
 #include "common.hpp"
+#include "errors.hpp"
 #include <uwebsockets/App.h>
 #include <uwebsockets/WebSocket.h>
 
@@ -9,13 +10,16 @@ namespace protoo {
 
 class WebSocketClient;
 
+using FnAccept = std::function<WebSocketClient*(void)>;
+using FnReject = std::function<void(Error)>;
+
 class WebSocketServer
 {
 public:
 	class Lisenter
 	{
 	public:
-		virtual void OnConnectRequest(WebSocketClient* transport) = 0;
+		virtual void OnConnectRequest(std::string requestUrl, FnAccept accept, FnReject reject) = 0;
 		virtual void OnConnectClosed(WebSocketClient* transport) = 0;
 	};
 public:

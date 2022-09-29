@@ -82,6 +82,9 @@ void Room::close()
 
 void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport)
 {
+	if (!transport)
+		return;
+
 	if (this->_peers.count(peerId))
 	{
 		protoo::Peer* existingPeer = this->_peers.at(peerId);

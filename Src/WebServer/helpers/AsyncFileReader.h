@@ -35,7 +35,7 @@ public:
         //std::cout << "File size is: " << fileSize << std::endl;
 
         // cache up 1 mb!
-		cache.resize(std::max(0, std::min(4 * 1024 * 1024, fileSize)));
+		cache.resize(std::max(0, fileSize));
 
         //std::cout << "Caching 1 MB at offset = " << 0 << std::endl;
         fin.seekg(0, fin.beg);

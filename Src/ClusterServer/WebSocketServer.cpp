@@ -53,25 +53,62 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 		/* Handlers */
 		.upgrade = [=](auto* res, auto* req, auto* context) {
 
-			std::string roomId(req->getQuery("roomId"));
-			std::string peerId(req->getQuery("peerId"));
-			std::string protocol(req->getHeader("sec-websocket-protocol"));
 			std::string query(req->getQuery());
 
-			WebSocketClient* transport = new WebSocketClient(query);
+			struct UpgradeData {
+				std::string secWebSocketKey;
+				std::string secWebSocketProtocol;
+				std::string secWebSocketExtensions;
+				struct us_socket_context_t* context;
+				decltype(res) httpRes;
+				bool aborted = false;
+			} *upgradeData = new UpgradeData{
+				std::string(req->getHeader("sec-websocket-key")),
+				std::string(req->getHeader("sec-websocket-protocol")),
+				std::string(req->getHeader("sec-websocket-extensions")),
+				context,
+				res
+			};
 
-			res->template upgrade<PeerSocketData>({
-				.peerId = roomId,
-				.roomId = peerId,
-				.protocol = protocol,
-				.transport = transport
-			}, req->getHeader("sec-websocket-key"),
-				req->getHeader("sec-websocket-protocol"),
-				req->getHeader("sec-websocket-extensions"),
-				context);
+			auto accept = [=]()->WebSocketClient* {
+
+				WebSocketClient* transport = nullptr;
+				if (!upgradeData->aborted) {
+					transport = new WebSocketClient(query);
+
+					/* This call will immediately emit .open event */
+					upgradeData->httpRes->template upgrade<PeerSocketData>({
+						/* We initialize PerSocketData struct here */
+						.transport = transport
+						}, upgradeData->secWebSocketKey,
+						upgradeData->secWebSocketProtocol,
+						upgradeData->secWebSocketExtensions,
+						upgradeData->context);
+				}
+
+				delete upgradeData;
+
+				return transport;
+			};
+
+			auto reject = [=](Error error) {
+				if (!upgradeData->aborted) {
+					res->end(error.ToString(), true);
+				}
+				
+				MSC_ERROR("websocket client error for %s", error.ToString().c_str());
+
+				delete upgradeData;
+			};
+
+			res->onAborted([=]() {
+				/* We don't implement any kind of cancellation here,
+				 * so simply flag us as aborted */
+				upgradeData->aborted = true;
+			});
 
 			if (_lisenter) {
-				_lisenter->OnConnectRequest(transport);
+				_lisenter->OnConnectRequest(query, accept, reject);
 			}
 		},
 		.open = [=](auto* ws) {
