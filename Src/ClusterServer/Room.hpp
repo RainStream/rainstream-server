@@ -14,6 +14,7 @@ namespace protoo
 }
 class Router;
 class Worker;
+class WebRtcServer;
 
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
@@ -25,9 +26,9 @@ public:
 	};
 public:
 
-	static std::future<Room*> create(Worker* mediasoupWorker, std::string roomId);
+	static std::future<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
-	Room(std::string roomId, Router* router);
+	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router);
 	~Room();
 
 public:
@@ -65,9 +66,19 @@ protected:
 	void spread(std::string method, json data, std::set<std::string> excluded = std::set<std::string>());
 
 private:
+	// Room id.
+	// @type {String}
 	std::string _roomId;
-// 	rs::Server* _mediaServer{ nullptr };
-// 	rs::Room* _mediaRoom{ nullptr };
+
+	// Closed flag.
+	bool _closed = false;
+
+	// @type {Map<String, Object>}
+	//this._broadcasters = new Map();
+
+	// mediasoup WebRtcServer instance.
+	// @type {mediasoup.WebRtcServer}
+	WebRtcServer* _webRtcServer{ nullptr };
 
 	Router* _mediasoupRouter{ nullptr };
 
@@ -75,11 +86,6 @@ private:
 	Listener* listener{ nullptr };
 
 	std::map<std::string, protoo::Peer*> _peers;
-
-	// Closed flag.
-	bool _closed = false;
-
-	uint32_t _maxBitrate;
 };
 
 #endif

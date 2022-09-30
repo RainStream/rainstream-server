@@ -290,7 +290,7 @@ std::future<void> Worker::updateSettings(std::string logLevel, std::vector<std::
 std::future<WebRtcServer*> Worker::createWebRtcServer(const WebRtcServerOptions& options) {
 	MSC_DEBUG("createWebRtcServer()");
 
-	if (!options.appData.is_object())
+	if (!options.appData.is_null() && !options.appData.is_object())
 		MSC_THROW_TYPE_ERROR("if given, appData must be an object");
 
 	json reqData = {

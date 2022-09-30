@@ -199,10 +199,8 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 
 	listenIps = tmpListenIps;
 
-	json internal = this->_internal;
-	internal["transportId"] = uuidv4();
-
 	json reqData = {
+		{ "transportId" ,  uuidv4()},
 		{ "listenIps" , listenIps},
 		{ "enableUdp", enableUdp },
 		{ "enableTcp", enableTcp },
@@ -217,6 +215,9 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 
 	json data =
 		co_await this->_channel->request("router.createWebRtcTransport", this->_internal["routerId"], reqData);
+
+	json internal = this->_internal;
+	internal["transportId"] = reqData["transportId"];
 
 	WebRtcTransport* transport = new WebRtcTransport(
 		internal,

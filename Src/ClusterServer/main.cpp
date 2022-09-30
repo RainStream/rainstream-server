@@ -15,6 +15,7 @@
 #include <map>
 #include <string>
 #include <unistd.h> // getpid(), usleep()
+#include <colorconsole.hpp>
 
 
 static void init();
@@ -22,6 +23,12 @@ static void ignoreSignals();
 static void destroy();
 static void exitSuccess();
 static void exitWithError();
+
+class LogHandler : public Logger::LogHandlerInterface
+{
+public:
+	virtual void OnLog(Logger::LogLevel level, char* payload, size_t len);
+};
 
 
 int main(int argc, char* argv[])
@@ -31,7 +38,8 @@ int main(int argc, char* argv[])
 
 	// Initialize the Logger.
 	Logger::SetLogLevel(Logger::LogLevel::LOG_DEBUG);
-	Logger::SetDefaultHandler();
+	LogHandler* logHandler = new LogHandler;
+	Logger::SetHandler(logHandler);
 
 	// Setup the configuration.
 // 	try
@@ -87,6 +95,8 @@ int main(int argc, char* argv[])
 		//destroy();
 		//exitWithError();
 	}
+
+	delete logHandler;
 }
 
 
@@ -155,4 +165,24 @@ void exitWithError()
 	usleep(100000);
 	// And exit with error status.
 	std::_Exit(EXIT_FAILURE);
+}
+
+void LogHandler::OnLog(Logger::LogLevel level, char* payload, size_t len)
+{
+
+	switch (level)
+	{
+	case Logger::LogLevel::LOG_NONE:std::cout << hue::light_blue << payload << hue::reset << std::endl;
+		break;
+	case Logger::LogLevel::LOG_ERROR:std::cout << hue::light_red << payload << hue::reset << std::endl;
+		break;
+	case Logger::LogLevel::LOG_WARN:std::cout << hue::light_yellow << payload << hue::reset << std::endl;
+		break;
+	case Logger::LogLevel::LOG_DEBUG:std::cout << hue::green << payload << hue::reset << std::endl;
+		break;
+	case Logger::LogLevel::LOG_TRACE:std::cout << hue::light_aqua << payload << hue::reset << std::endl;
+		break;
+	default:
+		break;
+	}
 }

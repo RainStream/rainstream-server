@@ -13,6 +13,7 @@ namespace protoo
 
 class Room;
 class Worker;
+class WebRtcServer;
 
 class ClusterServer : public protoo::WebSocketServer::Lisenter
 {
@@ -27,7 +28,7 @@ protected:
 	void OnConnectClosed(protoo::WebSocketClient* transport) override;
 
 protected:
-	void runMediasoupWorkers();
+	std::future<void> runMediasoupWorkers();
 	/**
 	 * Get next mediasoup Worker.
 	 */
@@ -36,12 +37,11 @@ protected:
 	std::future<Room*> getOrCreateRoom(std::string roomId);
 
 private:
-
-	json config;
-
 	protoo::WebSocketServer* _webSocketServer = nullptr;
 
 	std::vector<Worker*> _mediasoupWorkers;
+
+	std::map<Worker*, WebRtcServer*> _workerWebRtcServers;
 
 	std::map<std::string, Room*> _rooms;
 

@@ -21,7 +21,7 @@ const uint32_t MIN_BITRATE = 50000;
 const float BITRATE_FACTOR = 0.75;
 
 
-std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId)
+std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
 {
 	MSC_DEBUG("create() [roomId:%s]", roomId.c_str());
 
@@ -46,11 +46,13 @@ std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId)
 
 	co_return new Room(
 		roomId,
+		webRtcServer,
 		mediasoupRouter);
 }
 
-Room::Room(std::string roomId, Router* router)
+Room::Room(std::string roomId, WebRtcServer* webRtcServer, Router* router)
 	: _roomId(roomId)
+	, _webRtcServer(webRtcServer)
 	, _mediasoupRouter(router)
 {
 

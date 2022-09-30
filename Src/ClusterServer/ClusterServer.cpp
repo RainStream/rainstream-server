@@ -3,69 +3,23 @@
 #include "ClusterServer.hpp"
 #include <Logger.hpp>
 #include <Worker.hpp>
+#include <WebRtcServer.hpp>
 #include "Utils.hpp"
 #include "Room.hpp"
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"
 #include "Utility.hpp"
+#include "config.hpp"
 
 int gIndex = 0;
 
-
+#define MEDIASOUP_USE_WEBRTC_SERVER true
 
 static int nextMediasoupWorkerIdx = 0;
-
-const json DefaultConfig = 
-
-R"(
-{
-	"domain" : "127.0.0.1",
-	"tls" :
-	{
-		"cert" : "certs/fullchain.pem",
-		"key"  : "certs/privkey.pem",
-		"phrase" : ""
-	},
-	"rainstream" :
-	{
-		"logLevel" : "warn",
-		"logTags" : ["info", "rtp", "rtcp", "rtx"],
-		"rtcIPv4" : true,
-		"rtcIPv6" : false,
-		"rtcMaxPort" : 49999,
-		"rtcMinPort" : 40000,
-		"numWorkers" : 1,
-
-	"mediaCodecs" :
-	[
-		{
-			"kind"       : "audio",
-			"name" : "opus",
-			"clockRate" : 48000,
-			"channels" : 2,
-			"parameters" :
-			{
-				"useinbandfec" : 1
-			}
-		},
-		{
-			"kind"       : "video",
-			"name" : "H264",
-			"clockRate" : 90000,
-			"parameters" :
-			{
-				"packetization-mode" : 1
-			}
-		}
-	],
-	"maxBitrate" : 500000
-	}
-})"_json;
 
 
 /* Instance methods. */
 ClusterServer::ClusterServer()
-	: config(DefaultConfig)
 {
 // 	if (!Settings::configuration.configFile.empty())
 // 	{
@@ -80,32 +34,27 @@ ClusterServer::ClusterServer()
 // 		}
 // 	}
 
-	// rainstream server.
-	json rainstream = 
+	// mediasoup server.
+	json mediasoup = 
 	{
 		{ "numWorkers"       , 1 },
-		{ "logLevel"         , config["rainstream"]["logLevel"] },
-		{ "logTags"          , config["rainstream"]["logTags"] },
-		{ "rtcIPv4"          , config["rainstream"]["rtcIPv4"] },
-		{ "rtcIPv6"          , config["rainstream"]["rtcIPv6"] },
-		{ "rtcAnnouncedIPv4" , config["rainstream"]["rtcAnnouncedIPv4"] },
-		{ "rtcAnnouncedIPv6" , config["rainstream"]["rtcAnnouncedIPv6"] },
-		{ "rtcMinPort"       , config["rainstream"]["rtcMinPort"] },
-		{ "rtcMaxPort"       , config["rainstream"]["rtcMaxPort"] }
+		{ "logLevel"         , config["mediasoup"]["logLevel"] },
+		{ "logTags"          , config["mediasoup"]["logTags"] },
+		{ "rtcIPv4"          , config["mediasoup"]["rtcIPv4"] },
+		{ "rtcIPv6"          , config["mediasoup"]["rtcIPv6"] },
+		{ "rtcAnnouncedIPv4" , config["mediasoup"]["rtcAnnouncedIPv4"] },
+		{ "rtcAnnouncedIPv6" , config["mediasoup"]["rtcAnnouncedIPv6"] },
+		{ "rtcMinPort"       , config["mediasoup"]["rtcMinPort"] },
+		{ "rtcMaxPort"       , config["mediasoup"]["rtcMaxPort"] }
 	};
 
 	// HTTPS server for the protoo WebSocket server.
-	json tls =
-	{
-		{ "cert" , config["tls"]["cert"] },
-		{ "key"  , config["tls"]["key"] },
-		{ "phrase"  , config["tls"]["phrase"] }
-	};
+	json tls = config["https"]["tls"];
 
 	_webSocketServer = new protoo::WebSocketServer(tls, this);
 	if (_webSocketServer->Setup("127.0.0.1", 4443))
 	{
-		MSC_ERROR("WebSocket server running on port: %d", 4443);
+		MSC_DEBUG("WebSocket server running on port: %d", 4443);
 	}
 
 	MSC_DEBUG("ClusterServer Started");
@@ -159,7 +108,7 @@ void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
 
 }
 
-void ClusterServer::runMediasoupWorkers()
+std::future<void> ClusterServer::runMediasoupWorkers()
 {
 	int numWorkers = 1;
 
@@ -184,6 +133,26 @@ void ClusterServer::runMediasoupWorkers()
 		});
 
 		_mediasoupWorkers.push_back(worker);
+
+		// Create a WebRtcServer in this Worker.
+		if (MEDIASOUP_USE_WEBRTC_SERVER != false)
+		{
+			// Each mediasoup Worker will run its own WebRtcServer, so those cannot
+			// share the same listening ports. Hence we increase the value in config.js
+			// for each Worker.
+
+			WebRtcServerOptions webRtcServerOptions = config["mediasoup"]["webRtcServerOptions"];
+			int portIncrement = _mediasoupWorkers.size() - 1;
+
+			for (auto& listenInfo : webRtcServerOptions.listenInfos)
+			{
+				listenInfo.port += portIncrement;
+			}
+
+			WebRtcServer* webRtcServer = co_await worker->createWebRtcServer(webRtcServerOptions);
+
+			this->_workerWebRtcServers.insert(std::pair(worker, webRtcServer));
+		}
 
 		// Log worker resource usage every X seconds.
 // 		setInterval(async() = >
@@ -216,7 +185,9 @@ std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
 
 		Worker* mediasoupWorker = getMediasoupWorker();
 
-		room = co_await Room::create(mediasoupWorker, roomId);
+		WebRtcServer* webRtcServer = _workerWebRtcServers[mediasoupWorker];
+
+		room = co_await Room::create(mediasoupWorker, roomId, webRtcServer);
 
 		_rooms.insert(std::make_pair(roomId, room));
 		room->on("close", [=]() { _rooms.erase(roomId); });

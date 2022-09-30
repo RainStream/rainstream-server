@@ -29,6 +29,17 @@ struct WebRtcServerListenInfo
 	 */
 	uint16_t port;
 
+	WebRtcServerListenInfo(const json& listenInfo)
+	{
+		this->protocol = listenInfo.value("protocol", "");
+		this->ip = listenInfo.value("ip", "");
+		if (listenInfo.contains("announcedIp"))
+		{
+			this->announcedIp = listenInfo.value("announcedIp", "");
+		}
+		this->port = listenInfo.value("port", 0);
+	}
+
 	operator json() const 
 	{
 		json data = {
@@ -46,6 +57,12 @@ struct WebRtcServerListenInfo
 
 struct WebRtcServerOptions
 {
+	WebRtcServerOptions(const json& options) {
+		for (const json& listenInfo: options["listenInfos"])
+		{
+			this->listenInfos.push_back(WebRtcServerListenInfo(listenInfo));
+		}
+	}
 	/**
 	 * Listen infos.
 	 */

@@ -345,10 +345,9 @@ std::future<Producer*> Transport::produce(
 	json consumableRtpParameters = ortc::getConsumableRtpParameters(
 		kind, rtpParameters, routerRtpCapabilities, rtpMapping);
 
-	json internal = this->_internal;
-	internal["producerId"] = id.empty() ? uuidv4() : id;
 
 	json reqData = {
+		{ "producerId",  id.empty() ? uuidv4() : id },
 		{ "kind", kind },
 		{ "rtpParameters", rtpParameters },
 		{ "rtpMapping", rtpMapping },
@@ -357,7 +356,7 @@ std::future<Producer*> Transport::produce(
 	};
 
 	json status =
-		co_await this->_channel->request("transport.produce", internal, reqData);
+		co_await this->_channel->request("transport.produce", this->_internal["transportId"], reqData);
 
 	json data =
 	{
@@ -366,6 +365,9 @@ std::future<Producer*> Transport::produce(
 		{ "type", status["type"] },
 		{ "consumableRtpParameters", consumableRtpParameters }
 	};
+
+	json internal = this->_internal;
+	internal["producerId"] = reqData["producerId"];
 
 	Producer* producer = new Producer(
 		internal,
