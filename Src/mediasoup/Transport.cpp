@@ -436,13 +436,10 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 		this->_nextMidForConsumers = 0;
 	}
 
-	json internal = this->_internal;
-	internal["consumerId"] = uuidv4();
-	internal["producerId"] = producerId;
-
-
 	json reqData =
 	{
+		{ "consumerId", uuidv4() },
+		{ "producerId", producerId },
 		{ "kind", producer->kind() },
 		{ "rtpParameters", rtpParameters },
 		{ "type", producer->type() },
@@ -459,6 +456,9 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 		{ "rtpParameters", rtpParameters },
 		{ "type", producer->type() }
 	};
+
+	json internal = this->_internal;
+	internal["consumerId"] = reqData["consumerId"];
 
 	Consumer* consumer = new Consumer(
 		internal,

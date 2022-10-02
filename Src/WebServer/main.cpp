@@ -11,13 +11,6 @@
 #define OPTPARSE_IMPLEMENTATION
 #include "helpers/optparse.h"
 
-void get_home(uWS::HttpResponse<false>* res, uWS::HttpRequest* req) {
-    // res->writeHeader("Alt-Svc", "h2=\"localhost:8087\"public\"");
-    res->writeHeader("Content-Type", "text/html; charset=utf8");
-    AsyncFileReader page_contents("./public/html/home.html");
-    res->end(page_contents.peek(0));
-}
-
 void PrintCachedFiles(std::map<std::string_view, AsyncFileReader*> dict) {
     for (auto it = dict.begin(); it != dict.end(); it++) {
         std::cout << it->first << std::endl;
@@ -25,53 +18,10 @@ void PrintCachedFiles(std::map<std::string_view, AsyncFileReader*> dict) {
 }
 
 int main(int argc, char** argv) {
+	int port = 3000;
+	struct uWS::SocketContextOptions ssl_options = {};
 
-    int option;
-    struct optparse options;
-    optparse_init(&options, argv);
-
-    struct optparse_long longopts[] = {
-        {"port", 'p', OPTPARSE_REQUIRED},
-        {"help", 'h', OPTPARSE_NONE},
-        {"passphrase", 'a', OPTPARSE_REQUIRED},
-        {"key", 'k', OPTPARSE_REQUIRED},
-        {"cert", 'c', OPTPARSE_REQUIRED},
-        {"dh_params", 'd', OPTPARSE_REQUIRED},
-        {0}
-    };
-
-    int port = 3000;
-    struct uWS::SocketContextOptions ssl_options = {};
-
-    while ((option = optparse_long(&options, longopts, nullptr)) != -1) {
-        switch (option) {
-        case 'p':
-            port = atoi(options.optarg);
-            break;
-        case 'a':
-            ssl_options.passphrase = options.optarg;
-            break;
-        case 'c':
-            ssl_options.cert_file_name = options.optarg;
-            break;
-        case 'k':
-            ssl_options.key_file_name = options.optarg;
-            break;
-        case 'd':
-            ssl_options.dh_params_file_name = options.optarg;
-            break;
-        case 'h':
-        case '?':
-        fail:
-            std::cout << "Usage: " << argv[0] << " [--help] [--port <port>] [--key <ssl key>] [--cert <ssl cert>] [--passphrase <ssl key passphrase>] [--dh_params <ssl dh params file>] <public root>" << std::endl;
-            return 0;
-        }
-    }
-
-    char* root = optparse_arg(&options);
-    if (!root) {
-        goto fail;
-    }
+    const char* root = "../public";
 
     AsyncFileStreamer asyncFileStreamer(root);
 
