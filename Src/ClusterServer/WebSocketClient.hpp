@@ -2,6 +2,7 @@
 #define WEBSOCKET_TRANSPORT_HPP
 
 #include "common.hpp"
+#include "DepLibUV.hpp"
 
 namespace protoo{
 
@@ -33,11 +34,14 @@ public:
 	void Close(int code = 1000, std::string message = std::string());
 	bool closed();
 	void send(const json& data);
+	void OnUvWrite();
 
 protected:
 	void setUserData(void* userData);
 	void onMessage(const std::string& message);
 	void onClosed(int code, const std::string& message);
+
+
 
 private:
 	void* userData{ nullptr };
@@ -47,6 +51,14 @@ private:
 	std::string _address;
 	// Closed flag.
 	bool _closed = false;
+
+	uv_async_t* uvWriteHandle{ nullptr };
+
+	std::mutex write_mutex;
+
+
+	std::list<std::string> _buffers;
+
 };
 }
 
