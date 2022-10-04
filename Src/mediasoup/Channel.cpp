@@ -151,8 +151,8 @@ std::future<json> Channel::request(std::string method, std::optional<std::string
 	// This may raise if closed or remote side ended.
 	try
 	{
-		this->_producerSocket->Write((const uint8_t*)(int*)(&size), sizeof(size));
-		this->_producerSocket->Write((const uint8_t*)request.data(), size);
+		this->_producerSocket->PendingWrite((const uint8_t*)(int*)(&size), sizeof(size));
+		this->_producerSocket->PendingWrite((const uint8_t*)request.data(), size);
 	}
 	catch (std::exception error)
 	{

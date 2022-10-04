@@ -52,6 +52,16 @@ inline static void onErrorClose(uv_handle_t* handle)
 	delete handle;
 }
 
+inline static void onAsyncWrite(uv_handle_t* handle)
+{
+	static_cast<PipeStreamSocket*>(handle->data)->OnUvWrite();
+}
+
+inline static void onWriteClose(uv_handle_t* handle)
+{
+	
+}
+
 /* Instance methods. */
 
 PipeStreamSocket::PipeStreamSocket(size_t bufferSize)
@@ -71,12 +81,26 @@ PipeStreamSocket::PipeStreamSocket(size_t bufferSize)
 
 		MSC_WARN("uv_pipe_init() failed: %s", uv_strerror(err));
 	}
+
+	this->uvWriteHandle = new uv_async_t{ 0 };
+	this->uvWriteHandle->data = (void*)this;
+
+	err = uv_async_init(uv_default_loop(), this->uvWriteHandle, reinterpret_cast<uv_async_cb>(onAsyncWrite));
+	if (err != 0)
+	{
+		delete this->uvWriteHandle;
+		this->uvWriteHandle = nullptr;
+
+		MSC_WARN("uv_async_init() failed: %s", uv_strerror(err));
+	}
 }
 
 PipeStreamSocket::~PipeStreamSocket()
 {
 	delete this->uvHandle;
 	delete[] this->buffer;
+
+	delete this->uvWriteHandle;
 }
 
 uv_pipe_t* PipeStreamSocket::GetUvHandle() const
@@ -115,6 +139,11 @@ void PipeStreamSocket::Destroy()
 	{
 		MSC_ERROR("uv_read_stop() failed: %s", uv_strerror(err));
 		std::abort();
+	}
+
+	if (this->uvWriteHandle)
+	{
+		uv_close(reinterpret_cast<uv_handle_t*>(this->uvWriteHandle), static_cast<uv_close_cb>(onWriteClose));
 	}
 
 	// If there is no error and the peer didn"t close its pipe side then close gracefully.
@@ -195,6 +224,15 @@ void PipeStreamSocket::Write(const uint8_t* data, size_t len)
 		// Delete the UvSendData struct.
 		delete writeData;
 	}
+}
+
+void PipeStreamSocket::PendingWrite(const uint8_t* data, size_t len)
+{
+	std::lock_guard<std::mutex> guard(write_mutex);
+
+	writeBuffers.push_back(new Buffer(data, len));
+
+	uv_async_send(this->uvWriteHandle);
 }
 
 inline void PipeStreamSocket::OnUvReadAlloc(size_t /*suggestedSize*/, uv_buf_t* buf)
@@ -288,3 +326,16 @@ inline void PipeStreamSocket::OnUvClosed()
 	delete this;
 }
 
+inline void PipeStreamSocket::OnUvWrite()
+{
+	std::lock_guard<std::mutex> guard(write_mutex);
+
+	for (Buffer* buffer : writeBuffers)
+	{
+		this->Write(buffer->_data, buffer->_size);
+
+		delete buffer;
+	}
+
+	writeBuffers.clear();
+}
