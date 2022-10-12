@@ -26,7 +26,7 @@ public:
 	};
 public:
 
-	static std::future<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
+	static task_t<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
 	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router);
 	~Room();
@@ -38,14 +38,14 @@ public:
 	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
 
 protected:
-	std::future<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
+	task_t<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
 	std::list<protoo::Peer*> _getJoinedPeers(protoo::Peer* excludePeer = nullptr);
 	/**
 	 * Creates a mediasoup Consumer for the given mediasoup Producer.
 	 *
 	 * @async
 	 */
-	std::future<void> _createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer);
+	task_t<void> _createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer);
 
 	/* Methods inherited from protoo::Peer::Listener. */
 public:

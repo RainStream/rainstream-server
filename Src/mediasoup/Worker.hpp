@@ -58,23 +58,23 @@ public:
 	/**
 	* Dump Worker.
 	*/
-	std::future<json> dump();
+	task_t<json> dump();
 	/**
 	 * Get mediasoup-worker process resource usage.
 	 */
-	std::future<json> getResourceUsage();
+	task_t<json> getResourceUsage();
 	/**
 	 * Update settings.
 	 */
-	std::future<void> updateSettings(std::string logLevel, std::vector<std::string> logTags);
+	task_t<void> updateSettings(std::string logLevel, std::vector<std::string> logTags);
 	/**
 	 * Create a WebRtcServer.
 	 */
-	std::future<WebRtcServer*> createWebRtcServer(const WebRtcServerOptions& options);
+	task_t<WebRtcServer*> createWebRtcServer(const WebRtcServerOptions& options);
 	/**
 	 * Create a Router.
 	 */
-	std::future<Router*> createRouter(json& mediaCodecs, const json& appData = json::object());
+	task_t<Router*> createRouter(json& mediaCodecs, const json& appData = json::object());
 
 private:
 	void workerDied(const Error &error);

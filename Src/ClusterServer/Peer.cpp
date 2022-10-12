@@ -173,23 +173,23 @@ namespace protoo
 		MSC_DEBUG("notify() [method:%s]", method.c_str());
 
 		// This may throw.
-		this->_transport->send(notification);
+		this->Send(notification);
 	}
 
-	std::future<json> Peer::request(std::string method, const json& data)
+	task_t<json> Peer::request(std::string method, const json& data)
 	{
 		json request = Message::createRequest(method, data);
 
 		uint32_t id = request["id"];
 
-		MSC_DEBUG("request() [method:%s, id:%d]", method.c_str(), id);
+		MSC_DEBUG("request() [method:%s, id:%d]", method.c_str(), id);		
+
+		promise_t<json> promise;
+		this->_sents.insert(std::make_pair(id, std::move(promise)));
 
 		this->Send(request);
 
-		std::promise<json> promise;
-		this->_sents.insert(std::make_pair(id, std::move(promise)));
-
-		return this->_sents[id].get_future();
+		return this->_sents[id].get_return_object();
 	}
 
 	void Peer::onMessage(const std::string& message)
@@ -246,25 +246,26 @@ namespace protoo
 
 	void Peer::_handleResponse(json& response)
 	{
-		uint32_t id = response["id"].get<uint32_t>();
+		uint32_t id = response["id"];
 
-		if (!this->_sents.count(id))
+		if (!this->_sents.contains(id))
 		{
 			MSC_ERROR("received response does not match any sent request [id:%d]", id);
 
 			return;
 		}
 
-		std::promise<json> sent = std::move(this->_sents[id]);
+		promise_t<json> sent = std::move(this->_sents[id]);
 		this->_sents.erase(id);
 
 		if (response.count("ok") && response["ok"].get<bool>())
 		{
-			sent.set_value(response["data"]);
+			sent.return_value(response["data"]);
 		}
 		else
 		{
-			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
+			//sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
+			sent.unhandled_exception();
 		}
 	}
 

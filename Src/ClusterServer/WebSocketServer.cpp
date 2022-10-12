@@ -108,7 +108,7 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 			});
 
 			if (_lisenter) {
-				_lisenter->OnConnectRequest(query, accept, reject);
+				_lisenter->OnConnectRequest(query, std::move(accept), std::move(reject));
 			}
 		},
 		.open = [=](auto* ws) {

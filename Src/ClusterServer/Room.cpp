@@ -21,7 +21,7 @@ const uint32_t MIN_BITRATE = 50000;
 const float BITRATE_FACTOR = 0.75;
 
 
-std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
+task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
 {
 	MSC_DEBUG("create() [roomId:%s]", roomId.c_str());
 
@@ -164,7 +164,7 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 *
 * @async
 */
-std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* request)
+task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* request)
 {
 	std::string method = request->method;
 	json& data = request->data;
@@ -861,12 +861,7 @@ std::list<protoo::Peer*> Room::_getJoinedPeers(protoo::Peer* excludePeer/* = nul
 	return peers;
 }
 
-/**
-	 * Creates a mediasoup Consumer for the given mediasoup Producer.
-	 *
-	 * @async
-	 */
-std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer)
+task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer)
 {
 	// Optimization:
 	// - Create the server-side Consumer in paused mode.
@@ -886,7 +881,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 		!this->_mediasoupRouter->canConsume(producer->id(), consumerPeer->data.rtpCapabilities)
 		)
 	{
-		return;
+		co_return;
 	}
 
 	// Must take the Transport the remote Peer is using for consuming.
@@ -905,7 +900,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 	{
 		MSC_WARN("_createConsumer() | Transport for consuming not found");
 
-		return;
+		co_return;
 	}
 
 	// Create the Consumer in paused mode.

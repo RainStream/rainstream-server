@@ -143,7 +143,7 @@ void PlainTransport::routerClosed()
  *
  * @override
  */
-std::future<json> PlainTransport::getStats()
+task_t<json> PlainTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -157,7 +157,7 @@ std::future<json> PlainTransport::getStats()
  *
  * @override
  */
-std::future<void> PlainTransport::connect(
+task_t<void> PlainTransport::connect(
 	std::string ip,
 	uint32_t port,
 	uint32_t rtcpPort,

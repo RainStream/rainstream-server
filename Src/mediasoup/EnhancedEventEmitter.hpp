@@ -29,7 +29,7 @@ public:
 		}
 	}
 
-// 	std::future<json> safeEmitAsPromise(event, ...args: any[])
+// 	task_t<json> safeEmitAsPromise(event, ...args: any[])
 // 	{
 // 		return new Promise((resolve, reject) => (
 // 			this->safeEmit(event, ...args, resolve, reject)

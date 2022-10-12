@@ -148,7 +148,7 @@ void Router::workerClosed()
 	delete this;
 }
 
-std::future<json> Router::dump()
+task_t<json> Router::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -157,7 +157,7 @@ std::future<json> Router::dump()
 	co_return ret;
 }
 
-std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
+task_t<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
 {
 	MSC_DEBUG("createWebRtcTransport()");
 	auto webRtcServer = options.webRtcServer;
@@ -276,7 +276,7 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 	co_return transport;
 }
 
-std::future<PlainTransport*> Router::createPlainTransport(
+task_t<PlainTransport*> Router::createPlainTransport(
 	json listenIp,
 	bool rtcpMux/* = true*/,
 	bool comedia/* = false*/,
@@ -368,7 +368,7 @@ std::future<PlainTransport*> Router::createPlainTransport(
 	co_return transport;
 }
 
-std::future<PipeTransport*> Router::createPipeTransport(
+task_t<PipeTransport*> Router::createPipeTransport(
 	json listenIp,
 	bool enableSctp/* = false*/,
 	json numSctpStreams/* = { { "OS", 1024 }, { "MIS", 1024 } }*/,

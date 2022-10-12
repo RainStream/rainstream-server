@@ -90,9 +90,13 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, protoo::FnAccept ac
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	this->_queue.push([=]()->std::future<void>
-	{
+	std::cout << "main thread : " << std::this_thread::get_id() << std::endl;
+
+	this->_queue.push([=]()->task_t<void>
+	{	
 		Room* room = co_await getOrCreateRoom(roomId);
+
+		std::cout << "getOrCreateRoom thread : " << std::this_thread::get_id() << std::endl;
 
 		MSC_DEBUG("get sync room %s for peer %s %d", roomId.c_str(), peerId.c_str(), ++gIndex);
 
@@ -108,7 +112,7 @@ void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
 
 }
 
-std::future<void> ClusterServer::runMediasoupWorkers()
+task_t<void> ClusterServer::runMediasoupWorkers()
 {
 	int numWorkers = 1;
 
@@ -174,7 +178,7 @@ Worker* ClusterServer::getMediasoupWorker()
 	return worker;
 }
 
-std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
+task_t<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
 {
 	Room* room;
 

@@ -28,13 +28,13 @@ protected:
 	void OnConnectClosed(protoo::WebSocketClient* transport) override;
 
 protected:
-	std::future<void> runMediasoupWorkers();
+	task_t<void> runMediasoupWorkers();
 	/**
 	 * Get next mediasoup Worker.
 	 */
 	Worker* getMediasoupWorker();
 
-	std::future<Room*> getOrCreateRoom(std::string roomId);
+	task_t<Room*> getOrCreateRoom(std::string roomId);
 
 private:
 	protoo::WebSocketServer* _webSocketServer = nullptr;

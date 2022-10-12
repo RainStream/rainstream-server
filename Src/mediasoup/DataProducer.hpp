@@ -273,7 +273,7 @@ private:
 	/**
 	 * Dump DataProducer.
 	 */
-	std::future<json> dump()
+	task_t<json> dump()
 	{
 		MSC_DEBUG("dump()");
 

@@ -44,7 +44,7 @@ namespace protoo
 		void Send(const json& message);
 // 		Defer send(std::string method, json data);
 		void notify(std::string method, const json& data);
-		std::future<json> request(std::string method, const json& data);
+		task_t<json> request(std::string method, const json& data);
 
 		struct Data
 		{
@@ -83,7 +83,7 @@ namespace protoo
 		// Closed flag.
 		bool _closed = false;
 
-		std::unordered_map<uint32_t, std::promise<json> > _sents;
+		std::unordered_map<uint32_t, promise_t<json> > _sents;
 	};
 }
 

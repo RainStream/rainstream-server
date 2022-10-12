@@ -346,19 +346,19 @@ public:
 	 *
 	 * @override
 	 */
-	virtual std::future<json> getStats();
+	virtual task_t<json> getStats();
 
 	/**
 	 * Provide the WebRtcTransport remote parameters.
 	 *
 	 * @override
 	 */
-	std::future<void> connect(json& dtlsParameters);
+	task_t<void> connect(json& dtlsParameters);
 
 	/**
 	 * Restart ICE.
 	 */
-	std::future<json> restartIce();
+	task_t<json> restartIce();
 
 private:
 	void _handleWorkerNotifications();

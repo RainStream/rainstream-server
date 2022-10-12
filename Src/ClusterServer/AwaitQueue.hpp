@@ -3,12 +3,8 @@
 #include <list>
 
 #include <Logger.hpp>
-#include <cppcoro/single_consumer_event.hpp>
-#include <cppcoro/sync_wait.hpp>
+#include <asyncpp/single_consumer_event.hpp>
 
-#ifdef _WIN32
-#pragma comment(lib, "Synchronization.lib")
-#endif // _WIN32
 
 
 template <class T>
@@ -33,7 +29,7 @@ public:
 		this->closed = true;
 	}
 
-	void push(std::function<std::future<T>(void)>&& task)
+	void push(std::function<task_t<T>(void)>&& task)
 	{
 		if (this->closed)
 			return;
@@ -56,11 +52,13 @@ public:
 	}
 
 protected:
-	std::future<void> start()
+	task_t<void> start()
 	{
 		while (!this->closed)
 		{
 			co_await _event;
+
+			_event.reset();
 
 			if (this->closed)
 				co_return;
@@ -70,7 +68,7 @@ protected:
 
 			MSC_DEBUG("run task [%d] for size: [%d]", ++index, this->_pendingTasks.size());
 
-			std::function<std::future<T>(void)> task = std::move(this->_pendingTasks.front());
+			std::function<task_t<T>(void)> task = std::move(this->_pendingTasks.front());
 			this->_pendingTasks.pop_front();
 
 			co_await task();
@@ -85,10 +83,10 @@ private:
 	bool closed = false;
 
 	// Queue of pending tasks.
-	std::list<std::function<std::future<T>(void)>> _pendingTasks;
+	std::list<std::function<task_t<T>(void)>> _pendingTasks;
 
 	cppcoro::single_consumer_event _event;
 
-	std::future<void> _allWorks;
+	task_t<void> _allWorks;
 };
 

@@ -121,7 +121,7 @@ public:
 	/**
 	 * Dump WebRtcServer.
 	 */
-	std::future<json> dump();
+	task_t<json> dump();
 
 	/**
 	 * @private

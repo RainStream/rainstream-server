@@ -80,14 +80,14 @@ public:
 	 *
 	 * @override
 	 */
-	virtual std::future<json> getStats();
+	virtual task_t<json> getStats();
 
 	/**
 	 * Provide the PipeTransport remote parameters.
 	 *
 	 * @override
 	 */
-	std::future<void> connect(
+	task_t<void> connect(
 		std::string ip,
 		uint32_t port,
 		SrtpParameters& srtpParameters
@@ -98,7 +98,7 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<Consumer*> consume(ConsumerOptions& options);
+	task_t<Consumer*> consume(ConsumerOptions& options);
 
 private:
 	void _handleWorkerNotifications();
