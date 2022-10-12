@@ -42,7 +42,6 @@ public:
 	bool IsClosing() const;
 	void Write(const uint8_t* data, size_t len);
 	void Write(const std::string& data);
-	void PendingWrite(const uint8_t* data, size_t len);
 
 	/* Callbacks fired by UV events. */
 public:
@@ -51,8 +50,6 @@ public:
 	void OnUvWriteError(int error);
 	void OnUvShutdown(uv_shutdown_t* req, int status);
 	void OnUvClosed();
-
-	void OnUvWrite();
 
 	/* Pure virtual methods that must be implemented by the subclass. */
 protected:
@@ -66,29 +63,6 @@ private:
 	bool isClosing{ false };
 	bool isClosedByPeer{ false };
 	bool hasError{ false };
-
-	uv_async_t* uvWriteHandle{ nullptr };
-
-	std::mutex write_mutex;
-
-	struct Buffer{
-		uint8_t* _data{ nullptr };
-		size_t _size{ 0 };
-
-		Buffer(const uint8_t* data, size_t size)
-			: _size(size)
-		{
-			_data = new uint8_t[_size];
-			memcpy(_data, data, _size);
-		}
-
-		~Buffer()
-		{
-			delete[] _data;
-		}
-	};
-
-	std::list<Buffer*> writeBuffers;
 
 protected:
 	// Passed by argument.
