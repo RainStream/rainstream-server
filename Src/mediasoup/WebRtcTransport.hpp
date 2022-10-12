@@ -3,6 +3,7 @@
 #include "EnhancedEventEmitter.hpp"
 #include "Transport.hpp"
 
+class WebRtcServer;
 
 using IceState = std::string;// "new" | "connected" | "completed" | "disconnected" | "closed";
 
@@ -23,8 +24,7 @@ struct DtlsFingerprint
 	std::string value;
 };
 
-
-struct WebRtcTransportOptions
+struct WebRtcTransportListenIndividual
 {
 	/**
 	 * Listening IP address or addresses in order of preference (first one is the
@@ -32,6 +32,23 @@ struct WebRtcTransportOptions
 	 */
 	json listenIps;
 
+	/**
+	 * Fixed port to listen on instead of selecting automatically from Worker's port
+	 * range.
+	 */
+	std::optional<uint16_t> port;
+};
+
+struct WebRtcTransportListenServer
+{
+	/**
+	 * Instance of WebRtcServer. Mandatory unless listenIps is given.
+	 */
+	WebRtcServer* webRtcServer{nullptr};
+};
+
+struct WebRtcTransportOptionsBase
+{
 	/**
 	 * Listen in UDP. Default true.
 	 */
@@ -74,9 +91,27 @@ struct WebRtcTransportOptions
 	uint32_t maxSctpMessageSize = 262144;
 
 	/**
+	 * Maximum SCTP send buffer used by DataConsumers.
+	 * Default 262144.
+	 */
+	uint32_t sctpSendBufferSize = 262144;
+
+	/**
 	 * Custom application data.
 	 */
 	json appData = json::object();
+};
+
+struct WebRtcTransportOptions : public WebRtcTransportListenIndividual,
+	public WebRtcTransportListenServer,
+	public WebRtcTransportOptionsBase
+{
+	WebRtcTransportOptions(const json& options)
+	{
+		listenIps = options["listenIps"];
+		initialAvailableOutgoingBitrate = options.value("initialAvailableOutgoingBitrate", initialAvailableOutgoingBitrate);
+		maxSctpMessageSize = options.value("maxSctpMessageSize", maxSctpMessageSize);
+	}
 };
 
 struct IceParameters

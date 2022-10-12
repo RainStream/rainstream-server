@@ -10,6 +10,7 @@
 #include "errors.hpp"
 #include "Channel.hpp"
 #include "Transport.hpp"
+#include "WebRtcServer.hpp"
 #include "WebRtcTransport.hpp"
 #include "PlainTransport.hpp"
 #include "PipeTransport.hpp"
@@ -159,8 +160,7 @@ std::future<json> Router::dump()
 std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
 {
 	MSC_DEBUG("createWebRtcTransport()");
-
-	json& listenIps = options.listenIps;
+	auto webRtcServer = options.webRtcServer;
 	bool enableUdp = options.enableUdp;
 	bool enableTcp = options.enableTcp;
 	bool preferUdp = options.preferUdp;
@@ -169,23 +169,24 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 	bool enableSctp = options.enableSctp;
 	json numSctpStreams = options.numSctpStreams;
 	uint32_t maxSctpMessageSize = options.maxSctpMessageSize;
+	uint32_t sctpSendBufferSize = options.sctpSendBufferSize;
 	json appData = options.appData;
 
-	if (!listenIps.is_array())
-		MSC_THROW_ERROR("missing listenIps");
+	if (!webRtcServer && !options.listenIps.is_array())
+		MSC_THROW_ERROR("missing webRtcServer and listenIps (one of them is mandatory)");
 	else if (!appData.is_null() && !appData.is_object())
 		MSC_THROW_ERROR("if given, appData must be an object");
 
-	json tmpListenIps = json::array();
-	for (json& listenIp : listenIps)
+	json listenIps = json::array();
+	for (json& listenIp : options.listenIps)
 	{
 		if (listenIp.is_string() && !listenIp.get<std::string>().empty())
 		{
-			tmpListenIps.push_back( { { "ip", listenIp } } );
+			listenIps.push_back( { { "ip", listenIp } } );
 		}
 		else if (listenIp.is_object())
 		{
-			tmpListenIps.push_back(
+			listenIps.push_back(
 			{
 				{ "ip", listenIp["ip"] },
 				{ "announcedIp", listenIp.value("announcedIp", json()) }
@@ -197,11 +198,9 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 		}
 	}
 
-	listenIps = tmpListenIps;
-
 	json reqData = {
 		{ "transportId" ,  uuidv4()},
-		{ "listenIps" , listenIps},
+		{ "listenIps" , listenIps },
 		{ "enableUdp", enableUdp },
 		{ "enableTcp", enableTcp },
 		{ "preferUdp", preferUdp },
@@ -210,11 +209,27 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 		{ "enableSctp", enableSctp },
 		{ "numSctpStreams", numSctpStreams },
 		{ "maxSctpMessageSize", maxSctpMessageSize },
+		{ "sctpSendBufferSize", sctpSendBufferSize },
 		{ "isDataChannel", true }
 	};
 
-	json data =
-		co_await this->_channel->request("router.createWebRtcTransport", this->_internal["routerId"], reqData);
+	if (options.port.has_value())
+	{
+		reqData["port"] = options.port.value();
+	}
+
+	json data;
+
+	if (webRtcServer)
+	{
+		reqData["webRtcServerId"] = webRtcServer->id();
+
+		data = co_await this->_channel->request("router.createWebRtcTransportWithServer", this->_internal["routerId"], reqData);
+	}
+	else
+	{
+		data = co_await this->_channel->request("router.createWebRtcTransport", this->_internal["routerId"], reqData);
+	}
 
 	json internal = this->_internal;
 	internal["transportId"] = reqData["transportId"];
@@ -227,21 +242,22 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 		appData,
 		[=]() { return this->_data["rtpCapabilities"]; },
 		[=](std::string producerId) ->Producer* {
-		if (this->_producers.count(producerId))
-			return this->_producers.at(producerId);
-		else
-			return nullptr;
-	},
+			if (this->_producers.contains(producerId))
+				return this->_producers.at(producerId);
+			else
+				return nullptr;
+		},
 		[=](std::string dataProducerId) -> DataProducer* {
 		if (this->_dataProducers.count(dataProducerId))
 			return this->_dataProducers.at(dataProducerId);
 		else
 			return nullptr;
-	}
+		}
 	);
 
 	this->_transports.insert(std::make_pair(transport->id(), transport));
 	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+	transport->on("@listenserverclose", [=]() { this->_transports.erase(transport->id()); });
 	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
 	// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
@@ -251,7 +267,10 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 	// 			this->_dataProducers.erase(dataProducer->id());
 	// 		});
 
-			// Emit observer event.
+	if (webRtcServer)
+		webRtcServer->handleWebRtcTransport(transport);
+
+	// Emit observer event.
 	this->_observer->safeEmit("newtransport", transport);
 
 	co_return transport;

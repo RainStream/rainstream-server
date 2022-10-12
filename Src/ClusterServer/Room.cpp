@@ -281,12 +281,8 @@ std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request
 		bool consuming = data["consuming"];
 		json sctpCapabilities = data["sctpCapabilities"];
 
-		json webRtcTransportOptions = config["mediasoup"]["webRtcTransportOptions"];
-
-		WebRtcTransportOptions options;
-		options.listenIps = webRtcTransportOptions["listenIps"];
-		options.initialAvailableOutgoingBitrate = webRtcTransportOptions["initialAvailableOutgoingBitrate"];
-		options.maxSctpMessageSize = webRtcTransportOptions["maxSctpMessageSize"];
+		WebRtcTransportOptions options = config["mediasoup"]["webRtcTransportOptions"];
+		options.webRtcServer = this->_webRtcServer;
 		options.enableSctp = sctpCapabilities.is_object();
 		options.numSctpStreams = sctpCapabilities.value("numStreams", json::object());
 		options.appData = { { "producing", producing }, { "consuming", consuming } };
