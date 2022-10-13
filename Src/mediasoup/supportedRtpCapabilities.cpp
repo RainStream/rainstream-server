@@ -18,6 +18,54 @@ R"(
 			]
 		},
 		{
+			"kind"       : "audio",
+			"mimeType"   : "audio/multiopus",
+			"clockRate"  : 48000,
+			"channels"   : 4,
+			"parameters" :
+			{
+				"channel_mapping" : "0,1,2,3",
+				"num_streams"     : 2,
+				"coupled_streams" : 2
+			},
+			"rtcpFeedback" :
+			[
+				{ "type": "transport-cc" }
+			]
+		},
+		{
+			"kind"       : "audio",
+			"mimeType"   : "audio/multiopus",
+			"clockRate"  : 48000,
+			"channels"   : 6,
+			"parameters" :
+			{
+				"channel_mapping" : "0,4,1,2,3,5",
+				"num_streams"     : 4,
+				"coupled_streams" : 2
+			},
+			"rtcpFeedback" :
+			[
+				{ "type": "transport-cc" }
+			]
+		},
+		{
+			"kind"       : "audio",
+			"mimeType"   : "audio/multiopus",
+			"clockRate"  : 48000,
+			"channels"   : 8,
+			"parameters" :
+			{
+				"channel_mapping" : "0,6,1,2,3,4,5,7",
+				"num_streams"     : 5,
+				"coupled_streams" : 3
+			},
+			"rtcpFeedback" :
+			[
+				{ "type": "transport-cc" }
+			]
+		},
+		{
 			"kind"                 : "audio",
 			"mimeType"             : "audio/PCMU",
 			"preferredPayloadType" : 0,
@@ -181,7 +229,6 @@ R"(
 			"clockRate"  : 90000,
 			"parameters" :
 			{
-				"packetization-mode"      : 1,
 				"level-asymmetry-allowed" : 1
 			},
 			"rtcpFeedback" :
@@ -195,33 +242,12 @@ R"(
 		},
 		{
 			"kind"       : "video",
-			"mimeType"   : "video/H264",
+			"mimeType"   : "video/H264-SVC",
 			"clockRate"  : 90000,
-			"parameters" :
-			{
-				"packetization-mode"      : 0,
+			"parameters" : {
 				"level-asymmetry-allowed" : 1
 			},
-			"rtcpFeedback" :
-			[
-				{ "type": "nack" },
-				{ "type": "nack", "parameter": "pli" },
-				{ "type": "ccm", "parameter": "fir" },
-				{ "type": "goog-remb" },
-				{ "type": "transport-cc" }
-			]
-		},
-		{
-			"kind"       : "video",
-			"mimeType"   : "video/H265",
-			"clockRate"  : 90000,
-			"parameters" :
-			{
-				"packetization-mode"      : 1,
-				"level-asymmetry-allowed" : 1
-			},
-			"rtcpFeedback" :
-			[
+			"rtcpFeedback" : [
 				{ "type": "nack" },
 				{ "type": "nack", "parameter": "pli" },
 				{ "type": "ccm", "parameter": "fir" },
@@ -235,7 +261,6 @@ R"(
 			"clockRate"  : 90000,
 			"parameters" :
 			{
-				"packetization-mode"      : 0,
 				"level-asymmetry-allowed" : 1
 			},
 			"rtcpFeedback" :
@@ -338,6 +363,20 @@ R"(
 			"kind"             : "video",
 			"uri"              : "urn:ietf:params:rtp-hdrext:toffset",
 			"preferredId"      : 12,
+			"preferredEncrypt" : false,
+			"direction"        : "sendrecv"
+		},
+		{
+			"kind"             : "audio",
+			"uri"              : "http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time",
+			"preferredId"      : 13,
+			"preferredEncrypt" : false,
+			"direction"        : "sendrecv"
+		},
+		{
+			"kind"             : "video",
+			"uri"              : "http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time",
+			"preferredId"      : 13,
 			"preferredEncrypt" : false,
 			"direction"        : "sendrecv"
 		}

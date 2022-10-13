@@ -16,6 +16,30 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="webrtc">
+      <UniqueIdentifier>{0a47babb-8595-409f-be0d-7dc94da5e809}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="webrtc\api">
+      <UniqueIdentifier>{ef62c9f9-8a05-4b32-9c07-2522a16e68f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="webrtc\api\video_codecs">
+      <UniqueIdentifier>{75bc162e-6fe0-4bb3-b1eb-ed1d0aac0cb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="webrtc\media">
+      <UniqueIdentifier>{40f190d2-1bcc-48fd-8679-f9d2a441db4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="webrtc\media\base">
+      <UniqueIdentifier>{b636a3d9-bf7a-444a-89ce-dc69999cf1dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="webrtc\rtc_base">
+      <UniqueIdentifier>{19963132-f663-4e1a-8523-f1bef022d759}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="webrtc\rtc_base\system">
+      <UniqueIdentifier>{39642019-2ffe-4f7f-8911-1521a995795a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="webrtc\rtc_base\numerics">
+      <UniqueIdentifier>{bc8beb8f-39f6-43a6-9905-d87fb0e7094b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="child_process\PipeStreamSocket.cpp">
@@ -83,6 +107,21 @@
     </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="webrtc\api\video_codecs\h264_profile_level_id.cc">
+      <Filter>webrtc\api\video_codecs</Filter>
+    </ClCompile>
+    <ClCompile Include="webrtc\api\video_codecs\sdp_video_format.cc">
+      <Filter>webrtc\api\video_codecs</Filter>
+    </ClCompile>
+    <ClCompile Include="webrtc\media\base\sdp_video_format_utils.cc">
+      <Filter>webrtc\media\base</Filter>
+    </ClCompile>
+    <ClCompile Include="webrtc\rtc_base\checks.cc">
+      <Filter>webrtc\rtc_base</Filter>
+    </ClCompile>
+    <ClCompile Include="webrtc\rtc_base\string_to_number.cc">
+      <Filter>webrtc\rtc_base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +217,36 @@
     </ClInclude>
     <ClInclude Include="Utils.hpp">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\api\video_codecs\h264_profile_level_id.h">
+      <Filter>webrtc\api\video_codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\api\video_codecs\sdp_video_format.h">
+      <Filter>webrtc\api\video_codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\media\base\sdp_video_format_utils.h">
+      <Filter>webrtc\media\base</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\rtc_base\checks.h">
+      <Filter>webrtc\rtc_base</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\rtc_base\string_to_number.h">
+      <Filter>webrtc\rtc_base</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\rtc_base\system\inline.h">
+      <Filter>webrtc\rtc_base\system</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\rtc_base\system\rtc_export.h">
+      <Filter>webrtc\rtc_base\system</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\rtc_base\type_traits.h">
+      <Filter>webrtc\rtc_base</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\rtc_base\numerics\safe_compare.h">
+      <Filter>webrtc\rtc_base\numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="webrtc\rtc_base\arraysize.h">
+      <Filter>webrtc\rtc_base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

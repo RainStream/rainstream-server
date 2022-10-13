@@ -8,7 +8,9 @@
 #include "supportedRtpCapabilities.hpp"
 #include "scalabilityModes.hpp"
 #include "SctpParameters.hpp"
-//#include <media/base/h264_profile_level_id.h>
+
+#include "api/video_codecs/h264_profile_level_id.h"
+#include "media/base/sdp_video_format_utils.h"
 
 #include <algorithm> // std::find_if
 #include <regex>
@@ -19,8 +21,6 @@
 // Static functions declaration.
 static bool isRtxCodec(const json& codec);
 static bool matchCodecs(json& aCodec, json& bCodec, bool strict = false, bool modify = false);
-static bool matchHeaderExtensions(const json& aExt, const json& bExt);
-static json reduceRtcpFeedback(const json& codecA, const json& codecB);
 static uint8_t getH264PacketizationMode(const json& codec);
 static uint8_t getH264LevelAssimetryAllowed(const json& codec);
 static std::string getH264ProfileLevelId(const json& codec);
@@ -1287,7 +1287,23 @@ json getConsumerRtpParameters(json& consumableParams, json& caps, bool pipe)
 	}
 	else
 	{
+		json consumableEncodings = Utils::clone(consumerParams["encodings"]);
+		uint32_t baseSsrc = Utils::generateRandomNumber();
+		uint32_t baseRtxSsrc = Utils::generateRandomNumber();
 
+		for (int i = 0; i < consumableEncodings.size(); ++i)
+		{
+			json& encoding = consumableEncodings[i];
+
+			encoding["ssrc"] = baseSsrc + i;
+
+			if (rtxSupported)
+				encoding["rtx"] = { {"ssrc", baseRtxSsrc + i}};
+			else
+				encoding.erase("rtx");
+
+			consumerParams["encodings"].push_back(encoding);
+		}
 	}
 
 	return consumerParams;
@@ -1401,56 +1417,73 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 	if (aCodec.contains("channels") && aCodec["channels"] != bCodec["channels"])
 		return false;
 
-	// Match H264 parameters.
-	/*
-	if (aMimeType == "video/h264")
+	// Per codec special checks.
+	if (aMimeType == "audio/multiopus")
 	{
-		auto aPacketizationMode = getH264PacketizationMode(aCodec);
-		auto bPacketizationMode = getH264PacketizationMode(bCodec);
+		int aNumStreams = aCodec["parameters"]["num_streams"];
+		int bNumStreams = bCodec["parameters"]["num_streams"];
 
-		if (aPacketizationMode != bPacketizationMode)
+		if (aNumStreams != bNumStreams)
 			return false;
 
+		int aCoupledStreams = aCodec["parameters"]["coupled_streams"];
+		int bCoupledStreams = bCodec["parameters"]["coupled_streams"];
+
+		if (aCoupledStreams != bCoupledStreams)
+			return false;
+	}
+	else if (aMimeType == "video/h264" || aMimeType == "video/h264-svc")
+	{
 		// If strict matching check profile-level-id.
 		if (strict)
 		{
- 			webrtc::H264::CodecParameterMap aParameters;
- 			webrtc::H264::CodecParameterMap bParameters;
- 
- 			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
- 			aParameters["packetization-mode"] = std::to_string(aPacketizationMode);
- 			aParameters["profile-level-id"] = getH264ProfileLevelId(aCodec);
- 			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
- 			bParameters["packetization-mode"] = std::to_string(bPacketizationMode);
- 			bParameters["profile-level-id"] = getH264ProfileLevelId(bCodec);
- 
- 			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
- 				return false;
- 
- 			webrtc::H264::CodecParameterMap newParameters;
- 
- 			try
- 			{
- 				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
- 			}
- 			catch (std::runtime_error)
- 			{
- 				return false;
- 			}
- 
- 			if (modify)
- 			{
- 				auto profileLevelIdIt = newParameters.find("profile-level-id");
- 
- 				if (profileLevelIdIt != newParameters.end())
- 					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
- 				else
- 					aCodec["parameters"].erase("profile-level-id");
- 			}
+			auto aPacketizationMode = getH264PacketizationMode(aCodec);
+			auto bPacketizationMode = getH264PacketizationMode(bCodec);
+
+			if (aPacketizationMode != bPacketizationMode)
+				return false;
+
+
+			webrtc::SdpVideoFormat::Parameters aParameters;
+			webrtc::SdpVideoFormat::Parameters bParameters;
+
+			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
+			aParameters["packetization-mode"] = std::to_string(aPacketizationMode);
+			aParameters["profile-level-id"] = getH264ProfileLevelId(aCodec);
+			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
+			bParameters["packetization-mode"] = std::to_string(bPacketizationMode);
+			bParameters["profile-level-id"] = getH264ProfileLevelId(bCodec);
+
+			if (!webrtc::H264IsSameProfile(aParameters, bParameters))
+				return false;
+
+			webrtc::SdpVideoFormat::Parameters newParameters;
+
+			try
+			{
+				webrtc::H264GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
+			}
+			catch (std::runtime_error)
+			{
+				return false;
+			}
+
+			if (modify)
+			{
+				auto profileLevelIdIt = newParameters.find("profile-level-id");
+
+				if (profileLevelIdIt != newParameters.end())
+				{
+					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
+				}
+				else
+				{
+					aCodec["parameters"].erase("profile-level-id");
+				}
+			}
 		}
 	}
-	// Match VP9 parameters.
-	else*/ if (aMimeType == "video/vp9")
+	else if (aMimeType == "video/vp9")
 	{
 		// If strict matching check profile-id.
 		if (strict)
@@ -1464,38 +1497,6 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 	}
 
 	return true;
-}
-
-static bool matchHeaderExtensions(const json& aExt, const json& bExt)
-{
-	MSC_TRACE();
-
-	if (aExt["kind"] != bExt["kind"])
-		return false;
-
-	return aExt["uri"] == bExt["uri"];
-}
-
-static json reduceRtcpFeedback(const json& codecA, const json& codecB)
-{
-	MSC_TRACE();
-
-	auto reducedRtcpFeedback = json::array();
-	auto rtcpFeedbackAIt = codecA.find("rtcpFeedback");
-	auto rtcpFeedbackBIt = codecB.find("rtcpFeedback");
-
-	for (auto& aFb : *rtcpFeedbackAIt)
-	{
-		auto rtcpFeedbackIt =
-			std::find_if(rtcpFeedbackBIt->begin(), rtcpFeedbackBIt->end(), [&aFb](const json& bFb) {
-			return (aFb["type"] == bFb["type"] && aFb["parameter"] == bFb["parameter"]);
-		});
-
-		if (rtcpFeedbackIt != rtcpFeedbackBIt->end())
-			reducedRtcpFeedback.push_back(*rtcpFeedbackIt);
-	}
-
-	return reducedRtcpFeedback;
 }
 
 static uint8_t getH264PacketizationMode(const json& codec)

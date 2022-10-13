@@ -7,7 +7,7 @@
 
 
 static const std::regex ScalabilityModeRegex(
-	"^[LS]([1-9]\\d{0,1})T([1-9]\\d{0,1}).*", std::regex_constants::ECMAScript);
+	"^[LS]([1-9]\\d{0,1})T([1-9]\\d{0,1})(_KEY)?", std::regex_constants::ECMAScript);
 
 // namespace mediasoupclient
 // {
@@ -17,7 +17,8 @@ static const std::regex ScalabilityModeRegex(
 		json jsonScalabilityMode
 		{
 			{ "spatialLayers",  1 },
-			{ "temporalLayers", 1 }
+			{ "temporalLayers", 1 },
+			{ "ksvc", false}
 		};
 		/* clang-format on */
 
@@ -31,6 +32,7 @@ static const std::regex ScalabilityModeRegex(
 			{
 				jsonScalabilityMode["spatialLayers"] = std::stoul(match[1].str());
 				jsonScalabilityMode["temporalLayers"] = std::stoul(match[2].str());
+				jsonScalabilityMode["ksvc"] = bool(match[3].matched);
 			}
 			catch (std::exception& e)
 			{

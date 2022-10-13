@@ -97,8 +97,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;MS_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\Common\asyncpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;MS_STATIC;WEBRTC_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -130,8 +130,8 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;MS_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\Common\asyncpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;MS_STATIC;WEBRTC_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -184,6 +184,11 @@
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="WebRtcServer.cpp" />
     <ClCompile Include="WebRtcTransport.cpp" />
+    <ClCompile Include="webrtc\api\video_codecs\h264_profile_level_id.cc" />
+    <ClCompile Include="webrtc\api\video_codecs\sdp_video_format.cc" />
+    <ClCompile Include="webrtc\media\base\sdp_video_format_utils.cc" />
+    <ClCompile Include="webrtc\rtc_base\checks.cc" />
+    <ClCompile Include="webrtc\rtc_base\string_to_number.cc" />
     <ClCompile Include="Worker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -217,6 +222,16 @@
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="WebRtcServer.hpp" />
     <ClInclude Include="WebRtcTransport.hpp" />
+    <ClInclude Include="webrtc\api\video_codecs\h264_profile_level_id.h" />
+    <ClInclude Include="webrtc\api\video_codecs\sdp_video_format.h" />
+    <ClInclude Include="webrtc\media\base\sdp_video_format_utils.h" />
+    <ClInclude Include="webrtc\rtc_base\arraysize.h" />
+    <ClInclude Include="webrtc\rtc_base\checks.h" />
+    <ClInclude Include="webrtc\rtc_base\numerics\safe_compare.h" />
+    <ClInclude Include="webrtc\rtc_base\string_to_number.h" />
+    <ClInclude Include="webrtc\rtc_base\system\inline.h" />
+    <ClInclude Include="webrtc\rtc_base\system\rtc_export.h" />
+    <ClInclude Include="webrtc\rtc_base\type_traits.h" />
     <ClInclude Include="Worker.hpp" />
   </ItemGroup>
   <ItemGroup>
