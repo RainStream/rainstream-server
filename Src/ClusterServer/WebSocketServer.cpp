@@ -84,7 +84,7 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 							upgradeData->context);
 					}
 					else {
-						transport->Close();
+						transport->close();
 					}
 
 					delete upgradeData;

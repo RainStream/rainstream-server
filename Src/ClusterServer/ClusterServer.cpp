@@ -11,8 +11,6 @@
 #include "Utility.hpp"
 #include "config.hpp"
 
-int gIndex = 0;
-
 #define MEDIASOUP_USE_WEBRTC_SERVER true
 
 static int nextMediasoupWorkerIdx = 0;
@@ -90,15 +88,9 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	std::cout << "main thread : " << std::this_thread::get_id() << std::endl;
-
 	this->_queue.push([=]()->task_t<void>
 	{	
 		Room* room = co_await getOrCreateRoom(roomId);
-
-		std::cout << "getOrCreateRoom thread : " << std::this_thread::get_id() << std::endl;
-
-		MSC_DEBUG("get sync room %s for peer %s %d", roomId.c_str(), peerId.c_str(), ++gIndex);
 
 		auto transport = accept();
 

@@ -1,10 +1,8 @@
 #pragma once
 
 #include <list>
-
 #include <Logger.hpp>
 #include <asyncpp/single_consumer_event.hpp>
-
 
 
 template <class T>
@@ -36,8 +34,6 @@ public:
 
 		this->_pendingTasks.push_back(std::move(task));
 
-		MSC_DEBUG("push task for size: [%d]", this->_pendingTasks.size());
-
 		this->_event.set();
 	}
 
@@ -66,8 +62,6 @@ protected:
 			if (!this->_pendingTasks.size())
 				continue;
 
-			MSC_DEBUG("run task [%d] for size: [%d]", ++index, this->_pendingTasks.size());
-
 			auto task = std::move(this->_pendingTasks.front());
 			this->_pendingTasks.pop_front();
 
@@ -78,7 +72,6 @@ protected:
 	}
 
 private:
-	int index = 0;
 	// Closed flag.
 	bool closed = false;
 
