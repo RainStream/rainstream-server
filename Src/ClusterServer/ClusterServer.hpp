@@ -24,7 +24,7 @@ public:
 protected:
 	void OnRoomClose(std::string roomId);
 
-	void OnConnectRequest(std::string requestUrl, protoo::FnAccept accept, protoo::FnReject reject) override;
+	void OnConnectRequest(std::string requestUrl, const protoo::FnAccept& accept, const  protoo::FnReject& reject) override;
 	void OnConnectClosed(protoo::WebSocketClient* transport) override;
 
 protected:

@@ -73,7 +73,7 @@ void ClusterServer::OnRoomClose(std::string roomId)
 	_rooms.erase(roomId);
 }
 
-void ClusterServer::OnConnectRequest(std::string requestUrl, protoo::FnAccept accept, protoo::FnReject reject)
+void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAccept& accept, const  protoo::FnReject& reject)
 {
 	std::string roomId = Url::Request(requestUrl, "roomId");
 	std::string peerId = Url::Request(requestUrl, "peerId");

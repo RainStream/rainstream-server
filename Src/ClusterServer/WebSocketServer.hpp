@@ -19,7 +19,7 @@ public:
 	class Lisenter
 	{
 	public:
-		virtual void OnConnectRequest(std::string requestUrl, FnAccept accept, FnReject reject) = 0;
+		virtual void OnConnectRequest(std::string requestUrl, const FnAccept& accept, const FnReject& reject) = 0;
 		virtual void OnConnectClosed(WebSocketClient* transport) = 0;
 	};
 public:

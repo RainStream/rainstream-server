@@ -38,7 +38,6 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 		});
 
 	_app->get("/*", [](auto* res, auto*/*req*/) {
-
 		res->end("Hello world!");
 
 	}).ws<PeerSocketData>("/*", {
@@ -71,27 +70,32 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 			};
 
 			auto accept = [=]()->WebSocketClient* {
+				WebSocketClient* transport = new WebSocketClient(query);
 
-				WebSocketClient* transport = nullptr;
-				if (!upgradeData->aborted) {
-					transport = new WebSocketClient(query);
+				uWS::Loop::get()->defer([=]() {
+					if (!upgradeData->aborted) {
+						/* This call will immediately emit .open event */
+						upgradeData->httpRes->template upgrade<PeerSocketData>({
+							/* We initialize PerSocketData struct here */
+							.transport = transport
+							}, upgradeData->secWebSocketKey,
+							upgradeData->secWebSocketProtocol,
+							upgradeData->secWebSocketExtensions,
+							upgradeData->context);
+					}
+					else {
+						transport->Close();
+					}
 
-					/* This call will immediately emit .open event */
-					upgradeData->httpRes->template upgrade<PeerSocketData>({
-						/* We initialize PerSocketData struct here */
-						.transport = transport
-						}, upgradeData->secWebSocketKey,
-						upgradeData->secWebSocketProtocol,
-						upgradeData->secWebSocketExtensions,
-						upgradeData->context);
-				}
-
-				delete upgradeData;
+					delete upgradeData;
+				});
 
 				return transport;
 			};
 
 			auto reject = [=](Error error) {
+				MSC_WARN("reject for query %s", query.c_str());
+
 				if (!upgradeData->aborted) {
 					res->end(error.ToString(), true);
 				}
@@ -108,7 +112,7 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 			});
 
 			if (_lisenter) {
-				_lisenter->OnConnectRequest(query, std::move(accept), std::move(reject));
+				_lisenter->OnConnectRequest(query, accept, reject);
 			}
 		},
 		.open = [=](auto* ws) {
