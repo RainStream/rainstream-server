@@ -158,7 +158,7 @@ bool WebSocketServer::Setup(const char* host, uint16_t port)
 		if (!listen_socket) {
 			MSC_ABORT("websocket listening on port %d error", port);
 		}
-		});
+	});
 
 	return true;
 }
