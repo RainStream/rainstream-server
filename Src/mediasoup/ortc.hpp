@@ -21,6 +21,6 @@ namespace ortc
 	json getProducerRtpParametersMapping(json& params, json& caps);
 	json getConsumableRtpParameters(std::string kind, json& params, json& caps, json& rtpMapping);
 	bool canConsume(json& consumableParams, json& caps);
-	json getConsumerRtpParameters(json& consumableParams, json& caps);
+	json getConsumerRtpParameters(json& consumableParams, json& caps, bool pipe);
 	json getPipeConsumerRtpParameters(const json& consumableParams, bool enableRtx = false);
 }

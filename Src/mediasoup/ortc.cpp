@@ -1956,7 +1956,7 @@ bool canConsume(json& consumableParams, json& caps)
  * to reduce codecs, codecs' RTCP feedback and header extensions, and also enables
  * or disabled RTX.
  */
-json getConsumerRtpParameters(json& consumableParams, json& caps)
+json getConsumerRtpParameters(json& consumableParams, json& caps, bool pipe)
 {
 	json consumerParams =
 	{

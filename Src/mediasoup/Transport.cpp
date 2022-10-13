@@ -405,11 +405,18 @@ task_t<Consumer*> Transport::consume(ConsumerOptions& options)
 	std::string producerId = options.producerId;
 	json& rtpCapabilities = options.rtpCapabilities;
 	bool paused = options.paused;
+	std::optional<std::string> mid = options.mid;
+	bool pipe = options.pipe;
 	json& preferredLayers = options.preferredLayers;
+	bool ignoreDtx = options.ignoreDtx;
 	json& appData = options.appData;
 
-	if (!appData.is_null() && !appData.is_object())
+	if(producerId.empty())
+		MSC_THROW_TYPE_ERROR("missing producerId");
+	else if (!appData.is_null() && !appData.is_object())
 		MSC_THROW_ERROR("if given, appData must be an object");
+	else if (mid.has_value() && mid->empty())
+		MSC_THROW_ERROR("if given, mid must be non empty string");
 
 	// This may throw.
 	ortc::validateRtpCapabilities(rtpCapabilities);
@@ -423,18 +430,28 @@ task_t<Consumer*> Transport::consume(ConsumerOptions& options)
 
 	// This may throw.
 	json rtpParameters = ortc::getConsumerRtpParameters(
-		consumableRtpParameters, rtpCapabilities);
+		consumableRtpParameters, rtpCapabilities, pipe);
 
 	// Set MID.
-	rtpParameters["mid"] = Utils::Printf("%ud", this->_nextMidForConsumers++);
-
-	// We use up to 8 bytes for MID (string).
-	if (this->_nextMidForConsumers == 100000000)
+	if (!pipe)
 	{
-		MSC_ERROR("consume() | reaching max MID value \"${%ud}\"", this->_nextMidForConsumers);
+		if (mid)
+		{
+			rtpParameters["mid"] = mid.value();
+		}
+		else
+		{
+			rtpParameters["mid"] = Utils::Printf("%ud", this->_nextMidForConsumers++);
 
-		this->_nextMidForConsumers = 0;
-	}
+			// We use up to 8 bytes for MID (string).
+			if (this->_nextMidForConsumers == 100000000)
+			{
+				MSC_ERROR("consume() | reaching max MID value \"${%ud}\"", this->_nextMidForConsumers);
+
+				this->_nextMidForConsumers = 0;
+			}
+		}	
+	}	
 
 	json reqData =
 	{
@@ -445,16 +462,19 @@ task_t<Consumer*> Transport::consume(ConsumerOptions& options)
 		{ "type", producer->type() },
 		{ "consumableRtpEncodings", producer->consumableRtpParameters()["encodings"] },
 		{ "paused", paused},
-		{ "preferredLayers", preferredLayers }
+		{ "preferredLayers", preferredLayers },
+		{ "ignoreDtx", ignoreDtx }
+
 	};
 
 	json status =
 		co_await this->_channel->request("transport.consume", this->_internal["transportId"], reqData);
 
 	json data = {
+		{ "producerId", producerId },
 		{ "kind", producer->kind() },
 		{ "rtpParameters", rtpParameters },
-		{ "type", producer->type() }
+		{ "type", pipe ? "pipe" : producer->type() }
 	};
 
 	json internal = this->_internal;
