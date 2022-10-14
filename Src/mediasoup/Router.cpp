@@ -15,6 +15,7 @@
 #include "PlainTransport.hpp"
 #include "PipeTransport.hpp"
 #include "SctpParameters.hpp"
+#include "AudioLevelObserver.hpp"
 
 //#include "PayloadChannel.hpp"
 //#include "DirectTransport.hpp"
@@ -255,13 +256,13 @@ task_t<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& o
 		}
 	);
 
-	this->_transports.insert(std::make_pair(transport->id(), transport));
+	this->_transports.insert(std::pair(transport->id(), transport));
 	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
 	transport->on("@listenserverclose", [=]() { this->_transports.erase(transport->id()); });
-	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
+	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
 	// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+	// 			this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
 	// 		});
 	// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
 	// 			this->_dataProducers.erase(dataProducer->id());
@@ -342,7 +343,7 @@ task_t<PlainTransport*> Router::createPlainTransport(
 			return this->_producers.at(producerId);
 		else
 			return nullptr;
-	},
+		},
 		[=](std::string dataProducerId) -> DataProducer* {
 		if (this->_dataProducers.count(dataProducerId))
 			return this->_dataProducers.at(dataProducerId);
@@ -351,12 +352,12 @@ task_t<PlainTransport*> Router::createPlainTransport(
 	}
 	);
 
-	this->_transports.insert(std::make_pair(transport->id(), transport));
+	this->_transports.insert(std::pair(transport->id(), transport));
 	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
-	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
+	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
 	// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+	// 			this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
 	// 		});
 	// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
 	// 			this->_dataProducers.erase(dataProducer->id());
@@ -440,12 +441,12 @@ task_t<PipeTransport*> Router::createPipeTransport(
 	}
 	);
 
-	this->_transports.insert(std::make_pair(transport->id(), transport));
+	this->_transports.insert(std::pair(transport->id(), transport));
 	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
-	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::make_pair(producer->id(), producer)); });
+	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
 	// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.insert(std::make_pair(dataProducer->id(), dataProducer));
+	// 			this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
 	// 		});
 	// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
 	// 			this->_dataProducers.erase(dataProducer->id());
@@ -701,38 +702,43 @@ task_t<PipeTransport*> Router::createPipeTransport(
 //	this->_observer->safeEmit("newrtpobserver", activeSpeakerObserver);
 //	return activeSpeakerObserver;
 //}
-///**
-// * Create an AudioLevelObserver.
-// */
-//async createAudioLevelObserver({ maxEntries = 1, threshold = -80, interval = 1000, appData } = {}) {
-//	MSC_DEBUG("createAudioLevelObserver()");
-//	if (appData&& typeof appData != = "object")
-//		throw new TypeError("if given, appData must be an object");
-//	const reqData = {
-//		rtpObserverId: (0, uuid_1.v4)(),
-//		maxEntries,
-//		threshold,
-//		interval
-//	};
-//	co_await this->_channel->request("router.createAudioLevelObserver", this->_internal.routerId, reqData);
-//	const audioLevelObserver = new AudioLevelObserver_1.AudioLevelObserver({
-//		internal: {
-//			...this->_internal,
-//			rtpObserverId: reqData.rtpObserverId
-//		},
-//		channel : this->_channel,
-//		payloadChannel: this->_payloadChannel,
-//		appData,
-//		getProducerById: (producerId) = > (this->_producers.get(producerId))
-//		});
-//	this->_rtpObservers.set(audioLevelObserver.id, audioLevelObserver);
-//	audioLevelObserver.on("@close", () = > {
-//		this->_rtpObservers.delete(audioLevelObserver.id);
-//	});
-//	// Emit observer event.
-//	this->_observer->safeEmit("newrtpobserver", audioLevelObserver);
-//	return audioLevelObserver;
-//}
+
+task_t<AudioLevelObserver*> Router::createAudioLevelObserver(const AudioLevelObserverOptions& options) {
+	MSC_DEBUG("createAudioLevelObserver()");
+	if (!options.appData.is_null() && !options.appData.is_object())
+		throw new TypeError("if given, appData must be an object");
+	json reqData = {
+		{ "rtpObserverId", uuidv4() },
+		{ "maxEntries", options.maxEntries },
+		{ "threshold", options.threshold },
+		{ "interval", options.interval }
+	};
+
+	co_await this->_channel->request("router.createAudioLevelObserver", this->_internal["routerId"], reqData);
+
+	json internal = this->_internal;
+	internal["rtpObserverId"] = reqData["rtpObserverId"];
+
+	AudioLevelObserver* audioLevelObserver = new AudioLevelObserver(
+		internal,
+		this->_channel,
+		this->_payloadChannel,
+		options.appData,
+		[=](std::string producerId)->Producer* {
+			if (this->_producers.count(producerId))
+				return this->_producers.at(producerId);
+			else
+				return nullptr; 
+			}
+		);
+	this->_rtpObservers.insert(std::pair(audioLevelObserver->id(), audioLevelObserver));
+	audioLevelObserver->on("@close", [=](){
+		this->_rtpObservers.erase(audioLevelObserver->id());
+	});
+	// Emit observer event.
+	this->_observer->safeEmit("newrtpobserver", audioLevelObserver);
+	co_return audioLevelObserver;
+}
 
 bool Router::canConsume(std::string producerId, json& rtpCapabilities)
 {

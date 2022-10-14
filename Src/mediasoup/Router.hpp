@@ -15,7 +15,10 @@ class DirectTransport;
 class WebRtcTransport;
 class PlainTransport;
 class PipeTransport;
+class AudioLevelObserver;
 struct WebRtcTransportOptions;
+struct AudioLevelObserverOptions;
+
 
 class MS_EXPORT Router : public EnhancedEventEmitter
 {
@@ -121,7 +124,7 @@ public:
 	/**
 	 * Create an AudioLevelObserver.
 	 */
-	//createAudioLevelObserver({ maxEntries, threshold, interval, appData } ? : AudioLevelObserverOptions) : Promise<AudioLevelObserver>;
+	task_t<AudioLevelObserver*> createAudioLevelObserver(const AudioLevelObserverOptions& options);
 	/**
 	 * Check whether the given RTP capabilities can consume the given Producer.
 	 */

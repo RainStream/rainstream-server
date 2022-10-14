@@ -1,28 +1,26 @@
 #pragma once 
 
-#include "common.hpp"
-#include "Logger.hpp"
 #include "EnhancedEventEmitter.hpp"
 #include "RtpObserver.hpp"
-#include "Producer.hpp"
+
 
 struct AudioLevelObserverOptions
 {
 	/**
 	 * Maximum uint32_t of entries in the "volumes”" event. Default 1.
 	 */
-	uint32_t maxEntries;
+	uint32_t maxEntries = 1;
 
 	/**
 	 * Minimum average volume (in dBvo from -127 to 0) for entries in the
 	 * "volumes" event.	Default -80.
 	 */
-	uint32_t threshold;
+	int32_t threshold = -80;
 
 	/**
 	 * Interval in ms for checking audio volumes. Default 1000.
 	 */
-	uint32_t interval;
+	uint32_t interval = 1000;
 
 	/**
 	 * Custom application data.
@@ -46,77 +44,22 @@ struct AudioLevelObserverVolume
 
 class AudioLevelObserver : public RtpObserver
 {
-	Logger* logger;
 public:
 	/**
 	 * @private
-	 * @emits volumes - (volumes: AudioLevelObserverVolume[])
-	 * @emits silence
 	 */
-	AudioLevelObserver(const json& params /*= json()*/)
-		: RtpObserver(params)
-		, logger(new Logger("AudioLevelObserver"))
-	{
-		this->_handleWorkerNotifications();
-	}
+	AudioLevelObserver(json internal,
+		Channel* channel,
+		PayloadChannel* payloadChannel,
+		json appData,
+		GetProducerById getProducerById);
 
 	/**
 	 * Observer.
-	 *
-	 * @emits close
-	 * @emits pause
-	 * @emits resume
-	 * @emits addproducer - (producer: Producer)
-	 * @emits removeproducer - (producer: Producer)
-	 * @emits volumes - (volumes: AudioLevelObserverVolume[])
-	 * @emits silence
 	 */
-	EnhancedEventEmitter* observer()
-	{
-		return this->_observer;
-	}
+	EnhancedEventEmitter* observer();
 
 private:
-	void _handleWorkerNotifications()
-	{
-		this->_channel->on(this->_internal.value("rtpObserverId",""), [=](std::string event, const json& data)
-		{
-		
-			if(event == "volumes")
-			{
-				/*
-				// Get the corresponding Producer instance and remove entries with
-				// no Producer (it may have been closed in the meanwhile).
-				const volumes: AudioLevelObserverVolume[] = data
-					.map(({ producerId, volume }: { producerId; volume }) => (
-						{
-							producer : this->_getProducerById(producerId),
-							volume
-						}
-					))
-					.filter(({ producer }: { producer: Producer }) => producer);
+	void _handleWorkerNotifications();
 
-				if (volumes.length > 0)
-				{
-					this->safeEmit("volumes", volumes);
-
-					// Emit observer event.
-					this->_observer->safeEmit("volumes", volumes);
-				}
-				*/
-			}
-			else if (event == "silence")
-			{
-				this->safeEmit("silence");
-
-				// Emit observer event.
-				this->_observer->safeEmit("silence");
-			}
-			else
-			{
-				logger->error("ignoring unknown event \"%s\"", event);
-			}
-			
-		});
-	}
 };

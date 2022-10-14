@@ -164,6 +164,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActiveSpeakerObserver.cpp" />
+    <ClCompile Include="AudioLevelObserver.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="child_process\PipeStreamSocket.cpp" />
     <ClCompile Include="child_process\Socket.cpp" />
@@ -178,6 +179,7 @@
     <ClCompile Include="PlainTransport.cpp" />
     <ClCompile Include="Producer.cpp" />
     <ClCompile Include="Router.cpp" />
+    <ClCompile Include="RtpObserver.cpp" />
     <ClCompile Include="scalabilityModes.cpp" />
     <ClCompile Include="supportedRtpCapabilities.cpp" />
     <ClCompile Include="Transport.cpp" />

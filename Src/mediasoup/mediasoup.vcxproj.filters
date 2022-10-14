@@ -123,6 +123,12 @@
     <ClCompile Include="webrtc\rtc_base\string_to_number.cc">
       <Filter>webrtc\rtc_base</Filter>
     </ClCompile>
+    <ClCompile Include="AudioLevelObserver.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="RtpObserver.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="child_process\PipeStreamSocket.hpp">
