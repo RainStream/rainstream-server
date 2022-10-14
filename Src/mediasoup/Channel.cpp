@@ -31,6 +31,7 @@ Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 			{
 				// 123 = "{" (a Channel JSON messsage).
 			case 123:
+				MSC_WARN("receice data %s", nsPayload.c_str());
 				this->_processMessage(json::parse(nsPayload));
 				break;
 
@@ -215,7 +216,15 @@ void Channel::_processMessage(const json& msg)
 	// If a Notification emit it to the corresponding entity.
 	else if (msg.count("targetId") && msg.count("event"))
 	{
-		std::string targetId =std::to_string(msg["targetId"].get<uint32_t>());
+		std::string targetId;
+		if (msg["targetId"].is_number())
+		{
+			targetId = std::to_string(msg["targetId"].get<int32_t>());
+		}
+		else if (msg["targetId"].is_string())
+		{
+			targetId = msg["targetId"].get<std::string>();
+		}
 
 		this->emit(targetId, msg["event"].get<std::string>(), msg.value("data", json()));
 	}

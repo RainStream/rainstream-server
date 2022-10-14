@@ -168,7 +168,7 @@ public:
 	 * @private
 	 * @virtual
 	 */
-	void routerClosed();
+	virtual void routerClosed();
 	/**
 	 * Listen server was closed (this just happens in WebRtcTransports when their
 	 * associated WebRtcServer is closed).

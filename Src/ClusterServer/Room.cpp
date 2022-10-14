@@ -12,6 +12,7 @@
 #include <Producer.hpp>
 #include <Consumer.hpp>
 #include <WebRtcTransport.hpp>
+#include <AudioLevelObserver.hpp>
 #include "Utils.hpp"
 #include "WebSocketClient.hpp"
 #include <math.h>
@@ -34,28 +35,27 @@ task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcSe
 	// Create a mediasoup Router.
 	Router* mediasoupRouter = co_await mediasoupWorker->createRouter(mediaCodecs);
 
-	// Create a mediasoup AudioLevelObserver.
-// 	const audioLevelObserver = co_await mediasoupRouter.createAudioLevelObserver(
-// 		{
-// 			maxEntries: 1,
-// 			threshold : -80,
-// 			interval : 800
-// 		});
-// 
-// 	const bot = co_await Bot.create({ mediasoupRouter });
 
-	co_return new Room(
-		roomId,
-		webRtcServer,
-		mediasoupRouter);
+	// Create a mediasoup AudioLevelObserver.
+	json data{
+		{ "maxEntries", 1 },
+		{ "threshold" , -80 },
+		{ "interval" , 800 }
+	};
+	AudioLevelObserver* audioLevelObserver = co_await mediasoupRouter->createAudioLevelObserver(data);
+	// 	const bot = co_await Bot.create({ mediasoupRouter });
+
+	co_return new Room(roomId, webRtcServer, mediasoupRouter, audioLevelObserver);
 }
 
-Room::Room(std::string roomId, WebRtcServer* webRtcServer, Router* router)
+Room::Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver)
 	: _roomId(roomId)
 	, _webRtcServer(webRtcServer)
 	, _mediasoupRouter(router)
+	, _audioLevelObserver(audioLevelObserver)
 {
-
+	// Handle audioLevelObserver.
+	this->_handleAudioLevelObserver();
 }
 
 Room::~Room()
@@ -78,7 +78,7 @@ void Room::close()
 	//this->_mediasoupRouter->close();
 
 	// Emit "close" event.
-	if(this->listener)
+	if (this->listener)
 		this->listener->OnRoomClose(_roomId);
 }
 
@@ -118,45 +118,83 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 	peer->data.joined = false;
 
 	peer->on("close", [=]()
-	{
-		if (this->_closed)
-			return;
-
-		MSC_DEBUG("protoo Peer \"close\" event [peerId:%s]", peer->id().c_str());
-
-		// If the Peer was joined, notify all Peers.
-		if (peer->data.joined)
 		{
-			for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
-			{
-				try
-				{
-					otherPeer->notify("peerClosed", json{ { "peerId", peer->id()} });
-				}
-				catch (const std::exception&)
-				{
+			if (this->_closed)
+				return;
 
+			MSC_DEBUG("protoo Peer \"close\" event [peerId:%s]", peer->id().c_str());
+
+			// If the Peer was joined, notify all Peers.
+			if (peer->data.joined)
+			{
+				for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
+				{
+					try
+					{
+						otherPeer->notify("peerClosed", json{ { "peerId", peer->id()} });
+					}
+					catch (const std::exception&)
+					{
+
+					}
 				}
 			}
-		}
 
-		// Iterate and close all mediasoup Transport associated to this Peer, so all
-		// its Producers and Consumers will also be closed.
-		for (auto[key, transport] : peer->data.transports)
+			// Iterate and close all mediasoup Transport associated to this Peer, so all
+			// its Producers and Consumers will also be closed.
+			for (auto [key, transport] : peer->data.transports)
+			{
+				transport->close();
+			}
+
+			// If this is the latest Peer in the room, close the room.
+			if (this->_peers.size() == 0)
+			{
+				MSC_DEBUG(
+					"last Peer in the room left, closing the room [roomId:%s]",
+					this->_roomId.c_str());
+
+				this->close();
+			}
+		});
+}
+
+task_t<void> Room::_handleAudioLevelObserver()
+{
+	this->_audioLevelObserver->on("volumes", [=](json volumes)
+	{
+		//const { producer, volume } = volumes[0];
+
+		// logger.debug(
+		// 	'audioLevelObserver "volumes" event [producerId:%s, volume:%s]',
+		// 	producer.id, volume);
+
+		// Notify all Peers.
+		/*for (auto peer : this->_getJoinedPeers())
 		{
-			transport->close();
-		}
-
-		// If this is the latest Peer in the room, close the room.
-		if (this->_peers.size()== 0)
-		{
-			MSC_DEBUG(
-				"last Peer in the room left, closing the room [roomId:%s]",
-				this->_roomId.c_str());
-
-			this->close();
-		}
+			peer->notify(
+				"activeSpeaker",
+				{
+					peerId: producer.appData.peerId,
+					volume : volume
+				})
+				.catch (() = > {});
+		}*/
 	});
+
+	this->_audioLevelObserver->on("silence", [=]()
+	{
+		// logger.debug('audioLevelObserver "silence" event');
+
+		// Notify all Peers.
+		/*for (auto peer : this->_getJoinedPeers())
+		{
+			peer->notify("activeSpeaker", {peerId: null})
+				.catch (() = > {});
+		}*/
+	});
+
+	co_return;
 }
 
 /**
@@ -220,7 +258,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		for (protoo::Peer* joinedPeer : joinedPeers)
 		{
 			// Create Consumers for existing Producers.
-			for (auto[key, producer] : joinedPeer->data.producers)
+			for (auto [key, producer] : joinedPeer->data.producers)
 			{
 				this->_createConsumer(peer, joinedPeer, producer);
 			}
@@ -268,7 +306,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 			{
 
 			}
-				
+
 		}
 	}
 	else if (method == "createWebRtcTransport")
@@ -297,44 +335,44 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 			options);
 
 		transport->on("sctpstatechange", [=](std::string sctpState)
-		{
-			MSC_DEBUG("WebRtcTransport \"sctpstatechange\" event [sctpState:%s]", sctpState.c_str());
-		});
+			{
+				MSC_DEBUG("WebRtcTransport \"sctpstatechange\" event [sctpState:%s]", sctpState.c_str());
+			});
 
 		transport->on("dtlsstatechange", [=](std::string dtlsState)
-		{
-			if (dtlsState == "failed" || dtlsState == "closed")
-				MSC_WARN("WebRtcTransport \"dtlsstatechange\" event [dtlsState:%s]", dtlsState.c_str());
-		});
+			{
+				if (dtlsState == "failed" || dtlsState == "closed")
+					MSC_WARN("WebRtcTransport \"dtlsstatechange\" event [dtlsState:%s]", dtlsState.c_str());
+			});
 
 		// NOTE: For testing.
 		// co_await transport->enableTraceEvent([ "probation", "bwe" ]);
 		//co_await transport->enableTraceEvent({ "bwe" });
 
-		transport->on("trace", [=](json &trace)
-		{
-			MSC_DEBUG(
-				"transport \"trace\" event [transportId:%s, trace.type:%s, trace:%s]",
-				transport->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
-
-			if (trace["type"] == "bwe" && trace["direction"] == "out")
+		transport->on("trace", [=](json& trace)
 			{
-				try
-				{
-					peer->notify(
-						"downlinkBwe",
-						json{
-							{ "desiredBitrate", trace["info"]["desiredBitrate"] },
-							{ "effectiveDesiredBitrate", trace["info"]["effectiveDesiredBitrate"] },
-							{ "availableBitrate", trace["info"]["availableBitrate"] }
-						});
-				}
-				catch (const std::exception&)
-				{
+				MSC_DEBUG(
+					"transport \"trace\" event [transportId:%s, trace.type:%s, trace:%s]",
+					transport->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
 
+				if (trace["type"] == "bwe" && trace["direction"] == "out")
+				{
+					try
+					{
+						peer->notify(
+							"downlinkBwe",
+							json{
+								{ "desiredBitrate", trace["info"]["desiredBitrate"] },
+								{ "effectiveDesiredBitrate", trace["info"]["effectiveDesiredBitrate"] },
+								{ "availableBitrate", trace["info"]["availableBitrate"] }
+							});
+					}
+					catch (const std::exception&)
+					{
+
+					}
 				}
-			}
-		});
+			});
 
 		// Store the WebRtcTransport into the protoo Peer data Object.
 		peer->data.transports.insert(std::make_pair(transport->id(), transport));
@@ -410,34 +448,34 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		appData["peerId"] = peer->id();
 
 		Producer* producer = co_await transport->produce(std::string(), kind,
-				rtpParameters, false, 0, appData);
+			rtpParameters, false, 0, appData);
 
 		// Store the Producer into the protoo Peer data Object.
 		peer->data.producers.insert(std::make_pair(producer->id(), producer));
 
 		// Set Producer events.
 		producer->on("score", [=](json score)
-		{
-			// MSC_DEBUG(
-			// 	"producer "score" event [producerId:%s, score:%o]",
-			// 	producer->id, score);
-
-			try
 			{
-				peer->notify("producerScore", json{ { "producerId", producer->id() }, { "score", score } });
-			}
-			catch (const std::exception&)
-			{
+				// MSC_DEBUG(
+				// 	"producer "score" event [producerId:%s, score:%o]",
+				// 	producer->id, score);
 
-			}
-		});
+				try
+				{
+					peer->notify("producerScore", json{ { "producerId", producer->id() }, { "score", score } });
+				}
+				catch (const std::exception&)
+				{
+
+				}
+			});
 
 		producer->on("videoorientationchange", [=](json videoOrientation)
-		{
-			MSC_DEBUG(
-				"producer \"videoorientationchange\" event [producerId:%s, videoOrientation:%s]",
-				producer->id().c_str(), videoOrientation.dump().c_str());
-		});
+			{
+				MSC_DEBUG(
+					"producer \"videoorientationchange\" event [producerId:%s, videoOrientation:%s]",
+					producer->id().c_str(), videoOrientation.dump().c_str());
+			});
 
 		// NOTE: For testing.
 		// co_await producer->enableTraceEvent([ "rtp", "keyframe", "nack", "pli", "fir" ]);
@@ -445,11 +483,11 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		// co_await producer->enableTraceEvent([ "keyframe" ]);
 
 		producer->on("trace", [=](json trace)
-		{
-			MSC_DEBUG(
-				"producer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
-				producer->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
-		});
+			{
+				MSC_DEBUG(
+					"producer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
+					producer->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
+			});
 
 		request->Accept(json{ { "id", producer->id() } });
 
@@ -462,16 +500,14 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		// Add into the audioLevelObserver.
 		if (producer->kind() == "audio")
 		{
-			/*
 			try
 			{
-				this->_audioLevelObserver.addProducer({ producerId: producer->id });
+				this->_audioLevelObserver->addProducer(producer->id());
 			}
 			catch (const std::exception&)
 			{
 
 			}
-			*/
 		}
 	}
 	else if (method == "closeProducer")
@@ -534,7 +570,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
 
-		std::string consumerId = data["consumerId"];		
+		std::string consumerId = data["consumerId"];
 
 		if (!peer->data.consumers.count(consumerId))
 			MSC_THROW_ERROR("consumer with id \"%s\" not found", consumerId.c_str());
@@ -672,7 +708,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 					dataProducerId: dataProducer.id,
 					peer
 				});
-		}		
+		}
 	}
 	*/
 	else if (method == "changeDisplayName")
@@ -711,7 +747,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 	}
 	else if (method == "getTransportStats")
 	{
-		std::string transportId = data["transportId"];		
+		std::string transportId = data["transportId"];
 
 		if (!peer->data.transports.count(transportId))
 			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
@@ -772,7 +808,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		const stats = co_await dataConsumer.getStats();
 
 		request->Accept(stats);
-	}	
+	}
 	else if (method == "applyNetworkThrottle")
 	{
 		const DefaultUplink = 1000000;
@@ -886,7 +922,7 @@ task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* pro
 
 	// Must take the Transport the remote Peer is using for consuming.
 	Transport* transport = nullptr;
-	for (auto [k,t] : consumerPeer->data.transports)
+	for (auto [k, t] : consumerPeer->data.transports)
 	{
 		if (t->appData().value("consuming", false))
 		{
@@ -926,82 +962,82 @@ task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* pro
 
 	// Set Consumer events.
 	consumer->on("transportclose", [=]()
-	{
-		// Remove from its map.
-		consumerPeer->data.consumers.erase(consumer->id());
-	});
+		{
+			// Remove from its map.
+			consumerPeer->data.consumers.erase(consumer->id());
+		});
 
 	consumer->on("producerclose", [=]()
-	{
-		// Remove from its map.
-		consumerPeer->data.consumers.erase(consumer->id());
-
-		try
 		{
-			consumerPeer->notify("consumerClosed", json{ { "consumerId", consumer->id() } });
-		}
-		catch (const std::exception&)
-		{
+			// Remove from its map.
+			consumerPeer->data.consumers.erase(consumer->id());
 
-		}
-	});
+			try
+			{
+				consumerPeer->notify("consumerClosed", json{ { "consumerId", consumer->id() } });
+			}
+			catch (const std::exception&)
+			{
+
+			}
+		});
 
 	consumer->on("producerpause", [=]()
-	{
-		try
 		{
-			consumerPeer->notify("consumerPaused", json{ { "consumerId", consumer->id() } });
-		}
-		catch (const std::exception&)
-		{
+			try
+			{
+				consumerPeer->notify("consumerPaused", json{ { "consumerId", consumer->id() } });
+			}
+			catch (const std::exception&)
+			{
 
-		}
-	});
+			}
+		});
 
 	consumer->on("producerresume", [=]()
-	{
-		try
 		{
-			consumerPeer->notify("consumerResumed", json{ { "consumerId", consumer->id() } });
-		}
-		catch (const std::exception&)
-		{
+			try
+			{
+				consumerPeer->notify("consumerResumed", json{ { "consumerId", consumer->id() } });
+			}
+			catch (const std::exception&)
+			{
 
-		}
-	});
+			}
+		});
 
 	consumer->on("score", [=](json& score)
-	{
-		// MSC_DEBUG(
-		// 	"consumer "score" event [consumerId:%s, score:%o]",
-		// 	consumer->id(), score);
-		try
 		{
-			consumerPeer->notify("consumerScore", json{ { "consumerId", consumer->id() },{"score", score} });
-		}
-		catch (const std::exception&)
-		{
+			// MSC_DEBUG(
+			// 	"consumer "score" event [consumerId:%s, score:%o]",
+			// 	consumer->id(), score);
+			try
+			{
+				consumerPeer->notify("consumerScore", json{ { "consumerId", consumer->id() },{"score", score} });
+			}
+			catch (const std::exception&)
+			{
 
-		}
-	});
+			}
+		});
 
 	consumer->on("layerschange", [=](json& layers)
-	{
-		try
 		{
-			consumerPeer->notify(
-				"consumerLayersChanged",
-				json{
-					{ "consumerId", consumer->id() },
-					{ "spatialLayer",  !layers.is_null() ? layers["spatialLayer"] : json() },
-					{ "temporalLayer",  !layers.is_null() ? layers["temporalLayer"] : json() }
-				});
-		}
-		catch (const std::exception&)
-		{
+			try
+			{
+				consumerPeer->notify(
+					"consumerLayersChanged",
+					json{
+						{ "consumerId", consumer->id() },
+						{ "spatialLayer",  !layers.is_null() ? layers["spatialLayer"] : json() },
+						{ "temporalLayer",  !layers.is_null() ? layers["temporalLayer"] : json() }
+					});
+			}
+			catch (const std::exception&)
+			{
 
-		}
-	});
+			}
+		});
 
 	// NOTE: For testing.
 	// co_await consumer->enableTraceEvent([ "rtp", "keyframe", "nack", "pli", "fir" ]);
@@ -1009,11 +1045,11 @@ task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* pro
 	// co_await consumer->enableTraceEvent([ "keyframe" ]);
 
 	consumer->on("trace", [=](json& trace)
-	{
-		MSC_DEBUG(
-			"consumer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
-			consumer->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
-	});
+		{
+			MSC_DEBUG(
+				"consumer \"trace\" event [producerId:%s, trace.type:%s, trace:%s]",
+				consumer->id().c_str(), trace["type"].get<std::string>().c_str(), trace.dump().c_str());
+		});
 
 	// Send a protoo request to the remote Peer with Consumer parameters.
 	try

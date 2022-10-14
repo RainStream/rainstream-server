@@ -26,6 +26,18 @@ struct AudioLevelObserverOptions
 	 * Custom application data.
 	 */
 	json appData;
+
+
+	AudioLevelObserverOptions(const json& data)
+	{
+		if (data.is_object())
+		{
+			maxEntries = data.value("maxEntries", maxEntries);
+			threshold = data.value("threshold", threshold);
+			interval = data.value("interval", interval);
+			appData = data.value("appData", json());
+		}
+	}
 };
 
 struct AudioLevelObserverVolume

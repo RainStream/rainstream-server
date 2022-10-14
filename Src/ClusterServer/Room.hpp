@@ -15,6 +15,8 @@ namespace protoo
 class Router;
 class Worker;
 class WebRtcServer;
+class AudioLevelObserver;
+
 
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
@@ -28,7 +30,7 @@ public:
 
 	static task_t<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
-	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router);
+	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver);
 	~Room();
 
 public:
@@ -38,6 +40,7 @@ public:
 	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
 
 protected:
+	task_t<void> _handleAudioLevelObserver();
 	task_t<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
 	std::list<protoo::Peer*> _getJoinedPeers(protoo::Peer* excludePeer = nullptr);
 	/**
@@ -71,6 +74,7 @@ private:
 	std::string _roomId;
 
 	// Closed flag.
+	// @type {Boolean}
 	bool _closed = false;
 
 	// @type {Map<String, Object>}
@@ -80,7 +84,13 @@ private:
 	// @type {mediasoup.WebRtcServer}
 	WebRtcServer* _webRtcServer{ nullptr };
 
+	// mediasoup Router instance.
+	// @type {mediasoup.Router}
 	Router* _mediasoupRouter{ nullptr };
+
+	// mediasoup AudioLevelObserver.
+	// @type {mediasoup.AudioLevelObserver}
+	AudioLevelObserver* _audioLevelObserver{ nullptr };
 
 	//rs::Peer* _currentActiveSpeaker{ nullptr };
 	Listener* listener{ nullptr };

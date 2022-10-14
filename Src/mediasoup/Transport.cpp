@@ -386,7 +386,6 @@ task_t<Producer*> Transport::produce(
 	});
 
 	this->emit("@newproducer", producer);
-
 	// Emit observer event.
 	this->_observer->safeEmit("newproducer", producer);
 
