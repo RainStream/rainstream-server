@@ -1,6 +1,9 @@
 
 #include "common.hpp"
 #include "utils.hpp"
+#include <random>
+#include <sstream>
+#include <uv.h>
 
 namespace Utils
 {
@@ -138,14 +141,6 @@ uint32_t setInterval(std::function<void(void)> func, int interval)
 	return 0;
 }
 
-void clearInterval(uint32_t identifier)
-{
-
-}
-
-#include <random>
-#include <sstream>
-
 std::string uuidv4()
 {
 	static std::random_device              rd;
@@ -177,4 +172,46 @@ std::string uuidv4()
 		ss << dis(gen);
 	};
 	return ss.str();
+}
+
+void InvokeCb(uv_timer_t* handle)
+{
+	MessageData* message_data = static_cast<MessageData*>(handle->data);
+
+	if (message_data)
+	{
+		message_data->Run();
+
+		if (message_data->once)
+		{
+			delete message_data;
+
+			uv_timer_stop(handle);
+			uv_close((uv_handle_t*)handle, nullptr);
+		}
+	}
+}
+
+uint64_t Invoke(MessageData* message_data,
+	uint64_t timeout,
+	uint64_t repeat)
+{
+	uv_timer_t* timer_req = new uv_timer_t;
+	timer_req->data = message_data;
+
+	uv_timer_init(uv_default_loop(), timer_req);
+	uv_timer_start(timer_req, InvokeCb, timeout, repeat);
+
+	return timer_req->start_id;
+}
+
+void InvokeOnce(MessageData* message_data)
+{
+	message_data->once = true;
+	Invoke(message_data);
+}
+
+void clearInterval(uint64_t identifier)
+{
+
 }

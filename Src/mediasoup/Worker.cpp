@@ -16,9 +16,9 @@
 #define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
 
 #ifdef _DEBUG
-#define WORK_PATH "mediasoup-worker.exe"
+#define WORK_PATH "E:/Mediawork/mediasoup/worker/out/Debug/mediasoup-worker.exe"
 #else
-#define WORK_PATH "mediasoup-worker.exe"
+#define WORK_PATH "E:/Mediawork/mediasoup/worker/out/Release/mediasoup-worker.exe"
 #endif
 
 const int CHANNEL_FD = 3;

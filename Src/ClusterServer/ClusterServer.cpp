@@ -58,6 +58,15 @@ ClusterServer::ClusterServer()
 	MSC_DEBUG("ClusterServer Started");
 
 	runMediasoupWorkers();
+
+	// Log rooms status every X seconds.
+	setInterval([&]()
+	{
+		for (auto &[key, room] : this->_rooms)
+		{
+			room->logStatus();
+		}
+	}, 10000);
 }
 
 ClusterServer::~ClusterServer()
@@ -151,12 +160,14 @@ task_t<void> ClusterServer::runMediasoupWorkers()
 		}
 
 		// Log worker resource usage every X seconds.
-// 		setInterval(async() = >
-// 		{
-// 			const usage = await worker.getResourceUsage();
-// 
-// 			logger.info('mediasoup Worker resource usage [pid:%d]: %o', worker.pid, usage);
-// 		}, 120000);
+ 		setInterval([=]()->task_t<void>
+ 		{
+ 			json usage = co_await worker->getResourceUsage();
+ 
+ 			MSC_DEBUG("mediasoup Worker resource usage[pid:%d]: %s", worker->pid(), usage.dump().c_str());
+
+			co_return;
+ 		}, 20000);
 	}
 }
 

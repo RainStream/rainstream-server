@@ -9,6 +9,11 @@ using AStringVector = std::vector<std::string>;
 /** Evaluates to the uint32_t of elements in an array (compile-time!) */
 #define ARRAYCOUNT(X) (sizeof(X) / sizeof(*(X)))
 
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+    TypeName(const TypeName&);                \
+    TypeName& operator=(const TypeName&)
+
+
 namespace Utils
 {
 	inline uint32_t generateRandomNumber(uint32_t min = 10000000, uint32_t max = 99999999)
@@ -74,10 +79,6 @@ namespace Utils
 	};
 }
 
-uint32_t setInterval(std::function<void(void)> func, int interval);
-void clearInterval(uint32_t identifier);
-
-
 
 std::string uuidv4();
 
@@ -95,4 +96,49 @@ V GetMapValue(const std::map<K, V>& maps, K key)
 	}
 }
 
+class MessageData {
+public:
+	MessageData() {}
+	virtual ~MessageData() {}
 
+	virtual void Run() = 0;
+
+	bool once = false;
+};
+
+template <class FunctorT>
+class MessageWithFunctor : public MessageData {
+public:
+	explicit MessageWithFunctor(FunctorT&& functor)
+		: functor_(std::forward<FunctorT>(functor)) {}
+
+	void Run() override { functor_(); }
+
+private:
+	~MessageWithFunctor() {}
+
+	typename std::remove_reference<FunctorT>::type functor_;
+
+	DISALLOW_COPY_AND_ASSIGN(MessageWithFunctor);
+};
+
+
+uint64_t Invoke(MessageData* message_data,
+	uint64_t timeout = 0, 
+	uint64_t repeat = 0);
+
+void InvokeOnce(MessageData* message_data);
+
+template <class FunctorT>
+void setImmediate(FunctorT&& functor) {
+	InvokeOnce(new MessageWithFunctor<FunctorT>(
+		std::forward<FunctorT>(functor)));
+}
+
+template <class FunctorT>
+uint64_t setInterval(FunctorT&& functor, int interval){
+	return Invoke(new MessageWithFunctor<FunctorT>(
+		std::forward<FunctorT>(functor)), interval, interval);	
+}
+
+void clearInterval(uint64_t identifier);

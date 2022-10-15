@@ -36,6 +36,7 @@ public:
 public:
 	std::string id();
 	void close();
+	void logStatus();
 
 	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
 

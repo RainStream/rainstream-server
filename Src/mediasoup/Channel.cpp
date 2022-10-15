@@ -226,7 +226,9 @@ void Channel::_processMessage(const json& msg)
 			targetId = msg["targetId"].get<std::string>();
 		}
 
-		this->emit(targetId, msg["event"].get<std::string>(), msg.value("data", json()));
+		setImmediate([=]() {
+			this->emit(targetId, msg["event"].get<std::string>(), msg.value("data", json()));
+		});
 	}
 	// Otherwise unexpected message.
 	else

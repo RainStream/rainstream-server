@@ -82,6 +82,13 @@ void Room::close()
 		this->listener->OnRoomClose(_roomId);
 }
 
+void Room::logStatus()
+{
+	MSC_DEBUG("logStatus()[roomId:%s, protoo Peers:%d]",
+		this->_roomId.c_str(),
+		this->_peers.size());
+}
+
 void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport)
 {
 	if (!transport)
