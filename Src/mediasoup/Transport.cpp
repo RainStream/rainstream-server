@@ -11,7 +11,7 @@
 #include "Producer.hpp"
 #include "Consumer.hpp"
 #include "DataProducer.hpp"
-//#include "DataConsumer.hpp"
+#include "DataConsumer.hpp"
 //#include "SctpParameters.hpp"
 
 
@@ -119,22 +119,22 @@ void Transport::close()
 	}
 	this->_consumers.clear();
 
-	//// Close every DataProducer.
-	//for (DataProducer* dataProducer : this->_dataProducers)
-	//{
-	//	dataProducer->transportClosed();
+	// Close every DataProducer.
+	for (auto [key, dataProducer] : this->_dataProducers)
+	{
+		dataProducer->transportClosed();
 
-	//	// Must tell the Router.
-	//	this->emit("@dataproducerclose", dataProducer);
-	//}
-	//this->_dataProducers.clear();
+		// Must tell the Router.
+		this->emit("@dataproducerclose", dataProducer);
+	}
+	this->_dataProducers.clear();
 
-	//// Close every DataConsumer.
-	//for (DataConsumer* dataConsumer : this->_dataConsumers)
-	//{
-	//	dataConsumer->transportClosed();
-	//}
-	//this->_dataConsumers.clear();
+	// Close every DataConsumer.
+	for (auto [key, dataConsumer] : this->_dataConsumers)
+	{
+		dataConsumer->transportClosed();
+	}
+	this->_dataConsumers.clear();
 
 	this->emit("@close");
 	// Emit observer event.
@@ -158,9 +158,6 @@ void Transport::routerClosed()
 	for (auto &[key, producer] : this->_producers)
 	{
 		producer->transportClosed();
-
-		// NOTE: No need to tell the Router since it already knows (it has
-		// been closed in fact).
 	}
 	this->_producers.clear();
 
@@ -172,21 +169,18 @@ void Transport::routerClosed()
 	this->_consumers.clear();
 
 	// Close every DataProducer.
-	//for (DataProducer* dataProducer : this->_dataProducers)
-	//{
-	//	dataProducer->transportClosed();
+	for (auto [key, dataProducer] : this->_dataProducers)
+	{
+		dataProducer->transportClosed();
+	}
+	this->_dataProducers.clear();
 
-	//	// NOTE: No need to tell the Router since it already knows (it has
-	//	// been closed in fact).
-	//}
-	//this->_dataProducers.clear();
-
-	//// Close every DataConsumer.
-	//for (DataConsumer* dataConsumer : this->_dataConsumers)
-	//{
-	//	dataConsumer->transportClosed();
-	//}
-	//this->_dataConsumers.clear();
+	// Close every DataConsumer.
+	for (auto [key, dataConsumer] : this->_dataConsumers)
+	{
+		dataConsumer->transportClosed();
+	}
+	this->_dataConsumers.clear();
 
 	this->safeEmit("routerclose");
 	// Emit observer event.
@@ -221,18 +215,21 @@ void Transport::listenServerClosed()
 		consumer->transportClosed();
 	}
 	this->_consumers.clear();
-	//// Close every DataProducer.
-	//for (const dataProducer of this->dataProducers.values()) {
-	//	dataProducer.transportClosed();
-	//	// NOTE: No need to tell the Router since it already knows (it has
-	//	// been closed in fact).
-	//}
-	//this->dataProducers.clear();
-	//// Close every DataConsumer.
-	//for (const dataConsumer of this->dataConsumers.values()) {
-	//	dataConsumer.transportClosed();
-	//}
-	//this->dataConsumers.clear();
+	
+	// Close every DataProducer.
+	for (auto [key, dataProducer] : this->_dataProducers)
+	{
+		dataProducer->transportClosed();
+	}
+	this->_dataProducers.clear();
+
+	// Close every DataConsumer.
+	for (auto [key, dataConsumer] : this->_dataConsumers)
+	{
+		dataConsumer->transportClosed();
+	}
+	this->_dataConsumers.clear();
+
 	// Need to emit this event to let the parent Router know since
 	// transport.listenServerClosed() is called by the listen server.
 	// NOTE: Currently there is just WebRtcServer for WebRtcTransports.
@@ -580,123 +577,116 @@ task_t<DataProducer*> Transport::produceData(DataProducerOptions& options)
 	co_return dataProducer;
 }
 
-	 /**
-	  * Create a DataConsumer.
-	  */
-	  // 	task_t<DataConsumer*> Transport::consumeData(
-	  // 		{
-	  // 			dataProducerId,
-	  // 			ordered,
-	  // 			maxPacketLifeTime,
-	  // 			maxRetransmits,
-	  // 			appData = {}
-	  // 		}: DataConsumerOptions
-	  // 	)
-	  // 	{
-	  // 		MSC_DEBUG("consumeData()");
-	  // 
-	  // 		if (!dataProducerId || typeof dataProducerId != "string")
-	  // 			MSC_THROW_ERROR("missing dataProducerId");
-	  // 		else if (!appData.is_null() && !appData.is_object())
-	  // 			MSC_THROW_ERROR("if given, appData must be an object");
-	  // 
-	  // 		const dataProducer = this->_getDataProducerById(dataProducerId);
-	  // 
-	  // 		if (!dataProducer)
-	  // 			MSC_THROW_ERROR(`DataProducer with id "${dataProducerId}" not found`);
-	  // 
-	  // 		let type: DataConsumerType;
-	  // 		let sctpStreamParameters: SctpStreamParameters | undefined;
-	  // 		let sctpStreamId;
-	  // 
-	  // 		// If this is not a DirectTransport, use sctpStreamParameters from the
-	  // 		// DataProducer (if type "sctp") unless they are given in method parameters.
-	  // 		if (this->constructor.name != "DirectTransport")
-	  // 		{
-	  // 			type = "sctp";
-	  // 			sctpStreamParameters =
-	  // 				utils.clone(dataProducer->sctpStreamParameters) as SctpStreamParameters;
-	  // 
-	  // 			// Override if given.
-	  // 			if (ordered != undefined)
-	  // 				sctpStreamParameters.ordered = ordered;
-	  // 
-	  // 			if (maxPacketLifeTime != undefined)
-	  // 				sctpStreamParameters.maxPacketLifeTime = maxPacketLifeTime;
-	  // 
-	  // 			if (maxRetransmits != undefined)
-	  // 				sctpStreamParameters.maxRetransmits = maxRetransmits;
-	  // 
-	  // 			// This may throw.
-	  // 			sctpStreamId = this->_getNextSctpStreamId();
-	  // 
-	  // 			this->_sctpStreamIds![sctpStreamId] = 1;
-	  // 			sctpStreamParameters.streamId = sctpStreamId;
-	  // 		}
-	  // 		// If this is a DirectTransport, sctpStreamParameters must not be used.
-	  // 		else
-	  // 		{
-	  // 			type = "direct";
-	  // 
-	  // 			if (
-	  // 				ordered != undefined ||
-	  // 				maxPacketLifeTime != undefined ||
-	  // 				maxRetransmits != undefined
-	  // 			)
-	  // 			{
-	  // 				MSC_WARN(
-	  // 					"consumeData() | ordered, maxPacketLifeTime and maxRetransmits are ignored when consuming data on a DirectTransport");
-	  // 			}
-	  // 		}
-	  // 
-	  // 		const { label, protocol } = dataProducer;
-	  // 
-	  // 		json internal = { ...this->_internal, dataConsumerId: uuidv4(), dataProducerId };
-	  // 		json reqData =
-	  // 		{
-	  // 			type,
-	  // 			sctpStreamParameters,
-	  // 			label,
-	  // 			protocol
-	  // 		};
-	  // 
-	  // 		json data =
-	  // 			co_await this->_channel->request("transport.consumeData", internal, reqData);
-	  // 
-	  // 		DataConsumer* dataConsumer = new DataConsumer(
-	  // 			{
-	  // 				internal,
-	  // 				data,
-	  // 				channel        : this->_channel,
-	  // 				payloadChannel : this->_payloadChannel,
-	  // 				appData
-	  // 			});
-	  // 
-	  // 		this->_dataConsumers.set(dataconsumer->id(), dataConsumer);
-	  // 		dataConsumer->on("@close", () =>
-	  // 		{
-	  // 			this->_dataConsumers.delete(dataconsumer->id());
-	  // 
-	  // 			if (this->_sctpStreamIds)
-	  // 				this->_sctpStreamIds[sctpStreamId] = 0;
-	  // 		});
-	  // 		dataConsumer->on("@dataproducerclose", () =>
-	  // 		{
-	  // 			this->_dataConsumers.delete(dataconsumer->id());
-	  // 
-	  // 			if (this->_sctpStreamIds)
-	  // 				this->_sctpStreamIds[sctpStreamId] = 0;
-	  // 		});
-	  // 
-	  // 		// Emit observer event.
-	  // 		this->_observer->safeEmit("newdataconsumer", dataConsumer);
-	  // 
-	  // 		return dataConsumer;
-	  // 	}
+	
+task_t<DataConsumer*> Transport::consumeData(DataConsumerOptions& options)
+{
+	MSC_DEBUG("consumeData()");
 
-		  /**
-		   * Enable "trace" event.
-		   */
+	const std::string& dataProducerId = options.dataProducerId;
+	const json& appData = options.appData;
+
+	if (dataProducerId.empty())
+		MSC_THROW_ERROR("missing dataProducerId");
+	else if (!appData.is_null() && !appData.is_object())
+		MSC_THROW_ERROR("if given, appData must be an object");
+
+	DataProducer* dataProducer = this->_getDataProducerById(dataProducerId);
+
+	if (!dataProducer)
+		MSC_THROW_ERROR("DataProducer with id \"%s\" not found", dataProducerId.c_str());
+
+	DataConsumerType type;
+	json sctpStreamParameters;
+	uint32_t sctpStreamId;
+
+	// If this is not a DirectTransport, use sctpStreamParameters from the
+	// DataProducer (if type "sctp") unless they are given in method parameters.
+	if (this->typeName() != "DirectTransport")
+	{
+		type = "sctp";
+		sctpStreamParameters = Utils::clone(dataProducer->sctpStreamParameters());
+
+		// Override if given.
+		if (options.ordered.has_value())
+			sctpStreamParameters["ordered"] = options.ordered.value();
+
+		if (options.maxPacketLifeTime.has_value())
+			sctpStreamParameters["maxPacketLifeTime"] = options.maxPacketLifeTime.value();;
+
+		if (options.maxRetransmits.has_value())
+			sctpStreamParameters["maxRetransmits"] = options.maxRetransmits.value();;
+
+		// This may throw.
+		sctpStreamId = this->getNextSctpStreamId();
+
+		this->_sctpStreamIds[sctpStreamId] = 1;
+		sctpStreamParameters["streamId"] = sctpStreamId;
+	}
+	// If this is a DirectTransport, sctpStreamParameters must not be used.
+	else
+	{
+		type = "direct";
+
+		if (
+			options.ordered.has_value() ||
+			options.maxPacketLifeTime.has_value() ||
+			options.maxRetransmits.has_value()
+			)
+		{
+			MSC_WARN(
+				"consumeData() | ordered, maxPacketLifeTime and maxRetransmits are ignored when consuming data on a DirectTransport");
+		}
+	}
+
+	std::string label = dataProducer->label();
+	std::string protocol = dataProducer->protocol();
+
+	json reqData =
+	{
+		{ "dataConsumerId", uuidv4() },
+		{ "dataProducerId", dataProducerId },
+		{ "type", type },
+		{ "sctpStreamParameters", sctpStreamParameters },
+		{ "label", label },
+		{ "protocol", protocol },
+	};
+
+	json data =
+		co_await this->_channel->request("transport.consumeData", this->_internal["transportId"], reqData);
+
+	json internal = this->_internal;
+	internal["dataConsumerId"] = reqData["dataConsumerId"];
+
+	DataConsumer* dataConsumer = new DataConsumer(
+		internal,
+		data,
+		this->_channel,
+		this->_payloadChannel,
+		appData
+	);
+
+	this->_dataConsumers.insert(std::pair(dataConsumer->id(), dataConsumer));
+	dataConsumer->on("@close", [=]()
+	{
+		this->_dataConsumers.erase(dataConsumer->id());
+
+		if (this->_sctpStreamIds.size())
+			this->_sctpStreamIds[sctpStreamId] = 0;
+	});
+	dataConsumer->on("@dataproducerclose", [=]()
+	{
+		this->_dataConsumers.erase(dataConsumer->id());
+
+		if (this->_sctpStreamIds.size())
+			this->_sctpStreamIds[sctpStreamId] = 0;
+	});
+
+	// Emit observer event.
+	this->_observer->safeEmit("newdataconsumer", dataConsumer);
+
+	co_return dataConsumer;
+}
+
 task_t<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> types)
 {
 	MSC_DEBUG("pause()");
@@ -707,34 +697,34 @@ task_t<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> ty
 		"transport.enableTraceEvent", this->_internal["transportId"], reqData);
 }
 
-// 	uint32_t Transport::_getNextSctpStreamId()
-// 	{
-// 		if (
-// 			!this->_data.count("sctpParameters") ||
-// 			!this->_data["sctpParameters"]["MIS"].is_number()
-// 		)
-// 		{
-// 			MSC_THROW_ERROR("missing data.sctpParameters.MIS");
-// 		}
-// 
-// 		uint32_t numStreams = this->_data["sctpParameters"].value("MIS", 0);
-// 
-// 		if (!this->_sctpStreamIds)
-// 			this->_sctpStreamIds = Buffer.alloc(numStreams, 0);
-// 
-// 		uint32_t sctpStreamId;
-// 
-// 		for (uint32_t idx = 0; idx < this->_sctpStreamIds.length; ++idx)
-// 		{
-// 			sctpStreamId = (this->_nextSctpStreamId + idx) % this->_sctpStreamIds.length;
-// 
-// 			if (!this->_sctpStreamIds[sctpStreamId])
-// 			{
-// 				this->_nextSctpStreamId = sctpStreamId + 1;
-// 
-// 				return sctpStreamId;
-// 			}
-// 		}
-// 
-// 		MSC_THROW_ERROR("no sctpStreamId available");
-// 	}
+uint32_t Transport::getNextSctpStreamId()
+{
+	if (
+		!this->_data.count("sctpParameters") ||
+		!this->_data["sctpParameters"]["MIS"].is_number()
+		)
+	{
+		MSC_THROW_ERROR("missing data.sctpParameters.MIS");
+	}
+
+	uint32_t numStreams = this->_data["sctpParameters"].value("MIS", 0);
+
+	if (!this->_sctpStreamIds.size())
+		this->_sctpStreamIds.resize(numStreams, 0);
+
+	uint32_t sctpStreamId;
+
+	for (uint32_t idx = 0; idx < this->_sctpStreamIds.size(); ++idx)
+	{
+		sctpStreamId = (this->_nextSctpStreamId + idx) % this->_sctpStreamIds.size();
+
+		if (!this->_sctpStreamIds[sctpStreamId])
+		{
+			this->_nextSctpStreamId = sctpStreamId + 1;
+
+			return sctpStreamId;
+		}
+	}
+
+	MSC_THROW_ERROR("no sctpStreamId available");
+}

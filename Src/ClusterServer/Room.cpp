@@ -12,6 +12,7 @@
 #include <Producer.hpp>
 #include <Consumer.hpp>
 #include <DataProducer.hpp>
+#include <DataConsumer.hpp>
 #include <WebRtcTransport.hpp>
 #include <AudioLevelObserver.hpp>
 #include "Utils.hpp"

@@ -238,7 +238,7 @@ public:
 	 */
 	task_t<void> enableTraceEvent(std::vector<TransportTraceEventType> types);
 
-// 	uint32_t _getNextSctpStreamId();
+ 	uint32_t getNextSctpStreamId();
 
 protected:
 	// Internal data.
@@ -269,11 +269,10 @@ protected:
 	std::map<std::string, DataConsumer*> _dataConsumers;
 	// RTCP CNAME for Producers.
 	std::string _cnameForProducers;
-
 	// Next MID for Consumers. It"s converted into string when used.
 	uint32_t _nextMidForConsumers = 0;
 	// Buffer with available SCTP stream ids.
-	//Buffer _sctpStreamIds;
+	std::vector<uint32_t> _sctpStreamIds;
 	// Next SCTP stream id.
 	uint32_t _nextSctpStreamId = 0;
 	// Observer instance.

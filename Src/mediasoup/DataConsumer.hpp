@@ -1,10 +1,11 @@
 #pragma once 
 
 #include "EnhancedEventEmitter.hpp"
-#include "Logger.hpp"
-#include "Channel.hpp"
-#include "PayloadChannel.hpp"
 #include "SctpParameters.hpp"
+
+class Channel;
+class PayloadChannel;
+
 
 struct DataConsumerOptions
 {
@@ -19,7 +20,7 @@ struct DataConsumerOptions
 	 * be sent reliably. Defaults to the value in the DataProducer if it has type
 	 * "sctp" or to true if it has type "direct".
 	 */
-	bool ordered;
+	std::optional<bool> ordered;
 
 	/**
 	 * Just if consuming over SCTP.
@@ -27,7 +28,7 @@ struct DataConsumerOptions
 	 * SCTP packet will stop being retransmitted. Defaults to the value in the
 	 * DataProducer if it has type "sctp" or unset if it has type "direct".
 	 */
-	uint32_t maxPacketLifeTime;
+	std::optional<uint32_t> maxPacketLifeTime;
 
 	/**
 	 * Just if consuming over SCTP.
@@ -35,7 +36,7 @@ struct DataConsumerOptions
 	 * be retransmitted. Defaults to the value in the DataProducer if it has type
 	 * "sctp" or unset if it has type "direct".
 	 */
-	uint32_t maxRetransmits;
+	std::optional<uint32_t> maxRetransmits;
 
 	/**
 	 * Custom application data.
@@ -45,6 +46,23 @@ struct DataConsumerOptions
 
 struct DataConsumerStat
 {
+	DataConsumerStat()
+	{
+
+	}
+	DataConsumerStat(const json& data)
+	{
+		if (data.is_object())
+		{
+			type = data.value("port", type);
+			timestamp = data.value("port", timestamp);
+			label = data.value("port", label);
+			protocol = data.value("port", protocol);
+			messagesSent = data.value("port", messagesSent);
+			bytesSent = data.value("port", bytesSent);
+		}
+	}
+
 	std::string type;
 	uint32_t timestamp;
 	std::string label;
@@ -56,17 +74,14 @@ struct DataConsumerStat
 /**
  * DataConsumer type.
  */
-struct DataConsumerType = "sctp" | "direct";
+using DataConsumerType = std::string; // "sctp" | "direct";
+
 
 class DataConsumer : public EnhancedEventEmitter
 {
+public:
 	/**
 	 * @private
-	 * @emits transportclose
-	 * @emits dataproducerclose
-	 * @emits message - (message: Buffer, ppid)
-	 * @emits @close
-	 * @emits @dataproducerclose
 	 */
 	DataConsumer(
 		json internal,
@@ -74,238 +89,108 @@ class DataConsumer : public EnhancedEventEmitter
 		Channel* channel,
 		PayloadChannel* payloadChannel,
 		json appData
-	)
-		: EnhancedEventEmitter()
-	{
-		MSC_DEBUG("constructor()");
-
-		this->_internal = internal;
-		this->_data = data;
-		this->_channel = channel;
-		this->_payloadChannel = payloadChannel;
-		this->_appData = appData;
-
-		this->_handleWorkerNotifications();
-	}
+	);
 
 	/**
 	 * DataConsumer id.
 	 */
-	std::string id()
-	{
-		return this->_internal["dataConsumerId"];
-	}
+	std::string id();
 
 	/**
 	 * Associated DataProducer id.
 	 */
-	std::string dataProducerId()
-	{
-		return this->_internal.dataProducerId;
-	}
+	std::string dataProducerId();
 
 	/**
 	 * Whether the DataConsumer is closed.
 	 */
-	bool closed()
-	{
-		return this->_closed;
-	}
+	bool closed();
 
 	/**
 	 * DataConsumer type.
 	 */
-	DataConsumerType type()
-	{
-		return this->_data["type"];
-	}
+	DataConsumerType type();
 
 	/**
 	 * SCTP stream parameters.
 	 */
-	SctpStreamParameters sctpStreamParameters()
-	{
-		return this->_data["sctpStreamParameters"];
-	}
+	json sctpStreamParameters();
 
 	/**
 	 * DataChannel label.
 	 */
-	std::string label()
-	{
-		return this->_data["label"];
-	}
+	std::string label();
 
 	/**
 	 * DataChannel protocol.
 	 */
-	std::string protocol()
-	{
-		return this->_data["protocol"];
-	}
+	std::string protocol();
 
 	/**
 	 * App custom data.
 	 */
-	json appData()
-	{
-		return this->_appData;
-	}
+	json appData();
 
 	/**
 	 * Invalid setter.
 	 */
-	void appData(json appData) // eslint-disable-line no-unused-vars
-	{
-		MSC_THROW_ERROR("cannot override appData object");
-	}
+	void appData(json appData);
 
 	/**
 	 * Observer.
 	 *
 	 * @emits close
 	 */
-	EnhancedEventEmitter* observer()
-	{
-		return this->_observer;
-	}
+	EnhancedEventEmitter* observer();
 
 	/**
 	 * Close the DataConsumer.
 	 */
-	void close()
-	{
-		if (this->_closed)
-			return;
-
-		MSC_DEBUG("close()");
-
-		this->_closed = true;
-
-		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal["dataConsumerId"]);
-
-		this->_channel->request("dataConsumer.close", this->_internal)
-			.catch(() => {});
-
-		this->emit("@close");
-
-		// Emit observer event.
-		this->_observer->safeEmit("close");
-	}
+	void close();
 
 	/**
 	 * Transport was closed.
 	 *
 	 * @private
 	 */
-	void transportClosed()
-	{
-		if (this->_closed)
-			return;
-
-		MSC_DEBUG("transportClosed()");
-
-		this->_closed = true;
-
-		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal["dataConsumerId"]);
-
-		this->safeEmit("transportclose");
-
-		// Emit observer event.
-		this->_observer->safeEmit("close");
-	}
+	void transportClosed();
 
 	/**
 	 * Dump DataConsumer.
 	 */
-	task_t<json> dump()
-	{
-		MSC_DEBUG("dump()");
-
-		co_return this->_channel->request("dataConsumer.dump", this->_internal);
-	}
+	task_t<json> dump();
 
 	/**
 	 * Get DataConsumer stats.
 	 */
-	async getStats(): Promise<DataConsumerStat[]>
-	{
-		MSC_DEBUG("getStats()");
+	task_t<DataConsumerStat> getStats();
 
-		co_return this->_channel->request("dataConsumer.getStats", this->_internal);
-	}
+	/**
+	 * Set buffered amount low threshold.
+	 */
+	task_t<void> setBufferedAmountLowThreshold(uint32_t threshold);
 
-	private _handleWorkerNotifications(): void
-	{
-		this->_channel->on(this->_internal["dataConsumerId"], [=](std::string event, const json& data)
-		{	
-			if(event == "dataproducerclose")
-			{
-				if (this->_closed)
-					return;
+	/**
+	 * Send data.
+	 */
+	//task_t<void> send(message: string | Buffer, ppid ? : number)
+	
+		/**
+	 * Get buffered amount size.
+	 */
+	task_t<size_t> getBufferedAmount();
 
-				this->_closed = true;
-
-				// Remove notification subscriptions.
-				this->_channel->removeAllListeners(this->_internal["dataConsumerId"]);
-
-				this->emit("@dataproducerclose");
-				this->safeEmit("dataproducerclose");
-
-				// Emit observer event.
-				this->_observer->safeEmit("close");
-			}
-			else
-			{
-				MSC_ERROR("ignoring unknown event \"%s\"", event);
-			}			
-		});
-
-		this->_payloadChannel->on(
-			this->_internal["dataConsumerId"],
-			[=](std::string event, data: any | undefined, payload: Buffer)
-			{
-		
-			if (event == "message")
-			{
-				if (this->_closed)
-					return;
-
-				const ppid = data.ppid as uint32_t;
-				const message = payload;
-
-				this->safeEmit("message", message, ppid);
-			}
-			else
-			{
-				MSC_ERROR("ignoring unknown event \"%s\"", event);
-			}
-				
-			});
-	}
-
-	// Internal data.
 private:
+	void _handleWorkerNotifications();
+
+private:
+	// Internal data.
 	json _internal;
-	// 	{
-	//		std::string routerId;
-	// 		std::string transportId;
-	// 		std::string dataProducerId;
-	// 		std::string dataConsumerId;
-	// 	};
-
-		// DataConsumer data.
+	
+	// DataConsumer data.
 	json _data;
-	// 	{
-	// 		type: DataConsumerType;
-	// 		sctpStreamParameters?: SctpStreamParameters;
-	// 		std::string label;
-	// 		std::string protocol;
-	// 	};
-
-		// Channel instance.
+	
+	// Channel instance.
 	Channel* _channel;
 
 	// PayloadChannel instance.
