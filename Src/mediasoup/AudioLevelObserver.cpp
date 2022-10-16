@@ -27,26 +27,27 @@ void AudioLevelObserver::_handleWorkerNotifications()
 		{
 			if (event == "volumes")
 			{
-				/*
 				// Get the corresponding Producer instance and remove entries with
 				// no Producer (it may have been closed in the meanwhile).
-				const volumes: AudioLevelObserverVolume[] = data
-					.map(({ producerId, volume }: { producerId; volume }) => (
-						{
-							producer : this->_getProducerById(producerId),
-							volume
-						}
-					))
-					.filter(({ producer }: { producer: Producer }) => producer);
+				std::vector<AudioLevelObserverVolume> volumes;
+				for (auto item : data)
+				{
+					Producer* producer = this->_getProducerById(item["producerId"]);
+					if (producer)
+					{
+						volumes.push_back(AudioLevelObserverVolume{
+							.producer = producer,
+							.volume = item["volume"] });
+					}
+				}
 
-				if (volumes.length > 0)
+				if (volumes.size() > 0)
 				{
 					this->safeEmit("volumes", volumes);
 
 					// Emit observer event.
 					this->_observer->safeEmit("volumes", volumes);
 				}
-				*/
 			}
 			else if (event == "silence")
 			{

@@ -69,10 +69,11 @@ void RtpObserver::close()
 	this->_channel->removeAllListeners(this->_internal["rtpObserverId"]);
 	this->_payloadChannel->removeAllListeners(this->_internal["rtpObserverId"]);
 
-	json reqData = { { "rtpObserverId", this->_internal["rtpObserverId"]} };
+
 	try
 	{
-		this->_channel->request("rtpObserver.close", this->_internal);
+		json reqData = { { "rtpObserverId", this->_internal["rtpObserverId"]} };
+		this->_channel->request("router.closeRtpObserver", this->_internal["routerId"], reqData);
 	}
 	catch (const std::exception&)
 	{

@@ -16,6 +16,7 @@
 #include "PipeTransport.hpp"
 #include "SctpParameters.hpp"
 #include "AudioLevelObserver.hpp"
+#include "ActiveSpeakerObserver.hpp"
 
 //#include "PayloadChannel.hpp"
 //#include "DirectTransport.hpp"
@@ -670,39 +671,45 @@ task_t<PipeTransport*> Router::createPipeTransport(
 //		this->_mapRouterPairPipeTransportPairPromise.delete(pipeTransportPairKey);
 //	});
 //}
-//
-//async createActiveSpeakerObserver({ interval = 300, appData } = {}) {
-//	MSC_DEBUG("createActiveSpeakerObserver()");
-//	if (appData&& typeof appData != = "object")
-//		throw new TypeError("if given, appData must be an object");
-//	const reqData = {
-//		rtpObserverId: (0, uuid_1.v4)(),
-//		interval
-//	};
-//	co_await this->_channel->request("router.createActiveSpeakerObserver", this->_internal.routerId, reqData);
-//	const activeSpeakerObserver = new ActiveSpeakerObserver_1.ActiveSpeakerObserver({
-//		internal: {
-//			...this->_internal,
-//			rtpObserverId: reqData.rtpObserverId
-//		},
-//		channel : this->_channel,
-//		payloadChannel: this->_payloadChannel,
-//		appData,
-//		getProducerById: (producerId) = > (this->_producers.get(producerId))
-//		});
-//	this->_rtpObservers.set(activeSpeakerObserver.id, activeSpeakerObserver);
-//	activeSpeakerObserver.on("@close", () = > {
-//		this->_rtpObservers.delete(activeSpeakerObserver.id);
-//	});
-//	// Emit observer event.
-//	this->_observer->safeEmit("newrtpobserver", activeSpeakerObserver);
-//	return activeSpeakerObserver;
-//}
+
+task_t<ActiveSpeakerObserver*> Router::createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options)
+{
+	MSC_DEBUG("createActiveSpeakerObserver()");
+	if (!options.appData.is_null() && !options.appData.is_object())
+		MSC_THROW_TYPE_ERROR("if given, appData must be an object");
+	json reqData = {
+		{ "rtpObserverId", uuidv4() },
+		{ "interval", options.interval }
+	};
+	co_await this->_channel->request("router.createActiveSpeakerObserver", this->_internal["routerId"], reqData);
+
+	json internal = this->_internal;
+	internal["rtpObserverId"] = reqData["rtpObserverId"];
+
+	ActiveSpeakerObserver* activeSpeakerObserver = new ActiveSpeakerObserver(
+		internal,
+		this->_channel,
+		this->_payloadChannel,
+		options.appData,
+		[=](std::string producerId)->Producer* {
+			if (this->_producers.count(producerId))
+				return this->_producers.at(producerId);
+			else
+				return nullptr;
+		});
+	this->_rtpObservers.insert(std::pair(activeSpeakerObserver->id(), activeSpeakerObserver));
+	activeSpeakerObserver->on("@close", [=]() {
+		this->_rtpObservers.erase(activeSpeakerObserver->id());
+		});
+	// Emit observer event.
+	this->_observer->safeEmit("newrtpobserver", activeSpeakerObserver);
+	co_return activeSpeakerObserver;
+}
 
 task_t<AudioLevelObserver*> Router::createAudioLevelObserver(const AudioLevelObserverOptions& options) {
 	MSC_DEBUG("createAudioLevelObserver()");
 	if (!options.appData.is_null() && !options.appData.is_object())
-		throw new TypeError("if given, appData must be an object");
+		MSC_THROW_TYPE_ERROR("if given, appData must be an object");
 	json reqData = {
 		{ "rtpObserverId", uuidv4() },
 		{ "maxEntries", options.maxEntries },
@@ -725,8 +732,7 @@ task_t<AudioLevelObserver*> Router::createAudioLevelObserver(const AudioLevelObs
 				return this->_producers.at(producerId);
 			else
 				return nullptr; 
-			}
-		);
+		});
 	this->_rtpObservers.insert(std::pair(audioLevelObserver->id(), audioLevelObserver));
 	audioLevelObserver->on("@close", [=](){
 		this->_rtpObservers.erase(audioLevelObserver->id());

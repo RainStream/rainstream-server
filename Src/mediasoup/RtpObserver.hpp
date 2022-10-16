@@ -6,7 +6,7 @@ class Channel;
 class Producer;
 class PayloadChannel;
 
-using GetProducerById = std::function<Producer* (std::string)>;
+using GetProducerById = std::function<Producer*(std::string)>;
 
 class RtpObserver : public EnhancedEventEmitter
 {

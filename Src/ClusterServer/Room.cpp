@@ -33,12 +33,12 @@ task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcSe
 	Router* mediasoupRouter = co_await mediasoupWorker->createRouter(mediaCodecs);
 
 	// Create a mediasoup AudioLevelObserver.
-	json data{
+	json options{
 		{ "maxEntries", 1 },
 		{ "threshold" , -80 },
 		{ "interval" , 800 }
 	};
-	AudioLevelObserver* audioLevelObserver = co_await mediasoupRouter->createAudioLevelObserver(data);
+	AudioLevelObserver* audioLevelObserver = co_await mediasoupRouter->createAudioLevelObserver(options);
 
 	co_return new Room(roomId, webRtcServer, mediasoupRouter, audioLevelObserver);
 }
@@ -165,7 +165,7 @@ task_t<void> Room::_handleAudioLevelObserver()
 	this->_audioLevelObserver->on("volumes", [=](const std::vector<AudioLevelObserverVolume>& volumes)
 	{
 		Producer* producer = volumes[0].producer;
-		uint8_t volume = volumes[0].volume;
+		int8_t volume = volumes[0].volume;
 
 		 MSC_DEBUG(
 		 	"audioLevelObserver \"volumes\" event[producerId:%s, volume:%d]",

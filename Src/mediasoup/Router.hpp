@@ -16,8 +16,10 @@ class WebRtcTransport;
 class PlainTransport;
 class PipeTransport;
 class AudioLevelObserver;
+class ActiveSpeakerObserver;
 struct WebRtcTransportOptions;
 struct AudioLevelObserverOptions;
+struct ActiveSpeakerObserverOptions;
 
 
 class MS_EXPORT Router : public EnhancedEventEmitter
@@ -120,7 +122,7 @@ public:
 	/**
 	 * Create an ActiveSpeakerObserver
 	 */
-	//createActiveSpeakerObserver({ interval, appData } ? : ActiveSpeakerObserverOptions) : Promise<ActiveSpeakerObserver>;
+	task_t<ActiveSpeakerObserver*> createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options);
 	/**
 	 * Create an AudioLevelObserver.
 	 */

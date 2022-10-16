@@ -9,18 +9,18 @@ struct AudioLevelObserverOptions
 	/**
 	 * Maximum uint32_t of entries in the "volumes”" event. Default 1.
 	 */
-	uint32_t maxEntries = 1;
+	uint16_t maxEntries = 1;
 
 	/**
 	 * Minimum average volume (in dBvo from -127 to 0) for entries in the
 	 * "volumes" event.	Default -80.
 	 */
-	int32_t threshold = -80;
+	int8_t threshold = -80;
 
 	/**
 	 * Interval in ms for checking audio volumes. Default 1000.
 	 */
-	uint32_t interval = 1000;
+	uint16_t interval = 1000;
 
 	/**
 	 * Custom application data.
@@ -51,7 +51,7 @@ struct AudioLevelObserverVolume
 	 * The average volume (in dBvo from -127 to 0) of the audio producer in the
 	 * last interval.
 	 */
-	uint8_t volume;
+	int8_t volume;
 };
 
 class AudioLevelObserver : public RtpObserver

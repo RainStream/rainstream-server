@@ -66,7 +66,7 @@ ClusterServer::ClusterServer()
 		{
 			room->logStatus();
 		}
-	}, 10000);
+	}, 120000);
 }
 
 ClusterServer::~ClusterServer()
@@ -161,7 +161,7 @@ task_t<void> ClusterServer::runMediasoupWorkers()
  			MSC_DEBUG("mediasoup Worker resource usage[pid:%d]: %s", worker->pid(), usage.dump().c_str());
 
 			co_return;
- 		}, 20000);
+ 		}, 120000);
 	}
 }
 
