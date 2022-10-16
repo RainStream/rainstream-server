@@ -52,108 +52,6 @@ namespace protoo
 		this->_listener->OnPeerClose(this);
 	}
 
-// 	void Peer::Accept(uint32_t id, json& data)
-// 	{
-// 		auto it = _requests.find(id);
-// 		if (it != _requests.end())
-// 		{
-// 			json request = it->second;
-// 			json response = Message::createSuccessResponse(request, data);
-// 
-// 			this->_transport->send(response)
-// 			.fail([=](std::string error)
-// 			{
-// 				// 				logger->warn(
-// 				// 					"accept() failed, response could not be sent: %s", error.c_str());
-// 			});
-// 
-// 			_requests.erase(it);
-// 		}
-//	}
-
-// 	void Peer::Reject(uint32_t id, uint32_t code, const std::string& errorReason)
-// 	{
-// 		auto it = _requests.find(id);
-// 		if (it != _requests.end())
-// 		{
-// 			json request = it->second;
-// 
-// 			json response = Message::createErrorResponse(request, code, errorReason);
-// 
-// 			this->_transport->send(response)
-// 			.fail([=](std::string error)
-// 			{
-// 				// 				logger.warn(
-// 				// 					"reject() failed, response could not be sent: %s", error.c_str());
-// 			});
-// 
-// 			_requests.erase(it);
-// 		}
-//	}
-
-// 	Defer Peer::send(std::string method, json data)
-// 	{
-// 		json request = Message::createRequest(method, data);
-// 
-// 		uint32_t id = request["id"].get<uint32_t>();
-// 
-// 		return this->_transport->send(request)
-// 			.then([=]()
-// 		{
-// 			return newPromise([=](Defer d) {
-// 				this->_requestHandlers.insert(std::make_pair(id, d));
-// 			});
-// 
-// 			//  			return new Promise((pResolve, pReject) = >
-// 			//  			{
-// 			//  				const handler =
-// 			//  				{
-// 			//  				resolve: (data2) = >
-// 			//  				{
-// 			//  					if (!this->_requestHandlers.delete(request.id))
-// 			//  						return;
-// 			//  
-// 			//  					clearTimeout(handler.timer);
-// 			//  					pResolve(data2);
-// 			//  				},
-// 			//  
-// 			//  					reject : (error) = >
-// 			//  				{
-// 			//  					if (!this->_requestHandlers.delete(request.id))
-// 			//  						return;
-// 			//  
-// 			//  					clearTimeout(handler.timer);
-// 			//  					pReject(error);
-// 			//  				},
-// 			//  
-// 			//  					timer : setTimeout(() = >
-// 			//  				{
-// 			//  					if (!this->_requestHandlers.delete(request.id))
-// 			//  						return;
-// 			//  
-// 			//  					pReject(Error("request timeout"));
-// 			//  				}, REQUEST_TIMEOUT),
-// 			//  
-// 			//  					close : () = >
-// 			//  				{
-// 			//  					clearTimeout(handler.timer);
-// 			//  					pReject(Error("peer closed"));
-// 			//  				}
-// 			//  				};
-// 			//  
-// 			//  				// Add handler stuff to the Map.
-// 			//  				this->_requestHandlers.set(request.id, handler);
-// 			// 			});
-// 		});
-// 	}
-// 
-// 	Defer Peer::notify(std::string method, json data)
-// 	{
-// 		json notification = Message::createNotification(method, data);
-// 
-// 		return this->_transport->send(notification);
-// 	}
-
 	void Peer::Send(const json& message)
 	{
 		try
@@ -203,10 +101,6 @@ namespace protoo
 		else if (data.contains("response") && data["response"].is_boolean() && data.value("response", false))
 		{
 			this->_handleResponse(data);
-		}
-		else if (data.contains("notification"))
-		{
-			this->_handleNotification(data);
 		}
 	}
 
@@ -265,10 +159,5 @@ namespace protoo
 			//sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
 			sent.unhandled_exception();
 		}
-	}
-
-	void Peer::_handleNotification(json& notification)
-	{
-		this->_listener->OnPeerNotify(this, notification);
 	}
 }

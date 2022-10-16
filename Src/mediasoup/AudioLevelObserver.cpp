@@ -57,7 +57,7 @@ void AudioLevelObserver::_handleWorkerNotifications()
 			}
 			else
 			{
-				MSC_ERROR("ignoring unknown event \"%s\"", event);
+				MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 			}
 		});
 }

@@ -51,7 +51,7 @@ struct AudioLevelObserverVolume
 	 * The average volume (in dBvo from -127 to 0) of the audio producer in the
 	 * last interval.
 	 */
-	uint32_t volume;
+	uint8_t volume;
 };
 
 class AudioLevelObserver : public RtpObserver

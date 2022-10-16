@@ -28,7 +28,6 @@ namespace protoo
 		public:
 			virtual void OnPeerClose(Peer* peer) = 0;
 			virtual void OnPeerRequest(Peer* peer, Request* request) = 0;
-			virtual void OnPeerNotify(Peer* peer, json& notification) = 0;
 		};
 	public:
 		explicit Peer(std::string peerName, protoo::WebSocketClient* transport, Listener* listener);
@@ -38,11 +37,7 @@ namespace protoo
 		std::string id();
 		void close();
 
-// 		void Accept(uint32_t id, json& data);
-// 		void Reject(uint32_t id, uint32_t code, const std::string& errorReason);
-
 		void Send(const json& message);
-// 		Defer send(std::string method, json data);
 		void notify(std::string method, const json& data);
 		task_t<json> request(std::string method, const json& data);
 
@@ -72,7 +67,6 @@ namespace protoo
 		void _handleTransport();
 		void _handleRequest(json& jsonRequest);
 		void _handleResponse(json& response);
-		void _handleNotification(json& notification);
 
 	private:
 		std::string _peerName;

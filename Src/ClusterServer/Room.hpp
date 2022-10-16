@@ -21,7 +21,6 @@ class AudioLevelObserver;
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
 public:
-
 	static task_t<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
 	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver);
@@ -49,19 +48,6 @@ protected:
 public:
 	void OnPeerClose(protoo::Peer* peer) override;
 	void OnPeerRequest(protoo::Peer* peer, protoo::Request* request) override;
-	void OnPeerNotify(protoo::Peer* peer, json& notification) override;
-	
-protected:
-	void _handleMediaRoom();
-// 	void _handleMediaPeer(protoo::Peer* protooPeer, rs::Peer* mediaPeer);
-// 	void _handleMediaTransport(rs::WebRtcTransport* transport);
-// 	void _handleMediaProducer(rs::Producer* producer);
-// 	void _handleMediaConsumer(rs::Consumer* consumer);
-// 	void _handleMediasoupClientRequest(protoo::Peer* protooPeer, uint32_t id, json request);
-// 	void _handleMediasoupClientNotification(protoo::Peer* protooPeer, json notification);
-// 	void _updateMaxBitrate();
-
-	void spread(std::string method, json data, std::set<std::string> excluded = std::set<std::string>());
 
 private:
 	// Room id.

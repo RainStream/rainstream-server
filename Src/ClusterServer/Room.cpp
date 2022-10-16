@@ -162,37 +162,47 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 
 task_t<void> Room::_handleAudioLevelObserver()
 {
-	this->_audioLevelObserver->on("volumes", [=](json volumes)
+	this->_audioLevelObserver->on("volumes", [=](const std::vector<AudioLevelObserverVolume>& volumes)
 	{
-		//const { producer, volume } = volumes[0];
+		Producer* producer = volumes[0].producer;
+		uint8_t volume = volumes[0].volume;
 
-		// logger.debug(
-		// 	'audioLevelObserver "volumes" event [producerId:%s, volume:%s]',
-		// 	producer.id, volume);
+		 MSC_DEBUG(
+		 	"audioLevelObserver \"volumes\" event[producerId:%s, volume:%d]",
+			 producer->id().c_str(), volume);
 
 		// Notify all Peers.
-		/*for (auto peer : this->_getJoinedPeers())
+		for (auto peer : this->_getJoinedPeers())
 		{
-			peer->notify(
-				"activeSpeaker",
-				{
-					peerId: producer.appData.peerId,
-					volume : volume
-				})
-				.catch (() = > {});
-		}*/
+			try
+			{
+				peer->notify("activeSpeaker",
+					{
+						{ "peerId", producer->appData()["peerId"]},
+						{ "volume", volume}
+					});
+			}
+			catch (...)
+			{
+			}
+		}
 	});
 
 	this->_audioLevelObserver->on("silence", [=]()
 	{
-		// logger.debug('audioLevelObserver "silence" event');
+		MSC_DEBUG("audioLevelObserver \"silence\" event");
 
 		// Notify all Peers.
-		/*for (auto peer : this->_getJoinedPeers())
+		for (auto peer : this->_getJoinedPeers())
 		{
-			peer->notify("activeSpeaker", {peerId: null})
-				.catch (() = > {});
-		}*/
+			try
+			{
+				peer->notify("activeSpeaker", { {"peerId", json() } });
+			}
+			catch (...)
+			{
+			}
+		}
 	});
 
 	co_return;
@@ -1128,7 +1138,6 @@ void Room::OnPeerClose(protoo::Peer* peer)
 
 		this->close();
 	}
-
 }
 
 void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
@@ -1146,26 +1155,5 @@ void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
 		MSC_ERROR("request failed:%s", error.what());
 
 		request->Reject(500, error.what());
-	}
-}
-
-void Room::OnPeerNotify(protoo::Peer* peer, json& notification)
-{
-
-}
-
-void Room::_handleMediaRoom()
-{
-}
-
-void Room::spread(std::string method, json data, std::set<std::string> excluded)
-{
-	for (auto it : this->_peers)
-	{
-		if (excluded.count(it.first))
-			continue;
-
-		// 		it.second->notify(method, data)
-		// 			.fail([]() {});
 	}
 }
