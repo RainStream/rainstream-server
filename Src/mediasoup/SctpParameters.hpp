@@ -58,10 +58,10 @@ struct SctpParameters
 	{
 		if (data.is_object())
 		{
-			this->port = data.value("port", 0);
-			this->OS = data.value("OS", 0);
-			this->MIS = data.value("MIS", 0);
-			this->maxMessageSize = data.value("maxMessageSize", 0);
+			port = data.value("port", port);
+			OS = data.value("OS", OS);
+			MIS = data.value("MIS", MIS);
+			maxMessageSize = data.value("maxMessageSize", maxMessageSize);
 		}
 	}
 
@@ -95,6 +95,31 @@ struct SctpParameters
  */
 struct SctpStreamParameters
 {
+
+	SctpStreamParameters(const json& data)
+	{
+		if (data.is_object())
+		{
+			streamId = data.value("port", streamId);
+			ordered = data.value("OS", ordered);
+			maxPacketLifeTime = data.value("MIS", maxPacketLifeTime);
+			maxRetransmits = data.value("maxMessageSize", maxRetransmits);
+		}
+	}
+
+	//operator json() const
+	//{
+	//	json data = 
+	//	{
+	//		{ "streamId", streamId },
+	//		{ "ordered", ordered },
+	//		{ "maxPacketLifeTime", maxPacketLifeTime },
+	//		{ "maxRetransmits", maxRetransmits },
+	//	};
+
+	//	return data;
+	//}
+
 	/**
 	 * SCTP stream id.
 	 */
@@ -104,17 +129,17 @@ struct SctpStreamParameters
 	 * Whether data messages must be received in order. If true the messages will
 	 * be sent reliably. Default true.
 	 */
-	bool ordered;
+	bool ordered = true;
 
 	/**
 	 * When ordered is false indicates the time (in milliseconds) after which a
 	 * SCTP packet will stop being retransmitted.
 	 */
-	uint32_t maxPacketLifeTime;
+	int32_t maxPacketLifeTime = 0;
 
 	/**
 	 * When ordered is false indicates the maximum uint32_t of times a packet will
 	 * be retransmitted.
 	 */
-	uint32_t maxRetransmits;
+	int32_t maxRetransmits = 0;
 };

@@ -91,6 +91,8 @@ class DataProducer;
 class DataConsumer;
 class PayloadChannel;
 struct ConsumerOptions;
+struct DataProducerOptions;
+struct DataConsumerOptions;
 
 using GetRouterRtpCapabilities = std::function<json(void)>;
 using GetProducerById = std::function<Producer*(std::string)>;
@@ -104,12 +106,6 @@ public:
 	/**
 	 * @private
 	 * @interface
-	 * @emits routerclose
-	 * @emits @close
-	 * @emits @newproducer - (producer: Producer)
-	 * @emits @producerclose - (producer: Producer)
-	 * @emits @newdataproducer - (dataProducer: DataProducer)
-	 * @emits @dataproducerclose - (dataProducer: DataProducer)
 	 */
 	Transport(
 		const json& internal,
@@ -148,14 +144,14 @@ public:
 
 	/**
 	 * Observer.
-	 *
-	 * @emits close
-	 * @emits newproducer - (producer: Producer)
-	 * @emits newconsumer - (producer: Producer)
-	 * @emits newdataproducer - (dataProducer: DataProducer)
-	 * @emits newdataconsumer - (dataProducer: DataProducer)
 	 */
 	EnhancedEventEmitter* observer();
+
+	/**
+	 * @private
+	 * Just for testing purposes.
+	 */
+	Channel* channelForTesting();
 
 	/**
 	 * Close the Transport.
@@ -169,6 +165,7 @@ public:
 	 * @virtual
 	 */
 	virtual void routerClosed();
+
 	/**
 	 * Listen server was closed (this just happens in WebRtcTransports when their
 	 * associated WebRtcServer is closed).
@@ -176,6 +173,7 @@ public:
 	 * @private
 	 */
 	void listenServerClosed();
+
 	/**
 	 * Dump Transport.
 	 */
@@ -193,16 +191,19 @@ public:
 	 *
 	 * @abstract
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	virtual task_t<void> connect(json& params);
+
 	/**
 	 * Set maximum incoming bitrate for receiving media.
 	 */
+
 	task_t<void> setMaxIncomingBitrate(uint32_t bitrate);
+
 	/**
 	 * Set maximum outgoing bitrate for sending media.
 	 */
 	task_t<void> setMaxOutgoingBitrate(uint32_t bitrate);
+
 	/**
 	 * Create a Producer.
 	 */
@@ -225,28 +226,12 @@ public:
 	/**
 	 * Create a DataProducer.
 	 */
-// 	task_t<DataProducer*> produceData(
-// 		{
-// 			id = undefined,
-// 			sctpStreamParameters,
-// 			label = "",
-// 			protocol = "",
-// 			appData = {}
-// 		}: DataProducerOptions = {}
-// 	);
+ 	task_t<DataProducer*> produceData(DataProducerOptions& options);
 
 	/**
 	 * Create a DataConsumer.
 	 */
-// 	task_t<DataConsumer*> consumeData(
-// 		{
-// 			dataProducerId,
-// 			ordered,
-// 			maxPacketLifeTime,
-// 			maxRetransmits,
-// 			appData = {}
-// 		}: DataConsumerOptions
-// 	);
+ 	task_t<DataConsumer*> consumeData(DataConsumerOptions& options);
 
 	/**
 	 * Enable "trace" event.

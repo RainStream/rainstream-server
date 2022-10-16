@@ -170,6 +170,7 @@
     <ClCompile Include="child_process\Socket.cpp" />
     <ClCompile Include="child_process\SubProcess.cpp" />
     <ClCompile Include="Consumer.cpp" />
+    <ClCompile Include="DataProducer.cpp" />
     <ClCompile Include="EnhancedEventEmitter.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="common.cpp" />

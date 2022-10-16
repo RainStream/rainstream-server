@@ -669,7 +669,7 @@ namespace ortc
 		}
 
 		// maxRetransmits is optional.
-		if (maxRetransmitsIt != params.end() || !maxRetransmitsIt->is_number_integer())
+		if (maxRetransmitsIt != params.end() && !maxRetransmitsIt->is_number_integer())
 		{
 			MSC_THROW_TYPE_ERROR("invalid params.maxRetransmits");
 		}

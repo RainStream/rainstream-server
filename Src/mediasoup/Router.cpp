@@ -10,6 +10,7 @@
 #include "errors.hpp"
 #include "Channel.hpp"
 #include "Transport.hpp"
+#include "DataProducer.hpp"
 #include "WebRtcServer.hpp"
 #include "WebRtcTransport.hpp"
 #include "PlainTransport.hpp"
@@ -99,11 +100,11 @@ void Router::close()
 	this->_producers.clear();
 
 	// Close every RtpObserver.
-	/*for (RtpObserver* rtpObserver : this->_rtpObservers)
+	for (auto& [key, rtpObserver] : this->_rtpObservers)
 	{
 		rtpObserver->routerClosed();
 	}
-	this->_rtpObservers.clear();*/
+	this->_rtpObservers.clear();
 
 	// Clear the DataProducers map.
 	this->_dataProducers.clear();
@@ -133,11 +134,12 @@ void Router::workerClosed()
 	this->_producers.clear();
 
 	// Close every RtpObserver.
-	/*for (auto& [key, rtpObserver] : this->_rtpObservers)
+	for (auto& [key, rtpObserver] : this->_rtpObservers)
 	{
 		rtpObserver->routerClosed();
-	}*/
+	}
 	this->_rtpObservers.clear();
+
 	// Clear the DataProducers map.
 	this->_dataProducers.clear();
 
@@ -353,12 +355,12 @@ task_t<PlainTransport*> Router::createPlainTransport(
 	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
 	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
-	// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
-	// 		});
-	// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.erase(dataProducer->id());
-	// 		});
+	transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+		this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
+	});
+	transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+		this->_dataProducers.erase(dataProducer->id());
+	});
 
 			// Emit observer event.
 	this->_observer->safeEmit("newtransport", transport);
@@ -442,13 +444,13 @@ task_t<PipeTransport*> Router::createPipeTransport(
 	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
 	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
-	// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
-	// 		});
-	// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.erase(dataProducer->id());
-	// 		});
-			// Emit observer event.
+	transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+	 	this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
+	});
+	transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+	 	this->_dataProducers.erase(dataProducer->id());
+	});
+	// Emit observer event.
 	this->_observer->safeEmit("newtransport", transport);
 
 	co_return transport;

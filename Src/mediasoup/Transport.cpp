@@ -10,8 +10,7 @@
 #include "PayloadChannel.hpp"
 #include "Producer.hpp"
 #include "Consumer.hpp"
-//#include "PayloadChannel.hpp"
-//#include "DataProducer.hpp"
+#include "DataProducer.hpp"
 //#include "DataConsumer.hpp"
 //#include "SctpParameters.hpp"
 
@@ -75,6 +74,11 @@ void Transport::appData(json appData) // eslint-disable-line no-unused-vars
 EnhancedEventEmitter* Transport::observer()
 {
 	return this->_observer;
+}
+
+Channel* Transport::channelForTesting()
+{
+	return this->_channel;
 }
 
 void Transport::close()
@@ -502,83 +506,79 @@ task_t<Consumer*> Transport::consume(ConsumerOptions& options)
 	co_return consumer;
 }
 
-/**
- * Create a DataProducer.
- */
- // 	task_t<DataProducer*> Transport::produceData(
- // 		{
- // 			id = undefined,
- // 			sctpStreamParameters,
- // 			label = "",
- // 			protocol = "",
- // 			appData = {}
- // 		}: DataProducerOptions = {}
- // 	)
- // 	{
- // 		MSC_DEBUG("produceData()");
- // 
- // 		if (id && this->_dataProducers.has(id))
- // 			MSC_THROW_ERROR(`a DataProducer with same id "${id}" already exists`);
- // 		else if (!appData.is_null() && !appData.is_object())
- // 			MSC_THROW_ERROR("if given, appData must be an object");
- // 
- // 		let type: DataProducerType;
- // 
- // 		// If this is not a DirectTransport, sctpStreamParameters are required.
- // 		if (this->constructor.name != "DirectTransport")
- // 		{
- // 			type = "sctp";
- // 
- // 			// This may throw.
- // 			ortc::validateSctpStreamParameters(sctpStreamParameters!);
- // 		}
- // 		// If this is a DirectTransport, sctpStreamParameters must not be given.
- // 		else
- // 		{
- // 			type = "direct";
- // 
- // 			if (sctpStreamParameters)
- // 			{
- // 				MSC_WARN(
- // 					"produceData() | sctpStreamParameters are ignored when producing data on a DirectTransport");
- // 			}
- // 		}
- // 
- // 		json internal = { ...this->_internal, dataProducerId: id || uuidv4() };
- // 		json reqData =
- // 		{
- // 			type,
- // 			sctpStreamParameters,
- // 			label,
- // 			protocol
- // 		};
- // 
- // 		json data =
- // 			co_await this->_channel->request("transport.produceData", internal, reqData);
- // 
- // 		const dataProducer = new DataProducer(
- // 			{
- // 				internal,
- // 				data,
- // 				channel        : this->_channel,
- // 				payloadChannel : this->_payloadChannel,
- // 				appData
- // 			});
- // 
- // 		this->_dataProducers.set(dataproducer->id(), dataProducer);
- // 		dataProducer->on("@close", () =>
- // 		{
- // 			this->_dataProducers.delete(dataproducer->id());
- // 			this->emit("@dataproducerclose", dataProducer);
- // 		});
- // 
- // 		this->emit("@newdataproducer", dataProducer);
- // 
- // 		// Emit observer event.
- // 		this->_observer->safeEmit("newdataproducer", dataProducer);
- // 
- // 		return dataProducer;
- // 	}
+task_t<DataProducer*> Transport::produceData(DataProducerOptions& options)
+{
+	MSC_DEBUG("produceData()");
+
+	const std::string& id = options.id;
+	const json& appData = options.appData;
+	json sctpStreamParameters = options.sctpStreamParameters;
+	const std::string& label = options.label;
+	const std::string& protocol = options.protocol;
+
+	if (!id.empty() && this->_dataProducers.contains(id))
+		MSC_THROW_ERROR("a DataProducer with same id \"%s\" already exists", id.c_str());
+	else if (!appData.is_null() && !appData.is_object())
+			MSC_THROW_ERROR("if given, appData must be an object");
+
+	DataProducerType type ;
+
+	// If this is not a DirectTransport, sctpStreamParameters are required.
+	if (this->typeName() != "DirectTransport")
+	{
+		type = "sctp";
+
+		// This may throw.
+		ortc::validateSctpStreamParameters(sctpStreamParameters);
+	}
+	// If this is a DirectTransport, sctpStreamParameters must not be given.
+	else
+	{
+		type = "direct";
+
+		if (!sctpStreamParameters.is_null())
+		{
+			MSC_WARN(
+				"produceData() | sctpStreamParameters are ignored when producing data on a DirectTransport");
+		}
+	}
+	
+	json reqData =
+	{
+		{ "dataProducerId", uuidv4() },
+		{ "type", type },
+		{ "sctpStreamParameters", sctpStreamParameters },
+		{ "label", label },
+		{ "protocol", protocol }
+	};
+
+	json data =
+		co_await this->_channel->request("transport.produceData", this->_internal["transportId"], reqData);
+
+	json internal = this->_internal;
+	internal["dataProducerId"] = reqData["dataProducerId"];
+
+	DataProducer* dataProducer = new DataProducer(
+			internal,
+			data,
+			this->_channel,
+			this->_payloadChannel,
+			appData);
+
+	this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
+	dataProducer->on("@close", [=]()
+	{
+		this->_dataProducers.erase(dataProducer->id());
+		this->emit("@dataproducerclose", dataProducer);
+	});
+
+	this->emit("@newdataproducer", dataProducer);
+
+	// Emit observer event.
+	this->_observer->safeEmit("newdataproducer", dataProducer);
+
+	co_return dataProducer;
+}
 
 	 /**
 	  * Create a DataConsumer.

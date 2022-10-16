@@ -85,10 +85,6 @@ public:
 		this->_handleWorkerNotifications();
 	}
 
-	virtual std::string typeName()
-	{
-		return "DirectTransport";
-	}
 
 	/**
 	 * Observer.

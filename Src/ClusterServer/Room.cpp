@@ -11,6 +11,7 @@
 #include <Transport.hpp>
 #include <Producer.hpp>
 #include <Consumer.hpp>
+#include <DataProducer.hpp>
 #include <WebRtcTransport.hpp>
 #include <AudioLevelObserver.hpp>
 #include "Utils.hpp"
@@ -663,65 +664,57 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 
 		request->Accept(json());
 	}
-	/*
 	else if (method == "produceData")
 	{
 		// Ensure the Peer is joined.
 		if (!peer->data.joined)
 			MSC_THROW_ERROR("Peer not yet joined");
+		
+		std::string transportId = data["transportId"];
 
-		const {
-			transportId,
-				sctpStreamParameters,
-				label,
-				protocol,
-				appData
-		} = request.data;
+		DataProducerOptions options;
+		options.sctpStreamParameters = data["sctpStreamParameters"];
+		options.label = data["label"];
+		options.protocol = data["protocol"];
+		options.appData = data["appData"];
 
-		const transport = peer->data.transports.get(transportId);
-
-		if (!transport)
+		if (!peer->data.transports.count(transportId))
 			MSC_THROW_ERROR("transport with id \"%s\" not found", transportId.c_str());
 
-		const dataProducer = co_await transport->produceData(
-			{
-				sctpStreamParameters,
-				label,
-				protocol,
-				appData
-			});
+		Transport* transport = peer->data.transports.at(transportId);
+
+		DataProducer* dataProducer = co_await transport->produceData(options);
 
 		// Store the Producer into the protoo Peer data Object.
-		peer->data.dataProducers.insert(dataProducer.id, dataProducer);
+		peer->data.dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
 
-		request->Accept({ id: dataProducer.id });
+		request->Accept({ {"id", dataProducer->id()}});
 
-		std::string label = dataProducer.label;
+		std::string label = dataProducer->label();
 
 		if (label == "chat")
 		{
 			// Create a server-side DataConsumer for each peer->
-			for (const otherPeer of this->_getJoinedPeers(peer))
+			for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
 			{
-				this->_createDataConsumer(
+				/*this->_createDataConsumer(
 					{
 						dataConsumerPeer: otherPeer,
 						dataProducerPeer : peer,
 						dataProducer
-					});
+					});*/
 			}
 		}
 		else if (label == "bot")
 		{
 			// Pass it to the bot.
-			this->_bot.handlePeerDataProducer(
+			/*this->_bot.handlePeerDataProducer(
 				{
 					dataProducerId: dataProducer.id,
 					peer
-				});
+				});*/
 		}
 	}
-	*/
 	else if (method == "changeDisplayName")
 	{
 		// Ensure the Peer is joined.

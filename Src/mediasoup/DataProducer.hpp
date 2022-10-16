@@ -1,13 +1,25 @@
 #pragma once 
 
-#include "Logger.hpp"
+
 #include "EnhancedEventEmitter.hpp"
-#include "Channel.hpp"
-#include "PayloadChannel.hpp"
 #include "SctpParameters.hpp"
+
+class Channel;
+class PayloadChannel;
 
 struct DataProducerOptions
 {
+	/*DataProducerOptions(const json& data)
+	{
+		if (data.is_object())
+		{
+			id = data.value("id", id);
+			sctpStreamParameters = data.value("sctpStreamParameters", sctpStreamParameters);
+			label = data.value("label", label);
+			protocol = data.value("protocol", protocol);
+			appData = data.value("appData", appData);
+		}
+	}*/
 	/**
 	 * DataProducer id (just for Router.pipeToRouter() method).
 	 */
@@ -17,7 +29,7 @@ struct DataProducerOptions
 	 * SCTP parameters defining how the endpoint is sending the data.
 	 * Just if messages are sent over SCTP.
 	 */
-	sctpStreamParameters?: SctpStreamParameters;
+	json sctpStreamParameters;
 
 	/**
 	 * A label which can be used to distinguish this DataChannel from others.
@@ -32,11 +44,27 @@ struct DataProducerOptions
 	/**
 	 * Custom application data.
 	 */
-	appData?: any;
+	json appData;
 };
 
 struct DataProducerStat
 {
+	DataProducerStat()
+	{
+
+	}
+	DataProducerStat(const json& data)
+	{
+		if(data.is_object())
+		{
+			type = data.value("port", type);
+			timestamp = data.value("port", timestamp);
+			label = data.value("port", label);
+			protocol = data.value("port", protocol);
+			messagesReceived = data.value("port", messagesReceived);
+			bytesReceived = data.value("port", bytesReceived);
+		}
+	}
 	std::string type;
 	uint32_t timestamp;
 	std::string label;
@@ -48,297 +76,113 @@ struct DataProducerStat
 /**
  * DataProducer type.
  */
-struct DataProducerType = "sctp" | "direct";
+using DataProducerType = std::string; // "sctp" | "direct";
 
 class DataProducer : public EnhancedEventEmitter
 {
-	// Internal data.
-private:
-	json _internal;
-// 	{
-// 		std::string routerId;
-// 		std::string transportId;
-// 		std::string dataProducerId;
-// 	};
-
-	// DataProducer data.
-	private readonly _data:
-	{
-		type: DataProducerType;
-		sctpStreamParameters?: SctpStreamParameters;
-		std::string label;
-		std::string protocol;
-	};
-
-	// Channel instance.
-	private readonly _channel: Channel;
-
-	// PayloadChannel instance.
-	private readonly _payloadChannel: PayloadChannel;
-
-	// Closed flag.
-	private _closed = false;
-
-	// Custom app data.
-	private readonly _appData?: any;
-
-	// Observer instance.
-	EnhancedEventEmitter* _observer	// Internal data.
-private:
-	json _internal;
-	// 	{
-	//		std::string routerId;
-	// 		std::string transportId;
-	// 		std::string dataProducerId;
-	// 		std::string dataConsumerId;
-	// 	};
-
-		// DataConsumer data.
-	json _data;
-	// 	{
-	// 		type: DataConsumerType;
-	// 		sctpStreamParameters?: SctpStreamParameters;
-	// 		std::string label;
-	// 		std::string protocol;
-	// 	};
-
-		// Channel instance.
-	Channel* _channel;
-
-	// PayloadChannel instance.
-	PayloadChannel* _payloadChannel;
-
-	// Closed flag.
-	bool _closed = false;
-
-	// Custom app data.
-	json _appData;
-
-	// Observer instance.
-	EnhancedEventEmitter* _observer{ nullptr };
-
+public:
 	/**
 	 * @private
 	 * @emits transportclose
 	 * @emits @close
 	 */
 	DataProducer(
-		{
-			internal,
-			data,
-			channel,
-			payloadChannel,
-			appData
-		}:
-		{
-			internal: any;
-			data: any;
-			channel: Channel;
-			payloadChannel: PayloadChannel;
-			json appData;
-		}
-	)
-	{
-		super();
-
-		MSC_DEBUG("constructor()");
-
-		this->_internal = internal;
-		this->_data = data;
-		this->_channel = channel;
-		this->_payloadChannel = payloadChannel;
-		this->_appData = appData;
-
-		this->_handleWorkerNotifications();
-	}
+		json internal,
+		json data,
+		Channel* channel,
+		PayloadChannel* payloadChannel,
+		json appData);
 
 	/**
 	 * DataProducer id.
 	 */
-	std::string id()
-	{
-		return this->_internal.dataProducerId;
-	}
+	std::string id();
 
 	/**
 	 * Whether the DataProducer is closed.
 	 */
-	bool closed()
-	{
-		return this->_closed;
-	}
+	bool closed();
 
 	/**
 	 * DataProducer type.
 	 */
-	get type(): DataProducerType
-	{
-		return this->_data.type;
-	}
+	DataProducerType type();
 
 	/**
 	 * SCTP stream parameters.
 	 */
-	get sctpStreamParameters(): SctpStreamParameters | undefined
-	{
-		return this->_data.sctpStreamParameters;
-	}
+	json sctpStreamParameters();
 
 	/**
 	 * DataChannel label.
 	 */
-		std::string label()
-	{
-		return this->_data.label;
-	}
+	std::string label();
 
 	/**
 	 * DataChannel protocol.
 	 */
-		std::string protocol()
-	{
-		return this->_data.protocol;
-	}
+	std::string protocol();
 
 	/**
 	 * App custom data.
 	 */
-	json appData()
-	{
-		return this->_appData;
-	}
+	json appData();
 
 	/**
 	 * Invalid setter.
 	 */
-	void appData(json appData) // eslint-disable-line no-unused-vars
-	{
-		MSC_THROW_ERROR("cannot override appData object");
-	}
+	void appData(json appData);
 
 	/**
 	 * Observer.
 	 *
 	 * @emits close
 	 */
-	EnhancedEventEmitter* observer()
-	{
-		return this->_observer;
-	}
+	EnhancedEventEmitter* observer();
 
 	/**
 	 * Close the DataProducer.
 	 */
-	void close()
-	{
-		if (this->_closed)
-			return;
-
-		MSC_DEBUG("close()");
-
-		this->_closed = true;
-
-		// Remove notification subscriptions.
-		this->_channel->removeAllListeners(this->_internal.dataProducerId);
-
-		this->_channel->request("dataProducer.close", this->_internal)
-			.catch(() => {});
-
-		this->emit("@close");
-
-		// Emit observer event.
-		this->_observer->safeEmit("close");
-	}
+	void close();
 
 	/**
 	 * Transport was closed.
 	 *
 	 * @private
 	 */
-	transportClosed(): void
-	{
-		if (this->_closed)
-			return;
-
-		MSC_DEBUG("transportClosed()");
-
-		this->_closed = true;
-
-		this->safeEmit("transportclose");
-
-		// Emit observer event.
-		this->_observer->safeEmit("close");
-	}
+	void transportClosed();
 
 	/**
 	 * Dump DataProducer.
 	 */
-	task_t<json> dump()
-	{
-		MSC_DEBUG("dump()");
-
-		co_return this->_channel->request("dataProducer.dump", this->_internal);
-	}
+	task_t<json> dump();
 
 	/**
 	 * Get DataProducer stats.
 	 */
-	async getStats(): Promise<DataProducerStat[]>
-	{
-		MSC_DEBUG("getStats()");
-
-		co_return this->_channel->request("dataProducer.getStats", this->_internal);
-	}
+	task_t<DataProducerStat> getStats();
 
 	/**
 	 * Send data (just valid for DataProducers created on a DirectTransport).
 	 */
-	send(message | Buffer, ppid?): void
-	{
-		MSC_DEBUG("send()");
+	//void send(message | Buffer, ppid ? );
 
-		if (typeof message != "string" && !Buffer.isBuffer(message))
-		{
-			MSC_THROW_ERROR("message must be a string or a Buffer");
-		}
+private:
+	void _handleWorkerNotifications();
 
-		/*
-		 * +-------------------------------+----------+
-		 * | Value                         | SCTP     |
-		 * |                               | PPID     |
-		 * +-------------------------------+----------+
-		 * | WebRTC String                 | 51       |
-		 * | WebRTC Binary Partial         | 52       |
-		 * | (Deprecated)                  |          |
-		 * | WebRTC Binary                 | 53       |
-		 * | WebRTC String Partial         | 54       |
-		 * | (Deprecated)                  |          |
-		 * | WebRTC String Empty           | 56       |
-		 * | WebRTC Binary Empty           | 57       |
-		 * +-------------------------------+----------+
-		 */
-
-		if (typeof ppid != "uint32_t")
-		{
-			ppid = (typeof message == "string")
-				? message.length > 0 ? 51 : 56
-				: message.length > 0 ? 53 : 57;
-		}
-
-		// Ensure we honor PPIDs.
-		if (ppid == 56)
-			message = " ";
-		else if (ppid == 57)
-			message = Buffer.alloc(1);
-
-		const notifData = { ppid };
-
-		this->_payloadChannel.notify(
-			"dataProducer.send", this->_internal, notifData, message);
-	}
-
-	private _handleWorkerNotifications(): void
-	{
-		// No need to subscribe to any event.
-	}
+private:
+	// Internal data.
+	json _internal;
+	// DataProducer data.
+	json _data;
+	// Channel instance.
+	Channel* _channel;
+	// PayloadChannel instance.
+	PayloadChannel* _payloadChannel;
+	// Closed flag.
+	bool _closed = false;
+	// Custom app data.
+	json _appData;
+	// Observer instance.
+	EnhancedEventEmitter* _observer;
 };

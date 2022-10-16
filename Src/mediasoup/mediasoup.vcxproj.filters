@@ -129,6 +129,9 @@
     <ClCompile Include="RtpObserver.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="DataProducer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="child_process\PipeStreamSocket.hpp">
