@@ -154,8 +154,6 @@ void Producer::close()
 	this->emit("@close");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 void Producer::transportClosed()
@@ -174,8 +172,6 @@ void Producer::transportClosed()
 	this->safeEmit("transportclose");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 task_t<json> Producer::dump()

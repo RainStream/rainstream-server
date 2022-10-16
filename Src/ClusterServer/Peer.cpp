@@ -14,7 +14,7 @@ namespace protoo
 	Peer::Peer(std::string peerName, protoo::WebSocketClient* transport, Listener* listener)
 		: _peerName(peerName)
 		, _transport(transport)
-		, listener(listener)
+		, _listener(listener)
 	{
 		_handleTransport();
 	}
@@ -32,7 +32,7 @@ namespace protoo
 
 	void Peer::close()
 	{
-		//logger.debug('close()');
+		MSC_DEBUG("close()");
 
 		if (this->_closed)
 			return;
@@ -49,7 +49,7 @@ namespace protoo
 // 		}
 
 		// Emit 'close' event.
-		this->listener->OnPeerClose(this);
+		this->_listener->OnPeerClose(this);
 	}
 
 // 	void Peer::Accept(uint32_t id, json& data)
@@ -226,9 +226,7 @@ namespace protoo
 		}
 
 		_transport->setListener(this);
-
 	}
-
 
 	void Peer::_handleRequest(json& jsonRequest)
 	{
@@ -236,7 +234,7 @@ namespace protoo
 		{
 			Request* request = new Request(this, jsonRequest);
 
-			this->listener->OnPeerRequest(this, request);
+			this->_listener->OnPeerRequest(this, request);
 		}
 		catch (const std::exception&)
 		{
@@ -271,6 +269,6 @@ namespace protoo
 
 	void Peer::_handleNotification(json& notification)
 	{
-		this->listener->OnPeerNotify(this, notification);
+		this->_listener->OnPeerNotify(this, notification);
 	}
 }

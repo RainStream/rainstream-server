@@ -77,7 +77,7 @@ namespace protoo
 	private:
 		std::string _peerName;
 
-		Listener* listener{ nullptr };
+		Listener* _listener{ nullptr };
 		WebSocketClient* _transport{ nullptr };
 
 		// Closed flag.

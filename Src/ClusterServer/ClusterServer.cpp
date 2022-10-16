@@ -74,12 +74,6 @@ ClusterServer::~ClusterServer()
 
 }
 
-void ClusterServer::OnRoomClose(std::string roomId)
-{
-	MSC_DEBUG("Room has closed [roomId:\"%s\"]", roomId.c_str());
-	_rooms.erase(roomId);
-}
-
 void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAccept& accept, const  protoo::FnReject& reject)
 {
 	std::string roomId = Url::Request(requestUrl, "roomId");

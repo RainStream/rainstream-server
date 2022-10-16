@@ -124,8 +124,6 @@ void Channel::close()
 	// 			try { this->_consumerSocket.destroy(); }
 	// 			catch (error) {}
 	// 		}, 200);
-
-	delete this;
 }
 
 task_t<json> Channel::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)

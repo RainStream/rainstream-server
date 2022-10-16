@@ -142,8 +142,6 @@ void Consumer::close()
 	this->emit("@close");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 void Consumer::transportClosed()
@@ -162,8 +160,6 @@ void Consumer::transportClosed()
 	this->safeEmit("transportclose");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 /**

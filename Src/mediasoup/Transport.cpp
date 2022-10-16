@@ -92,7 +92,8 @@ void Transport::close()
 
 	try
 	{
-		this->_channel->request("router.closeTransport", this->_internal["routerId"]);
+		json reqData = { {"transportId", this->_internal["transportId"]}};
+		this->_channel->request("router.closeTransport", this->_internal["routerId"], reqData);
 	}
 	catch (const std::exception&)
 	{

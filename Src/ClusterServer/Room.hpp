@@ -21,12 +21,6 @@ class AudioLevelObserver;
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
 public:
-	class Listener
-	{
-	public:
-		virtual void OnRoomClose(std::string roomId) = 0;
-	};
-public:
 
 	static task_t<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
@@ -94,7 +88,6 @@ private:
 	AudioLevelObserver* _audioLevelObserver{ nullptr };
 
 	//rs::Peer* _currentActiveSpeaker{ nullptr };
-	Listener* listener{ nullptr };
 
 	std::map<std::string, protoo::Peer*> _peers;
 };

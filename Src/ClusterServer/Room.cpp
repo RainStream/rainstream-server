@@ -15,7 +15,7 @@
 #include <AudioLevelObserver.hpp>
 #include "Utils.hpp"
 #include "WebSocketClient.hpp"
-#include <math.h>
+
 
 const uint32_t MAX_BITRATE = 3000000;
 const uint32_t MIN_BITRATE = 50000;
@@ -26,15 +26,11 @@ task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcSe
 {
 	MSC_DEBUG("create() [roomId:%s]", roomId.c_str());
 
-	// Create a protoo Room instance.
-	//const protooRoom = new protoo.Room();
-
 	// Router media codecs.
 	json mediaCodecs = config["mediasoup"]["routerOptions"]["mediaCodecs"];
 
 	// Create a mediasoup Router.
 	Router* mediasoupRouter = co_await mediasoupWorker->createRouter(mediaCodecs);
-
 
 	// Create a mediasoup AudioLevelObserver.
 	json data{
@@ -43,7 +39,6 @@ task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcSe
 		{ "interval" , 800 }
 	};
 	AudioLevelObserver* audioLevelObserver = co_await mediasoupRouter->createAudioLevelObserver(data);
-	// 	const bot = co_await Bot.create({ mediasoupRouter });
 
 	co_return new Room(roomId, webRtcServer, mediasoupRouter, audioLevelObserver);
 }
@@ -75,11 +70,10 @@ void Room::close()
 	this->_closed = true;
 
 	// Close the mediasoup Room.
-	//this->_mediasoupRouter->close();
+	this->_mediasoupRouter->close();
 
-	// Emit "close" event.
-	if (this->listener)
-		this->listener->OnRoomClose(_roomId);
+	// Emit 'close' event.
+	this->emit("close");
 }
 
 void Room::logStatus()
@@ -498,7 +492,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 
 		request->Accept(json{ { "id", producer->id() } });
 
-		// Optimization: Create a server-side Consumer for each Peer.
+		// Optimization: Create a server-side Consumer for each peer->
 		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
 		{
 			this->_createConsumer(otherPeer, peer, producer);
@@ -696,7 +690,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 
 		if (label == "chat")
 		{
-			// Create a server-side DataConsumer for each Peer.
+			// Create a server-side DataConsumer for each peer->
 			for (const otherPeer of this->_getJoinedPeers(peer))
 			{
 				this->_createDataConsumer(
@@ -728,7 +722,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		std::string oldDisplayName = peer->data.displayName;
 
 		// Store the display name into the custom data Object of the protoo
-		// Peer.
+		// peer->
 		peer->data.displayName = displayName;
 
 		// Notify other joined Peers.
@@ -1102,29 +1096,38 @@ task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* pro
 
 void Room::OnPeerClose(protoo::Peer* peer)
 {
-	// 	DLOG(INFO) << "protoo Peer "close" event [peer:" << peer->id() << "]";
-	// 
-	// 	rs::Peer* mediaPeer = peer->mediaPeer();
-	// 
-	// 	if (mediaPeer && !mediaPeer->closed())
-	// 		mediaPeer->close();
+	if (this->_closed)
+		return;
 
-		// If this is the latest peer in the room, close the room.
-		// However wait a bit (for reconnections).
-	// 				setTimeout([=]()
-	// 				{
-	// 					if (this->_mediaRoom && this->_mediaRoom->closed())
-	// 						return;
-	// 
-	// 					if (this->_mediaRoom->peers.length == 0)
-	// 					{
-	// 						DLOG(INFO) << 
-	// 							"last peer in the room left, closing the room [roomId:"%s"]",
-	// 							this->_roomId);
-	// 
-	// 						this->close();
-	// 					}
-	// 				}, 5000);
+	MSC_DEBUG("protoo Peer \"close\" event[peerId:% s]", peer->id().c_str());
+
+	// If the Peer was joined, notify all Peers.
+	if (peer->data.joined)
+	{
+		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
+		{
+			otherPeer->notify("peerClosed", { {"peerId", peer->id()}});
+		}
+	}
+
+	// Iterate and close all mediasoup Transport associated to this Peer, so all
+	// its Producers and Consumers will also be closed.
+	for (auto &[key, transport] : peer->data.transports)
+	{
+		transport->close();
+	}
+
+	this->_peers.erase(peer->id());
+
+	// If this is the latest Peer in the room, close the room.
+	if (this->_peers.size() == 0)
+	{
+		MSC_DEBUG(
+			"last Peer in the room left, closing the room[roomId:%s]",
+			this->_roomId.c_str());
+
+		this->close();
+	}
 
 }
 
