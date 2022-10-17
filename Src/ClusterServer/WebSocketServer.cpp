@@ -40,6 +40,11 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 	_app->get("/*", [](auto* res, auto*/*req*/) {
 		res->end("Hello world!");
 
+	}).get("/rooms/:roomId", [](auto* res, auto* req) {
+		std::string query(req->getUrl());
+		MSC_WARN(":::%s:::", query.c_str());
+		res->end("Hello world!");
+
 	}).ws<PeerSocketData>("/*", {
 		/* Settings */
 		.compression = uWS::CompressOptions(uWS::DEDICATED_COMPRESSOR_4KB | uWS::DEDICATED_DECOMPRESSOR),
