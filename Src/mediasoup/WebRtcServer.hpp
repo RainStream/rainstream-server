@@ -131,19 +131,14 @@ public:
 private:
 	// Internal data.
 	json _internal;
-
 	// Channel instance.
 	Channel* _channel;
-
 	// Closed flag.
 	bool _closed = false;
-
 	// Custom app data.
 	json _appData;
-
 	// Transports map.
 	std::map<std::string, WebRtcTransport*> _webRtcTransports;
-
 	// Observer instance.
 	EnhancedEventEmitter* _observer;
 };

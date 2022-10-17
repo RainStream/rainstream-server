@@ -63,13 +63,13 @@ void WebRtcServer::close()
 	}
 
 	// Close every WebRtcTransport.
-	//for (const webRtcTransport of this->_webRtcTransports.values())
-	//{
-	//	webRtcTransport.listenServerClosed();
+	for (auto [key, webRtcTransport] : this->_webRtcTransports)
+	{
+		webRtcTransport->listenServerClosed();
 
-	//	// Emit observer event.
-	//	this->_observer.safeEmit("webrtctransportunhandled", webRtcTransport);
-	//}
+		// Emit observer event.
+		this->_observer->safeEmit("webrtctransportunhandled", webRtcTransport);
+	}
 	this->_webRtcTransports.clear();
 
 	this->emit("@close");

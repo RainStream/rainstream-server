@@ -28,8 +28,6 @@ std::string workerPath;
 Worker::Worker(json settings)
 	: _observer(new EnhancedEventEmitter())
 {
-	//this->setMaxListeners(Infinity);
-
 	MSC_DEBUG("constructor()");
 
 	std::string spawnBin = WORK_PATH;

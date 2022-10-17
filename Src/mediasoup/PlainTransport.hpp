@@ -48,10 +48,6 @@ class MS_EXPORT PlainTransport : public Transport
 public:
 	/**
 	 * @private
-	 * @emits tuple - (tuple: TransportTuple)
-	 * @emits rtcptuple - (rtcpTuple: TransportTuple)
-	 * @emits sctpstatechange - (sctpState: SctpState)
-	 * @emits trace - (trace: TransportTraceEventData)
 	 */
 	PlainTransport(const json& internal,
 		const json& data,
@@ -88,22 +84,6 @@ public:
 	SrtpParameters srtpParameters();
 
 	virtual std::string typeName();
-
-	/**
-	 * Observer.
-	 *
-	 * @override
-	 * @emits close
-	 * @emits newproducer - (producer: Producer)
-	 * @emits newconsumer - (producer: Producer)
-	 * @emits newdataproducer - (dataProducer: DataProducer)
-	 * @emits newdataconsumer - (dataProducer: DataProducer)
-	 * @emits tuple - (tuple: TransportTuple)
-	 * @emits rtcptuple - (rtcpTuple: TransportTuple)
-	 * @emits sctpstatechange - (sctpState: SctpState)
-	 * @emits trace - (trace: TransportTraceEventData)
-	 */
-	EnhancedEventEmitter* observer();
 
 	/**
 	 * Close the PlainTransport.

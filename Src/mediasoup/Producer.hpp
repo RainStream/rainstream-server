@@ -2,6 +2,9 @@
 
 #include "EnhancedEventEmitter.hpp"
 
+class Channel;
+class PayloadChannel;
+
 struct ProducerOptions
 {
 	/**
@@ -49,7 +52,7 @@ struct ProducerTraceEventData
 	/**
 	 * Trace type.
 	 */
-	ProducerTraceEventType type;
+	std::string type;
 
 	/**
 	 * Event timestamp.
@@ -85,72 +88,17 @@ struct ProducerScore
 	uint32_t score;
 };
 
-struct ProducerVideoOrientation
-{
-	/**
-	 * Whether the source is a video camera.
-	 */
-	bool camera;
 
-	/**
-	 * Whether the video source is flipped.
-	 */
-	bool flip;
-
-	/**
-	 * Rotation degrees (0, 90, 180 or 270).
-	 */
-	uint32_t rotation;
-};
-
-struct ProducerStat
-{
-	// Common to all RtpStreams.
-	std::string type;
-	uint32_t timestamp;
-	uint32_t ssrc;
-	uint32_t rtxSsrc;
-	std::string rid;
-	std::string kind;
-	std::string mimeType;
-	uint32_t packetsLost;
-	uint32_t fractionLost;
-	uint32_t packetsDiscarded;
-	uint32_t packetsRetransmitted;
-	uint32_t packetsRepaired;
-	uint32_t nackCount;
-	uint32_t nackPacketCount;
-	uint32_t pliCount;
-	uint32_t firCount;
-	uint32_t score;
-	uint32_t packetCount;
-	uint32_t byteCount;
-	uint32_t bitrate;
-	uint32_t roundTripTime;
-	// RtpStreamRecv specific.
-	uint32_t jitter;
-	json bitrateByLayer;
-};
 
 /**
  * Producer type.
  */
 using ProducerType = std::string; // = "simple" | "simulcast" | "svc";
 
-class Channel;
-class PayloadChannel;
 
 class MS_EXPORT Producer : public EnhancedEventEmitter
 {
 public:
-	/**
-	 * @private
-	 * @emits transportclose
-	 * @emits score - (score: ProducerScore[])
-	 * @emits videoorientationchange - (videoOrientation: ProducerVideoOrientation)
-	 * @emits trace - (trace: ProducerTraceEventData)
-	 * @emits @close
-	 */
 	Producer(json internal,
 		json data,
 		Channel* channel,
@@ -244,7 +192,7 @@ public:
 	/**
 	 * Enable "trace" event.
 	 */
-	task_t<void> enableTraceEvent(std::vector<ProducerTraceEventType> types);
+	task_t<void> enableTraceEvent(std::vector<std::string> types);
 
 	//void send(rtpPacket);
 

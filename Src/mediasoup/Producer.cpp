@@ -7,14 +7,6 @@
 #include "Channel.hpp"
 #include "PayloadChannel.hpp"
 
-/**
- * @private
- * @emits transportclose
- * @emits score - (score: ProducerScore[])
- * @emits videoorientationchange - (videoOrientation: ProducerVideoOrientation)
- * @emits trace - (trace: ProducerTraceEventData)
- * @emits @close
- */
 Producer::Producer(json internal,
 	json data,
 	Channel* channel,
@@ -34,84 +26,52 @@ Producer::Producer(json internal,
 	this->_handleWorkerNotifications();
 }
 
-/**
- * Producer id.
- */
 std::string Producer::id()
 {
 	return this->_internal["producerId"];
 }
 
-/**
- * Whether the Producer is closed.
- */
 bool Producer::closed()
 {
 	return this->_closed;
 }
 
-/**
- * Media kind.
- */
 std::string Producer::kind()
 {
 	return this->_data["kind"];
 }
 
-/**
- * RTP parameters.
- */
 json Producer::rtpParameters()
 {
 	return this->_data["rtpParameters"];
 }
 
-/**
- * Producer type.
- */
 ProducerType Producer::type()
 {
 	return this->_data["type"];
 }
 
-/**
- * Consumable RTP parameters.
- *
- * @private
- */
 json Producer::consumableRtpParameters()
 {
 	return this->_data["consumableRtpParameters"];
 }
 
-/**
- * Whether the Producer is paused.
- */
 bool Producer::paused()
 {
 	return this->_paused;
 }
 
-/**
- * Producer score list.
- */
 json Producer::score()
 {
 	return this->_score;
 }
 
-/**
- * App custom data.
- */
 json Producer::appData()
 {
 	return this->_appData;
 }
 
-/**
- * Invalid setter.
- */
-void Producer::appData(json appData) // eslint-disable-line no-unused-vars
+void Producer::appData(json appData)
 {
 	MSC_THROW_ERROR("cannot override appData object");
 }
@@ -126,9 +86,6 @@ Channel* Producer::channelForTesting()
 	return this->_channel;
 }
 
-/**
- * Close the Producer.
- */
 void Producer::close()
 {
 	if (this->_closed)
@@ -183,9 +140,6 @@ task_t<json> Producer::dump()
 	co_return ret;
 }
 
-/**
- * Get Producer stats.
- */
 task_t<json> Producer::getStats()
 {
 	MSC_DEBUG("getStats()");
@@ -195,9 +149,6 @@ task_t<json> Producer::getStats()
 	co_return ret;
 }
 
-	 /**
-	  * Pause the Producer.
-	  */
 task_t<void> Producer::pause()
 {
 	MSC_DEBUG("pause()");
@@ -228,7 +179,7 @@ task_t<void> Producer::resume()
 		this->_observer->safeEmit("resume");
 }
 
-task_t<void> Producer::enableTraceEvent(std::vector<ProducerTraceEventType> types)
+task_t<void> Producer::enableTraceEvent(std::vector<std::string> types)
 {
 	MSC_DEBUG("enableTraceEvent()");
 
@@ -279,7 +230,6 @@ void Producer::_handleWorkerNotifications()
 		{
 			MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 		}
-
 	});
 }
 

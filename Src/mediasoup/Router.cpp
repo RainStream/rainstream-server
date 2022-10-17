@@ -278,6 +278,7 @@ task_t<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& o
 
 task_t<PlainTransport*> Router::createPlainTransport(
 	json listenIp,
+	uint16_t port,
 	bool rtcpMux/* = true*/,
 	bool comedia/* = false*/,
 	bool enableSctp/* = false*/,
@@ -312,23 +313,25 @@ task_t<PlainTransport*> Router::createPlainTransport(
 		MSC_THROW_ERROR("wrong listenIp");
 	}
 
-	json internal = this->_internal;
-	internal["transportId"] = uuidv4();
-
 	json reqData = {
-		{ "listenIp" , listenIp},
+		{ "transportId", uuidv4() },
+		{ "listenIp" , listenIp },
+		{ "port" , port },
 		{ "rtcpMux", rtcpMux },
 		{ "comedia", comedia },
 		{ "enableSctp", enableSctp },
 		{ "numSctpStreams", numSctpStreams },
 		{ "maxSctpMessageSize", maxSctpMessageSize },
-		{ "isDataChannel", false},
-		{ "enableSrtp", enableSrtp},
+		{ "isDataChannel", false },
+		{ "enableSrtp", enableSrtp },
 		{ "srtpCryptoSuite", srtpCryptoSuite }
 	};
 
 	json data =
 		co_await this->_channel->request("router.createPlainTransport", this->_internal["routerId"], reqData);
+
+	json internal = this->_internal;
+	internal["transportId"] = reqData["transportId"];
 
 	PlainTransport* transport = new PlainTransport(
 		internal,
@@ -362,7 +365,7 @@ task_t<PlainTransport*> Router::createPlainTransport(
 		this->_dataProducers.erase(dataProducer->id());
 	});
 
-			// Emit observer event.
+	// Emit observer event.
 	this->_observer->safeEmit("newtransport", transport);
 
 	co_return transport;
