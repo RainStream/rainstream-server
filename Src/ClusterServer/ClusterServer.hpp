@@ -32,7 +32,7 @@ protected:
 	 */
 	Worker* getMediasoupWorker();
 
-	task_t<Room*> getOrCreateRoom(std::string roomId);
+	task_t<std::shared_ptr<Room>> getOrCreateRoom(std::string roomId);
 
 private:
 	protoo::WebSocketServer* _webSocketServer = nullptr;
@@ -41,7 +41,7 @@ private:
 
 	std::map<Worker*, WebRtcServer*> _workerWebRtcServers;
 
-	std::map<std::string, Room*> _rooms;
+	std::map<std::string, std::shared_ptr<Room>> _rooms;
 
 	AwaitQueue<void> _queue;
 };

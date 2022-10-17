@@ -21,7 +21,7 @@ class AudioLevelObserver;
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
 public:
-	static task_t<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
+	static task_t<std::shared_ptr<Room>> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
 	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver);
 	~Room();

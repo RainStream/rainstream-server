@@ -24,7 +24,7 @@ const uint32_t MIN_BITRATE = 50000;
 const float BITRATE_FACTOR = 0.75;
 
 
-task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
+task_t<std::shared_ptr<Room>> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
 {
 	MSC_DEBUG("create() [roomId:%s]", roomId.c_str());
 
@@ -42,7 +42,7 @@ task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcSe
 	};
 	AudioLevelObserver* audioLevelObserver = co_await mediasoupRouter->createAudioLevelObserver(options);
 
-	co_return new Room(roomId, webRtcServer, mediasoupRouter, audioLevelObserver);
+	co_return std::make_shared<Room>(roomId, webRtcServer, mediasoupRouter, audioLevelObserver);
 }
 
 Room::Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver)
@@ -67,7 +67,7 @@ std::string Room::id()
 
 void Room::close()
 {
-	//DLOG(INFO) << "close()");
+	MSC_DEBUG("close()");
 
 	this->_closed = true;
 
@@ -771,31 +771,34 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 
 		request->Accept(stats);
 	}
-	/*
+	
 	else if (method == "getDataProducerStats")
 	{
-		const { dataProducerId } = request.data;
-		const dataProducer = peer->data.dataProducers.get(dataProducerId);
+		std::string dataProducerId = data["dataProducerId"];
 
-		if (!dataProducer)
-			MSC_THROW_ERROR(`dataProducer with id "${dataProducerId}" not found`);
+		if (!peer->data.dataProducers.count(dataProducerId))
+			MSC_THROW_ERROR("dataProducer with id \"%s\" not found", dataProducerId.c_str());
 
-		const stats = co_await dataProducer.getStats();
+		DataProducer* dataProducer = peer->data.dataProducers.at(dataProducerId);
+
+		json stats = co_await dataProducer->getStats();
 
 		request->Accept(stats);
 	}
 	else if (method == "getDataConsumerStats")
 	{
-		const { dataConsumerId } = request.data;
-		const dataConsumer = peer->data.dataConsumers.get(dataConsumerId);
+		std::string dataConsumerId = data["dataConsumerId"];
 
-		if (!dataConsumer)
-			MSC_THROW_ERROR(`dataConsumer with id "${dataConsumerId}" not found`);
+		if (!peer->data.dataConsumers.count(dataConsumerId))
+			MSC_THROW_ERROR("dataConsumer with id \"%s\" not found", dataConsumerId.c_str());
 
-		const stats = co_await dataConsumer->getStats();
+		DataConsumer* dataConsumer = peer->data.dataConsumers.at(dataConsumerId);
+
+		json stats = co_await dataConsumer->getStats();
 
 		request->Accept(stats);
 	}
+	/*
 	else if (method == "applyNetworkThrottle")
 	{
 		const DefaultUplink = 1000000;

@@ -134,15 +134,13 @@ task_t<json> DataConsumer::dump()
 	co_return ret;
 }
 
-task_t<DataConsumerStat> DataConsumer::getStats()
+task_t<json> DataConsumer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
 	json ret = co_await this->_channel->request("dataConsumer.getStats", this->_internal["dataConsumerId"]);
 
-	DataConsumerStat stat(ret);
-
-	co_return stat;
+	co_return ret;
 }
 
 /**

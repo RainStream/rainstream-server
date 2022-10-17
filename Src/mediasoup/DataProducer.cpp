@@ -126,15 +126,13 @@ task_t<json> DataProducer::dump()
 	co_return ret;
 }
 
-task_t<DataProducerStat> DataProducer::getStats()
+task_t<json> DataProducer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
 	json ret = co_await this->_channel->request("dataProducer.getStats", this->_internal["dataProducerId"]);
 
-	DataProducerStat stat(ret);
-
-	co_return stat;
+	co_return ret;
 }
 
 //void DataProducer::send(message | Buffer, ppid ? )

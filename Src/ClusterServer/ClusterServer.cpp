@@ -93,7 +93,7 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 
 	this->_queue.push([=]()->task_t<void>
 	{	
-		Room* room = co_await getOrCreateRoom(roomId);
+		std::shared_ptr<Room> room = co_await getOrCreateRoom(roomId);
 
 		auto transport = accept();
 
@@ -175,9 +175,9 @@ Worker* ClusterServer::getMediasoupWorker()
 	return worker;
 }
 
-task_t<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
+task_t<std::shared_ptr<Room>> ClusterServer::getOrCreateRoom(std::string roomId)
 {
-	Room* room;
+	std::shared_ptr<Room> room;
 
 	// If the Room does not exist create a new one.
 	if (!_rooms.count(roomId))

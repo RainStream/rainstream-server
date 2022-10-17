@@ -44,33 +44,6 @@ struct DataConsumerOptions
 	json appData;
 };
 
-struct DataConsumerStat
-{
-	DataConsumerStat()
-	{
-
-	}
-	DataConsumerStat(const json& data)
-	{
-		if (data.is_object())
-		{
-			type = data.value("port", type);
-			timestamp = data.value("port", timestamp);
-			label = data.value("port", label);
-			protocol = data.value("port", protocol);
-			messagesSent = data.value("port", messagesSent);
-			bytesSent = data.value("port", bytesSent);
-		}
-	}
-
-	std::string type;
-	uint32_t timestamp;
-	std::string label;
-	std::string protocol;
-	uint32_t messagesSent;
-	uint32_t bytesSent;
-};
-
 /**
  * DataConsumer type.
  */
@@ -163,7 +136,7 @@ public:
 	/**
 	 * Get DataConsumer stats.
 	 */
-	task_t<DataConsumerStat> getStats();
+	task_t<json> getStats();
 
 	/**
 	 * Set buffered amount low threshold.

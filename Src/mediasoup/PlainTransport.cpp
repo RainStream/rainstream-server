@@ -5,14 +5,6 @@
 #include "Channel.hpp"
 #include "Logger.hpp"
 
-
-/**
- * @private
- * @emits tuple - (tuple: TransportTuple)
- * @emits rtcptuple - (rtcpTuple: TransportTuple)
- * @emits sctpstatechange - (sctpState: SctpState)
- * @emits trace - (trace: TransportTraceEventData)
- */
 PlainTransport::PlainTransport(const json& internal,
 	const json& data,
 	Channel* channel,
@@ -41,41 +33,26 @@ PlainTransport::PlainTransport(const json& internal,
 	this->_handleWorkerNotifications();
 }
 
-/**
- * Transport tuple.
- */
 TransportTuple PlainTransport::tuple()
 {
 	return this->_data["tuple"];
 }
 
-/**
- * Transport RTCP tuple.
- */
 TransportTuple PlainTransport::rtcpTuple()
 {
 	return this->_data["rtcpTuple"];
 }
 
-/**
- * SCTP parameters.
- */
 SctpParameters PlainTransport::sctpParameters()
 {
 	return this->_data["sctpParameters"];
 }
 
-/**
- * SCTP state.
- */
 SctpState PlainTransport::sctpState()
 {
 	return this->_data["sctpState"];
 }
 
-/**
- * SRTP parameters.
- */
 SrtpParameters PlainTransport::srtpParameters()
 {
 	return this->_data["srtpParameters"];
@@ -86,30 +63,6 @@ std::string PlainTransport::typeName()
 	return "PlainTransport";
 }
 
-/**
- * Observer.
- *
- * @override
- * @emits close
- * @emits newproducer - (producer: Producer)
- * @emits newconsumer - (producer: Producer)
- * @emits newdataproducer - (dataProducer: DataProducer)
- * @emits newdataconsumer - (dataProducer: DataProducer)
- * @emits tuple - (tuple: TransportTuple)
- * @emits rtcptuple - (rtcpTuple: TransportTuple)
- * @emits sctpstatechange - (sctpState: SctpState)
- * @emits trace - (trace: TransportTraceEventData)
- */
-EnhancedEventEmitter* PlainTransport::observer()
-{
-	return this->_observer;
-}
-
-/**
- * Close the PlainTransport.
- *
- * @override
- */
 void PlainTransport::close()
 {
 	if (this->_closed)
@@ -121,12 +74,6 @@ void PlainTransport::close()
 	Transport::close();
 }
 
-/**
- * Router was closed.
- *
- * @private
- * @override
- */
 void PlainTransport::routerClosed()
 {
 	if (this->_closed)
@@ -138,11 +85,6 @@ void PlainTransport::routerClosed()
 	Transport::routerClosed();
 }
 
-/**
- * Get PlainTransport stats.
- *
- * @override
- */
 task_t<json> PlainTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
@@ -152,11 +94,6 @@ task_t<json> PlainTransport::getStats()
 	co_return ret;
 }
 
-/**
- * Provide the PlainTransport remote parameters.
- *
- * @override
- */
 task_t<void> PlainTransport::connect(
 	std::string ip,
 	uint32_t port,

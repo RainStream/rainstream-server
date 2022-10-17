@@ -160,7 +160,7 @@ public:
 	/**
 	 * Get DataProducer stats.
 	 */
-	task_t<DataProducerStat> getStats();
+	task_t<json> getStats();
 
 	/**
 	 * Send data (just valid for DataProducers created on a DirectTransport).

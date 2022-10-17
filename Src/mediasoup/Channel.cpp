@@ -31,7 +31,6 @@ Channel::Channel(Socket* producerSocket, Socket* consumerSocket, int pid)
 			{
 				// 123 = "{" (a Channel JSON messsage).
 			case 123:
-				MSC_WARN("receice data %s", nsPayload.c_str());
 				this->_processMessage(json::parse(nsPayload));
 				break;
 
