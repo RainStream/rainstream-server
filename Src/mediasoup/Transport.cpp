@@ -384,11 +384,6 @@ task_t<Producer*> Transport::produce(
 	co_return producer;
 }
 
-/**
- * Create a Consumer.
- *
- * @virtual
- */
 task_t<Consumer*> Transport::consume(ConsumerOptions& options)
 {
 	MSC_DEBUG("consume()");
