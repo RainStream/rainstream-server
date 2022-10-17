@@ -171,6 +171,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bot.cpp" />
     <ClCompile Include="ClusterServer.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="handles\SignalsHandler.cpp" />
@@ -186,6 +187,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AwaitQueue.hpp" />
+    <ClInclude Include="Bot.hpp" />
     <ClInclude Include="ClusterServer.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="handles\SignalsHandler.hpp" />

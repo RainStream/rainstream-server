@@ -9,18 +9,19 @@
 #include "utils.hpp"
 #include "errors.hpp"
 #include "Channel.hpp"
-#include "Transport.hpp"
+#include "transport.hpp"
 #include "DataProducer.hpp"
 #include "WebRtcServer.hpp"
-#include "WebRtcTransport.hpp"
-#include "PlainTransport.hpp"
-#include "PipeTransport.hpp"
+#include "WebRtctransport.hpp"
+#include "Plaintransport.hpp"
+#include "Pipetransport.hpp"
+#include "DirectTransport.hpp"
 #include "SctpParameters.hpp"
 #include "AudioLevelObserver.hpp"
 #include "ActiveSpeakerObserver.hpp"
 
 //#include "PayloadChannel.hpp"
-//#include "DirectTransport.hpp"
+//#include "Directtransport->hpp"
 
 Router::Router(
 	json internal,
@@ -88,7 +89,7 @@ void Router::close()
 
 	}
 
-	// Close every Transport.
+	// Close every transport->
 	for (auto &[key, transport] : this->_transports)
 	{
 		transport->routerClosed();
@@ -123,7 +124,7 @@ void Router::workerClosed()
 
 	this->_closed = true;
 
-	// Close every Transport.
+	// Close every transport->
 	for (auto &[key, transport] : this->_transports)
 	{
 		transport->routerClosed();
@@ -356,6 +357,7 @@ task_t<PlainTransport*> Router::createPlainTransport(
 
 	this->_transports.insert(std::pair(transport->id(), transport));
 	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+	transport->on("@listenserverclose", [=]() { this->_transports.erase(transport->id()); });
 	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
 	transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
@@ -434,17 +436,17 @@ task_t<PipeTransport*> Router::createPipeTransport(
 			return this->_producers.at(producerId);
 		else
 			return nullptr;
-	},
+		},
 		[=](std::string dataProducerId) -> DataProducer* {
 		if (this->_dataProducers.count(dataProducerId))
 			return this->_dataProducers.at(dataProducerId);
 		else
 			return nullptr;
-	}
-	);
+		});
 
 	this->_transports.insert(std::pair(transport->id(), transport));
 	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+	transport->on("@listenserverclose", [=]() {this->_transports.erase(transport->id()); });
 	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
 	transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
@@ -458,41 +460,56 @@ task_t<PipeTransport*> Router::createPipeTransport(
 
 	co_return transport;
 }
-//
-//async createDirectTransport({ maxMessageSize = 262144, appData } = {
-//	   maxMessageSize: 262144
-//	}) {
-//	MSC_DEBUG("createDirectTransport()");
-//	const reqData = {
-//		transportId: (0, uuid_1.v4)(),
-//		direct : true,
-//		maxMessageSize
-//	};
-//	const data = co_await this->_channel->request("router.createDirectTransport", this->_internal.routerId, reqData);
-//	const transport = new DirectTransport_1.DirectTransport({
-//		internal: {
-//			...this->_internal,
-//			transportId: reqData.transportId
-//		},
-//		data,
-//		channel : this->_channel,
-//		payloadChannel: this->_payloadChannel,
-//		appData,
-//		getRouterRtpCapabilities: () = > this->_data.rtpCapabilities,
-//		getProducerById: (producerId) = > (this->_producers.get(producerId)),
-//		getDataProducerById: (dataProducerId) = > (this->_dataProducers.get(dataProducerId))
-//		});
-//	this->_transports.set(transport.id, transport);
-//	transport.on("@close", () = > this->_transports.delete(transport.id));
-//	transport.on("@listenserverclose", () = > this->_transports.delete(transport.id));
-//	transport.on("@newproducer", (producer) = > this->_producers.set(producer.id, producer));
-//	transport.on("@producerclose", (producer) = > this->_producers.delete(producer.id));
-//	transport.on("@newdataproducer", (dataProducer) = > (this->_dataProducers.set(dataProducer.id, dataProducer)));
-//	transport.on("@dataproducerclose", (dataProducer) = > (this->_dataProducers.delete(dataProducer.id)));
-//	// Emit observer event.
-//	this->_observer->safeEmit("newtransport", transport);
-//	return transport;
-//}
+
+task_t<DirectTransport*> Router::createDirectTransport(const DirectTransportOptions& options)
+{
+	MSC_DEBUG("createDirectTransport()");
+
+	json reqData = {
+		{ "transportId", uuidv4() },
+		{ "direct", true },
+		{ "maxMessageSize", options.maxMessageSize }
+	};
+	json data = co_await this->_channel->request("router.createDirectTransport", this->_internal["routerId"], reqData);
+
+	json internal = this->_internal;
+	internal["transportId"] = reqData["transportId"];
+
+	DirectTransport* transport = new DirectTransport(
+		internal,
+		data,
+		this->_channel,
+		this->_payloadChannel,
+		options.appData,
+		[=]() { return this->_data["rtpCapabilities"]; },
+		[=](std::string producerId) -> Producer* {
+			if (this->_producers.count(producerId))
+				return this->_producers.at(producerId);
+			else
+				return nullptr;
+		},
+		[=](std::string dataProducerId) -> DataProducer* {
+			if (this->_dataProducers.count(dataProducerId))
+				return this->_dataProducers.at(dataProducerId);
+			else
+				return nullptr;
+		});
+
+	this->_transports.insert(std::pair(transport->id(), transport));
+	transport->on("@close", [=]() { this->_transports.erase(transport->id()); });
+	transport->on("@listenserverclose", [=]() {this->_transports.erase(transport->id()); });
+	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
+	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
+	transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+		this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
+		});
+	transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+		this->_dataProducers.erase(dataProducer->id());
+		});
+	// Emit observer event.
+	this->_observer->safeEmit("newtransport", transport);
+	co_return transport;
+}
 ///**
 // * Pipes the given Producer or DataProducer into another Router in same host.
 // */
@@ -540,25 +557,25 @@ task_t<PipeTransport*> Router::createPipeTransport(
 //				})
 //					.then(() = > {
 //					return Promise.all([
-//						localPipeTransport.connect({
-//							ip: remotePipeTransport.tuple.localIp,
-//							port : remotePipeTransport.tuple.localPort,
-//							srtpParameters : remotePipeTransport.srtpParameters
+//						localPipetransport->connect({
+//							ip: remotePipetransport->tuple.localIp,
+//							port : remotePipetransport->tuple.localPort,
+//							srtpParameters : remotePipetransport->srtpParameters
 //							}),
-//							remotePipeTransport.connect({
-//								ip: localPipeTransport.tuple.localIp,
-//								port : localPipeTransport.tuple.localPort,
-//								srtpParameters : localPipeTransport.srtpParameters
+//							remotePipetransport->connect({
+//								ip: localPipetransport->tuple.localIp,
+//								port : localPipetransport->tuple.localPort,
+//								srtpParameters : localPipetransport->srtpParameters
 //								})
 //					]);
 //				})
 //					.then(() = > {
-//					localPipeTransport.observer.on("close", () = > {
-//						remotePipeTransport.close();
+//					localPipetransport->observer.on("close", () = > {
+//						remotePipetransport->close();
 //						this->_mapRouterPairPipeTransportPairPromise.delete(pipeTransportPairKey);
 //					});
-//					remotePipeTransport.observer.on("close", () = > {
-//						localPipeTransport.close();
+//					remotePipetransport->observer.on("close", () = > {
+//						localPipetransport->close();
 //						this->_mapRouterPairPipeTransportPairPromise.delete(pipeTransportPairKey);
 //					});
 //					resolve({
@@ -569,9 +586,9 @@ task_t<PipeTransport*> Router::createPipeTransport(
 //					.catch ((error) = > {
 //					logger.error("pipeToRouter() | error creating PipeTransport pair:%o", error);
 //					if (localPipeTransport)
-//						localPipeTransport.close();
+//						localPipetransport->close();
 //					if (remotePipeTransport)
-//						remotePipeTransport.close();
+//						remotePipetransport->close();
 //					reject(error);
 //				});
 //		});
@@ -583,10 +600,10 @@ task_t<PipeTransport*> Router::createPipeTransport(
 //		let pipeConsumer;
 //		let pipeProducer;
 //		try {
-//			pipeConsumer = co_await localPipeTransport.consume({
+//			pipeConsumer = co_await localPipetransport->consume({
 //				producerId: producerId
 //				});
-//			pipeProducer = co_await remotePipeTransport.produce({
+//			pipeProducer = co_await remotePipetransport->produce({
 //				id: producer.id,
 //				kind : pipeConsumer.kind,
 //				rtpParameters : pipeConsumer.rtpParameters,
@@ -625,10 +642,10 @@ task_t<PipeTransport*> Router::createPipeTransport(
 //		let pipeDataConsumer;
 //		let pipeDataProducer;
 //		try {
-//			pipeDataConsumer = co_await localPipeTransport.consumeData({
+//			pipeDataConsumer = co_await localPipetransport->consumeData({
 //				dataProducerId: dataProducerId
 //				});
-//			pipeDataProducer = co_await remotePipeTransport.produceData({
+//			pipeDataProducer = co_await remotePipetransport->produceData({
 //				id: dataProducer.id,
 //				sctpStreamParameters : pipeDataConsumer.sctpStreamParameters,
 //				label : pipeDataConsumer.label,
@@ -668,7 +685,7 @@ task_t<PipeTransport*> Router::createPipeTransport(
 //		const localPipeTransport = pipeTransportPair[this.id];
 //		// NOTE: No need to do any other cleanup here since that is done by the
 //		// Router calling this method on us.
-//		localPipeTransport.observer.on("close", () = > {
+//		localPipetransport->observer.on("close", () = > {
 //			this->_mapRouterPairPipeTransportPairPromise.delete(pipeTransportPairKey);
 //		});
 //	})

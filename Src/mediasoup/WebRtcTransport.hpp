@@ -311,18 +311,6 @@ public:
 
 	/**
 	 * Observer.
-	 *
-	 * @override
-	 * @emits close
-	 * @emits newproducer - (producer: Producer)
-	 * @emits newconsumer - (producer: Producer)
-	 * @emits newdataproducer - (dataProducer: DataProducer)
-	 * @emits newdataconsumer - (dataProducer: DataProducer)
-	 * @emits icestatechange - (iceState: IceState)
-	 * @emits iceselectedtuplechange - (iceSelectedTuple: TransportTuple)
-	 * @emits dtlsstatechange - (dtlsState: DtlsState)
-	 * @emits sctpstatechange - (sctpState: SctpState)
-	 * @emits trace - (trace: TransportTraceEventData)
 	 */
 	EnhancedEventEmitter* observer();
 

@@ -12,6 +12,8 @@ namespace protoo
 	class Request;
 	class WebSocketClient;
 }
+
+class Bot;
 class Router;
 class Worker;
 class WebRtcServer;
@@ -21,9 +23,9 @@ class AudioLevelObserver;
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
 public:
-	static task_t<std::shared_ptr<Room>> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
+	static task_t<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
-	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver);
+	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver, Bot* bot);
 	~Room();
 
 public:
@@ -37,6 +39,7 @@ protected:
 	task_t<void> _handleAudioLevelObserver();
 	task_t<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
 	std::list<protoo::Peer*> _getJoinedPeers(protoo::Peer* excludePeer = nullptr);
+
 	/**
 	 * Creates a mediasoup Consumer for the given mediasoup Producer.
 	 *
@@ -82,7 +85,9 @@ private:
 	// @type {mediasoup.AudioLevelObserver}
 	AudioLevelObserver* _audioLevelObserver{ nullptr };
 
-	//rs::Peer* _currentActiveSpeaker{ nullptr };
+	// DataChannel bot.
+	// @type {Bot}
+	Bot* _bot{ nullptr };
 
 	std::map<std::string, protoo::Peer*> _peers;
 };

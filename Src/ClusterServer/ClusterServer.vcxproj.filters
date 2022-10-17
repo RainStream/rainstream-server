@@ -15,6 +15,7 @@
     <ClCompile Include="handles\SignalsHandler.cpp">
       <Filter>handles</Filter>
     </ClCompile>
+    <ClCompile Include="Bot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DepLibUV.hpp" />
@@ -32,6 +33,7 @@
       <Filter>handles</Filter>
     </ClInclude>
     <ClInclude Include="Utility.hpp" />
+    <ClInclude Include="Bot.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="handles">

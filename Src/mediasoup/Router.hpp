@@ -17,6 +17,7 @@ class PlainTransport;
 class PipeTransport;
 class AudioLevelObserver;
 class ActiveSpeakerObserver;
+struct DirectTransportOptions;
 struct WebRtcTransportOptions;
 struct AudioLevelObserverOptions;
 struct ActiveSpeakerObserverOptions;
@@ -111,7 +112,7 @@ public:
 	/**
 	 * Create a DirectTransport.
 	 */
-	//createDirectTransport({ maxMessageSize, appData } ? : DirectTransportOptions) : Promise<DirectTransport>;
+	task_t<DirectTransport*> createDirectTransport(const DirectTransportOptions& options);
 	/**
 	 * Pipes the given Producer or DataProducer into another Router in same host.
 	 */

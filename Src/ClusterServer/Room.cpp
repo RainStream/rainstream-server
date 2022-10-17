@@ -4,6 +4,8 @@
 #include "config.hpp"
 #include "Peer.hpp"
 #include "Request.hpp"
+#include "Bot.hpp"
+#include "WebSocketClient.hpp"
 #include <Logger.hpp>
 #include <errors.hpp>
 #include <Worker.hpp>
@@ -15,8 +17,8 @@
 #include <dataConsumer.hpp>
 #include <WebRtcTransport.hpp>
 #include <AudioLevelObserver.hpp>
-#include "Utils.hpp"
-#include "WebSocketClient.hpp"
+#include <Utils.hpp>
+
 
 
 const uint32_t MAX_BITRATE = 3000000;
@@ -24,7 +26,7 @@ const uint32_t MIN_BITRATE = 50000;
 const float BITRATE_FACTOR = 0.75;
 
 
-task_t<std::shared_ptr<Room>> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
+task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
 {
 	MSC_DEBUG("create() [roomId:%s]", roomId.c_str());
 
@@ -42,14 +44,17 @@ task_t<std::shared_ptr<Room>> Room::create(Worker* mediasoupWorker, std::string 
 	};
 	AudioLevelObserver* audioLevelObserver = co_await mediasoupRouter->createAudioLevelObserver(options);
 
-	co_return std::make_shared<Room>(roomId, webRtcServer, mediasoupRouter, audioLevelObserver);
+	Bot* bot = co_await Bot::create(mediasoupRouter);
+
+	co_return new Room(roomId, webRtcServer, mediasoupRouter, audioLevelObserver, bot);
 }
 
-Room::Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver)
+Room::Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver, Bot* bot)
 	: _roomId(roomId)
 	, _webRtcServer(webRtcServer)
 	, _mediasoupRouter(router)
 	, _audioLevelObserver(audioLevelObserver)
+	, _bot(bot)
 {
 	// Handle audioLevelObserver.
 	this->_handleAudioLevelObserver();
@@ -57,7 +62,6 @@ Room::Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, Audio
 
 Room::~Room()
 {
-
 }
 
 std::string Room::id()
@@ -74,8 +78,13 @@ void Room::close()
 	// Close the mediasoup Room.
 	this->_mediasoupRouter->close();
 
+	// Close the Bot.
+	this->_bot->close();
+
 	// Emit "close" event.
 	this->emit("close");
+
+	delete this;
 }
 
 void Room::logStatus()
@@ -287,7 +296,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		}
 
 		// Create DataConsumers for bot DataProducer.
-		//this->_createDataConsumer(peer, nullptr, this->_bot.dataProducer);
+		this->_createDataConsumer(peer, nullptr, this->_bot->dataProducer());
 
 		// Notify the new Peer to all other Peers.
 		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
@@ -691,11 +700,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		else if (label == "bot")
 		{
 			// Pass it to the bot.
-			/*this->_bot.handlePeerDataProducer(
-				{
-					dataProducerId: dataProducer.id,
-					peer
-				});*/
+			this->_bot->handlePeerDataProducer(dataProducer->id(), peer);
 		}
 	}
 	else if (method == "changeDisplayName")

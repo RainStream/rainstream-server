@@ -30,7 +30,7 @@ public:
     /**
      *  @brief Deconstructor
      */
-    ~EventEmitter() {
+    virtual ~EventEmitter() {
         std::for_each(events.begin(), events.end(), [](std::pair<std::string, std::vector<EventListener>> pair) {
             std::vector<EventListener>& listeners = pair.second;
             std::for_each(listeners.begin(), listeners.end(), [](EventListener& listener) {
@@ -48,7 +48,6 @@ public:
      */
     template <typename Function>
     void on(const std::string& event, Function&& lambda) {
-        std::unique_lock<std::recursive_mutex> locker(_events_mtx);
         events[event].emplace_back(new Functor{std::forward<Function>(lambda)}, false);
     }
     
@@ -60,7 +59,6 @@ public:
      */
     template <typename Function>
     void once(const std::string& event, Function&& lambda) {
-        std::unique_lock<std::recursive_mutex> locker(_events_mtx);
         events[event].emplace_back(new Functor{std::forward<Function>(lambda)}, true);
     }
     
@@ -71,7 +69,6 @@ public:
      */
     template <typename ... Arg>
     void emit(const std::string& event, Arg&& ... args) {
-        std::unique_lock<std::recursive_mutex> locker(_events_mtx);
         std::vector<EventListener> listeners = events[event];
         std::vector<std::vector<EventListener>::iterator> once_listener;
         for (auto listener = listeners.begin(); listener != listeners.end(); listener++) {
@@ -104,7 +101,6 @@ public:
      *  @param event  Event name
      */
     size_t listener_count(const std::string& event) {
-        std::unique_lock<std::recursive_mutex> locker(_events_mtx);
         auto event_listeners = events.find(event);
         if (event_listeners == events.end()) return 0;
         return events[event].size();
@@ -112,8 +108,6 @@ public:
 
 	void removeAllListeners(std::string event)
 	{
-		std::unique_lock<std::recursive_mutex> locker(_events_mtx);
-
 		events.erase(event);
 	}
 

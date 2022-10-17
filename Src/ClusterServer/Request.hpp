@@ -5,7 +5,6 @@
 
 namespace protoo
 {
-
 	class Peer;
 
 	class Request

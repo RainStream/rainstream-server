@@ -44,7 +44,7 @@ namespace Utils
 
 	std::string & AppendPrintf(std::string & dst, const char * format, ...);
 
-	MS_EXPORT std::string Printf(const char * format, ...);
+	std::string Printf(const char * format, ...);
 
 	std::string ToLowerCase(const std::string& str);
 
