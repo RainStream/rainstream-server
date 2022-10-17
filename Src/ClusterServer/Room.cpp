@@ -12,7 +12,7 @@
 #include <Producer.hpp>
 #include <Consumer.hpp>
 #include <DataProducer.hpp>
-#include <DataConsumer.hpp>
+#include <dataConsumer.hpp>
 #include <WebRtcTransport.hpp>
 #include <AudioLevelObserver.hpp>
 #include "Utils.hpp"
@@ -74,7 +74,7 @@ void Room::close()
 	// Close the mediasoup Room.
 	this->_mediasoupRouter->close();
 
-	// Emit 'close' event.
+	// Emit "close" event.
 	this->emit("close");
 }
 
@@ -275,33 +275,20 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 			{
 				this->_createConsumer(peer, joinedPeer, producer);
 			}
-
-			/*
+			
 			// Create DataConsumers for existing DataProducers.
-			for (const dataProducer of joinedPeer->data.dataProducers.values())
+			for (auto [data_key, dataProducer] : joinedPeer->data.dataProducers)
 			{
-				if (dataProducer.label == "bot")
+				if (dataProducer->label() == "bot")
 					continue;
 
-				this->_createDataConsumer(
-					{
-						dataConsumerPeer: peer,
-						dataProducerPeer : joinedPeer,
-						dataProducer
-					});
-			}
-			*/
+				this->_createDataConsumer(peer, joinedPeer, dataProducer);
+			}			
 		}
 
-		/*
 		// Create DataConsumers for bot DataProducer.
-		this->_createDataConsumer(
-			{
-				dataConsumerPeer: peer,
-				dataProducerPeer : null,
-				dataProducer : this->_bot.dataProducer
-			});
-		*/
+		//this->_createDataConsumer(peer, nullptr, this->_bot.dataProducer);
+
 		// Notify the new Peer to all other Peers.
 		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
 		{
@@ -698,12 +685,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 			// Create a server-side DataConsumer for each peer->
 			for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
 			{
-				/*this->_createDataConsumer(
-					{
-						dataConsumerPeer: otherPeer,
-						dataProducerPeer : peer,
-						dataProducer
-					});*/
+				this->_createDataConsumer(otherPeer, peer, dataProducer);
 			}
 		}
 		else if (label == "bot")
@@ -810,7 +792,7 @@ task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* req
 		if (!dataConsumer)
 			MSC_THROW_ERROR(`dataConsumer with id "${dataConsumerId}" not found`);
 
-		const stats = co_await dataConsumer.getStats();
+		const stats = co_await dataConsumer->getStats();
 
 		request->Accept(stats);
 	}
@@ -926,7 +908,7 @@ task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* pro
 	}
 
 	// Must take the Transport the remote Peer is using for consuming.
-	Transport* transport = nullptr;
+	Transport* transport{ nullptr };
 	for (auto [k, t] : consumerPeer->data.transports)
 	{
 		if (t->appData().value("consuming", false))
@@ -1095,6 +1077,97 @@ task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* pro
 	catch (std::exception& error)
 	{
 		MSC_WARN("_createConsumer() | failed:%s", error.what());
+	}
+}
+
+
+task_t<void> Room::_createDataConsumer(protoo::Peer* dataConsumerPeer,
+	protoo::Peer* dataProducerPeer,
+	DataProducer* dataProducer)
+{
+	// NOTE: Don"t create the DataConsumer if the remote Peer cannot consume it.
+	if (dataConsumerPeer->data.sctpCapabilities.is_null())
+		co_return;
+
+	// Must take the Transport the remote Peer is using for consuming.
+	Transport* transport{ nullptr };
+	for (auto [key, t] : dataConsumerPeer->data.transports)
+	{
+		if (t->appData().value("consuming", false))
+		{
+			transport = t;
+			break;
+		}
+	}
+
+	// This should not happen.
+	if (!transport)
+	{
+		MSC_WARN("_createDataConsumer() | Transport for consuming not found");
+		co_return;
+	}
+
+	// Create the dataConsumer->
+	DataConsumer* dataConsumer{ nullptr };
+
+	try
+	{
+		DataConsumerOptions options;
+		options.dataProducerId = dataProducer->id();
+		dataConsumer = co_await transport->consumeData(options);
+	}
+	catch (std::exception &error)
+	{
+		MSC_WARN("_createDataConsumer() | transport.consumeData() :%s", error.what());
+
+		co_return;
+	}
+
+	// Store the DataConsumer into the protoo dataConsumerPeer data Object.
+	dataConsumerPeer->data.dataConsumers.insert(std::pair(dataConsumer->id(), dataConsumer));
+
+	// Set DataConsumer events.
+	dataConsumer->on("transportclose", [=]()
+	{
+		// Remove from its map.
+		dataConsumerPeer->data.dataConsumers.erase(dataConsumer->id());
+	});
+
+	dataConsumer->on("dataproducerclose", [=]()
+	{
+		// Remove from its map.
+		dataConsumerPeer->data.dataConsumers.erase(dataConsumer->id());
+
+		try
+		{
+			dataConsumerPeer->notify(
+				"dataConsumerClosed", { {"dataConsumerId", dataConsumer->id()} });
+		}
+		catch (const std::exception&)
+		{
+
+		}
+	});
+
+	// Send a protoo request to the remote Peer with Consumer parameters.
+	try
+	{
+		co_await dataConsumerPeer->request(
+			"newDataConsumer",
+			{
+				// This is null for bot DataProducer.
+				{ "peerId", dataProducerPeer ? dataProducerPeer->id() : ""},
+				{ "dataProducerId", dataProducer->id()},
+				{ "id", dataConsumer->id() },
+				{ "sctpStreamParameters", dataConsumer->sctpStreamParameters()},
+				{ "label", dataConsumer->label()},
+				{ "protocol", dataConsumer->protocol()},
+				{ "appData", dataProducer->appData() }
+			});
+	}
+	catch (const std::exception& error)
+	{
+		MSC_WARN("_createDataConsumer() | failed:%s", error.what());
 	}
 }
 

@@ -260,12 +260,12 @@ task_t<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& o
 	transport->on("@listenserverclose", [=]() { this->_transports.erase(transport->id()); });
 	transport->on("@newproducer", [=](Producer* producer) { this->_producers.insert(std::pair(producer->id(), producer)); });
 	transport->on("@producerclose", [=](Producer* producer) { this->_producers.erase(producer->id()); });
-	// 		transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
-	// 		});
-	// 		transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
-	// 			this->_dataProducers.erase(dataProducer->id());
-	// 		});
+	transport->on("@newdataproducer", [=](DataProducer* dataProducer) {
+		this->_dataProducers.insert(std::pair(dataProducer->id(), dataProducer));
+		});
+	transport->on("@dataproducerclose", [=](DataProducer* dataProducer) {
+		this->_dataProducers.erase(dataProducer->id());
+		});
 
 	if (webRtcServer)
 		webRtcServer->handleWebRtcTransport(transport);

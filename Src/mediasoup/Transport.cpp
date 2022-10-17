@@ -15,16 +15,6 @@
 //#include "SctpParameters.hpp"
 
 
-/**
- * @private
- * @interface
- * @emits routerclose
- * @emits @close
- * @emits @newproducer - (producer: Producer)
- * @emits @producerclose - (producer: Producer)
- * @emits @newdataproducer - (dataProducer: DataProducer)
- * @emits @dataproducerclose - (dataProducer: DataProducer)
- */
 Transport::Transport(
 	const json& internal,
 	const json& data,

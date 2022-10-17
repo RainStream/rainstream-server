@@ -44,6 +44,15 @@ protected:
 	 */
 	task_t<void> _createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer);
 
+	/**
+	 * Creates a mediasoup DataConsumer for the given mediasoup DataProducer.
+	 *
+	 * @async
+	 */
+	task_t<void> _createDataConsumer(protoo::Peer* dataConsumerPeer,
+		protoo::Peer* dataProducerPeer,
+		DataProducer* dataProducer);
+
 	/* Methods inherited from protoo::Peer::Listener. */
 public:
 	void OnPeerClose(protoo::Peer* peer) override;

@@ -240,7 +240,7 @@ void DataConsumer::_handleWorkerNotifications()
 			}
 			else if (event == "bufferedamountlow")
 			{
-				size_t bufferedAmount = data["bufferedAmount"];
+				std::string bufferedAmount = data["bufferedAmount"];
 				this->safeEmit("bufferedamountlow", bufferedAmount);
 			}
 			else
