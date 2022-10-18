@@ -78,8 +78,14 @@ void Room::close()
 	// Close the mediasoup Room.
 	this->_mediasoupRouter->close();
 
+	delete this->_mediasoupRouter;
+	this->_mediasoupRouter = nullptr;
+
 	// Close the Bot.
 	this->_bot->close();
+
+	delete this->_bot;
+	this->_bot = nullptr;
 
 	// Emit "close" event.
 	this->emit("close");
@@ -1197,9 +1203,11 @@ void Room::OnPeerClose(protoo::Peer* peer)
 
 	// Iterate and close all mediasoup Transport associated to this Peer, so all
 	// its Producers and Consumers will also be closed.
-	for (auto &[key, transport] : peer->data.transports)
+	for (auto [key, transport] : peer->data.transports)
 	{
 		transport->close();
+
+		delete transport;
 	}
 
 	this->_peers.erase(peer->id());

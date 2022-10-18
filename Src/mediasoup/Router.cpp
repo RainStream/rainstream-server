@@ -90,9 +90,11 @@ void Router::close()
 	}
 
 	// Close every transport->
-	for (auto &[key, transport] : this->_transports)
+	for (auto [key, transport] : this->_transports)
 	{
 		transport->routerClosed();
+
+		delete transport;
 	}
 
 	this->_transports.clear();
@@ -101,7 +103,7 @@ void Router::close()
 	this->_producers.clear();
 
 	// Close every RtpObserver.
-	for (auto& [key, rtpObserver] : this->_rtpObservers)
+	for (auto [key, rtpObserver] : this->_rtpObservers)
 	{
 		rtpObserver->routerClosed();
 	}
@@ -113,8 +115,6 @@ void Router::close()
 	this->emit("@close");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 void Router::workerClosed()
@@ -127,9 +127,11 @@ void Router::workerClosed()
 	this->_closed = true;
 
 	// Close every transport->
-	for (auto &[key, transport] : this->_transports)
+	for (auto [key, transport] : this->_transports)
 	{
 		transport->routerClosed();
+
+		delete transport;
 	}
 	this->_transports.clear();
 
@@ -149,8 +151,6 @@ void Router::workerClosed()
 	this->safeEmit("workerclose");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 task_t<json> Router::dump()

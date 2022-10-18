@@ -43,7 +43,6 @@ DataProducer* Bot::dataProducer()
 
 void Bot::close()
 {
-	delete this;
 	// No need to do anyting.
 }
 

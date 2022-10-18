@@ -94,18 +94,22 @@ void Transport::close()
 	}
 
 	// Close every Producer.
-	for (auto &[key, producer] : this->_producers)
+	for (auto [key, producer] : this->_producers)
 	{
 		producer->transportClosed();
 		// Must tell the Router.
 		this->emit("@producerclose", producer);
+
+		delete producer;
 	}
 	this->_producers.clear();
 
 	// Close every Consumer.
-	for (auto &[key, consumer] : this->_consumers)
+	for (auto [key, consumer] : this->_consumers)
 	{
 		consumer->transportClosed();
+
+		delete consumer;
 	}
 	this->_consumers.clear();
 
@@ -116,6 +120,8 @@ void Transport::close()
 
 		// Must tell the Router.
 		this->emit("@dataproducerclose", dataProducer);
+
+		delete dataProducer;
 	}
 	this->_dataProducers.clear();
 
@@ -123,14 +129,14 @@ void Transport::close()
 	for (auto [key, dataConsumer] : this->_dataConsumers)
 	{
 		dataConsumer->transportClosed();
+
+		delete dataConsumer;
 	}
 	this->_dataConsumers.clear();
 
 	this->emit("@close");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 void Transport::routerClosed()
@@ -147,16 +153,20 @@ void Transport::routerClosed()
 	this->_payloadChannel->removeAllListeners(this->_internal["transportId"]);
 
 	// Close every Producer.
-	for (auto &[key, producer] : this->_producers)
+	for (auto [key, producer] : this->_producers)
 	{
 		producer->transportClosed();
+
+		delete producer;
 	}
 	this->_producers.clear();
 
 	// Close every Consumer.
-	for (auto &[key, consumer] : this->_consumers)
+	for (auto [key, consumer] : this->_consumers)
 	{
 		consumer->transportClosed();
+
+		delete consumer;
 	}
 	this->_consumers.clear();
 
@@ -164,6 +174,8 @@ void Transport::routerClosed()
 	for (auto [key, dataProducer] : this->_dataProducers)
 	{
 		dataProducer->transportClosed();
+
+		delete dataProducer;
 	}
 	this->_dataProducers.clear();
 
@@ -171,14 +183,14 @@ void Transport::routerClosed()
 	for (auto [key, dataConsumer] : this->_dataConsumers)
 	{
 		dataConsumer->transportClosed();
+
+		delete dataConsumer;
 	}
 	this->_dataConsumers.clear();
 
 	this->safeEmit("routerclose");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 void Transport::listenServerClosed()
@@ -195,11 +207,13 @@ void Transport::listenServerClosed()
 	this->_payloadChannel->removeAllListeners(this->_internal["transportId"]);
 
 	// Close every Producer.
-	for (auto& [key, producer] : this->_producers)
+	for (auto [key, producer] : this->_producers)
 	{
 		producer->transportClosed();
 		// NOTE: No need to tell the Router since it already knows (it has
 		// been closed in fact).
+
+		delete producer;
 	}
 	this->_producers.clear();
 
@@ -207,6 +221,8 @@ void Transport::listenServerClosed()
 	for (auto& [key, consumer] : this->_consumers)
 	{
 		consumer->transportClosed();
+
+		delete consumer;
 	}
 	this->_consumers.clear();
 	
@@ -214,6 +230,8 @@ void Transport::listenServerClosed()
 	for (auto [key, dataProducer] : this->_dataProducers)
 	{
 		dataProducer->transportClosed();
+
+		delete dataProducer;
 	}
 	this->_dataProducers.clear();
 
@@ -221,6 +239,8 @@ void Transport::listenServerClosed()
 	for (auto [key, dataConsumer] : this->_dataConsumers)
 	{
 		dataConsumer->transportClosed();
+
+		delete dataConsumer;
 	}
 	this->_dataConsumers.clear();
 
@@ -231,8 +251,6 @@ void Transport::listenServerClosed()
 	this->safeEmit("listenserverclose");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 task_t<json> Transport::dump()
