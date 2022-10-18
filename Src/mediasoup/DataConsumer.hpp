@@ -64,6 +64,8 @@ public:
 		json appData
 	);
 
+	virtual ~DataConsumer();
+
 	/**
 	 * DataConsumer id.
 	 */

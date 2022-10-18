@@ -106,6 +106,7 @@ public:
 		json appData,
 		bool paused
 	);
+	virtual ~Producer();
 	/**
 	 * Producer id.
 	 */

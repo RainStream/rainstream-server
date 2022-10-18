@@ -39,6 +39,8 @@ public:
 		json appData
 	);
 
+	virtual ~Router();
+
 	/**
 	 * Router id.
 	 */

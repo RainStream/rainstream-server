@@ -14,7 +14,6 @@
 #include "DataConsumer.hpp"
 //#include "SctpParameters.hpp"
 
-
 Transport::Transport(
 	const json& internal,
 	const json& data,
@@ -39,6 +38,8 @@ Transport::Transport(
 
 Transport::~Transport()
 {
+	delete _observer;
+	_observer = nullptr;
 }
 
 std::string Transport::id()

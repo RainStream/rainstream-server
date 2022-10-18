@@ -181,6 +181,12 @@ Worker::Worker(json settings)
 // 	});
 }
 
+Worker::~Worker()
+{
+	delete _observer;
+	_observer = nullptr;
+}
+
 uint32_t Worker::pid() {
 	return this->_pid;
 }

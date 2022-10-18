@@ -17,6 +17,8 @@ class MS_EXPORT Worker : public EnhancedEventEmitter
 {
 public:
 	Worker(json settings);
+
+	virtual ~Worker();
 	/**
 	 * Worker process identifier (PID).
 	 */

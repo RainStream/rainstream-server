@@ -25,6 +25,12 @@ DataProducer::DataProducer(
 	this->_handleWorkerNotifications();
 }
 
+DataProducer::~DataProducer()
+{
+	delete _observer;
+	_observer = nullptr;
+}
+
 std::string DataProducer::id()
 {
 	return this->_internal["dataProducerId"];

@@ -39,6 +39,12 @@ Router::Router(
 	MSC_DEBUG("constructor()");
 }
 
+Router::~Router()
+{
+	delete _observer;
+	_observer = nullptr;
+}
+
 std::string Router::id()
 {
 	return this->_internal["routerId"];
@@ -106,6 +112,8 @@ void Router::close()
 	for (auto [key, rtpObserver] : this->_rtpObservers)
 	{
 		rtpObserver->routerClosed();
+
+		delete rtpObserver;
 	}
 	this->_rtpObservers.clear();
 
@@ -142,6 +150,8 @@ void Router::workerClosed()
 	for (auto& [key, rtpObserver] : this->_rtpObservers)
 	{
 		rtpObserver->routerClosed();
+
+		delete rtpObserver;
 	}
 	this->_rtpObservers.clear();
 

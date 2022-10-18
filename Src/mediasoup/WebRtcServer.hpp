@@ -80,6 +80,8 @@ class MS_EXPORT WebRtcServer : public EnhancedEventEmitter
 public:
 	WebRtcServer(const json& internal, Channel* channel, const json& appData);
 
+	virtual ~WebRtcServer();
+
 	/**
 	 * WebRtcServer id.
 	 */

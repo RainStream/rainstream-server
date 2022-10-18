@@ -34,6 +34,12 @@ Consumer::Consumer(
 	this->_handleWorkerNotifications();
 }
 
+Consumer::~Consumer()
+{
+	delete _observer;
+	_observer = nullptr;
+}
+
 std::string Consumer::id()
 {
 	return this->_internal["consumerId"];
@@ -289,6 +295,8 @@ void Consumer::_handleWorkerNotifications()
 
 			// Emit observer event.
 			this->_observer->safeEmit("close");
+
+			delete this;
 		}
 		else if (event == "producerpause")
 		{

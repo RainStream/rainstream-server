@@ -93,6 +93,7 @@ public:
 		PayloadChannel* payloadChannel,
 		json appData);
 
+	virtual ~DataProducer();
 	/**
 	 * DataProducer id.
 	 */

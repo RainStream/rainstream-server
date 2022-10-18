@@ -26,6 +26,12 @@ RtpObserver::RtpObserver(
 	MSC_DEBUG("constructor()");
 }
 
+RtpObserver::~RtpObserver()
+{
+	delete _observer;
+	_observer = nullptr;
+}
+
 std::string RtpObserver::id()
 {
 	return this->_internal["rtpObserverId"];

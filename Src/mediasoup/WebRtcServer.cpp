@@ -17,6 +17,12 @@ WebRtcServer::WebRtcServer(const json& internal, Channel* channel, const json& a
 	MSC_DEBUG("constructor()");
 }
 
+WebRtcServer::~WebRtcServer()
+{
+	delete _observer;
+	_observer = nullptr;
+}
+
 std::string WebRtcServer::id()
 {
 	return this->_internal["webRtcServerId"];

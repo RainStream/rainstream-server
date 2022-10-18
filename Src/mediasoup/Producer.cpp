@@ -26,6 +26,12 @@ Producer::Producer(json internal,
 	this->_handleWorkerNotifications();
 }
 
+Producer::~Producer()
+{
+	delete _observer;
+	_observer = nullptr;
+}
+
 std::string Producer::id()
 {
 	return this->_internal["producerId"];

@@ -205,6 +205,8 @@ public:
 		json score = json(),
 		ConsumerLayers preferredLayers = ConsumerLayers());
 
+	virtual ~Consumer();
+
 	/**
 	 * Consumer id.
 	 */

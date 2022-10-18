@@ -22,6 +22,9 @@ public:
 		json appData,
 		GetProducerById getProducerById
 	);
+
+	virtual ~RtpObserver();
+
 	/**
 	 * RtpObserver id.
 	 */

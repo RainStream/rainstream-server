@@ -27,6 +27,12 @@ DataConsumer::DataConsumer(
 	this->_handleWorkerNotifications();
 }
 
+DataConsumer::~DataConsumer()
+{
+	delete _observer;
+	_observer = nullptr;
+}
+
 std::string DataConsumer::id()
 {
 	return this->_internal["dataConsumerId"];
