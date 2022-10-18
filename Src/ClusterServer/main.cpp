@@ -169,7 +169,6 @@ void exitWithError()
 
 void LogHandler::OnLog(Logger::LogLevel level, char* payload, size_t len)
 {
-
 	switch (level)
 	{
 	case Logger::LogLevel::LOG_NONE:std::cout << hue::light_blue << payload << hue::reset << std::endl;

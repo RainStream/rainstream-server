@@ -71,7 +71,12 @@ ClusterServer::ClusterServer()
 
 ClusterServer::~ClusterServer()
 {
+	for (Worker* worker : _mediasoupWorkers)
+	{
+		worker->close();
 
+		delete worker;
+	}
 }
 
 void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAccept& accept, const  protoo::FnReject& reject)

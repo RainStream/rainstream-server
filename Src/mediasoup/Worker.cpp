@@ -250,13 +250,13 @@ void Worker::close()
 	for (Router* router : this->_routers)
 	{
 		router->workerClosed();
+
+		delete router;
 	}
 	this->_routers.clear();
 
 	// Emit observer event.
 	this->_observer->safeEmit("close");
-
-	delete this;
 }
 
 task_t<json> Worker::dump()
@@ -371,8 +371,11 @@ void Worker::workerDied(const Error& error)
 	this->_routers.clear();
 
 	// Close every WebRtcServer.
-	for (WebRtcServer* webRtcServer : this->_webRtcServers) {
+	for (WebRtcServer* webRtcServer : this->_webRtcServers)
+	{
 		webRtcServer->workerClosed();
+		
+		delete webRtcServer;
 	}
 	this->_webRtcServers.clear();
 
