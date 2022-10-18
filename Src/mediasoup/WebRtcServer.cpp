@@ -75,6 +75,8 @@ void WebRtcServer::close()
 
 		// Emit observer event.
 		this->_observer->safeEmit("webrtctransportunhandled", webRtcTransport);
+
+		delete webRtcTransport;
 	}
 	this->_webRtcTransports.clear();
 
