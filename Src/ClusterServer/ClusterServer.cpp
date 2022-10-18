@@ -128,7 +128,7 @@ task_t<void> ClusterServer::runMediasoupWorkers()
 		{
 			MSC_ERROR("mediasoup Worker died, exiting  in 2 seconds... [pid:%d]", worker->pid());
 
-			//setTimeout(() = > process.exit(1), 2000);
+			setTimeout([=]() { std::_Exit(EXIT_FAILURE); } ,2000);
 		});
 
 		_mediasoupWorkers.push_back(worker);

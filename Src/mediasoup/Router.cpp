@@ -113,6 +113,8 @@ void Router::close()
 	this->emit("@close");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 void Router::workerClosed()
@@ -147,6 +149,8 @@ void Router::workerClosed()
 	this->safeEmit("workerclose");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 task_t<json> Router::dump()

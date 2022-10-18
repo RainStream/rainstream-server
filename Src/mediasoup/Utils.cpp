@@ -205,10 +205,12 @@ uint64_t Invoke(MessageData* message_data,
 	return timer_req->start_id;
 }
 
-void InvokeOnce(MessageData* message_data)
+void InvokeOnce(MessageData* message_data,
+	uint64_t timeout,
+	uint64_t repeat)
 {
 	message_data->once = true;
-	Invoke(message_data);
+	Invoke(message_data, timeout, repeat);
 }
 
 void clearInterval(uint64_t identifier)

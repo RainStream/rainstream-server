@@ -249,6 +249,8 @@ void Worker::close()
 
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 task_t<json> Worker::dump()

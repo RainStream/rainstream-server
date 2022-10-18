@@ -127,7 +127,9 @@ uint64_t Invoke(MessageData* message_data,
 	uint64_t timeout = 0, 
 	uint64_t repeat = 0);
 
-void InvokeOnce(MessageData* message_data);
+void InvokeOnce(MessageData* message_data,
+	uint64_t timeout = 0,
+	uint64_t repeat = 0);
 
 template <class FunctorT>
 void setImmediate(FunctorT&& functor) {
@@ -136,9 +138,15 @@ void setImmediate(FunctorT&& functor) {
 }
 
 template <class FunctorT>
+void setTimeout(FunctorT&& functor, int timeout) {
+	InvokeOnce(new MessageWithFunctor<FunctorT>(
+		std::forward<FunctorT>(functor)), timeout);
+}
+
+template <class FunctorT>
 uint64_t setInterval(FunctorT&& functor, int interval){
 	return Invoke(new MessageWithFunctor<FunctorT>(
-		std::forward<FunctorT>(functor)), interval, interval);	
+		std::forward<FunctorT>(functor)), interval, interval);
 }
 
 void clearInterval(uint64_t identifier);

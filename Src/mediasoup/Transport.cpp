@@ -129,6 +129,8 @@ void Transport::close()
 	this->emit("@close");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 void Transport::routerClosed()
@@ -175,6 +177,8 @@ void Transport::routerClosed()
 	this->safeEmit("routerclose");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 void Transport::listenServerClosed()
@@ -227,6 +231,8 @@ void Transport::listenServerClosed()
 	this->safeEmit("listenserverclose");
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+
+	delete this;
 }
 
 task_t<json> Transport::dump()
