@@ -57,6 +57,8 @@ namespace protoo
 		jsonResponse["accepted"] = true;
 
 		this->peer->Send(jsonResponse);
+
+		delete this;
 	}
 
 	void Request::Accept(const json& data)
@@ -75,6 +77,8 @@ namespace protoo
 		};
 
 		this->peer->Send(jsonResponse);
+
+		delete this;
 	}
 
 	void Request::Reject(int errorCode, std::string errorReason)
@@ -93,5 +97,7 @@ namespace protoo
 		};
 
 		this->peer->Send(jsonResponse);
+
+		delete this;
 	}
 }

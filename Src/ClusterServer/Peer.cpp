@@ -50,6 +50,8 @@ namespace protoo
 
 		// Emit 'close' event.
 		this->_listener->OnPeerClose(this);
+
+		delete this;
 	}
 
 	void Peer::Send(const json& message)
