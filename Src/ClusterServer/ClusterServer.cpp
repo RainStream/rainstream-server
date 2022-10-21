@@ -98,7 +98,11 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 
 	this->_queue.push([=]()->task_t<void>
 	{	
+		MSC_WARN("after push task_t [peerId:%s]", peerId.c_str());
 		Room* room = co_await getOrCreateRoom(roomId);
+
+		MSC_WARN("Peer[peerId:%s] handleConnection [roomId:%s]",
+			peerId.c_str(), roomId.c_str());
 
 		auto transport = accept();
 

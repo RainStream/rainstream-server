@@ -27,7 +27,7 @@ public:
 		this->closed = true;
 	}
 
-	void push(std::function<task_t<T>(void)> task)
+	void push(std::function<task_t<T>(void)>&& task)
 	{
 		if (this->closed)
 			return;
@@ -62,10 +62,17 @@ protected:
 			if (!this->_pendingTasks.size())
 				continue;
 
-			auto task = std::move(this->_pendingTasks.front());
-			this->_pendingTasks.pop_front();
+			while (this->_pendingTasks.size())
+			{
+				auto task = std::move(this->_pendingTasks.front());
+				this->_pendingTasks.pop_front();
 
-			co_await asyncpp::run(task);
+				MSC_WARN("start co_await task");
+
+				co_await task();
+
+				MSC_WARN("after co_await task");
+			}
 		}
 
 		co_return;
