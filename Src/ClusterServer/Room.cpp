@@ -177,6 +177,23 @@ void Room::handleConnection(std::string peerId, bool consume, protoo::WebSocketC
 		});
 }
 
+json Room::getRouterRtpCapabilities()
+{
+	return this->_mediasoupRouter->rtpCapabilities();
+}
+
+task_t<json> Room::createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities)
+{
+	json data = json::object();
+
+	co_return data;
+}
+
+void Room::deleteBroadcaster(std::string broadcasterId)
+{
+
+}
+
 task_t<void> Room::_handleAudioLevelObserver()
 {
 	this->_audioLevelObserver->on("volumes", [=](const std::vector<AudioLevelObserverVolume>& volumes)

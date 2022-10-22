@@ -27,7 +27,12 @@ static void exitWithError();
 class LogHandler : public Logger::LogHandlerInterface
 {
 public:
+	LogHandler();
+	~LogHandler();
 	virtual void OnLog(Logger::LogLevel level, char* payload, size_t len);
+
+protected:
+	uv_tty_t tty;
 };
 
 
@@ -167,21 +172,58 @@ void exitWithError()
 	std::_Exit(EXIT_FAILURE);
 }
 
+LogHandler::LogHandler()
+{
+	// 目前只对 tty 控制台处理
+	if (uv_guess_handle(1) != UV_TTY) {
+		fprintf(stderr, "uv_guess_handle(1) != UV_TTY!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	uv_tty_init(DepLibUV::GetLoop(), &tty, 1, 0);
+	uv_tty_set_mode(&tty, UV_TTY_MODE_NORMAL);
+}
+
+LogHandler::~LogHandler()
+{
+	uv_tty_reset_mode();
+}
+
 void LogHandler::OnLog(Logger::LogLevel level, char* payload, size_t len)
 {
-	switch (level)
-	{
-	case Logger::LogLevel::LOG_NONE:std::cout << hue::light_blue << payload << hue::reset << std::endl;
-		break;
-	case Logger::LogLevel::LOG_ERROR:std::cout << hue::light_red << payload << hue::reset << std::endl;
-		break;
-	case Logger::LogLevel::LOG_WARN:std::cout << hue::light_yellow << payload << hue::reset << std::endl;
-		break;
-	case Logger::LogLevel::LOG_DEBUG:std::cout << hue::green << payload << hue::reset << std::endl;
-		break;
-	case Logger::LogLevel::LOG_TRACE:std::cout << hue::light_aqua << payload << hue::reset << std::endl;
-		break;
-	default:
-		break;
-	}
+	uv_buf_t buf[4];
+	unsigned buf_size = sizeof buf / sizeof * buf;
+
+	std::string start_color = "\033[1;35m";
+	std::string end_color = "\033[0m";
+	std::string end_line = "\n";
+
+	// 开始发送消息
+	buf[0].base = start_color.data();
+	buf[0].len = start_color.length();
+	buf[1].base = payload;
+	buf[1].len = len;
+	buf[2].base = end_color.data();
+	buf[2].len = end_color.length();
+	buf[3].base = end_line.data();
+	buf[3].len = end_line.length();
+
+	
+	uv_try_write((uv_stream_t*)&tty, buf, buf_size);
+
+	//switch (level)
+	//{
+	//case Logger::LogLevel::LOG_NONE:std::cout << hue::light_blue << payload << hue::reset << std::endl;
+	//	break;
+	//case Logger::LogLevel::LOG_ERROR:std::cout << hue::light_red << payload << hue::reset << std::endl;
+	//	break;
+	//case Logger::LogLevel::LOG_WARN:std::cout << hue::light_yellow << payload << hue::reset << std::endl;
+	//	break;
+	//case Logger::LogLevel::LOG_DEBUG:std::cout << hue::green << payload << hue::reset << std::endl;
+	//	break;
+	//case Logger::LogLevel::LOG_TRACE:std::cout << hue::light_aqua << payload << hue::reset << std::endl;
+	//	break;
+	//default:
+	//	break;
+	//}
 }

@@ -34,7 +34,9 @@ public:
 	void logStatus();
 
 	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
-
+	json getRouterRtpCapabilities();
+	task_t<json> createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities);
+	void deleteBroadcaster(std::string broadcasterId);
 protected:
 	task_t<void> _handleAudioLevelObserver();
 	task_t<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);

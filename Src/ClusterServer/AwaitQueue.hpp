@@ -67,11 +67,7 @@ protected:
 				auto task = std::move(this->_pendingTasks.front());
 				this->_pendingTasks.pop_front();
 
-				MSC_WARN("start co_await task");
-
 				co_await task();
-
-				MSC_WARN("after co_await task");
 			}
 		}
 

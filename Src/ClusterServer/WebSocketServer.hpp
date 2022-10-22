@@ -27,6 +27,12 @@ public:
 	WebSocketServer& operator=(const WebSocketServer&) = delete;
 	WebSocketServer(const WebSocketServer&) = delete;
 
+	void get(std::string pattern, uWS::MoveOnlyFunction<void(uWS::HttpResponse<true>*, uWS::HttpRequest*)>&& handler);
+
+	void post(std::string pattern, uWS::MoveOnlyFunction<void(uWS::HttpResponse<true>*, uWS::HttpRequest*)>&& handler);
+
+	void del(std::string pattern, uWS::MoveOnlyFunction<void(uWS::HttpResponse<true>*, uWS::HttpRequest*)>&& handler);
+
 protected:
 	virtual	~WebSocketServer();
 

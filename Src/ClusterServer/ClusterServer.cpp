@@ -59,6 +59,8 @@ ClusterServer::ClusterServer()
 
 	runMediasoupWorkers();
 
+	runHttpsServer();
+
 	// Log rooms status every X seconds.
 	setInterval([&]()
 	{
@@ -172,6 +174,124 @@ task_t<void> ClusterServer::runMediasoupWorkers()
 			co_return;
  		}, 120000);
 	}
+}
+
+task_t<void> ClusterServer::runHttpsServer()
+{
+	_webSocketServer->get("/rooms/:roomId", [=](auto* res, auto* req) {
+		std::string roomId(req->getParameter(0));
+		if (!this->_rooms.contains(roomId))
+		{
+			res->writeStatus("500")->end("can not find room");
+			return;
+		}
+		
+		Room* room = this->_rooms[roomId];
+		json data = room->getRouterRtpCapabilities();
+
+		res->end(data.dump());
+	});
+
+	_webSocketServer->post("/rooms/:roomId/broadcasters", [=](auto* res, auto* req) {
+		std::string buffer;
+		res->onData([=, buffer = std::move(buffer)](std::string_view data, bool last) mutable
+			{
+				buffer.append(data.data(), data.length());
+
+				if (last)
+				{
+					try
+					{
+						json body = json::parse(buffer);
+						std::string id = body["id"];
+						std::string displayName = body["displayName"];
+						std::string device = body["device"];
+						json rtpCapabilities = body["rtpCapabilities"];
+
+						std::string roomId(req->getParameter(0));
+						if (!this->_rooms.contains(roomId))
+						{
+							MSC_THROW_ERROR("can not find room");
+						}
+
+						Room* room = this->_rooms[roomId];
+
+						room->createBroadcaster(id, displayName, device, rtpCapabilities)
+							.then([=](json response) 
+								{
+									res->end(response.dump());
+								});
+					}
+					catch (const std::exception& e)
+					{
+						res->writeStatus("500")->end(e.what());
+					}
+				}
+			});
+
+		res->onAborted([=]() {
+			MSC_ERROR("onAborted");
+			});
+	});
+
+	_webSocketServer->del("/rooms/:roomId/broadcasters/:broadcasterId", [=](auto* res, auto* req) {
+		std::string roomId(req->getParameter(0));
+		std::string broadcasterId(req->getParameter(1));
+
+		if (!this->_rooms.contains(roomId))
+		{
+			res->writeStatus("500")->end("can not find room");
+			return;
+		}
+
+		Room* room = this->_rooms[roomId];
+		room->deleteBroadcaster(broadcasterId);
+
+		res->end("broadcaster deleted");
+	});
+
+	_webSocketServer->post("/rooms/:roomId/broadcasters/:broadcasterId/transports", [](auto* res, auto* req) {
+		std::string roomId(req->getParameter(0));
+		std::string broadcasterId(req->getParameter(1));
+		res->end("/rooms/:roomId/broadcasters/:broadcasterId/transports: " + roomId + " " + broadcasterId);
+	});
+
+	_webSocketServer->post("/rooms/:roomId/broadcasters/:broadcasterId/transports/:transportId/connect", [](auto* res, auto* req) {
+		std::string roomId(req->getParameter(0));
+		std::string broadcasterId(req->getParameter(1));
+		std::string transportId(req->getParameter(2));
+		res->end("/rooms/:roomId/broadcasters/:broadcasterId/transports: " + roomId + " " + broadcasterId);
+	});
+
+	_webSocketServer->post("/rooms/:roomId/broadcasters/:broadcasterId/transports/:transportId/producers", [](auto* res, auto* req) {
+		std::string roomId(req->getParameter(0));
+		std::string broadcasterId(req->getParameter(1));
+		std::string transportId(req->getParameter(2));
+		res->end("/rooms/:roomId/broadcasters/:broadcasterId/transports: " + roomId + " " + broadcasterId);
+	});
+
+	_webSocketServer->post("/rooms/:roomId/broadcasters/:broadcasterId/transports/:transportId/consume", [](auto* res, auto* req) {
+		std::string roomId(req->getParameter(0));
+		std::string broadcasterId(req->getParameter(1));
+		std::string transportId(req->getParameter(2));
+		res->end("/rooms/:roomId/broadcasters/:broadcasterId/transports: " + roomId + " " + broadcasterId);
+	});
+
+	_webSocketServer->post("/rooms/:roomId/broadcasters/:broadcasterId/transports/:transportId/consume/data", [](auto* res, auto* req) {
+		std::string roomId(req->getParameter(0));
+		std::string broadcasterId(req->getParameter(1));
+		std::string transportId(req->getParameter(2));
+		res->end("/rooms/:roomId/broadcasters/:broadcasterId/transports: " + roomId + " " + broadcasterId);
+	});
+
+	_webSocketServer->post("/rooms/:roomId/broadcasters/:broadcasterId/transports/:transportId/produce/data", [](auto* res, auto* req) {
+		std::string roomId(req->getParameter(0));
+		std::string broadcasterId(req->getParameter(1));
+		std::string transportId(req->getParameter(2));
+		res->end("/rooms/:roomId/broadcasters/:broadcasterId/transports: " + roomId + " " + broadcasterId);
+	});
+
+	co_return;
 }
 
 Worker* ClusterServer::getMediasoupWorker()

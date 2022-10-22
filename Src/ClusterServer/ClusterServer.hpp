@@ -27,9 +27,9 @@ protected:
 
 protected:
 	task_t<void> runMediasoupWorkers();
-	/**
-	 * Get next mediasoup Worker.
-	 */
+
+	task_t<void> runHttpsServer();
+
 	Worker* getMediasoupWorker();
 
 	task_t<Room*> getOrCreateRoom(std::string roomId);
