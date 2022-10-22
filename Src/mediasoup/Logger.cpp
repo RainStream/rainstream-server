@@ -35,4 +35,9 @@ namespace mediasoupclient
 	{
 		std::cout << payload << std::endl;
 	}
+
+	void Logger::DefaultLogHandler::OnLog(LogLevel level, const char* file, long line, const char* function, const char* className, char* payload, size_t len)
+	{
+		std::cout << payload << std::endl;
+	}
 } // namespace mediasoupclient

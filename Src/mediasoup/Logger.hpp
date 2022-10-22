@@ -65,11 +65,13 @@ namespace mediasoupclient
 		{
 		public:
 			virtual void OnLog(LogLevel level, char* payload, size_t len) = 0;
+			virtual void OnLog(LogLevel level, const char* file, long line, const char* function, const char* className, char* payload, size_t len) = 0;
 		};
 
 		class DefaultLogHandler : public LogHandlerInterface
 		{
 			void OnLog(LogLevel level, char* payload, size_t len) override;
+			void OnLog(LogLevel level, const char* file, long line, const char* function, const char* className, char* payload, size_t len) override;
 		};
 
 		static void SetLogLevel(LogLevel level);
@@ -111,6 +113,7 @@ using Logger = mediasoupclient::Logger;
 			{ \
 				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
 				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, Logger::buffer, loggerWritten); \
+				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, __FILE__, __LINE__, __FUNCTION__, MSC_CLASS, Logger::buffer, loggerWritten); \
 			} \
 		} \
 		while (false)
@@ -125,6 +128,7 @@ using Logger = mediasoupclient::Logger;
 		{ \
 			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
 			Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
+			Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, __FILE__, __LINE__, __FUNCTION__, MSC_CLASS, Logger::buffer, loggerWritten); \
 		} \
 	} \
 	while (false)
@@ -136,6 +140,7 @@ using Logger = mediasoupclient::Logger;
 		{ \
 			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[WARN]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
 			Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, Logger::buffer, loggerWritten); \
+			Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, __FILE__, __LINE__, __FUNCTION__, MSC_CLASS, Logger::buffer, loggerWritten); \
 		} \
 	} \
 	while (false)
@@ -147,6 +152,7 @@ using Logger = mediasoupclient::Logger;
 		{ \
 			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[ERROR]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
 			Logger::handler->OnLog(Logger::LogLevel::LOG_ERROR, Logger::buffer, loggerWritten); \
+			Logger::handler->OnLog(Logger::LogLevel::LOG_ERROR, __FILE__, __LINE__, __FUNCTION__, MSC_CLASS, Logger::buffer, loggerWritten); \
 		} \
 	} \
 	while (false)
