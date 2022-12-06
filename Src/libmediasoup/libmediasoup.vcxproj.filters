@@ -132,9 +132,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\ChannelMessageHandlers.hpp">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\common.hpp">
       <Filter>include</Filter>
     </ClInclude>
@@ -657,11 +654,14 @@
     <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\system_wrappers\source\field_trial.h">
       <Filter>libwebrtc\system_wrappers\source</Filter>
     </ClInclude>
+    <ClInclude Include="include\ChannelMessageRegistrator.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RTC\Shared.hpp">
+      <Filter>include\RTC</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ChannelMessageHandlers.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\DepLibSRTP.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -1141,6 +1141,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\system_wrappers\source\field_trial.cc">
       <Filter>libwebrtc\system_wrappers\source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ChannelMessageRegistrator.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTC\Shared.cpp">
+      <Filter>src\RTC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

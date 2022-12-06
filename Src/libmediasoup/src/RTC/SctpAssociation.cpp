@@ -5,7 +5,7 @@
 #include "DepUsrSCTP.hpp"
 #include "Logger.hpp"
 #include "MediaSoupErrors.hpp"
-#include "Channel/ChannelNotifier.hpp"
+#include <cstdio>  // std::snprintf()
 #include <cstdlib> // std::malloc(), std::free()
 #include <cstring> // std::memset(), std::memcpy()
 #include <string>
@@ -470,7 +470,7 @@ namespace RTC
 
 			if (sctpSendBufferFull)
 			{
-				Channel::ChannelNotifier::Emit(dataConsumer->id, "sctpsendbufferfull");
+				dataConsumer->SctpAssociationSendBufferFull();
 			}
 		}
 		else if (cb)
@@ -772,7 +772,8 @@ namespace RTC
 							static const size_t BufferSize{ 1024 };
 							thread_local static char buffer[BufferSize];
 
-							uint32_t len = notification->sn_header.sn_length;
+							uint32_t len =
+							  notification->sn_assoc_change.sac_length - sizeof(struct sctp_assoc_change);
 
 							for (uint32_t i{ 0 }; i < len; ++i)
 							{
@@ -840,7 +841,8 @@ namespace RTC
 							static const size_t BufferSize{ 1024 };
 							thread_local static char buffer[BufferSize];
 
-							uint32_t len = notification->sn_header.sn_length;
+							uint32_t len =
+							  notification->sn_assoc_change.sac_length - sizeof(struct sctp_assoc_change);
 
 							for (uint32_t i{ 0 }; i < len; ++i)
 							{

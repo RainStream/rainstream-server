@@ -83,7 +83,7 @@
     <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\type_traits.h" />
     <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\units\unit_base.h" />
     <ClInclude Include="..\..\Deps\libwebrtc\libwebrtc\system_wrappers\source\field_trial.h" />
-    <ClInclude Include="include\ChannelMessageHandlers.hpp" />
+    <ClInclude Include="include\ChannelMessageRegistrator.hpp" />
     <ClInclude Include="include\Channel\ChannelNotifier.hpp" />
     <ClInclude Include="include\Channel\ChannelRequest.hpp" />
     <ClInclude Include="include\Channel\ChannelSocket.hpp" />
@@ -177,6 +177,7 @@
     <ClInclude Include="include\RTC\SctpListener.hpp" />
     <ClInclude Include="include\RTC\SenderBandwidthEstimator.hpp" />
     <ClInclude Include="include\RTC\SeqManager.hpp" />
+    <ClInclude Include="include\RTC\Shared.hpp" />
     <ClInclude Include="include\RTC\SimpleConsumer.hpp" />
     <ClInclude Include="include\RTC\SimulcastConsumer.hpp" />
     <ClInclude Include="include\RTC\SrtpSession.hpp" />
@@ -241,7 +242,7 @@
     <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\network\sent_packet.cc" />
     <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\rtc_base\rate_statistics.cc" />
     <ClCompile Include="..\..\Deps\libwebrtc\libwebrtc\system_wrappers\source\field_trial.cc" />
-    <ClCompile Include="src\ChannelMessageHandlers.cpp" />
+    <ClCompile Include="src\ChannelMessageRegistrator.cpp" />
     <ClCompile Include="src\Channel\ChannelNotifier.cpp" />
     <ClCompile Include="src\Channel\ChannelRequest.cpp" />
     <ClCompile Include="src\Channel\ChannelSocket.cpp" />
@@ -337,6 +338,7 @@
     <ClCompile Include="src\RTC\SctpListener.cpp" />
     <ClCompile Include="src\RTC\SenderBandwidthEstimator.cpp" />
     <ClCompile Include="src\RTC\SeqManager.cpp" />
+    <ClCompile Include="src\RTC\Shared.cpp" />
     <ClCompile Include="src\RTC\SimpleConsumer.cpp" />
     <ClCompile Include="src\RTC\SimulcastConsumer.cpp" />
     <ClCompile Include="src\RTC\SrtpSession.cpp" />
