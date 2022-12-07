@@ -2,8 +2,8 @@
  * Logger facility.
  *
  * This include file defines logging macros for source files (.cpp). Each
- * source file including Logger.hpp MUST define its own MSC_CLASS macro. Include
- * files (.hpp) MUST NOT include Logger.hpp.
+ * source file including Logger.h MUST define its own MSC_CLASS macro. Include
+ * files (.h) MUST NOT include Logger.h.
  *
  * All the logging macros use the same format as printf().
  *

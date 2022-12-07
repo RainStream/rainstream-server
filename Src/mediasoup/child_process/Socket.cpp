@@ -1,9 +1,9 @@
 #define MSC_CLASS "Socket"
 
-#include "common.hpp"
-#include "Socket.hpp"
-#include "Logger.hpp"
-#include "utils.hpp"
+#include "common.h"
+#include "Socket.h"
+#include "Logger.h"
+#include "utils.h"
 #include <cmath>   // std::ceil()
 #include <cstdio>  // sprintf()
 #include <cstring> // std::memmove()

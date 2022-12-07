@@ -1,7 +1,7 @@
 #pragma once 
 
-#include "Logger.hpp"
-#include "common.hpp"
+#include "Logger.h"
+#include "common.h"
 #include <EventEmitter.hpp>
 
 

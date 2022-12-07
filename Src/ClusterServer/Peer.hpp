@@ -1,9 +1,9 @@
 #ifndef PROTOO_PEER_HPP
 #define PROTOO_PEER_HPP
 
-#include "common.hpp"
+#include "common.h"
 #include "WebSocketClient.hpp"
-#include <EnhancedEventEmitter.hpp>
+#include <EnhancedEventEmitter.h>
 
 class Transport;
 class Producer;

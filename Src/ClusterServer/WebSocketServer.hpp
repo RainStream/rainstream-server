@@ -1,8 +1,8 @@
 #ifndef WEBSOCKET_SERVER_HPP
 #define WEBSOCKET_SERVER_HPP
 
-#include "common.hpp"
-#include "errors.hpp"
+#include "common.h"
+#include "errors.h"
 #include <uwebsockets/App.h>
 #include <uwebsockets/WebSocket.h>
 

@@ -3,7 +3,7 @@
 
 #include "Loop.hpp"
 #include "DepLibUV.hpp"
-#include "Logger.hpp"
+#include "Logger.h"
 #include <cerrno>
 #include <iostream> // std::cout, std::cerr
 #include <string>

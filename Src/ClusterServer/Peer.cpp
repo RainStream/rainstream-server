@@ -1,12 +1,12 @@
 #define MSC_CLASS "Peer"
 
 #include "Peer.hpp"
-#include <errors.hpp>
+#include <errors.h>
 #include "Message.hpp"
 #include "Request.hpp"
 #include "WebSocketClient.hpp"
-#include "Logger.hpp"
-#include "Utils.hpp"
+#include "Logger.h"
+#include "Utils.h"
 
 
 namespace protoo

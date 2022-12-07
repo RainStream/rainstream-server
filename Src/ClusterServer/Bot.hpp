@@ -2,8 +2,8 @@
 #ifndef MEDIA_BOOT_HPP
 #define MEDIA_BOOT_HPP
 
-#include "common.hpp"
-#include <EnhancedEventEmitter.hpp>
+#include "common.h"
+#include <EnhancedEventEmitter.h>
 
 class Router;
 class Transport;

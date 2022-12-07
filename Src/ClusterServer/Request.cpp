@@ -3,9 +3,9 @@
 #include "Request.hpp"
 #include "Peer.hpp"
 #include "Message.hpp"
-#include <Logger.hpp>
-#include <errors.hpp>
-#include "Utils.hpp"
+#include <Logger.h>
+#include <errors.h>
+#include "Utils.h"
 
 namespace protoo
 {

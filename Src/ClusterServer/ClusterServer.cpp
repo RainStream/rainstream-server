@@ -1,10 +1,10 @@
 #define MSC_CLASS "ClusterServer"
 
 #include "ClusterServer.hpp"
-#include <Logger.hpp>
-#include <Worker.hpp>
-#include <WebRtcServer.hpp>
-#include "Utils.hpp"
+#include <Logger.h>
+#include <Worker.h>
+#include <WebRtcServer.h>
+#include "Utils.h"
 #include "Room.hpp"
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"

@@ -5,8 +5,8 @@
  * Channel.
  */
 
-#include "common.hpp"
-#include "child_process/PipeStreamSocket.hpp"
+#include "common.h"
+#include "child_process/PipeStreamSocket.h"
 #include <cstdlib> // std::malloc(), std::free()
 #include <cstring> // std::memcpy()
 

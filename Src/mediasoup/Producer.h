@@ -1,6 +1,6 @@
 #pragma once 
 
-#include "EnhancedEventEmitter.hpp"
+#include "EnhancedEventEmitter.h"
 
 class Channel;
 class PayloadChannel;

@@ -1,11 +1,11 @@
 #define MSC_CLASS "Logger"
 
-#include "common.hpp"
-#include "Logger.hpp"
+#include "common.h"
+#include "Logger.h"
 #include <iostream>
 #include <uv.h>
 #include <chrono>
-#include "Utils.hpp"
+#include "Utils.h"
 
 /* Class variables. */
 

@@ -1,9 +1,9 @@
 #define MSC_CLASS "PlainTransport"
 
-#include "common.hpp"
-#include "PlainTransport.hpp"
-#include "Channel.hpp"
-#include "Logger.hpp"
+#include "common.h"
+#include "PlainTransport.h"
+#include "Channel.h"
+#include "Logger.h"
 
 PlainTransport::PlainTransport(const json& internal,
 	const json& data,

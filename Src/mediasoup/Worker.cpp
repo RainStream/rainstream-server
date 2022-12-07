@@ -1,29 +1,118 @@
 #define MSC_CLASS "Worker"
 
-#include "common.hpp"
-#include "Worker.hpp"
-#include "Logger.hpp"
-#include "Channel.hpp"
-#include "Logger.hpp"
-#include "errors.hpp"
-#include "utils.hpp"
-#include "Router.hpp"
-#include "ortc.hpp"
-#include "PayloadChannel.hpp"
-#include "WebRtcServer.hpp"
-#include "child_process/SubProcess.hpp"
+#include "common.h"
+#include "Worker.h"
+#include "Logger.h"
+#include "Channel.h"
+#include "Logger.h"
+#include "errors.h"
+#include "utils.h"
+#include "Router.h"
+#include "ortc.h"
+#include "PayloadChannel.h"
+#include "WebRtcServer.h"
+#include "Utils.h"
+#include "lib.hpp"
+#include "child_process/SubProcess.h"
 
 #define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
 
 #ifdef _DEBUG
-#define WORK_PATH "E:/Mediawork/mediasoup/worker/out/Debug/mediasoup-worker.exe"
+#define WORK_PATH "mediasoup-worker.exe"
 #else
-#define WORK_PATH "E:/Mediawork/mediasoup/worker/out/Release/mediasoup-worker.exe"
+#define WORK_PATH "mediasoup-worker.exe"
 #endif
 
-const int CHANNEL_FD = 3;
 
-std::string workerPath;
+class ChannelNative
+{
+public:
+	static ChannelReadFreeFn channelReadFn(uint8_t** message,
+		uint32_t* messageLen,
+		size_t* messageCtx,
+		// This is `uv_async_t` handle that can be called later with `uv_async_send()` when there is more
+		// data to read.
+		const void* handle,
+		ChannelReadCtx ctx)
+	{
+
+		ChannelNative* pThis = (ChannelNative*)ctx;
+
+		//return channelReadFreeFn;
+		return pThis->ProduceMessage(message, messageLen, messageCtx, handle) ? nullptr : nullptr;
+	}
+
+	static void channelReadFreeFn(uint8_t*, uint32_t, size_t)
+	{
+
+	}
+
+	static void channelWriteFn(const uint8_t* message, uint32_t messageLen, ChannelWriteCtx /* ctx */)
+	{
+		std::string strMsg((const char*)message, messageLen);
+
+		printf("channelWriteFn:%s\n", strMsg.c_str());
+	}
+
+	bool ProduceMessage(uint8_t** message, uint32_t* messageLen, size_t* messageCtx, const void* handle)
+	{
+
+		this->_handle = reinterpret_cast<uv_async_t*>(const_cast<void*>(handle));
+		return false;
+	}
+
+	void sendMessage(std::string msg)
+	{
+		if (_handle)
+		{
+			uv_async_send(_handle);
+		}
+	}
+
+protected:
+	uv_async_t* _handle;
+};
+
+class PayloadChannelNative
+{
+public:
+	static PayloadChannelReadFreeFn payloadChannelReadFreeFn(
+		uint8_t** message,
+		uint32_t* messageLen,
+		size_t* messageCtx,
+		uint8_t** payload,
+		uint32_t* payloadLen,
+		size_t* payloadCapacity,
+		// This is `uv_async_t` handle that can be called later with `uv_async_send()` when there is more
+		// data to read.
+		const void* handle,
+		PayloadChannelReadCtx ctx)
+	{
+
+		//uv_async_send((uv_async_t*)handle);
+		//return payloadChannelReadFreeFn;
+		return nullptr;
+	}
+
+	static void payloadChannelReadFreeFn(uint8_t*, uint32_t, size_t)
+	{
+
+	}
+
+	static void payloadChannelWriteFn(
+		const uint8_t* message,
+		uint32_t messageLen,
+		const uint8_t* payload,
+		uint32_t payloadLen,
+		ChannelWriteCtx ctx)
+	{
+		std::string strMsg((const char*)message, messageLen);
+		std::string strPayload((const char*)payload, payloadLen);
+
+		printf("%s---->%s\n", strMsg.c_str(), strPayload.c_str());
+	}
+};
+
 
 Worker::Worker(json settings)
 	: _observer(new EnhancedEventEmitter())
@@ -179,6 +268,48 @@ Worker::Worker(json settings)
 // 				workerLogger.error(`(stderr) $ { line }`);
 // 		}
 // 	});
+
+
+	std::string version = __MEDIASOUP_VERSION__;
+
+	ChannelNative* channelNative = new ChannelNative;
+	PayloadChannelNative* payloadChannelNative = new PayloadChannelNative;
+
+
+	std::vector<char*> vecArgs;
+	for (std::string spawnArg : spawnArgs)
+	{
+		vecArgs.push_back(strdup(spawnArg.c_str()));
+	}
+
+	_work_thread = std::thread([=]() {
+		auto statusCode = mediasoup_worker_run(
+			spawnArgs.size(),
+			(char**)vecArgs.data(),
+			version.c_str(),
+			0,
+			0,
+			0,
+			0,
+			ChannelNative::channelReadFn,
+			channelNative,
+			ChannelNative::channelWriteFn,
+			channelNative,
+			PayloadChannelNative::payloadChannelReadFreeFn,
+			payloadChannelNative,
+			PayloadChannelNative::payloadChannelWriteFn,
+			payloadChannelNative);
+
+	switch (statusCode)
+	{
+	case 0:
+		std::_Exit(EXIT_SUCCESS);
+	case 1:
+		std::_Exit(EXIT_FAILURE);
+	case 42:
+		std::_Exit(42);
+	}
+		});
 }
 
 Worker::~Worker()

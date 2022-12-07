@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-#include "EnhancedEventEmitter.hpp"
+#include "EnhancedEventEmitter.h"
 
 class Socket;
 

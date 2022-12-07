@@ -1,10 +1,10 @@
 #define MSC_CLASS "PayloadChannel"
 
-#include "common.hpp"
-#include "PayloadChannel.hpp"
-#include "Logger.hpp"
-#include "errors.hpp"
-#include "child_process/Socket.hpp"
+#include "common.h"
+#include "PayloadChannel.h"
+#include "Logger.h"
+#include "errors.h"
+#include "child_process/Socket.h"
 
 class Socket;
 

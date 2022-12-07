@@ -1,11 +1,11 @@
 ﻿#define MSC_CLASS "main"
 
-#include <common.hpp>
-#include <Logger.hpp>
+#include <common.h>
+#include <Logger.h>
 #include "DepLibUV.hpp"
 #include "Loop.hpp"
 //#include "Settings.hpp"
-#include "Utils.hpp"
+#include "Utils.h"
 #include "ClusterServer.hpp"
 #include <uv.h>
 #include <cerrno>

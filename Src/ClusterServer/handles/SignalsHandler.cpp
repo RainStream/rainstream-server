@@ -3,7 +3,7 @@
 
 #include "handles/SignalsHandler.hpp"
 #include "DepLibUV.hpp"
-#include "Logger.hpp"
+#include "Logger.h"
 #include "errors.hpp"
 
 /* Static methods for UV callbacks. */

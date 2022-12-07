@@ -1,7 +1,7 @@
 #ifndef MS_DEP_LIBUV_HPP
 #define MS_DEP_LIBUV_HPP
 
-#include "common.hpp"
+#include "common.h"
 #include <uv.h>
 
 class DepLibUV

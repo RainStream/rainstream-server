@@ -1,11 +1,11 @@
 #define MSC_CLASS "WebRtcServer"
 
-#include "common.hpp"
-#include "WebRtcServer.hpp"
-#include "WebRtcTransport.hpp"
-#include "Channel.hpp"
-#include "errors.hpp"
-#include "Logger.hpp"
+#include "common.h"
+#include "WebRtcServer.h"
+#include "WebRtcTransport.h"
+#include "Channel.h"
+#include "errors.h"
+#include "Logger.h"
 
 
 WebRtcServer::WebRtcServer(const json& internal, Channel* channel, const json& appData)

@@ -1,5 +1,5 @@
-#ifndef MS_COMMON_HPP
-#define MS_COMMON_HPP
+#ifndef MS_COMMON_H
+#define MS_COMMON_H
 
 #include <algorithm>  // std::transform(), std::find(), std::min(), std::max()
 #include <cinttypes>  // PRIu64, etc

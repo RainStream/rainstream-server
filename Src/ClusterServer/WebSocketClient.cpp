@@ -1,9 +1,9 @@
 #define MSC_CLASS "WebSocketClient"
 
 #include "WebSocketClient.hpp"
-#include "Logger.hpp"
-#include "Utils.hpp"
-#include <errors.hpp>
+#include "Logger.h"
+#include "Utils.h"
+#include <errors.h>
 #include <uwebsockets/App.h>
 #include <uwebsockets/WebSocket.h>
 

@@ -140,97 +140,97 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="child_process\PipeStreamSocket.hpp">
+    <ClInclude Include="child_process\PipeStreamSocket.h">
       <Filter>child_process</Filter>
     </ClInclude>
-    <ClInclude Include="child_process\Socket.hpp">
+    <ClInclude Include="child_process\Socket.h">
       <Filter>child_process</Filter>
     </ClInclude>
-    <ClInclude Include="child_process\SubProcess.hpp">
+    <ClInclude Include="child_process\SubProcess.h">
       <Filter>child_process</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.hpp">
+    <ClInclude Include="Logger.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="common.hpp">
+    <ClInclude Include="common.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Channel.hpp">
+    <ClInclude Include="Channel.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Worker.hpp">
+    <ClInclude Include="Worker.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="errors.hpp">
+    <ClInclude Include="errors.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="AudioLevelObserver.hpp">
+    <ClInclude Include="AudioLevelObserver.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Consumer.hpp">
+    <ClInclude Include="Consumer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="DataConsumer.hpp">
+    <ClInclude Include="DataConsumer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="DataProducer.hpp">
+    <ClInclude Include="DataProducer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="DirectTransport.hpp">
+    <ClInclude Include="DirectTransport.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="ortc.hpp">
+    <ClInclude Include="ortc.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="PayloadChannel.hpp">
+    <ClInclude Include="PayloadChannel.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="PipeTransport.hpp">
+    <ClInclude Include="PipeTransport.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="PlainTransport.hpp">
+    <ClInclude Include="PlainTransport.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Producer.hpp">
+    <ClInclude Include="Producer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Router.hpp">
+    <ClInclude Include="Router.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="RtpObserver.hpp">
+    <ClInclude Include="RtpObserver.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="RtpParameters.hpp">
+    <ClInclude Include="RtpParameters.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="SctpParameters.hpp">
+    <ClInclude Include="SctpParameters.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="SrtpParameters.hpp">
+    <ClInclude Include="SrtpParameters.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="supportedRtpCapabilities.hpp">
+    <ClInclude Include="supportedRtpCapabilities.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Transport.hpp">
+    <ClInclude Include="Transport.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="WebRtcTransport.hpp">
+    <ClInclude Include="WebRtcTransport.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="scalabilityModes.hpp">
+    <ClInclude Include="scalabilityModes.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="EnhancedEventEmitter.hpp">
+    <ClInclude Include="EnhancedEventEmitter.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="ActiveSpeakerObserver.hpp">
+    <ClInclude Include="ActiveSpeakerObserver.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="WebRtcServer.hpp">
+    <ClInclude Include="WebRtcServer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Utils.hpp">
+    <ClInclude Include="Utils.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="webrtc\api\video_codecs\h264_profile_level_id.h">

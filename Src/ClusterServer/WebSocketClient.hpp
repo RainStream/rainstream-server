@@ -1,7 +1,7 @@
 #ifndef WEBSOCKET_TRANSPORT_HPP
 #define WEBSOCKET_TRANSPORT_HPP
 
-#include "common.hpp"
+#include "common.h"
 #include "DepLibUV.hpp"
 
 namespace protoo{

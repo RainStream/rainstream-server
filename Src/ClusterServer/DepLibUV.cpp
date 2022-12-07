@@ -2,7 +2,7 @@
 // #define MS_LOG_DEV_LEVEL 3
 
 #include "DepLibUV.hpp"
-#include "Logger.hpp"
+#include "Logger.h"
 #include <cstdlib> // std::abort()
 #include <uwebsockets/App.h>
 

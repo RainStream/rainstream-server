@@ -1,11 +1,11 @@
 #define MSC_CLASS "Channel"
 
-#include "common.hpp"
-#include "Channel.hpp"
-#include "Logger.hpp"
-#include "utils.hpp"
-#include "errors.hpp"
-#include "child_process/Socket.hpp"
+#include "common.h"
+#include "Channel.h"
+#include "Logger.h"
+#include "utils.h"
+#include "errors.h"
+#include "child_process/Socket.h"
 
 
 // netstring length for a 4194304 bytes payload.

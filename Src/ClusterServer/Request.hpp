@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common.hpp>
+#include <common.h>
 #include <unordered_map>
 
 namespace protoo

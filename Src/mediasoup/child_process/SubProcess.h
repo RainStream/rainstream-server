@@ -1,8 +1,8 @@
 #pragma once
 
 #include <uv.h>
-#include "utils.hpp"
-#include "EnhancedEventEmitter.hpp"
+#include "utils.h"
+#include "EnhancedEventEmitter.h"
 
 
 class Socket;

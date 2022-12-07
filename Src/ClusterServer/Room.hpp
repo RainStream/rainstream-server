@@ -1,9 +1,9 @@
 #ifndef MEDIA_ROOM_HPP
 #define MEDIA_ROOM_HPP
 
-#include "common.hpp"
+#include "common.h"
 #include "Peer.hpp"
-#include <EnhancedEventEmitter.hpp>
+#include <EnhancedEventEmitter.h>
 
 
 namespace protoo

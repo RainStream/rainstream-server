@@ -1,14 +1,14 @@
 #define MSC_CLASS "PipeTransport"
 
-#include "common.hpp"
-#include "PipeTransport.hpp"
-#include "ortc.hpp"
-#include "utils.hpp"
-#include "errors.hpp"
-#include "Logger.hpp"
-#include "Producer.hpp"
-#include "Consumer.hpp"
-#include "Channel.hpp"
+#include "common.h"
+#include "PipeTransport.h"
+#include "ortc.h"
+#include "utils.h"
+#include "errors.h"
+#include "Logger.h"
+#include "Producer.h"
+#include "Consumer.h"
+#include "Channel.h"
 
 
 

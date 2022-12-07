@@ -1,7 +1,7 @@
 #ifndef PROTOO_MESSAGE_HPP
 #define PROTOO_MESSAGE_HPP
 
-#include "common.hpp"
+#include "common.h"
 
 namespace protoo
 {

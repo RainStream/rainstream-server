@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EnhancedEventEmitter.hpp"
+#include "EnhancedEventEmitter.h"
 
 class Error;
 class Router;
@@ -82,6 +82,8 @@ private:
 	void workerDied(const Error &error);
 
 private:
+	//
+	std::thread _work_thread;
 	// mediasoup-worker child process.
 	SubProcess* _child{ nullptr };
 	// Worker process PID.

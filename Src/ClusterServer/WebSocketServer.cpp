@@ -3,8 +3,8 @@
 #include "WebSocketServer.hpp"
 #include "WebSocketClient.hpp"
 #include "DepLibUV.hpp"
-#include "Logger.hpp"
-#include "Utils.hpp"
+#include "Logger.h"
+#include "Utils.h"
 #include "Utility.hpp"
 
 

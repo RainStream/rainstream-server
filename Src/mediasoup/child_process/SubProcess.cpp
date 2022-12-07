@@ -1,10 +1,10 @@
 #define MSC_CLASS "SubProcess"
 
-#include "common.hpp"
-#include "SubProcess.hpp"
-#include "Socket.hpp"
-#include "Logger.hpp"
-#include "utils.hpp"
+#include "common.h"
+#include "SubProcess.h"
+#include "Socket.h"
+#include "Logger.h"
+#include "utils.h"
 
 /* Static. */
 

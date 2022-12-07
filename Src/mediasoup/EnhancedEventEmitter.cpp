@@ -1,5 +1,5 @@
 #define MSC_CLASS "EnhancedEventEmitter"
 
-#include "common.hpp"
-#include "EnhancedEventEmitter.hpp"
+#include "common.h"
+#include "EnhancedEventEmitter.h"
 

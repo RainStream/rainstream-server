@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RtpObserver.hpp"
+#include "RtpObserver.h"
 
 class Producer;
 

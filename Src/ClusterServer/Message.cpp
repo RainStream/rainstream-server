@@ -1,7 +1,7 @@
 #define MSC_CLASS "Message"
 
 #include "Message.hpp"
-#include <Utils.hpp>
+#include <Utils.h>
 
 namespace protoo
 {

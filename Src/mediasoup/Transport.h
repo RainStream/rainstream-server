@@ -1,8 +1,8 @@
 #pragma once 
 
-#include "EnhancedEventEmitter.hpp"
-#include "SctpParameters.hpp"
-#include "SrtpParameters.hpp"
+#include "EnhancedEventEmitter.h"
+#include "SctpParameters.h"
+#include "SrtpParameters.h"
 
 struct TransportListenIp
 {

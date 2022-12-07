@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PipeStreamSocket.hpp"
-#include "EnhancedEventEmitter.hpp"
+#include "PipeStreamSocket.h"
+#include "EnhancedEventEmitter.h"
 
 class Socket : public PipeStreamSocket, public EnhancedEventEmitter
 {

@@ -1,11 +1,11 @@
 #define MSC_CLASS "DataConsumer"
 
-#include "common.hpp"
-#include "Logger.hpp"
-#include "errors.hpp"
-#include "Channel.hpp"
-#include "PayloadChannel.hpp"
-#include "DataConsumer.hpp"
+#include "common.h"
+#include "Logger.h"
+#include "errors.h"
+#include "Channel.h"
+#include "PayloadChannel.h"
+#include "DataConsumer.h"
 
 
 DataConsumer::DataConsumer(

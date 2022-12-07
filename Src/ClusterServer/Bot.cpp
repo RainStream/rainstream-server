@@ -4,13 +4,13 @@
 #include "Room.hpp"
 #include "config.hpp"
 #include "Peer.hpp"
-#include <Logger.hpp>
-#include <Router.hpp>
-#include <Transport.hpp>
-#include <DataProducer.hpp>
-#include <DataConsumer.hpp>
-#include <DirectTransport.hpp>
-#include <Utils.hpp>
+#include <Logger.h>
+#include <Router.h>
+#include <Transport.h>
+#include <DataProducer.h>
+#include <DataConsumer.h>
+#include <DirectTransport.h>
+#include <Utils.h>
 
 
 std::future<Bot*> Bot::create(Router* mediasoupRouter)

@@ -1,7 +1,7 @@
 #pragma once 
 
-#include "EnhancedEventEmitter.hpp"
-#include "RtpObserver.hpp"
+#include "EnhancedEventEmitter.h"
+#include "RtpObserver.h"
 
 
 struct AudioLevelObserverOptions

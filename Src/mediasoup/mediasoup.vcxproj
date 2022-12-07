@@ -98,7 +98,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;MS_STATIC;WEBRTC_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -118,6 +118,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +134,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;MS_STATIC;WEBRTC_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
@@ -158,6 +159,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -201,36 +203,36 @@
     <ClCompile Include="Worker.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ActiveSpeakerObserver.hpp" />
-    <ClInclude Include="AudioLevelObserver.hpp" />
-    <ClInclude Include="Channel.hpp" />
-    <ClInclude Include="child_process\PipeStreamSocket.hpp" />
-    <ClInclude Include="child_process\Socket.hpp" />
-    <ClInclude Include="child_process\SubProcess.hpp" />
-    <ClInclude Include="Consumer.hpp" />
-    <ClInclude Include="DataConsumer.hpp" />
-    <ClInclude Include="DataProducer.hpp" />
-    <ClInclude Include="DirectTransport.hpp" />
-    <ClInclude Include="EnhancedEventEmitter.hpp" />
-    <ClInclude Include="errors.hpp" />
-    <ClInclude Include="Logger.hpp" />
-    <ClInclude Include="common.hpp" />
-    <ClInclude Include="ortc.hpp" />
-    <ClInclude Include="PayloadChannel.hpp" />
-    <ClInclude Include="PipeTransport.hpp" />
-    <ClInclude Include="PlainTransport.hpp" />
-    <ClInclude Include="Producer.hpp" />
-    <ClInclude Include="Router.hpp" />
-    <ClInclude Include="RtpObserver.hpp" />
-    <ClInclude Include="RtpParameters.hpp" />
-    <ClInclude Include="scalabilityModes.hpp" />
-    <ClInclude Include="SctpParameters.hpp" />
-    <ClInclude Include="SrtpParameters.hpp" />
-    <ClInclude Include="supportedRtpCapabilities.hpp" />
-    <ClInclude Include="Transport.hpp" />
-    <ClInclude Include="Utils.hpp" />
-    <ClInclude Include="WebRtcServer.hpp" />
-    <ClInclude Include="WebRtcTransport.hpp" />
+    <ClInclude Include="ActiveSpeakerObserver.h" />
+    <ClInclude Include="AudioLevelObserver.h" />
+    <ClInclude Include="Channel.h" />
+    <ClInclude Include="child_process\PipeStreamSocket.h" />
+    <ClInclude Include="child_process\Socket.h" />
+    <ClInclude Include="child_process\SubProcess.h" />
+    <ClInclude Include="Consumer.h" />
+    <ClInclude Include="DataConsumer.h" />
+    <ClInclude Include="DataProducer.h" />
+    <ClInclude Include="DirectTransport.h" />
+    <ClInclude Include="EnhancedEventEmitter.h" />
+    <ClInclude Include="errors.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="ortc.h" />
+    <ClInclude Include="PayloadChannel.h" />
+    <ClInclude Include="PipeTransport.h" />
+    <ClInclude Include="PlainTransport.h" />
+    <ClInclude Include="Producer.h" />
+    <ClInclude Include="Router.h" />
+    <ClInclude Include="RtpObserver.h" />
+    <ClInclude Include="RtpParameters.h" />
+    <ClInclude Include="scalabilityModes.h" />
+    <ClInclude Include="SctpParameters.h" />
+    <ClInclude Include="SrtpParameters.h" />
+    <ClInclude Include="supportedRtpCapabilities.h" />
+    <ClInclude Include="Transport.h" />
+    <ClInclude Include="Utils.h" />
+    <ClInclude Include="WebRtcServer.h" />
+    <ClInclude Include="WebRtcTransport.h" />
     <ClInclude Include="webrtc\api\video_codecs\h264_profile_level_id.h" />
     <ClInclude Include="webrtc\api\video_codecs\sdp_video_format.h" />
     <ClInclude Include="webrtc\media\base\sdp_video_format_utils.h" />
@@ -241,7 +243,7 @@
     <ClInclude Include="webrtc\rtc_base\system\inline.h" />
     <ClInclude Include="webrtc\rtc_base\system\rtc_export.h" />
     <ClInclude Include="webrtc\rtc_base\type_traits.h" />
-    <ClInclude Include="Worker.hpp" />
+    <ClInclude Include="Worker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

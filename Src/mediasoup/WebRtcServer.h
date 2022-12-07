@@ -1,7 +1,7 @@
 #pragma once
 
-#include "EnhancedEventEmitter.hpp"
-#include "Transport.hpp"
+#include "EnhancedEventEmitter.h"
+#include "Transport.h"
 
 class Channel;
 class WebRtcTransport;

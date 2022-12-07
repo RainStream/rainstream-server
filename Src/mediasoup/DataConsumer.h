@@ -1,7 +1,7 @@
 #pragma once 
 
-#include "EnhancedEventEmitter.hpp"
-#include "SctpParameters.hpp"
+#include "EnhancedEventEmitter.h"
+#include "SctpParameters.h"
 
 class Channel;
 class PayloadChannel;

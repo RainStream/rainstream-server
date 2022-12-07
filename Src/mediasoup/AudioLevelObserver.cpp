@@ -1,9 +1,9 @@
 #define MSC_CLASS "AudioLevelObserver"
 
-#include "common.hpp"
-#include "Logger.hpp"
-#include "Channel.hpp"
-#include "AudioLevelObserver.hpp"
+#include "common.h"
+#include "Logger.h"
+#include "Channel.h"
+#include "AudioLevelObserver.h"
 
 
 AudioLevelObserver::AudioLevelObserver(json internal,

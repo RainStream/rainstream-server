@@ -1,13 +1,13 @@
 #define MSC_CLASS "DirectTransport"
 
-#include "common.hpp"
-#include "Logger.hpp"
-#include "errors.hpp"
-#include "Channel.hpp"
-#include "PayloadChannel.hpp"
-#include "Producer.hpp"
-#include "Consumer.hpp"
-#include "DirectTransport.hpp"
+#include "common.h"
+#include "Logger.h"
+#include "errors.h"
+#include "Channel.h"
+#include "PayloadChannel.h"
+#include "Producer.h"
+#include "Consumer.h"
+#include "DirectTransport.h"
 
 DirectTransport::DirectTransport(const json& internal,
 	const json& data,

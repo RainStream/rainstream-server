@@ -1,11 +1,11 @@
 #define MSC_CLASS "Producer"
 
-#include "common.hpp"
-#include "Producer.hpp"
-#include "Logger.hpp"
-#include "errors.hpp"
-#include "Channel.hpp"
-#include "PayloadChannel.hpp"
+#include "common.h"
+#include "Producer.h"
+#include "Logger.h"
+#include "errors.h"
+#include "Channel.h"
+#include "PayloadChannel.h"
 
 Producer::Producer(json internal,
 	json data,

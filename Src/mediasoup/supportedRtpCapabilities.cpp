@@ -1,6 +1,6 @@
 
-#include "common.hpp"
-#include "supportedRtpCapabilities.hpp"
+#include "common.h"
+#include "supportedRtpCapabilities.h"
 
 json supportedRtpCapabilities =
 R"(

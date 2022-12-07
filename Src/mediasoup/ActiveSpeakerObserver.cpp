@@ -1,9 +1,9 @@
 #define MSC_CLASS "ActiveSpeakerObserver"
 
-#include "common.hpp"
-#include "Logger.hpp"
-#include "Channel.hpp"
-#include "ActiveSpeakerObserver.hpp"
+#include "common.h"
+#include "Logger.h"
+#include "Channel.h"
+#include "ActiveSpeakerObserver.h"
 
 
 ActiveSpeakerObserver::ActiveSpeakerObserver(json internal,

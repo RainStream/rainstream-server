@@ -1,11 +1,11 @@
 #define MSC_CLASS "Consumer"
 
-#include "common.hpp"
-#include "Consumer.hpp"
-#include "Channel.hpp"
-#include "PayloadChannel.hpp"
-#include "Logger.hpp"
-#include "errors.hpp"
+#include "common.h"
+#include "Consumer.h"
+#include "Channel.h"
+#include "PayloadChannel.h"
+#include "Logger.h"
+#include "errors.h"
 
 
 Consumer::Consumer(

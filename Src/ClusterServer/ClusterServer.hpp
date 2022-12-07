@@ -1,7 +1,7 @@
 #ifndef MS_CLUSTER_SERVER_HPP
 #define MS_CLUSTER_SERVER_HPP
 
-#include <common.hpp>
+#include <common.h>
 #include "WebSocketServer.hpp"
 #include "AwaitQueue.hpp"
 

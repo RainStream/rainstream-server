@@ -1,10 +1,10 @@
 #define MSC_CLASS "WebRtcTransport"
 
-#include "common.hpp"
-#include "WebRtcTransport.hpp"
-#include "Channel.hpp"
-#include "Logger.hpp"
-#include "SctpParameters.hpp"
+#include "common.h"
+#include "WebRtcTransport.h"
+#include "Channel.h"
+#include "Logger.h"
+#include "SctpParameters.h"
 
 /**
  * @private

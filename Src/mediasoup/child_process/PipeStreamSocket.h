@@ -2,7 +2,7 @@
 
 #include <uv.h>
 #include <string>
-#include "Logger.hpp"
+#include "Logger.h"
 
 class PipeStreamSocket
 {
