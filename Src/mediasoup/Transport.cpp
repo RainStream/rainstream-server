@@ -254,7 +254,7 @@ void Transport::listenServerClosed()
 	this->_observer->safeEmit("close");
 }
 
-task_t<json> Transport::dump()
+std::future<json> Transport::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -263,19 +263,19 @@ task_t<json> Transport::dump()
 	co_return ret;
 }
 
-task_t<json> Transport::getStats()
+std::future<json> Transport::getStats()
 {
 	// Should not happen.
 	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
-task_t<void> Transport::connect(json& params)
+std::future<void> Transport::connect(json& params)
 {
 	// Should not happen.
 	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
-task_t<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
+std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 {
 	MSC_DEBUG("setMaxIncomingBitrate() [bitrate:%d]", bitrate);
 
@@ -287,7 +287,7 @@ task_t<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 	co_return;
 }
 
-task_t<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
+std::future<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
 	MSC_DEBUG("setMaxOutgoingBitrate() [bitrate:%d]", bitrate);
 
 	json reqData = { {"bitrate", bitrate} };
@@ -297,7 +297,7 @@ task_t<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
 	co_return;
 }
 
-task_t<Producer*> Transport::produce(
+std::future<Producer*> Transport::produce(
 	std::string id,
 	std::string kind,
 	json rtpParameters,
@@ -409,7 +409,7 @@ task_t<Producer*> Transport::produce(
 	co_return producer;
 }
 
-task_t<Consumer*> Transport::consume(ConsumerOptions& options)
+std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 {
 	MSC_DEBUG("consume()");
 
@@ -513,7 +513,7 @@ task_t<Consumer*> Transport::consume(ConsumerOptions& options)
 	co_return consumer;
 }
 
-task_t<DataProducer*> Transport::produceData(DataProducerOptions& options)
+std::future<DataProducer*> Transport::produceData(DataProducerOptions& options)
 {
 	MSC_DEBUG("produceData()");
 
@@ -588,7 +588,7 @@ task_t<DataProducer*> Transport::produceData(DataProducerOptions& options)
 }
 
 	
-task_t<DataConsumer*> Transport::consumeData(DataConsumerOptions& options)
+std::future<DataConsumer*> Transport::consumeData(DataConsumerOptions& options)
 {
 	MSC_DEBUG("consumeData()");
 
@@ -697,7 +697,7 @@ task_t<DataConsumer*> Transport::consumeData(DataConsumerOptions& options)
 	co_return dataConsumer;
 }
 
-task_t<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> types)
+std::future<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> types)
 {
 	MSC_DEBUG("pause()");
 

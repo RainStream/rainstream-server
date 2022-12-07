@@ -123,7 +123,7 @@ void DataProducer::transportClosed()
 	this->_observer->safeEmit("close");
 }
 
-task_t<json> DataProducer::dump()
+std::future<json> DataProducer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -132,7 +132,7 @@ task_t<json> DataProducer::dump()
 	co_return ret;
 }
 
-task_t<json> DataProducer::getStats()
+std::future<json> DataProducer::getStats()
 {
 	MSC_DEBUG("getStats()");
 

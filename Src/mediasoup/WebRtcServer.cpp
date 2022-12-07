@@ -105,7 +105,7 @@ void WebRtcServer::workerClosed()
 	this->_observer->safeEmit("close");
 }
 
-task_t<json> WebRtcServer::dump()
+std::future<json> WebRtcServer::dump()
 {
 	MSC_DEBUG("dump()");
 

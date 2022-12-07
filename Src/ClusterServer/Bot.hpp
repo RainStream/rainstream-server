@@ -18,7 +18,7 @@ namespace protoo
 class Bot
 {
 public:
-	static task_t<Bot*> create(Router* mediasoupRouter);
+	static std::future<Bot*> create(Router* mediasoupRouter);
 
 	Bot(Transport* transport, DataProducer* dataProducer);
 
@@ -26,7 +26,7 @@ public:
 
 	void close();
 
-	task_t<void> handlePeerDataProducer(std::string dataProducerId, protoo::Peer* peer);
+	std::future<void> handlePeerDataProducer(std::string dataProducerId, protoo::Peer* peer);
 
 private:
 	// mediasoup DirectTransport.

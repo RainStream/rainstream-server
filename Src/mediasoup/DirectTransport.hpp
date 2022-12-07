@@ -54,24 +54,24 @@ public:
 	 *
 	 * @override
 	 */
-	task_t<json> getStats();
+	std::future<json> getStats();
 
 	/**
 	 * NO-OP method in DirectTransport.
 	 *
 	 * @override
 	 */
-	task_t<void> connect();
+	std::future<void> connect();
 
 	/**
 	 * @override
 	 */
-	task_t<void> setMaxIncomingBitrate(uint32_t bitrate);
+	std::future<void> setMaxIncomingBitrate(uint32_t bitrate);
 
 	/**
 	 * @override
 	 */
-	task_t<void> setMaxOutgoingBitrate(uint32_t bitrate);
+	std::future<void> setMaxOutgoingBitrate(uint32_t bitrate);
 
 	virtual std::string typeName();
 

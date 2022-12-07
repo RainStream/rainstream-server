@@ -12,7 +12,7 @@ public:
 
 	void close();
 
-	task_t<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
+	std::future<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
 
 protected:
 	void _processMessage(const json& msg);
@@ -27,5 +27,5 @@ private:
 	// Next id for messages sent to the worker process.
 	int32_t _nextId = 0;
 	// Map of pending sent requests.
-	std::unordered_map<uint32_t, promise_t<json> > _sents;
+	std::unordered_map<uint32_t, std::promise<json> > _sents;
 };

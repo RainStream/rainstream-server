@@ -45,7 +45,7 @@ void DirectTransport::routerClosed()
 	Transport::routerClosed();
 }
 
-task_t<json> DirectTransport::getStats()
+std::future<json> DirectTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -54,20 +54,20 @@ task_t<json> DirectTransport::getStats()
 	co_return ret;
 }
 
-task_t<void> DirectTransport::connect()
+std::future<void> DirectTransport::connect()
 {
 	MSC_DEBUG("connect()");
 
 	co_return;
 }
 
-task_t<void> DirectTransport::setMaxIncomingBitrate(uint32_t bitrate)
+std::future<void> DirectTransport::setMaxIncomingBitrate(uint32_t bitrate)
 {
 	MSC_THROW_UNSUPPORTED_ERROR(
 		"setMaxIncomingBitrate() not implemented in DirectTransport");
 }
 
-task_t<void> DirectTransport::setMaxOutgoingBitrate(uint32_t bitrate)
+std::future<void> DirectTransport::setMaxOutgoingBitrate(uint32_t bitrate)
 {
 	MSC_THROW_UNSUPPORTED_ERROR(
 		"setMaxOutgoingBitrate() not implemented in DirectTransport");

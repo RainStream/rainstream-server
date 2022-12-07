@@ -102,8 +102,7 @@ void Channel::close()
 	// Close every pending sent.
 	for (auto& [key, sent] : this->_sents)
 	{
-		//sent.set_exception(std::make_exception_ptr(Error("Channel closed")));
-		sent.unhandled_exception();
+		sent.set_exception(std::make_exception_ptr(Error("Channel closed")));
 	}
 
 	// Remove event listeners but leave a fake "error" hander to avoid
@@ -125,7 +124,7 @@ void Channel::close()
 	// 		}, 200);
 }
 
-task_t<json> Channel::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)
+std::future<json> Channel::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)
 {
 	this->_nextId < 4294967295 ? ++this->_nextId : (this->_nextId = 1);
 
@@ -158,11 +157,11 @@ task_t<json> Channel::request(std::string method, std::optional<std::string> han
 		MSC_THROW_ERROR("Channel request too big");
 	}
 
-	promise_t<json> t_promise;
+	std::promise<json> t_promise;
 
 	this->_sents.insert(std::make_pair(id, std::move(t_promise)));
 
-	return this->_sents[id].get_return_object();
+	return this->_sents[id].get_future();
 }
 
 void Channel::_processMessage(const json& msg)
@@ -178,14 +177,14 @@ void Channel::_processMessage(const json& msg)
 			return;
 		}
 
-		promise_t<json> sent = std::move(this->_sents[id]);
+		std::promise<json> sent = std::move(this->_sents[id]);
 		this->_sents.erase(id);
 
 		if (msg.count("accepted") && msg["accepted"].get<bool>())
 		{
 			json data = msg.value("data", json::object());
 			MSC_DEBUG("request succeeded [id:%d]", id);
-			sent.return_value(data);
+			sent.set_value(data);
 		}
 		else if (msg.count("error"))
 		{
@@ -196,13 +195,11 @@ void Channel::_processMessage(const json& msg)
 
 			if (error == "TypeError")
 			{
-				//sent.set_exception(std::make_exception_ptr(TypeError(reason)));
-				sent.unhandled_exception();
+				sent.set_exception(std::make_exception_ptr(TypeError(reason)));
 			}
 			else
 			{
-				//sent.set_exception(std::make_exception_ptr(Error(reason)));
-				sent.unhandled_exception();
+				sent.set_exception(std::make_exception_ptr(Error(reason)));
 			}
 		}
 		else

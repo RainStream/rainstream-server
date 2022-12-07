@@ -54,14 +54,6 @@ typedef SSIZE_T ssize_t;
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-#include <asyncpp/asyncpp.h>
-
-template <typename T>
-using task_t = asyncpp::task<T>;
-
-template <typename T>
-using promise_t = asyncpp::promise_t<T>;
-
 
 #ifdef _MSC_VER
 #  define MS_DECL_EXPORT __declspec(dllexport)

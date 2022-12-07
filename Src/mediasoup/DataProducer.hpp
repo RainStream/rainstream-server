@@ -156,12 +156,12 @@ public:
 	/**
 	 * Dump DataProducer.
 	 */
-	task_t<json> dump();
+	std::future<json> dump();
 
 	/**
 	 * Get DataProducer stats.
 	 */
-	task_t<json> getStats();
+	std::future<json> getStats();
 
 	/**
 	 * Send data (just valid for DataProducers created on a DirectTransport).

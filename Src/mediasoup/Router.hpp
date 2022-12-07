@@ -79,15 +79,15 @@ public:
 	/**
 	 * Dump Router.
 	 */
-	task_t<json> dump();
+	std::future<json> dump();
 	/**
 	 * Create a WebRtcTransport.
 	 */
-	task_t<WebRtcTransport*> createWebRtcTransport(WebRtcTransportOptions& options);
+	std::future<WebRtcTransport*> createWebRtcTransport(WebRtcTransportOptions& options);
 	/**
 	 * Create a PlainTransport.
 	 */
-	task_t<PlainTransport*> createPlainTransport(
+	std::future<PlainTransport*> createPlainTransport(
 		json listenIp,
 		uint16_t port,
 		bool rtcpMux = true,
@@ -102,7 +102,7 @@ public:
 	/**
 	 * Create a PipeTransport.
 	 */
-	task_t<PipeTransport*> createPipeTransport(
+	std::future<PipeTransport*> createPipeTransport(
 		json listenIp,
 		bool enableSctp = false,
 		json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
@@ -114,7 +114,7 @@ public:
 	/**
 	 * Create a DirectTransport.
 	 */
-	task_t<DirectTransport*> createDirectTransport(const DirectTransportOptions& options);
+	std::future<DirectTransport*> createDirectTransport(const DirectTransportOptions& options);
 	/**
 	 * Pipes the given Producer or DataProducer into another Router in same host.
 	 */
@@ -126,11 +126,11 @@ public:
 	/**
 	 * Create an ActiveSpeakerObserver
 	 */
-	task_t<ActiveSpeakerObserver*> createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options);
+	std::future<ActiveSpeakerObserver*> createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options);
 	/**
 	 * Create an AudioLevelObserver.
 	 */
-	task_t<AudioLevelObserver*> createAudioLevelObserver(const AudioLevelObserverOptions& options);
+	std::future<AudioLevelObserver*> createAudioLevelObserver(const AudioLevelObserverOptions& options);
 	/**
 	 * Check whether the given RTP capabilities can consume the given Producer.
 	 */

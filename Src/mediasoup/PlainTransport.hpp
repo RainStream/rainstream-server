@@ -105,14 +105,14 @@ public:
 	 *
 	 * @override
 	 */
-	virtual task_t<json> getStats();
+	virtual std::future<json> getStats();
 
 	/**
 	 * Provide the PlainTransport remote parameters.
 	 *
 	 * @override
 	 */
-	task_t<void> connect(
+	std::future<void> connect(
 		std::string ip,
 		uint32_t port,
 		uint32_t rtcpPort,

@@ -302,27 +302,27 @@ public:
 	/**
 	 * Dump Consumer.
 	 */
-	task_t<json> dump();
+	std::future<json> dump();
 
 	/**
 	 * Get Consumer stats.
 	 */
-	task_t<json> getStats();
+	std::future<json> getStats();
 
 	/**
 	 * Pause the Consumer.
 	 */
-	task_t<void> pause();
+	std::future<void> pause();
 
 	/**
 	 * Resume the Consumer.
 	 */
-	task_t<void> resume();
+	std::future<void> resume();
 
 	/**
 	 * Set preferred video layers.
 	 */
-	task_t<void> setPreferredLayers(
+	std::future<void> setPreferredLayers(
 		int spatialLayer,
 		int temporalLayer
 	);
@@ -330,22 +330,22 @@ public:
 	/**
 	 * Set priority.
 	 */
-	task_t<void> setPriority(int priority);
+	std::future<void> setPriority(int priority);
 
 	/**
 	 * Unset priority.
 	 */
-	task_t<void> unsetPriority();
+	std::future<void> unsetPriority();
 
 	/**
 	 * Request a key frame to the Producer.
 	 */
-	task_t<void> requestKeyFrame();
+	std::future<void> requestKeyFrame();
 
 	/**
 	 * Enable "trace" event.
 	 */
-	task_t<void> enableTraceEvent(std::vector<std::string> types);
+	std::future<void> enableTraceEvent(std::vector<std::string> types);
 
 private:
 	void _handleWorkerNotifications();

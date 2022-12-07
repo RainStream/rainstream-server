@@ -62,19 +62,19 @@ public:
 	/**
 	 * Pause the RtpObserver.
 	 */
-	task_t<void> pause();
+	std::future<void> pause();
 	/**
 	 * Resume the RtpObserver.
 	 */
-	task_t<void> resume();
+	std::future<void> resume();
 	/**
 	 * Add a Producer to the RtpObserver.
 	 */
-	task_t<void> addProducer(std::string producerId);
+	std::future<void> addProducer(std::string producerId);
 	/**
 	 * Remove a Producer from the RtpObserver.
 	 */
-	task_t<void> removeProducer(std::string producerId);
+	std::future<void> removeProducer(std::string producerId);
 
 protected:
 	// Internal data.

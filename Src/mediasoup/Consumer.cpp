@@ -168,7 +168,7 @@ void Consumer::transportClosed()
 	this->_observer->safeEmit("close");
 }
 
-task_t<json> Consumer::dump()
+std::future<json> Consumer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -177,7 +177,7 @@ task_t<json> Consumer::dump()
 	co_return ret;
 }
 
-task_t<json> Consumer::getStats()
+std::future<json> Consumer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -186,7 +186,7 @@ task_t<json> Consumer::getStats()
 	co_return ret;
 }
 
-task_t<void> Consumer::pause()
+std::future<void> Consumer::pause()
 {
 	MSC_DEBUG("pause()");
 
@@ -201,7 +201,7 @@ task_t<void> Consumer::pause()
 		this->_observer->safeEmit("pause");
 }
 
-task_t<void> Consumer::resume()
+std::future<void> Consumer::resume()
 {
 	MSC_DEBUG("resume()");
 
@@ -216,7 +216,7 @@ task_t<void> Consumer::resume()
 		this->_observer->safeEmit("resume");
 }
 
-task_t<void> Consumer::setPreferredLayers(
+std::future<void> Consumer::setPreferredLayers(
 	int spatialLayer,
 	int temporalLayer
 )
@@ -234,7 +234,7 @@ task_t<void> Consumer::setPreferredLayers(
 	this->_preferredLayers = data /*|| undefined*/;
 }
 
-task_t<void> Consumer::setPriority(int priority)
+std::future<void> Consumer::setPriority(int priority)
 {
 	MSC_DEBUG("setPriority()");
 
@@ -246,7 +246,7 @@ task_t<void> Consumer::setPriority(int priority)
 	this->_priority = data["priority"];
 }
 
-task_t<void> Consumer::unsetPriority()
+std::future<void> Consumer::unsetPriority()
 {
 	MSC_DEBUG("unsetPriority()");
 
@@ -258,14 +258,14 @@ task_t<void> Consumer::unsetPriority()
 	this->_priority = data["priority"];
 }
 
-task_t<void> Consumer::requestKeyFrame()
+std::future<void> Consumer::requestKeyFrame()
 {
 	MSC_DEBUG("requestKeyFrame()");
 
 	co_await this->_channel->request("consumer.requestKeyFrame", this->_internal["consumerId"]);
 }
 
-task_t<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
+std::future<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
 {
 	MSC_DEBUG("enableTraceEvent()");
 

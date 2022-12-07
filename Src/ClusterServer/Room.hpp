@@ -23,7 +23,7 @@ class AudioLevelObserver;
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
 public:
-	static task_t<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
+	static std::future<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
 	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver, Bot* bot);
 	~Room();
@@ -35,11 +35,11 @@ public:
 
 	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
 	json getRouterRtpCapabilities();
-	task_t<json> createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities);
+	std::future<json> createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities);
 	void deleteBroadcaster(std::string broadcasterId);
 protected:
-	task_t<void> _handleAudioLevelObserver();
-	task_t<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
+	std::future<void> _handleAudioLevelObserver();
+	std::future<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
 	std::list<protoo::Peer*> _getJoinedPeers(protoo::Peer* excludePeer = nullptr);
 
 	/**
@@ -47,14 +47,14 @@ protected:
 	 *
 	 * @async
 	 */
-	task_t<void> _createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer);
+	std::future<void> _createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer);
 
 	/**
 	 * Creates a mediasoup DataConsumer for the given mediasoup DataProducer.
 	 *
 	 * @async
 	 */
-	task_t<void> _createDataConsumer(protoo::Peer* dataConsumerPeer,
+	std::future<void> _createDataConsumer(protoo::Peer* dataConsumerPeer,
 		protoo::Peer* dataProducerPeer,
 		DataProducer* dataProducer);
 

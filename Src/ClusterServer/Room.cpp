@@ -26,7 +26,7 @@ const uint32_t MIN_BITRATE = 50000;
 const float BITRATE_FACTOR = 0.75;
 
 
-task_t<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
+std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
 {
 	MSC_DEBUG("create() [roomId:%s]", roomId.c_str());
 
@@ -182,7 +182,7 @@ json Room::getRouterRtpCapabilities()
 	return this->_mediasoupRouter->rtpCapabilities();
 }
 
-task_t<json> Room::createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities)
+std::future<json> Room::createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities)
 {
 	json data = json::object();
 
@@ -194,7 +194,7 @@ void Room::deleteBroadcaster(std::string broadcasterId)
 
 }
 
-task_t<void> Room::_handleAudioLevelObserver()
+std::future<void> Room::_handleAudioLevelObserver()
 {
 	this->_audioLevelObserver->on("volumes", [=](const std::vector<AudioLevelObserverVolume>& volumes)
 	{
@@ -247,7 +247,7 @@ task_t<void> Room::_handleAudioLevelObserver()
 *
 * @async
 */
-task_t<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* request)
+std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* request)
 {
 	std::string method = request->method;
 	json& data = request->data;
@@ -915,7 +915,7 @@ std::list<protoo::Peer*> Room::_getJoinedPeers(protoo::Peer* excludePeer/* = nul
 	return peers;
 }
 
-task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer)
+std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer)
 {
 	// Optimization:
 	// - Create the server-side Consumer in paused mode.
@@ -1112,7 +1112,7 @@ task_t<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* pro
 }
 
 
-task_t<void> Room::_createDataConsumer(protoo::Peer* dataConsumerPeer,
+std::future<void> Room::_createDataConsumer(protoo::Peer* dataConsumerPeer,
 	protoo::Peer* dataProducerPeer,
 	DataProducer* dataProducer)
 {

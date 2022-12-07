@@ -98,9 +98,9 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	this->_queue.push([=]()->task_t<void>
+	this->_queue.push([=]()->std::future<void>
 	{	
-		MSC_WARN("after push task_t [peerId:%s]", peerId.c_str());
+		MSC_WARN("after push std::future [peerId:%s]", peerId.c_str());
 		Room* room = co_await getOrCreateRoom(roomId);
 
 		MSC_WARN("Peer[peerId:%s] handleConnection [roomId:%s]",
@@ -118,7 +118,7 @@ void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
 
 }
 
-task_t<void> ClusterServer::runMediasoupWorkers()
+std::future<void> ClusterServer::runMediasoupWorkers()
 {
 	int numWorkers = 1;
 
@@ -165,7 +165,7 @@ task_t<void> ClusterServer::runMediasoupWorkers()
 		}
 
 		// Log worker resource usage every X seconds.
- 		setInterval([=]()->task_t<void>
+ 		setInterval([=]()->std::future<void>
  		{
  			json usage = co_await worker->getResourceUsage();
  
@@ -176,7 +176,7 @@ task_t<void> ClusterServer::runMediasoupWorkers()
 	}
 }
 
-task_t<void> ClusterServer::runHttpsServer()
+std::future<void> ClusterServer::runHttpsServer()
 {
 	_webSocketServer->get("/rooms/:roomId", [=](auto* res, auto* req) {
 		std::string roomId(req->getParameter(0));
@@ -216,11 +216,11 @@ task_t<void> ClusterServer::runHttpsServer()
 
 						Room* room = this->_rooms[roomId];
 
-						room->createBroadcaster(id, displayName, device, rtpCapabilities)
+						/*room->createBroadcaster(id, displayName, device, rtpCapabilities)
 							.then([=](json response) 
 								{
 									res->end(response.dump());
-								});
+								});*/
 					}
 					catch (const std::exception& e)
 					{
@@ -304,7 +304,7 @@ Worker* ClusterServer::getMediasoupWorker()
 	return worker;
 }
 
-task_t<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
+std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
 {
 	Room* room;
 

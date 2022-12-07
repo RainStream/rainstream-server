@@ -137,7 +137,7 @@ void Producer::transportClosed()
 	this->_observer->safeEmit("close");
 }
 
-task_t<json> Producer::dump()
+std::future<json> Producer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -146,7 +146,7 @@ task_t<json> Producer::dump()
 	co_return ret;
 }
 
-task_t<json> Producer::getStats()
+std::future<json> Producer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -155,7 +155,7 @@ task_t<json> Producer::getStats()
 	co_return ret;
 }
 
-task_t<void> Producer::pause()
+std::future<void> Producer::pause()
 {
 	MSC_DEBUG("pause()");
 
@@ -170,7 +170,7 @@ task_t<void> Producer::pause()
 		this->_observer->safeEmit("pause");
 }
 
-task_t<void> Producer::resume()
+std::future<void> Producer::resume()
 {
 	MSC_DEBUG("resume()");
 
@@ -185,7 +185,7 @@ task_t<void> Producer::resume()
 		this->_observer->safeEmit("resume");
 }
 
-task_t<void> Producer::enableTraceEvent(std::vector<std::string> types)
+std::future<void> Producer::enableTraceEvent(std::vector<std::string> types)
 {
 	MSC_DEBUG("enableTraceEvent()");
 

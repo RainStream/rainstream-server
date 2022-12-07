@@ -135,7 +135,7 @@ void PipeTransport::routerClosed()
  *
  * @override
  */
-task_t<json> PipeTransport::getStats()
+std::future<json> PipeTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -149,7 +149,7 @@ task_t<json> PipeTransport::getStats()
  *
  * @override
  */
-task_t<void> PipeTransport::connect(
+std::future<void> PipeTransport::connect(
 	std::string ip,
 	uint32_t port,
 	SrtpParameters& srtpParameters
@@ -175,7 +175,7 @@ task_t<void> PipeTransport::connect(
  *
  * @override
  */
-task_t<Consumer*> PipeTransport::consume(ConsumerOptions& options)
+std::future<Consumer*> PipeTransport::consume(ConsumerOptions& options)
 {
 	MSC_DEBUG("consume()");
 

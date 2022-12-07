@@ -133,27 +133,27 @@ public:
 	/**
 	 * Dump DataConsumer.
 	 */
-	task_t<json> dump();
+	std::future<json> dump();
 
 	/**
 	 * Get DataConsumer stats.
 	 */
-	task_t<json> getStats();
+	std::future<json> getStats();
 
 	/**
 	 * Set buffered amount low threshold.
 	 */
-	task_t<void> setBufferedAmountLowThreshold(uint32_t threshold);
+	std::future<void> setBufferedAmountLowThreshold(uint32_t threshold);
 
 	/**
 	 * Send data.
 	 */
-	//task_t<void> send(message: string | Buffer, ppid ? : number)
+	//std::future<void> send(message: string | Buffer, ppid ? : number)
 	
 		/**
 	 * Get buffered amount size.
 	 */
-	task_t<size_t> getBufferedAmount();
+	std::future<size_t> getBufferedAmount();
 
 private:
 	void _handleWorkerNotifications();

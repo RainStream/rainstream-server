@@ -163,7 +163,7 @@ void Router::workerClosed()
 	this->_observer->safeEmit("close");
 }
 
-task_t<json> Router::dump()
+std::future<json> Router::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -172,7 +172,7 @@ task_t<json> Router::dump()
 	co_return ret;
 }
 
-task_t<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
+std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
 {
 	MSC_DEBUG("createWebRtcTransport()");
 	auto webRtcServer = options.webRtcServer;
@@ -291,7 +291,7 @@ task_t<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& o
 	co_return transport;
 }
 
-task_t<PlainTransport*> Router::createPlainTransport(
+std::future<PlainTransport*> Router::createPlainTransport(
 	json listenIp,
 	uint16_t port,
 	bool rtcpMux/* = true*/,
@@ -387,7 +387,7 @@ task_t<PlainTransport*> Router::createPlainTransport(
 	co_return transport;
 }
 
-task_t<PipeTransport*> Router::createPipeTransport(
+std::future<PipeTransport*> Router::createPipeTransport(
 	json listenIp,
 	bool enableSctp/* = false*/,
 	json numSctpStreams/* = { { "OS", 1024 }, { "MIS", 1024 } }*/,
@@ -475,7 +475,7 @@ task_t<PipeTransport*> Router::createPipeTransport(
 	co_return transport;
 }
 
-task_t<DirectTransport*> Router::createDirectTransport(const DirectTransportOptions& options)
+std::future<DirectTransport*> Router::createDirectTransport(const DirectTransportOptions& options)
 {
 	MSC_DEBUG("createDirectTransport()");
 
@@ -708,7 +708,7 @@ task_t<DirectTransport*> Router::createDirectTransport(const DirectTransportOpti
 //	});
 //}
 
-task_t<ActiveSpeakerObserver*> Router::createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options)
+std::future<ActiveSpeakerObserver*> Router::createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options)
 {
 	MSC_DEBUG("createActiveSpeakerObserver()");
 	if (!options.appData.is_null() && !options.appData.is_object())
@@ -742,7 +742,7 @@ task_t<ActiveSpeakerObserver*> Router::createActiveSpeakerObserver(const ActiveS
 	co_return activeSpeakerObserver;
 }
 
-task_t<AudioLevelObserver*> Router::createAudioLevelObserver(const AudioLevelObserverOptions& options) {
+std::future<AudioLevelObserver*> Router::createAudioLevelObserver(const AudioLevelObserverOptions& options) {
 	MSC_DEBUG("createAudioLevelObserver()");
 	if (!options.appData.is_null() && !options.appData.is_object())
 		MSC_THROW_TYPE_ERROR("if given, appData must be an object");

@@ -2,7 +2,7 @@
 
 #include <list>
 #include <Logger.hpp>
-#include <asyncpp/single_consumer_event.hpp>
+//#include <asyncpp/single_consumer_event.hpp>
 
 
 template <class T>
@@ -27,14 +27,14 @@ public:
 		this->closed = true;
 	}
 
-	void push(std::function<task_t<T>(void)>&& task)
+	void push(std::function<std::future<T>(void)>&& task)
 	{
 		if (this->closed)
 			return;
 
 		this->_pendingTasks.push_back(std::move(task));
 
-		this->_event.set();
+		//this->_event.set();
 	}
 
 	void stop()
@@ -48,13 +48,13 @@ public:
 	}
 
 protected:
-	task_t<void> start()
+	std::future<void> start()
 	{
 		while (!this->closed)
 		{
-			co_await _event;
+			//co_await _event;
 
-			_event.reset();
+			//_event.reset();
 
 			if (this->closed)
 				co_return;
@@ -79,10 +79,10 @@ private:
 	bool closed = false;
 
 	// Queue of pending tasks.
-	std::list<std::function<task_t<T>(void)>> _pendingTasks;
+	std::list<std::function<std::future<T>(void)>> _pendingTasks;
 
-	cppcoro::single_consumer_event _event;
+	//cppcoro::single_consumer_event _event;
 
-	task_t<void> _allWorks;
+	std::future<void> _allWorks;
 };
 

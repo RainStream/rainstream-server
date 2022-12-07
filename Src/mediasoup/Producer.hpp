@@ -173,27 +173,27 @@ public:
 	/**
 	 * Dump Producer.
 	 */
-	task_t<json> dump();
+	std::future<json> dump();
 
 	/**
 	 * Get Producer stats.
 	 */
-	task_t<json> getStats();
+	std::future<json> getStats();
 
 	/**
 	 * Pause the Producer.
 	 */
-	task_t<void> pause();
+	std::future<void> pause();
 
 	/**
 	 * Resume the Producer.
 	 */
-	task_t<void> resume();
+	std::future<void> resume();
 
 	/**
 	 * Enable "trace" event.
 	 */
-	task_t<void> enableTraceEvent(std::vector<std::string> types);
+	std::future<void> enableTraceEvent(std::vector<std::string> types);
 
 	//void send(rtpPacket);
 

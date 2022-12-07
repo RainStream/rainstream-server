@@ -76,7 +76,7 @@ namespace protoo
 		this->Send(notification);
 	}
 
-	task_t<json> Peer::request(std::string method, const json& data)
+	std::future<json> Peer::request(std::string method, const json& data)
 	{
 		json request = Message::createRequest(method, data);
 
@@ -84,12 +84,12 @@ namespace protoo
 
 		MSC_DEBUG("request() [method:%s, id:%d]", method.c_str(), id);		
 
-		promise_t<json> promise;
+		std::promise<json> promise;
 		this->_sents.insert(std::make_pair(id, std::move(promise)));
 
 		this->Send(request);
 
-		return this->_sents[id].get_return_object();
+		return this->_sents[id].get_future();
 	}
 
 	void Peer::onMessage(const std::string& message)
@@ -149,17 +149,16 @@ namespace protoo
 			return;
 		}
 
-		promise_t<json> sent = std::move(this->_sents[id]);
+		std::promise<json> sent = std::move(this->_sents[id]);
 		this->_sents.erase(id);
 
 		if (response.count("ok") && response["ok"].get<bool>())
 		{
-			sent.return_value(response["data"]);
+			sent.set_value(response["data"]);
 		}
 		else
 		{
-			//sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
-			sent.unhandled_exception();
+			sent.set_exception(std::make_exception_ptr(Error(response["errorReason"])));
 		}
 	}
 }

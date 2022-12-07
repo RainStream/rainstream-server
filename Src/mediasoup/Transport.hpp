@@ -177,37 +177,37 @@ public:
 	/**
 	 * Dump Transport.
 	 */
-	task_t<json> dump();
+	std::future<json> dump();
 
 	/**
 	 * Get Transport stats.
 	 *
 	 * @abstract
 	 */
-	virtual task_t<json> getStats();
+	virtual std::future<json> getStats();
 
 	/**
 	 * Provide the Transport remote parameters.
 	 *
 	 * @abstract
 	 */
-	virtual task_t<void> connect(json& params);
+	virtual std::future<void> connect(json& params);
 
 	/**
 	 * Set maximum incoming bitrate for receiving media.
 	 */
 
-	task_t<void> setMaxIncomingBitrate(uint32_t bitrate);
+	std::future<void> setMaxIncomingBitrate(uint32_t bitrate);
 
 	/**
 	 * Set maximum outgoing bitrate for sending media.
 	 */
-	task_t<void> setMaxOutgoingBitrate(uint32_t bitrate);
+	std::future<void> setMaxOutgoingBitrate(uint32_t bitrate);
 
 	/**
 	 * Create a Producer.
 	 */
-	task_t<Producer*> produce(
+	std::future<Producer*> produce(
 		std::string id,
 		std::string kind,
 		json rtpParameters,
@@ -221,22 +221,22 @@ public:
 	 *
 	 * @virtual
 	 */
-	virtual task_t<Consumer*> consume(ConsumerOptions& options);
+	virtual std::future<Consumer*> consume(ConsumerOptions& options);
 
 	/**
 	 * Create a DataProducer.
 	 */
- 	task_t<DataProducer*> produceData(DataProducerOptions& options);
+ 	std::future<DataProducer*> produceData(DataProducerOptions& options);
 
 	/**
 	 * Create a DataConsumer.
 	 */
- 	task_t<DataConsumer*> consumeData(DataConsumerOptions& options);
+ 	std::future<DataConsumer*> consumeData(DataConsumerOptions& options);
 
 	/**
 	 * Enable "trace" event.
 	 */
-	task_t<void> enableTraceEvent(std::vector<TransportTraceEventType> types);
+	std::future<void> enableTraceEvent(std::vector<TransportTraceEventType> types);
 
  	uint32_t getNextSctpStreamId();
 
