@@ -5,6 +5,8 @@
 #include "Channel.h"
 #include "Logger.h"
 
+namespace mediasoup{
+
 PlainTransport::PlainTransport(const json& internal,
 	const json& data,
 	Channel* channel,
@@ -176,3 +178,4 @@ void PlainTransport::_handleWorkerNotifications()
 	});
 }
 
+}

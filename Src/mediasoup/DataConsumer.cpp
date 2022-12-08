@@ -7,6 +7,7 @@
 #include "PayloadChannel.h"
 #include "DataConsumer.h"
 
+namespace mediasoup {
 
 DataConsumer::DataConsumer(
 	json internal,
@@ -273,4 +274,6 @@ void DataConsumer::_handleWorkerNotifications()
 			}
 
 		});
+}
+
 }

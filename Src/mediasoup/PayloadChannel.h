@@ -2,47 +2,51 @@
 
 #include "EnhancedEventEmitter.h"
 
-class Socket;
+namespace mediasoup {
 
-class PayloadChannel : public EnhancedEventEmitter
-{
-public:
-	/**
-	 * @private
-	 */
-	PayloadChannel(Socket* producerSocket, Socket* consumerSocket);
+	class Socket;
 
-	/**
-	 * @private
-	 */
-	void close();
+	class PayloadChannel : public EnhancedEventEmitter
+	{
+	public:
+		/**
+		 * @private
+		 */
+		PayloadChannel(Socket* producerSocket, Socket* consumerSocket);
 
-	/**
-	 * @private
-	 */
-	void notify(
-		std::string event,
-		json internal,
-		json data = json(),
-		std::string payload = std::string()
-	);
+		/**
+		 * @private
+		 */
+		void close();
 
-private:
-	void _processData(const json& msg);
+		/**
+		 * @private
+		 */
+		void notify(
+			std::string event,
+			json internal,
+			json data = json(),
+			std::string payload = std::string()
+		);
 
-private:
-	// Closed flag.
-	bool _closed = false;
+	private:
+		void _processData(const json& msg);
 
-	// Unix Socket instance for sending messages to the worker process.
-	Socket* _producerSocket;
+	private:
+		// Closed flag.
+		bool _closed = false;
 
-	// Unix Socket instance for receiving messages to the worker process.
-	Socket* _consumerSocket;
+		// Unix Socket instance for sending messages to the worker process.
+		Socket* _producerSocket;
 
-	// Buffer for reading messages from the worker.
-//	Buffer _recvBuffer;
+		// Unix Socket instance for receiving messages to the worker process.
+		Socket* _consumerSocket;
 
-	// Ongoing notification (waiting for its payload).
-//	json _ongoingNotification : { targetId; event; data ? : any };
-};
+		// Buffer for reading messages from the worker.
+	//	Buffer _recvBuffer;
+
+		// Ongoing notification (waiting for its payload).
+	//	json _ongoingNotification : { targetId; event; data ? : any };
+	};
+
+}

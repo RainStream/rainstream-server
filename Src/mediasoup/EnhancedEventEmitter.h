@@ -4,6 +4,8 @@
 #include "common.h"
 #include <EventEmitter.hpp>
 
+namespace mediasoup {
+
 
 class MS_EXPORT EnhancedEventEmitter : public EventEmitter
 {
@@ -37,3 +39,5 @@ public:
 // 	}
 
 };
+
+}

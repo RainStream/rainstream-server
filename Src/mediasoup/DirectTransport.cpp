@@ -9,6 +9,8 @@
 #include "Consumer.h"
 #include "DirectTransport.h"
 
+namespace mediasoup {
+
 DirectTransport::DirectTransport(const json& internal,
 	const json& data,
 	Channel* channel,
@@ -116,3 +118,4 @@ void DirectTransport::_handleWorkerNotifications()
 	});
 }
 
+}

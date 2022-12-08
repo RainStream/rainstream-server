@@ -1,5 +1,7 @@
 #pragma once 
 
+namespace mediasoup {
+
 struct NumSctpStreams
 {
 	/**
@@ -143,3 +145,5 @@ struct SctpStreamParameters
 	 */
 	int32_t maxRetransmits = 0;
 };
+
+}

@@ -1,7 +1,4 @@
-#define MS_CLASS "mediasoup-worker"
-// #define MS_LOG_DEV_LEVEL 3
 
-#include "MediaSoupErrors.hpp"
 #include "lib.hpp"
 #include <cstdlib> // std::_Exit(), std::genenv()
 #include <string>
@@ -16,7 +13,7 @@ int main(int argc, char* argv[])
 	// Ensure we are called by our Node library.
 	if (!std::getenv("MEDIASOUP_VERSION"))
 	{
-		MS_ERROR_STD("you don't seem to be my real father!");
+		throw std::make_exception_ptr("you don't seem to be my real father!");
 
 		std::_Exit(EXIT_FAILURE);
 	}

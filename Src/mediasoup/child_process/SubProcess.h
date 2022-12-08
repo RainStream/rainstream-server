@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "EnhancedEventEmitter.h"
 
+namespace mediasoup {
 
 class Socket;
 
@@ -34,3 +35,5 @@ private:
 
 	std::vector<Socket*> _stdio;
 };
+
+}

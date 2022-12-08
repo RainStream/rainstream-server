@@ -2,6 +2,8 @@
 
 #include "common.h"
 
+namespace mediasoup {
+
 // /**
 //  * The RTP capabilities define what mediasoup or an endpoint can receive at
 //  * media level.
@@ -361,3 +363,5 @@
 // 	 */
 // 	bool mux;
 // };
+
+}

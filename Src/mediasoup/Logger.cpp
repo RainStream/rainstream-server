@@ -7,6 +7,8 @@
 #include <chrono>
 #include "Utils.h"
 
+namespace mediasoup {
+
 /* Class variables. */
 
 Logger::LogHandlerInterface* Logger::handler{ nullptr };
@@ -142,4 +144,6 @@ void Logger::DefaultLogHandler::OnLog(LogLevel level, const char* file, const ch
 	buf[8].len = end_line.length();
 
 	uv_try_write((uv_stream_t*)&tty, buf, buf_size);
+}
+
 }

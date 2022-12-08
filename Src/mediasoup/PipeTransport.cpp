@@ -10,7 +10,7 @@
 #include "Consumer.h"
 #include "Channel.h"
 
-
+namespace mediasoup {
 
 /**
  * @private
@@ -268,4 +268,6 @@ void PipeTransport::_handleWorkerNotifications()
 			MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 		}
 	});
+}
+
 }

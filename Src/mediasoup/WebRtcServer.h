@@ -3,6 +3,8 @@
 #include "EnhancedEventEmitter.h"
 #include "Transport.h"
 
+namespace mediasoup {
+
 class Channel;
 class WebRtcTransport;
 
@@ -144,3 +146,5 @@ private:
 	// Observer instance.
 	EnhancedEventEmitter* _observer;
 };
+
+}

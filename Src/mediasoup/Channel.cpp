@@ -7,6 +7,7 @@
 #include "errors.h"
 #include "child_process/Socket.h"
 
+namespace mediasoup {
 
 // netstring length for a 4194304 bytes payload.
 const int  NS_MESSAGE_MAX_LEN = 4194313;
@@ -229,4 +230,6 @@ void Channel::_processMessage(const json& msg)
 	{
 		MSC_ERROR("received message is not a Response nor a Notification");
 	}
+}
+
 }

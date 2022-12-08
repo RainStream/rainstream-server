@@ -7,7 +7,7 @@
 #include "PayloadChannel.h"
 #include "RtpObserver.h"
 
-
+namespace mediasoup {
 
 RtpObserver::RtpObserver(
 	json internal,
@@ -178,4 +178,6 @@ std::future<void> RtpObserver::removeProducer(std::string producerId)
 
 	// Emit observer event.
 	this->_observer->safeEmit("removeproducer", producer);
+}
+
 }

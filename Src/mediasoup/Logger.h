@@ -47,6 +47,7 @@
 #include <cstdlib> // std::abort()
 #include <cstring>
 
+namespace mediasoup {
 
 class MS_EXPORT Logger
 {
@@ -88,6 +89,7 @@ public:
 	static char buffer[];
 };
 
+}
 
 // clang-format off
 
@@ -186,3 +188,4 @@ public:
 // clang-format on
 
 #endif
+

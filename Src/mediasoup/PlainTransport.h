@@ -2,6 +2,8 @@
 
 #include "Transport.h"
 
+namespace mediasoup {
+
 struct PlainTransportStat
 {
 	// Common to all Transports.
@@ -127,4 +129,4 @@ private:
 	json _data;
 };
 
-
+}

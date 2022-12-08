@@ -10,6 +10,8 @@
 #include <cstdlib> // std::malloc(), std::free()
 #include <cstring> // std::memcpy()
 
+namespace mediasoup {
+
 
  /* Static methods for UV callbacks. */
 
@@ -287,4 +289,6 @@ inline void PipeStreamSocket::OnUvClosed()
 
 	// And delete this.
 	delete this;
+}
+
 }

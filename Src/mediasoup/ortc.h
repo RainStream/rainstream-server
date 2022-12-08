@@ -2,6 +2,9 @@
 
 #include "common.h"
 
+
+namespace mediasoup {
+
 namespace ortc
 {
 	void validateRtpCapabilities(json& caps);
@@ -23,4 +26,6 @@ namespace ortc
 	bool canConsume(json& consumableParams, json& caps);
 	json getConsumerRtpParameters(json& consumableParams, json& caps, bool pipe);
 	json getPipeConsumerRtpParameters(const json& consumableParams, bool enableRtx = false);
+}
+
 }

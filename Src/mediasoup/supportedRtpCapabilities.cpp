@@ -2,8 +2,10 @@
 #include "common.h"
 #include "supportedRtpCapabilities.h"
 
+namespace mediasoup {
+
 json supportedRtpCapabilities =
-R"(
+		R"(
 {
 	"codecs" :
 	[
@@ -384,3 +386,4 @@ R"(
 }
 )"_json;
 
+}

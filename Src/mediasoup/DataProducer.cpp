@@ -7,6 +7,8 @@
 #include "PayloadChannel.h"
 #include "DataProducer.h"
 
+namespace mediasoup {
+
 DataProducer::DataProducer(
 	json internal,
 	json data,
@@ -188,4 +190,6 @@ std::future<json> DataProducer::getStats()
 void DataProducer::_handleWorkerNotifications()
 {
 	// No need to subscribe to any event.
+}
+
 }

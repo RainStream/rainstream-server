@@ -9,6 +9,7 @@
 #include <cstring> // std::memmove()
 #include <sstream> // std::ostringstream
 
+namespace mediasoup {
 
 /* Static. */
 
@@ -111,4 +112,6 @@ void Socket::UserOnPipeStreamSocketClosed(bool isClosedByPeer)
 void Socket::processMessage(const std::string& msg)
 {
 	this->emit("data", msg);
+}
+
 }

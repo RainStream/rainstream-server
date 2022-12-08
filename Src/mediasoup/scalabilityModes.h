@@ -1,4 +1,7 @@
 #pragma once 
 
-nlohmann::json parseScalabilityMode(const std::string& scalabilityMode);
+namespace mediasoup {
 
+	nlohmann::json parseScalabilityMode(const std::string& scalabilityMode);
+
+}

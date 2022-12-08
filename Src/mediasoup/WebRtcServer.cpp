@@ -7,6 +7,7 @@
 #include "errors.h"
 #include "Logger.h"
 
+namespace mediasoup {
 
 WebRtcServer::WebRtcServer(const json& internal, Channel* channel, const json& appData)
 	: _internal(internal)
@@ -128,4 +129,6 @@ void WebRtcServer::handleWebRtcTransport(WebRtcTransport* webRtcTransport)
 		// Emit observer event.
 		this->_observer->safeEmit("webrtctransportunhandled", webRtcTransport);
 	});
+}
+
 }

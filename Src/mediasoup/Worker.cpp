@@ -15,6 +15,8 @@
 #include "lib.hpp"
 #include "child_process/SubProcess.h"
 
+namespace mediasoup {
+
 #define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
 
 #ifdef _DEBUG
@@ -513,4 +515,6 @@ void Worker::workerDied(const Error& error)
 	this->safeEmit("died", error);
 	// Emit observer event.
 	this->_observer->safeEmit("close");
+}
+
 }

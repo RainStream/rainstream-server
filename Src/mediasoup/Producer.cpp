@@ -7,6 +7,8 @@
 #include "Channel.h"
 #include "PayloadChannel.h"
 
+namespace mediasoup {
+
 Producer::Producer(json internal,
 	json data,
 	Channel* channel,
@@ -239,4 +241,4 @@ void Producer::_handleWorkerNotifications()
 	});
 }
 
-
+}

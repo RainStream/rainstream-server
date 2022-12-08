@@ -2,6 +2,8 @@
 
 #include "EnhancedEventEmitter.h"
 
+namespace mediasoup{
+
 class Error;
 class Router;
 class Channel;
@@ -105,3 +107,5 @@ private:
 	// Observer instance.
 	EnhancedEventEmitter* _observer{ nullptr };
 };
+
+}

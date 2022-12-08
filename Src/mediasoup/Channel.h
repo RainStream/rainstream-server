@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include "EnhancedEventEmitter.h"
 
+namespace mediasoup {
+
 class Socket;
 
 class Channel : public EnhancedEventEmitter
@@ -29,3 +31,5 @@ private:
 	// Map of pending sent requests.
 	std::unordered_map<uint32_t, std::promise<json> > _sents;
 };
+
+}

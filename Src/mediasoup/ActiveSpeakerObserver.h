@@ -2,6 +2,8 @@
 
 #include "RtpObserver.h"
 
+namespace mediasoup {
+
 class Producer;
 
 struct ActiveSpeakerObserverOptions
@@ -55,3 +57,5 @@ public:
 private:
 	void handleWorkerNotifications();
 };
+
+}

@@ -1,0 +1,4 @@
+LIBRARY     libmediasoup.dll
+EXPORTS
+            mediasoup_worker_run
+

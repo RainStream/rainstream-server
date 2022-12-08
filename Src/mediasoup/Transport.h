@@ -4,6 +4,8 @@
 #include "SctpParameters.h"
 #include "SrtpParameters.h"
 
+namespace mediasoup {
+
 struct TransportListenIp
 {
 	/**
@@ -278,3 +280,5 @@ protected:
 	// Observer instance.
 	EnhancedEventEmitter* _observer;
 };
+
+}

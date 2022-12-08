@@ -3,6 +3,8 @@
 #include "PipeStreamSocket.h"
 #include "EnhancedEventEmitter.h"
 
+namespace mediasoup {
+
 class Socket : public PipeStreamSocket, public EnhancedEventEmitter
 {
 public:
@@ -36,3 +38,5 @@ private:
 	size_t msgStart{ 0 }; // Where the latest message starts.
 	bool closed{ false };
 };
+
+}

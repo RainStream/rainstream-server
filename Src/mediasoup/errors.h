@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+namespace mediasoup {
 
 class Error : public std::runtime_error
 {
@@ -132,3 +133,5 @@ namespace errors
 		std::snprintf(buffer, 2000, desc, ##__VA_ARGS__); \
 		throw InvalidStateError(buffer); \
 	} while (false)
+
+}

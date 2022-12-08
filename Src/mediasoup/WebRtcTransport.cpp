@@ -6,6 +6,8 @@
 #include "Logger.h"
 #include "SctpParameters.h"
 
+namespace mediasoup {
+
 /**
  * @private
  * @emits icestatechange - (iceState: IceState)
@@ -308,3 +310,4 @@ void WebRtcTransport::_handleWorkerNotifications()
 	});
 }
 
+}

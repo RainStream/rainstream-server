@@ -18,6 +18,8 @@
 #include <string>
 
 
+namespace mediasoup {
+
 // Static functions declaration.
 static bool isRtxCodec(const json& codec);
 static bool matchCodecs(json& aCodec, json& bCodec, bool strict = false, bool modify = false);
@@ -1568,4 +1570,6 @@ static std::string getVP9ProfileId(const json& codec)
 		return std::to_string(profileIdIt->get<int32_t>());
 	else
 		return profileIdIt->get<std::string>();
+}
+
 }

@@ -3,6 +3,8 @@
 #include "EnhancedEventEmitter.h"
 #include "RtpObserver.h"
 
+namespace mediasoup {
+
 
 struct AudioLevelObserverOptions
 {
@@ -75,3 +77,5 @@ private:
 	void _handleWorkerNotifications();
 
 };
+
+}

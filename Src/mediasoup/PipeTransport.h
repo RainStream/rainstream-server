@@ -2,6 +2,8 @@
 
 #include "Transport.h"
 
+namespace mediasoup {
+
 class Producer;
 class Consumer;
 class PayloadChannel;
@@ -108,3 +110,5 @@ private:
 	json _data;
 
 };
+
+}

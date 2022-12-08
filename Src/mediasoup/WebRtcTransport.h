@@ -3,6 +3,8 @@
 #include "EnhancedEventEmitter.h"
 #include "Transport.h"
 
+namespace mediasoup {
+
 class WebRtcServer;
 
 using IceState = std::string;// "new" | "connected" | "completed" | "disconnected" | "closed";
@@ -355,3 +357,5 @@ private:
 	// WebRtcTransport data.
 	json _data;
 };
+
+}

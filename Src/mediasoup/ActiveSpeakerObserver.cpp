@@ -5,6 +5,7 @@
 #include "Channel.h"
 #include "ActiveSpeakerObserver.h"
 
+namespace mediasoup {
 
 ActiveSpeakerObserver::ActiveSpeakerObserver(json internal,
 	Channel* channel,
@@ -43,4 +44,6 @@ void ActiveSpeakerObserver::handleWorkerNotifications()
 				MSC_ERROR("ignoring unknown event \"%s\"", event.c_str());
 			}
 		});
+}
+
 }

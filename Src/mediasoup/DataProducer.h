@@ -4,6 +4,8 @@
 #include "EnhancedEventEmitter.h"
 #include "SctpParameters.h"
 
+namespace mediasoup {
+
 class Channel;
 class PayloadChannel;
 
@@ -187,3 +189,5 @@ private:
 	// Observer instance.
 	EnhancedEventEmitter* _observer;
 };
+
+}

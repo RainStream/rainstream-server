@@ -1,5 +1,7 @@
 #pragma once 
 
+namespace mediasoup {
+
 /**
  * SRTP crypto suite.
  */
@@ -48,4 +50,4 @@ struct SrtpParameters
 	std::string keyBase64;
 };
 
-
+}

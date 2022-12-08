@@ -6,6 +6,8 @@
 #include "errors.h"
 #include "child_process/Socket.h"
 
+namespace mediasoup {
+
 class Socket;
 
 // netstring length for a 4194304 bytes payload.
@@ -173,3 +175,4 @@ void PayloadChannel::_processData(const json& msg)
 // 	}
 }
 
+}

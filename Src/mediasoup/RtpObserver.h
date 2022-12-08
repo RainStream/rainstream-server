@@ -2,6 +2,8 @@
 
 #include "EnhancedEventEmitter.h"
 
+namespace mediasoup {
+
 class Channel;
 class Producer;
 class PayloadChannel;
@@ -94,3 +96,5 @@ protected:
 	// Observer instance.
 	EnhancedEventEmitter* _observer{ nullptr };
 };
+
+}

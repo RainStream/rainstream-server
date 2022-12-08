@@ -4,6 +4,8 @@
 #include <string>
 #include "Logger.h"
 
+namespace mediasoup {
+
 class PipeStreamSocket
 {
 public:
@@ -85,3 +87,4 @@ inline void PipeStreamSocket::Write(const std::string& data)
 	Write(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
 }
 
+}

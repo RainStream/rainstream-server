@@ -14,6 +14,8 @@
 #include "DataConsumer.h"
 //#include "SctpParameters.h"
 
+namespace mediasoup {
+
 Transport::Transport(
 	const json& internal,
 	const json& data,
@@ -737,4 +739,6 @@ uint32_t Transport::getNextSctpStreamId()
 	}
 
 	MSC_THROW_ERROR("no sctpStreamId available");
+}
+
 }

@@ -20,6 +20,8 @@
 #include "AudioLevelObserver.h"
 #include "ActiveSpeakerObserver.h"
 
+namespace mediasoup {
+
 //#include "PayloadChannel.h"
 //#include "Directtransport->hpp"
 
@@ -803,3 +805,4 @@ bool Router::canConsume(std::string producerId, json& rtpCapabilities)
 	}
 }
 
+}

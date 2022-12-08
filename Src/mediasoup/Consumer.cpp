@@ -7,6 +7,7 @@
 #include "Logger.h"
 #include "errors.h"
 
+namespace mediasoup {
 
 Consumer::Consumer(
 	json internal,
@@ -378,3 +379,4 @@ void Consumer::_handleWorkerNotifications()
 	});
 }
 
+}

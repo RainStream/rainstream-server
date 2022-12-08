@@ -5,12 +5,11 @@
 #include "Logger.h"
 #include <regex>
 
-
+namespace mediasoup {
 static const std::regex ScalabilityModeRegex(
 	"^[LS]([1-9]\\d{0,1})T([1-9]\\d{0,1})(_KEY)?", std::regex_constants::ECMAScript);
 
-// namespace mediasoupclient
-// {
+
 	json parseScalabilityMode(const std::string& scalabilityMode)
 	{
 		/* clang-format off */
@@ -46,4 +45,4 @@ static const std::regex ScalabilityModeRegex(
 
 		return jsonScalabilityMode;
 	}
-//} // namespace mediasoupclient
+}

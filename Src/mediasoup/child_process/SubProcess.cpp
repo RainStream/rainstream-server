@@ -6,6 +6,8 @@
 #include "Logger.h"
 #include "utils.h"
 
+namespace mediasoup {
+
 /* Static. */
 
 // netstring length for a 65536 bytes payload.
@@ -188,4 +190,6 @@ void SubProcess::OnUvReqClosed(int64_t exit_status, int term_signal)
 
 	MSC_ERROR("child process exited code:%lld, signal:%d",
 		exit_status, term_signal);
+}
+
 }
