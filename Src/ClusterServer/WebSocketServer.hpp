@@ -6,6 +6,8 @@
 #include <uwebsockets/App.h>
 #include <uwebsockets/WebSocket.h>
 
+using namespace mediasoup;
+
 namespace protoo {
 
 class WebSocketClient;

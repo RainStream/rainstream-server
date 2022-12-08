@@ -5,10 +5,14 @@
 #include "common.h"
 #include <EnhancedEventEmitter.h>
 
+namespace mediasoup{
 class Router;
 class Transport;
 class DataProducer;
 class DataConsumer;
+}
+
+using namespace mediasoup;
 
 namespace protoo
 {

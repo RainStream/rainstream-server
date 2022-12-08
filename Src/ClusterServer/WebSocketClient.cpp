@@ -7,6 +7,8 @@
 #include <uwebsockets/App.h>
 #include <uwebsockets/WebSocket.h>
 
+using namespace mediasoup;
+
 namespace protoo {
 
 WebSocketClient::WebSocketClient(std::string url)

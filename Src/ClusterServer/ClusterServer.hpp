@@ -11,9 +11,15 @@ namespace protoo
 	class WebSocketClient;
 }
 
+namespace mediasoup {
+	
+	class Worker;
+	class WebRtcServer;
+}
+
+using namespace mediasoup;
+
 class Room;
-class Worker;
-class WebRtcServer;
 
 class ClusterServer : public protoo::WebSocketServer::Lisenter
 {

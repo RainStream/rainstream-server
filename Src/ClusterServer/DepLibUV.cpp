@@ -6,6 +6,8 @@
 #include <cstdlib> // std::abort()
 #include <uwebsockets/App.h>
 
+using namespace mediasoup;
+
 /* Static variables. */
 
 thread_local uv_loop_t* DepLibUV::loop{ nullptr };

@@ -5,11 +5,15 @@
 #include "WebSocketClient.hpp"
 #include <EnhancedEventEmitter.h>
 
+namespace mediasoup {
 class Transport;
 class Producer;
 class Consumer;
 class DataProducer;
 class DataConsumer;
+}
+
+using namespace mediasoup;
 
 using Accept = std::function<void(json&)>;
 using Reject = std::function<void(int, std::string)>;

@@ -13,12 +13,16 @@ namespace protoo
 	class WebSocketClient;
 }
 
-class Bot;
-class Router;
-class Worker;
-class WebRtcServer;
-class AudioLevelObserver;
+namespace mediasoup {
+	class Router;
+	class Worker;
+	class WebRtcServer;
+	class AudioLevelObserver;
+}
 
+using namespace mediasoup;
+
+class Bot;
 
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
