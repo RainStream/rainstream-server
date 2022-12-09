@@ -13,7 +13,7 @@
  * MSC_TRACE()
  *
  *   Logs the current method/function if MSC_LOG_TRACE macro is defined and
- *   logLevel is 'debug'.
+ *   logLevel() is 'debug'.
  *
  * MSC_DEBUG(...)
  *
@@ -46,6 +46,7 @@
 #include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
 #include <cstdlib> // std::abort()
 #include <cstring>
+#include "Utils.h"
 
 namespace mediasoup {
 
@@ -64,8 +65,8 @@ public:
 	class LogHandlerInterface
 	{
 	public:
-		virtual void OnLog(LogLevel level, char* payload, size_t len) = 0;
-		virtual void OnLog(LogLevel level, const char* file, const char* function, const char* className, char* payload, size_t len) = 0;
+		virtual void OnLog(LogLevel level, const std::string& payload) = 0;
+		virtual void OnLog(LogLevel level, const char* file, const char* function, const char* className, const std::string& payload) = 0;
 	};
 
 	class DefaultLogHandler : public LogHandlerInterface
@@ -74,8 +75,8 @@ public:
 		DefaultLogHandler();
 		virtual ~DefaultLogHandler();
 
-		void OnLog(LogLevel level, char* payload, size_t len) override;
-		void OnLog(LogLevel level, const char* file, const char* function, const char* className, char* payload, size_t len) override;
+		void OnLog(LogLevel level, const std::string& payload) override;
+		void OnLog(LogLevel level, const char* file, const char* function, const char* className, const std::string& payload) override;
 	};
 
 	static void SetLogLevel(LogLevel level);
@@ -83,10 +84,8 @@ public:
 	static void SetDefaultHandler();
 	static void ShutDown();
 public:
-	static LogLevel logLevel;
-	static LogHandlerInterface* handler;
-	static const size_t bufferSize{ 50000 };
-	static char buffer[];
+	static LogLevel logLevel();
+	static LogHandlerInterface * handler();
 };
 
 }
@@ -114,11 +113,11 @@ public:
 #define MSC_TRACE() \
 		do \
 		{ \
-			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
+			if (Logger::handler() && Logger::logLevel() == Logger::LogLevel::LOG_DEBUG) \
 			{ \
-				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, _MSC_LOG_STR, _MSC_LOG_ARG); \
-				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, Logger::buffer, loggerWritten); \
-				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, __FILE__, __FUNCTION__, MSC_CLASS, Logger::buffer, loggerWritten); \
+				std::string payload = Utils::Printf(desc, ##__VA_ARGS__); \
+				Logger::handler()->OnLog(Logger::LogLevel::LOG_TRACE, payload); \
+				Logger::handler()->OnLog(Logger::LogLevel::LOG_TRACE, __FILE__, __FUNCTION__, MSC_CLASS, payload); \
 			} \
 		} \
 		while (false)
@@ -129,11 +128,11 @@ public:
 #define MSC_DEBUG(desc, ...) \
 	do \
 	{ \
-		if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
+		if (Logger::handler() && Logger::logLevel() == Logger::LogLevel::LOG_DEBUG) \
 		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, desc, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, __FILE__, __FUNCTION__, MSC_CLASS, Logger::buffer, loggerWritten); \
+			std::string payload = Utils::Printf(desc, ##__VA_ARGS__); \
+			Logger::handler()->OnLog(Logger::LogLevel::LOG_DEBUG, payload); \
+			Logger::handler()->OnLog(Logger::LogLevel::LOG_DEBUG, __FILE__, __FUNCTION__, MSC_CLASS, payload); \
 		} \
 	} \
 	while (false)
@@ -141,11 +140,11 @@ public:
 #define MSC_WARN(desc, ...) \
 	do \
 	{ \
-		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_WARN) \
+		if (Logger::handler() && Logger::logLevel() >= Logger::LogLevel::LOG_WARN) \
 		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, desc, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, Logger::buffer, loggerWritten); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, __FILE__, __FUNCTION__, MSC_CLASS, Logger::buffer, loggerWritten); \
+			std::string payload = Utils::Printf(desc, ##__VA_ARGS__); \
+			Logger::handler()->OnLog(Logger::LogLevel::LOG_WARN, payload); \
+			Logger::handler()->OnLog(Logger::LogLevel::LOG_WARN, __FILE__, __FUNCTION__, MSC_CLASS, payload); \
 		} \
 	} \
 	while (false)
@@ -153,11 +152,11 @@ public:
 #define MSC_ERROR(desc, ...) \
 	do \
 	{ \
-		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_ERROR) \
+		if (Logger::handler() && Logger::logLevel() >= Logger::LogLevel::LOG_ERROR) \
 		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, desc, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_ERROR, Logger::buffer, loggerWritten); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_ERROR, __FILE__, __FUNCTION__, MSC_CLASS, Logger::buffer, loggerWritten); \
+			std::string payload = Utils::Printf(desc, ##__VA_ARGS__); \
+			Logger::handler()->OnLog(Logger::LogLevel::LOG_ERROR, payload); \
+			Logger::handler()->OnLog(Logger::LogLevel::LOG_ERROR, __FILE__, __FUNCTION__, MSC_CLASS, payload); \
 		} \
 	} \
 	while (false)

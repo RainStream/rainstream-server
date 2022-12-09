@@ -42,17 +42,17 @@ namespace Utils
 		return std::string(buffer, length);
 	}
 
-	std::string & AppendPrintf(std::string & dst, const char * format, ...);
+	MS_EXPORT std::string & AppendPrintf(std::string & dst, const char * format, ...);
 
-	std::string Printf(const char * format, ...);
+	MS_EXPORT std::string Printf(const char * format, ...);
 
-	std::string ToLowerCase(const std::string& str);
+	MS_EXPORT std::string ToLowerCase(const std::string& str);
 
-	std::string ToUpperCase(const std::string& str);
+	MS_EXPORT std::string ToUpperCase(const std::string& str);
 
-	std::string join(const AStringVector& vec, const std::string & delimeter);
+	MS_EXPORT std::string join(const AStringVector& vec, const std::string & delimeter);
 
-	json clone(const json& item);
+	MS_EXPORT json clone(const json& item);
 
 	class Json
 	{
@@ -80,7 +80,7 @@ namespace Utils
 }
 
 
-std::string uuidv4();
+MS_EXPORT std::string uuidv4();
 
 template<class K, class V>
 V GetMapValue(const std::map<K, V>& maps, K key)
@@ -123,11 +123,11 @@ private:
 };
 
 
-uint64_t Invoke(MessageData* message_data,
+MS_EXPORT uint64_t Invoke(MessageData* message_data,
 	uint64_t timeout = 0, 
 	uint64_t repeat = 0);
 
-void InvokeOnce(MessageData* message_data,
+MS_EXPORT void InvokeOnce(MessageData* message_data,
 	uint64_t timeout = 0,
 	uint64_t repeat = 0);
 

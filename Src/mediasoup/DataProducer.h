@@ -80,7 +80,7 @@ struct DataProducerStat
  */
 using DataProducerType = std::string; // "sctp" | "direct";
 
-class DataProducer : public EnhancedEventEmitter
+class MS_EXPORT DataProducer : public EnhancedEventEmitter
 {
 public:
 	/**

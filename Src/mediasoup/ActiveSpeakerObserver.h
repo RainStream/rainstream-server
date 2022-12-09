@@ -37,7 +37,7 @@ struct ActiveSpeakerObserverActivity
 //type RtpObserverObserverConstructorOptions = RtpObserverConstructorOptions;
 
 
-class ActiveSpeakerObserver : public RtpObserver
+class MS_EXPORT ActiveSpeakerObserver : public RtpObserver
 {
 public:
 	/**

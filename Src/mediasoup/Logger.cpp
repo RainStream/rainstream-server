@@ -11,9 +11,8 @@ namespace mediasoup {
 
 /* Class variables. */
 
-Logger::LogHandlerInterface* Logger::handler{ nullptr };
-char Logger::buffer[Logger::bufferSize];
-Logger::LogLevel Logger::logLevel = Logger::LogLevel::LOG_NONE;
+static Logger::LogHandlerInterface* ghandler{ nullptr };
+static Logger::LogLevel glogLevel = Logger::LogLevel::LOG_NONE;
 
 static uv_tty_t tty;
 std::chrono::time_point<std::chrono::steady_clock> last_time_point;
@@ -24,27 +23,37 @@ std::map<std::string, std::string> classColorMap;
 
 void Logger::SetLogLevel(Logger::LogLevel level)
 {
-	Logger::logLevel = level;
+	glogLevel = level;
 }
 
 void Logger::SetHandler(LogHandlerInterface* handler)
 {
-	Logger::handler = handler;
+	ghandler = handler;
 }
 
 void Logger::SetDefaultHandler()
 {
-	Logger::handler = new Logger::DefaultLogHandler();
+	ghandler = new Logger::DefaultLogHandler();
 }
 
 void Logger::ShutDown()
 {
 	if (Logger::handler)
 	{
-		delete Logger::handler;
+		delete ghandler;
 	}
 
-	Logger::handler = nullptr;
+	ghandler = nullptr;
+}
+
+Logger::LogLevel Logger::logLevel()
+{
+	return glogLevel;
+}
+
+Logger::LogHandlerInterface* Logger::handler()
+{
+	return ghandler;
 }
 
 /* DefaultLogHandler */
@@ -68,12 +77,12 @@ Logger::DefaultLogHandler::~DefaultLogHandler()
 	uv_tty_reset_mode();
 }
 
-void Logger::DefaultLogHandler::OnLog(LogLevel /*level*/, char* payload, size_t /*len*/)
+void Logger::DefaultLogHandler::OnLog(LogLevel /*level*/, const std::string& payload)
 {
 	
 }
 
-void Logger::DefaultLogHandler::OnLog(LogLevel level, const char* file, const char* function, const char* className, char* payload, size_t len)
+void Logger::DefaultLogHandler::OnLog(LogLevel level, const char* file, const char* function, const char* className, const std::string& payload)
 {
 	auto current_time_point = std::chrono::steady_clock::now();
 	int duration_millsecond = std::chrono::duration<double, std::milli>(current_time_point - last_time_point).count();
@@ -128,8 +137,8 @@ void Logger::DefaultLogHandler::OnLog(LogLevel level, const char* file, const ch
 	buf[3].base = class_color_end.data();
 	buf[3].len = class_color_end.length();
 
-	buf[4].base = payload;
-	buf[4].len = len;
+	buf[4].base = (char*)payload.data();
+	buf[4].len = payload.length();
 
 	buf[5].base = class_color_start.data();
 	buf[5].len = class_color_start.length();

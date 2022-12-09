@@ -52,7 +52,7 @@ struct DataConsumerOptions
 using DataConsumerType = std::string; // "sctp" | "direct";
 
 
-class DataConsumer : public EnhancedEventEmitter
+class MS_EXPORT DataConsumer : public EnhancedEventEmitter
 {
 public:
 	/**

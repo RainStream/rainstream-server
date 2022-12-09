@@ -10,7 +10,7 @@ class PayloadChannel;
 
 using GetProducerById = std::function<Producer*(std::string)>;
 
-class RtpObserver : public EnhancedEventEmitter
+class MS_EXPORT RtpObserver : public EnhancedEventEmitter
 {
 public:
 	/**

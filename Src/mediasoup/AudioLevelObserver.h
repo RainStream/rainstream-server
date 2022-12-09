@@ -56,7 +56,7 @@ struct AudioLevelObserverVolume
 	int8_t volume;
 };
 
-class AudioLevelObserver : public RtpObserver
+class MS_EXPORT AudioLevelObserver : public RtpObserver
 {
 public:
 	/**

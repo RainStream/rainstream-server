@@ -7,7 +7,7 @@ namespace mediasoup {
 
 class Socket;
 
-class Channel : public EnhancedEventEmitter
+class MS_EXPORT Channel : public EnhancedEventEmitter
 {
 public:
 	Channel(Socket* producerSocket, Socket* consumerSocket, int pid);

@@ -4,7 +4,9 @@
 #include "handles/SignalsHandler.hpp"
 #include "DepLibUV.hpp"
 #include "Logger.h"
-#include "errors.hpp"
+#include "errors.h"
+
+using namespace mediasoup;
 
 /* Static methods for UV callbacks. */
 

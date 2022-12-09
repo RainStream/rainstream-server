@@ -21,7 +21,7 @@ struct DirectTransportOptions
 	json appData;
 };
 
-class DirectTransport : public Transport
+class MS_EXPORT DirectTransport : public Transport
 {
 public:
 	/**
