@@ -272,8 +272,6 @@ Worker::Worker(json settings)
 // 	});
 
 
-	std::string version = __MEDIASOUP_VERSION__;
-
 	ChannelNative* channelNative = new ChannelNative;
 	PayloadChannelNative* payloadChannelNative = new PayloadChannelNative;
 
@@ -288,7 +286,7 @@ Worker::Worker(json settings)
 		auto statusCode = mediasoup_worker_run(
 			spawnArgs.size(),
 			(char**)vecArgs.data(),
-			version.c_str(),
+			__MEDIASOUP_VERSION__,
 			0,
 			0,
 			0,
