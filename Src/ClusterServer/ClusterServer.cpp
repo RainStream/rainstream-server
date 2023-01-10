@@ -98,7 +98,7 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	this->_queue.push([=]()->std::future<void>
+	/*this->_queue.push([=]()->std::future<void>
 	{	
 		MSC_WARN("after push std::future [peerId:%s]", peerId.c_str());
 		Room* room = co_await getOrCreateRoom(roomId);
@@ -109,7 +109,7 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 		auto transport = accept();
 
 		room->handleConnection(peerId, true, transport);
-	});
+	});*/
 }
 
 

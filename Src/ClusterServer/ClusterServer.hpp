@@ -41,7 +41,7 @@ protected:
 	std::future<Room*> getOrCreateRoom(std::string roomId);
 
 private:
-	protoo::WebSocketServer* _webSocketServer = nullptr;
+	protoo::WebSocketServer* _webSocketServer;
 
 	std::vector<Worker*> _mediasoupWorkers;
 
@@ -49,7 +49,7 @@ private:
 
 	std::map<std::string, Room*> _rooms;
 
-	AwaitQueue<void> _queue;
+	//AwaitQueue<void> _queue;
 };
 
 #endif

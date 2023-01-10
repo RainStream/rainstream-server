@@ -8,13 +8,9 @@
     <Filter Include="child_process">
       <UniqueIdentifier>{27206aec-8d08-4d12-85af-2f5b9191a31b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="include">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+      <Extensions>h;hpp;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="webrtc">
       <UniqueIdentifier>{0a47babb-8595-409f-be0d-7dc94da5e809}</UniqueIdentifier>
@@ -39,6 +35,12 @@
     </Filter>
     <Filter Include="webrtc\rtc_base\numerics">
       <UniqueIdentifier>{bc8beb8f-39f6-43a6-9905-d87fb0e7094b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Worker">
+      <UniqueIdentifier>{49f221c3-201e-4876-98ba-a22802968cbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Channel">
+      <UniqueIdentifier>{801b9115-5e22-4946-b8c0-ae095ddb17df}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -138,6 +140,18 @@
     <ClCompile Include="DirectTransport.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Channel\ChannelNative.cpp">
+      <Filter>Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="Channel\ChannelOrigin.cpp">
+      <Filter>Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="Worker\WorkerNative.cpp">
+      <Filter>Worker</Filter>
+    </ClCompile>
+    <ClCompile Include="Worker\WorkerOrigin.cpp">
+      <Filter>Worker</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="child_process\PipeStreamSocket.h">
@@ -148,90 +162,6 @@
     </ClInclude>
     <ClInclude Include="child_process\SubProcess.h">
       <Filter>child_process</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Channel.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Worker.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="errors.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioLevelObserver.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Consumer.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="DataConsumer.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="DataProducer.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectTransport.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="ortc.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="PayloadChannel.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="PipeTransport.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="PlainTransport.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Producer.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Router.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="RtpObserver.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="RtpParameters.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="SctpParameters.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="SrtpParameters.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="supportedRtpCapabilities.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Transport.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="WebRtcTransport.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="scalabilityModes.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="EnhancedEventEmitter.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="ActiveSpeakerObserver.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="WebRtcServer.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="webrtc\api\video_codecs\h264_profile_level_id.h">
       <Filter>webrtc\api\video_codecs</Filter>
@@ -262,6 +192,102 @@
     </ClInclude>
     <ClInclude Include="webrtc\rtc_base\arraysize.h">
       <Filter>webrtc\rtc_base</Filter>
+    </ClInclude>
+    <ClInclude Include="ActiveSpeakerObserver.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioLevelObserver.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Channel.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Consumer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DataConsumer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DataProducer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectTransport.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="EnhancedEventEmitter.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="errors.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ortc.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="PayloadChannel.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="PipeTransport.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="PlainTransport.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Producer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Router.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="RtpObserver.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="RtpParameters.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="scalabilityModes.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="SctpParameters.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="SrtpParameters.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="supportedRtpCapabilities.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Transport.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="WebRtcServer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="WebRtcTransport.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Worker.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Channel\ChannelNative.h">
+      <Filter>Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="Channel\ChannelOrigin.h">
+      <Filter>Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="Worker\WorkerNative.h">
+      <Filter>Worker</Filter>
+    </ClInclude>
+    <ClInclude Include="Worker\WorkerOrigin.h">
+      <Filter>Worker</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

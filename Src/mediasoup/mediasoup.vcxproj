@@ -172,6 +172,8 @@
     <ClCompile Include="ActiveSpeakerObserver.cpp" />
     <ClCompile Include="AudioLevelObserver.cpp" />
     <ClCompile Include="Channel.cpp" />
+    <ClCompile Include="Channel\ChannelNative.cpp" />
+    <ClCompile Include="Channel\ChannelOrigin.cpp" />
     <ClCompile Include="child_process\PipeStreamSocket.cpp" />
     <ClCompile Include="child_process\Socket.cpp" />
     <ClCompile Include="child_process\SubProcess.cpp" />
@@ -201,11 +203,15 @@
     <ClCompile Include="webrtc\rtc_base\checks.cc" />
     <ClCompile Include="webrtc\rtc_base\string_to_number.cc" />
     <ClCompile Include="Worker.cpp" />
+    <ClCompile Include="Worker\WorkerNative.cpp" />
+    <ClCompile Include="Worker\WorkerOrigin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActiveSpeakerObserver.h" />
     <ClInclude Include="AudioLevelObserver.h" />
     <ClInclude Include="Channel.h" />
+    <ClInclude Include="Channel\ChannelNative.h" />
+    <ClInclude Include="Channel\ChannelOrigin.h" />
     <ClInclude Include="child_process\PipeStreamSocket.h" />
     <ClInclude Include="child_process\Socket.h" />
     <ClInclude Include="child_process\SubProcess.h" />
@@ -244,6 +250,8 @@
     <ClInclude Include="webrtc\rtc_base\system\rtc_export.h" />
     <ClInclude Include="webrtc\rtc_base\type_traits.h" />
     <ClInclude Include="Worker.h" />
+    <ClInclude Include="Worker\WorkerNative.h" />
+    <ClInclude Include="Worker\WorkerOrigin.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
