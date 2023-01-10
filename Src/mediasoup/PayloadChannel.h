@@ -10,18 +10,18 @@ class MS_EXPORT PayloadChannel : public EnhancedEventEmitter
 {
 public:
 	/**
-		* @private
-		*/
-	PayloadChannel(Socket* producerSocket, Socket* consumerSocket);
+	* @private
+	*/
+	PayloadChannel();
 
 	/**
-		* @private
-		*/
+	* @private
+	*/
 	void close();
 
 	/**
-		* @private
-		*/
+	* @private
+	*/
 	void notify(
 		std::string event,
 		json internal,
@@ -31,16 +31,11 @@ public:
 
 private:
 	void _processData(const json& msg);
+	virtual void subClose() = 0;
 
 private:
 	// Closed flag.
 	bool _closed = false;
-
-	// Unix Socket instance for sending messages to the worker process.
-	Socket* _producerSocket;
-
-	// Unix Socket instance for receiving messages to the worker process.
-	Socket* _consumerSocket;
 
 	// Buffer for reading messages from the worker.
 //	Buffer _recvBuffer;

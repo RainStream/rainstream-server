@@ -12,116 +12,24 @@
 #include "PayloadChannel.h"
 #include "WebRtcServer.h"
 #include "Utils.h"
-#include "lib.hpp"
-#include "child_process/SubProcess.h"
+#include "Worker/WorkerNative.h"
+#include "Worker/WorkerOrigin.h"
 
 namespace mediasoup {
 
-#define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
-
-#ifdef _DEBUG
-#define WORK_PATH "mediasoup-worker.exe"
-#else
-#define WORK_PATH "mediasoup-worker.exe"
-#endif
-
-
-class ChannelNative
+Worker* Worker::Create(json settings, bool native)
 {
-public:
-	static ChannelReadFreeFn channelReadFn(uint8_t** message,
-		uint32_t* messageLen,
-		size_t* messageCtx,
-		// This is `uv_async_t` handle that can be called later with `uv_async_send()` when there is more
-		// data to read.
-		const void* handle,
-		ChannelReadCtx ctx)
+	Worker* worker;
+
+	if (native)
 	{
-
-		ChannelNative* pThis = (ChannelNative*)ctx;
-
-		//return channelReadFreeFn;
-		return pThis->ProduceMessage(message, messageLen, messageCtx, handle) ? nullptr : nullptr;
+		worker = new WorkerNative(settings);
+	}
+	else
+	{
+		worker = new WorkerOrigin(settings);
 	}
 
-	static void channelReadFreeFn(uint8_t*, uint32_t, size_t)
-	{
-
-	}
-
-	static void channelWriteFn(const uint8_t* message, uint32_t messageLen, ChannelWriteCtx /* ctx */)
-	{
-		std::string strMsg((const char*)message, messageLen);
-
-		printf("channelWriteFn:%s\n", strMsg.c_str());
-	}
-
-	bool ProduceMessage(uint8_t** message, uint32_t* messageLen, size_t* messageCtx, const void* handle)
-	{
-
-		this->_handle = reinterpret_cast<uv_async_t*>(const_cast<void*>(handle));
-		return false;
-	}
-
-	void sendMessage(std::string msg)
-	{
-		if (_handle)
-		{
-			uv_async_send(_handle);
-		}
-	}
-
-protected:
-	uv_async_t* _handle;
-};
-
-class PayloadChannelNative
-{
-public:
-	static PayloadChannelReadFreeFn payloadChannelReadFreeFn(
-		uint8_t** message,
-		uint32_t* messageLen,
-		size_t* messageCtx,
-		uint8_t** payload,
-		uint32_t* payloadLen,
-		size_t* payloadCapacity,
-		// This is `uv_async_t` handle that can be called later with `uv_async_send()` when there is more
-		// data to read.
-		const void* handle,
-		PayloadChannelReadCtx ctx)
-	{
-
-		//uv_async_send((uv_async_t*)handle);
-		//return payloadChannelReadFreeFn;
-		return nullptr;
-	}
-
-	static void payloadChannelReadFreeFn(uint8_t*, uint32_t, size_t)
-	{
-
-	}
-
-	static void payloadChannelWriteFn(
-		const uint8_t* message,
-		uint32_t messageLen,
-		const uint8_t* payload,
-		uint32_t payloadLen,
-		ChannelWriteCtx ctx)
-	{
-		std::string strMsg((const char*)message, messageLen);
-		std::string strPayload((const char*)payload, payloadLen);
-
-		printf("%s---->%s\n", strMsg.c_str(), strPayload.c_str());
-	}
-};
-
-
-Worker::Worker(json settings)
-	: _observer(new EnhancedEventEmitter())
-{
-	MSC_DEBUG("constructor()");
-
-	std::string spawnBin = WORK_PATH;
 	AStringVector spawnArgs;
 
 	std::string logLevel = settings.value("logLevel", "");
@@ -152,164 +60,15 @@ Worker::Worker(json settings)
 	if (!dtlsPrivateKeyFile.empty())
 		spawnArgs.push_back(Utils::Printf("--dtlsPrivateKeyFile=%s", dtlsPrivateKeyFile.c_str()));
 
-	json spawnOptions = {
-		{ "env", { {"MEDIASOUP_VERSION", __MEDIASOUP_VERSION__} } },
-		{ "detached", false },
-		{ "stdio", { "ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"} },
-		{ "windowsHide", false }
-	};
+	worker->init(spawnArgs);
 
-	this->_child = SubProcess::spawn(WORK_PATH, spawnArgs, spawnOptions);
+	return worker;
+}
 
-	this->_pid = this->_child->pid();
-
-	this->_channel = new Channel(
-		this->_child->stdio()[3],
-		this->_child->stdio()[4],
-		this->_pid);
-
-	this->_payloadChannel = new PayloadChannel(
-		this->_child->stdio()[5],
-		this->_child->stdio()[6]);
-
-	this->_appData = settings.value("appData", json());
-
-	bool spawnDone = false;
-
-	// Listen for "running" notification.
-	this->_channel->once(std::to_string(this->_pid), [&](std::string event, const json& data)
-	{
-		if (!spawnDone && event == "running")
-		{
-			spawnDone = true;
-
-			MSC_DEBUG("worker process running [pid:%d]", this->_pid);
-
-			this->emit("@success");
-		}
-	});
-
-	this->_child->on("exit", [&](int code, int signal)
-	{
-		this->_child = nullptr;
-		this->close();
-
-		if (!spawnDone)
-		{
-			spawnDone = true;
-
-			if (code == 42)
-			{
-				MSC_ERROR(
-					"worker process failed due to wrong settings [pid:%d]", this->_pid);
-
-				this->emit("@failure", new TypeError("wrong settings"));
-			}
-			else
-			{
-				MSC_ERROR(
-					"worker process failed unexpectedly [pid:%d, code:%d, signal:%d]",
-					this->_pid, code, signal);
-
-				this->emit(
-					"@failure",
-					new Error("[pid:${ this->_pid }, code : ${ code }, signal : ${ signal }]"));
-			}
-		}
-		else
-		{
-			MSC_ERROR(
-				"worker process died unexpectedly [pid:%d, code:%d, signal:%d]",
-				this->_pid, code, signal);
-
-			this->safeEmit(
-				"died",
-				new Error("[pid:${ this->_pid }, code : ${ code }, signal : ${ signal }]"));
-		}
-	});
-
-	this->_child->on("error", [=,&spawnDone](Error error)
-	{
-		this->_child = nullptr;
-		this->close();
-
-		if (!spawnDone)
-		{
-			spawnDone = true;
-
-			MSC_ERROR(
-				"worker process failed [pid:%d]: %s", this->_pid, error.ToString().c_str());
-
-			this->emit("@failure", error);
-		}
-		else
-		{
-			MSC_ERROR(
-				"worker process error [pid:%d]: %s", this->_pid, error.ToString().c_str());
-
-			this->safeEmit("died", error);
-		}
-	});
-
-	// Be ready for 3rd party worker libraries logging to stdout.
-// 	this->_child->stdout!.on("data", (buffer) = >
-// 	{
-// 		for (const line of buffer.toString("utf8").split("\n"))
-// 		{
-// 			if (line)
-// 				workerLogger.debug(`(stdout) $ { line }`);
-// 		}
-// 	});
-// 
-// 	// In case of a worker bug, mediasoup will log to stderr.
-// 	this->_child->stderr!.on("data", (buffer) = >
-// 	{
-// 		for (const line of buffer.toString("utf8").split("\n"))
-// 		{
-// 			if (line)
-// 				workerLogger.error(`(stderr) $ { line }`);
-// 		}
-// 	});
-
-
-	ChannelNative* channelNative = new ChannelNative;
-	PayloadChannelNative* payloadChannelNative = new PayloadChannelNative;
-
-
-	std::vector<char*> vecArgs;
-	for (std::string spawnArg : spawnArgs)
-	{
-		vecArgs.push_back(strdup(spawnArg.c_str()));
-	}
-
-	_work_thread = std::thread([=]() {
-		auto statusCode = mediasoup_worker_run(
-			spawnArgs.size(),
-			(char**)vecArgs.data(),
-			__MEDIASOUP_VERSION__,
-			0,
-			0,
-			0,
-			0,
-			ChannelNative::channelReadFn,
-			channelNative,
-			ChannelNative::channelWriteFn,
-			channelNative,
-			PayloadChannelNative::payloadChannelReadFreeFn,
-			payloadChannelNative,
-			PayloadChannelNative::payloadChannelWriteFn,
-			payloadChannelNative);
-
-	switch (statusCode)
-	{
-	case 0:
-		std::_Exit(EXIT_SUCCESS);
-	case 1:
-		std::_Exit(EXIT_FAILURE);
-	case 42:
-		std::_Exit(42);
-	}
-		});
+Worker::Worker(json settings)
+	: _observer(new EnhancedEventEmitter())
+{
+	MSC_DEBUG("constructor()");
 }
 
 Worker::~Worker()
@@ -359,17 +118,7 @@ void Worker::close()
 
 	this->_closed = true;
 
-	// Kill the worker process.
-	if (this->_child)
-	{
-		// Remove event listeners but leave a fake "error" hander to avoid
-		// propagation.
-		this->_child->removeAllListeners("exit");
-		this->_child->removeAllListeners("error");
-		this->_child->on("error", [](){});
-		//this->_child->kill("SIGTERM");
-		this->_child = nullptr;
-	}
+	this->subClose();
 
 	// Close the Channel instance.
 	this->_channel->close();

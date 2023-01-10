@@ -133,7 +133,7 @@ std::future<void> ClusterServer::runMediasoupWorkers()
 			{ "rtcMaxPort", 49999 }
 		};
 
-		Worker* worker = new Worker(settings);
+		Worker* worker = Worker::Create(settings, false);
 
 		worker->on("died", [=]()
 		{

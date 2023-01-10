@@ -14,10 +14,14 @@ class PayloadChannel;
 
 struct WebRtcServerOptions;
 
+#define __MEDIASOUP_VERSION__ "__MEDIASOUP_VERSION__"
+
 
 class MS_EXPORT Worker : public EnhancedEventEmitter
 {
 public:
+	static Worker* Create(json settings, bool native);
+
 	Worker(json settings);
 
 	virtual ~Worker();
@@ -83,11 +87,10 @@ public:
 private:
 	void workerDied(const Error &error);
 
-private:
-	//
-	std::thread _work_thread;
-	// mediasoup-worker child process.
-	SubProcess* _child{ nullptr };
+protected:
+	virtual void init(AStringVector spawnArgs) = 0;
+	virtual void subClose() = 0;
+protected:
 	// Worker process PID.
 	uint32_t _pid{ 0 };
 	// Channel instance.

@@ -5,27 +5,23 @@
 
 namespace mediasoup {
 
-class Socket;
-
 class MS_EXPORT Channel : public EnhancedEventEmitter
 {
 public:
-	Channel(Socket* producerSocket, Socket* consumerSocket, int pid);
+	Channel();
 
 	void close();
 
-	std::future<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
+	virtual std::future<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json()) = 0;
 
 protected:
 	void _processMessage(const json& msg);
+	virtual void subClose() = 0;
 
-private:
+protected:
 	// Closed flag.
 	bool _closed = false;
-	// Unix Socket instance for sending messages to the worker process.
-	Socket* _producerSocket{ nullptr };
-	// Unix Socket instance for receiving messages to the worker process.
-	Socket* _consumerSocket{ nullptr };
+	
 	// Next id for messages sent to the worker process.
 	int32_t _nextId = 0;
 	// Map of pending sent requests.

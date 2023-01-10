@@ -186,6 +186,8 @@
     <ClCompile Include="common.cpp" />
     <ClCompile Include="ortc.cpp" />
     <ClCompile Include="PayloadChannel.cpp" />
+    <ClCompile Include="PayloadChannel\PayloadChannelNative.cpp" />
+    <ClCompile Include="PayloadChannel\PayloadChannelOrigin.cpp" />
     <ClCompile Include="PipeTransport.cpp" />
     <ClCompile Include="PlainTransport.cpp" />
     <ClCompile Include="Producer.cpp" />
@@ -225,6 +227,8 @@
     <ClInclude Include="common.h" />
     <ClInclude Include="ortc.h" />
     <ClInclude Include="PayloadChannel.h" />
+    <ClInclude Include="PayloadChannel\PayloadChannelNative.h" />
+    <ClInclude Include="PayloadChannel\PayloadChannelOrigin.h" />
     <ClInclude Include="PipeTransport.h" />
     <ClInclude Include="PlainTransport.h" />
     <ClInclude Include="Producer.h" />

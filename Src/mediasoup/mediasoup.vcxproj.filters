@@ -42,6 +42,9 @@
     <Filter Include="Channel">
       <UniqueIdentifier>{801b9115-5e22-4946-b8c0-ae095ddb17df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PayloadChannel">
+      <UniqueIdentifier>{05dca34c-e74b-4dcc-a09a-c0ab0834b378}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="child_process\PipeStreamSocket.cpp">
@@ -151,6 +154,12 @@
     </ClCompile>
     <ClCompile Include="Worker\WorkerOrigin.cpp">
       <Filter>Worker</Filter>
+    </ClCompile>
+    <ClCompile Include="PayloadChannel\PayloadChannelNative.cpp">
+      <Filter>PayloadChannel</Filter>
+    </ClCompile>
+    <ClCompile Include="PayloadChannel\PayloadChannelOrigin.cpp">
+      <Filter>PayloadChannel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -288,6 +297,12 @@
     </ClInclude>
     <ClInclude Include="Worker\WorkerOrigin.h">
       <Filter>Worker</Filter>
+    </ClInclude>
+    <ClInclude Include="PayloadChannel\PayloadChannelNative.h">
+      <Filter>PayloadChannel</Filter>
+    </ClInclude>
+    <ClInclude Include="PayloadChannel\PayloadChannelOrigin.h">
+      <Filter>PayloadChannel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
