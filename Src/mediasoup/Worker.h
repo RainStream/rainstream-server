@@ -22,8 +22,6 @@ class MS_EXPORT Worker : public EnhancedEventEmitter
 public:
 	static Worker* Create(json settings, bool native);
 
-	Worker(json settings);
-
 	virtual ~Worker();
 	/**
 	 * Worker process identifier (PID).
@@ -84,7 +82,8 @@ public:
 	 */
 	std::future<Router*> createRouter(json& mediaCodecs, const json& appData = json::object());
 
-private:
+protected:
+	Worker(json settings);
 	void workerDied(const Error &error);
 
 protected:
