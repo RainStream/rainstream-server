@@ -23,7 +23,7 @@ protected:
 	bool _closed = false;
 	
 	// Next id for messages sent to the worker process.
-	int32_t _nextId = 0;
+	uint32_t _nextId = 0;
 	// Map of pending sent requests.
 	std::unordered_map<uint32_t, std::promise<json> > _sents;
 };

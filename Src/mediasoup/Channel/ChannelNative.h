@@ -8,6 +8,13 @@ namespace mediasoup {
 
 class ChannelNative : public Channel
 {
+protected:
+	struct RequestMessage
+	{
+		uint32_t id;
+		std::string request;
+	};
+
 public:
 	ChannelNative();
 
@@ -17,41 +24,15 @@ public:
 		// This is `uv_async_t` handle that can be called later with `uv_async_send()` when there is more
 		// data to read.
 		const void* handle,
-		ChannelReadCtx ctx)
-	{
+		ChannelReadCtx ctx);
 
-		ChannelNative* pThis = (ChannelNative*)ctx;
+	static void channelReadFreeFn(uint8_t*, uint32_t, size_t);
 
-		//return channelReadFreeFn;
-		return pThis->ProduceMessage(message, messageLen, messageCtx, handle) ? nullptr : nullptr;
-	}
+	static void channelWriteFn(const uint8_t* message, uint32_t messageLen, ChannelWriteCtx /* ctx */);
 
-	static void channelReadFreeFn(uint8_t*, uint32_t, size_t)
-	{
+	bool ProduceMessage(uint8_t** message, uint32_t* messageLen, size_t* messageCtx, const void* handle);
 
-	}
-
-	static void channelWriteFn(const uint8_t* message, uint32_t messageLen, ChannelWriteCtx /* ctx */)
-	{
-		std::string strMsg((const char*)message, messageLen);
-
-		printf("channelWriteFn:%s\n", strMsg.c_str());
-	}
-
-	bool ProduceMessage(uint8_t** message, uint32_t* messageLen, size_t* messageCtx, const void* handle)
-	{
-
-		this->_handle = reinterpret_cast<uv_async_t*>(const_cast<void*>(handle));
-		return false;
-	}
-
-	void sendMessage(std::string msg)
-	{
-		if (_handle)
-		{
-			uv_async_send(_handle);
-		}
-	}
+	void SendRequestMessage(uint32_t id);
 
 	virtual std::future<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
 
@@ -59,7 +40,10 @@ protected:
 	virtual void subClose() override;
 
 protected:
-	uv_async_t* _handle;
+	uv_async_t* _handle { nullptr };
+
+	std::queue<RequestMessage*> _requestMessageQueue;
+	std::map<uint32_t, RequestMessage*> _releaseMessageQueue;
 };
 
 }

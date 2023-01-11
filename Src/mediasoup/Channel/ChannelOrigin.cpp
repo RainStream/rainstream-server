@@ -13,9 +13,6 @@ namespace mediasoup {
 const int  NS_MESSAGE_MAX_LEN = 4194313;
 const int  NS_PAYLOAD_MAX_LEN = 4194304;
 
-static uint8_t WriteBuffer[NS_MESSAGE_MAX_LEN];
-
-
 ChannelOrigin::ChannelOrigin(Socket* producerSocket, Socket* consumerSocket, int pid)
 	: Channel()
 	, _producerSocket(producerSocket)
