@@ -64,23 +64,23 @@ public:
 	/**
 	* Dump Worker.
 	*/
-	std::future<json> dump();
+	async_simple::coro::Lazy<json> dump();
 	/**
 	 * Get mediasoup-worker process resource usage.
 	 */
-	std::future<json> getResourceUsage();
+	async_simple::coro::Lazy<json> getResourceUsage();
 	/**
 	 * Update settings.
 	 */
-	std::future<void> updateSettings(std::string logLevel, std::vector<std::string> logTags);
+	async_simple::coro::Lazy<void> updateSettings(std::string logLevel, std::vector<std::string> logTags);
 	/**
 	 * Create a WebRtcServer.
 	 */
-	std::future<WebRtcServer*> createWebRtcServer(const WebRtcServerOptions& options);
+	async_simple::coro::Lazy<WebRtcServer*> createWebRtcServer(const WebRtcServerOptions& options);
 	/**
 	 * Create a Router.
 	 */
-	std::future<Router*> createRouter(json& mediaCodecs, const json& appData = json::object());
+	async_simple::coro::Lazy<Router*> createRouter(json& mediaCodecs, const json& appData = json::object());
 
 protected:
 	Worker(json settings);

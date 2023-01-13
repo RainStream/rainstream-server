@@ -31,7 +31,7 @@ public:
 		}
 	}
 
-// 	std::future<json> safeEmitAsPromise(event, ...args: any[])
+// 	async_simple::coro::Lazy<json> safeEmitAsPromise(event, ...args: any[])
 // 	{
 // 		return new Promise((resolve, reject) => (
 // 			this->safeEmit(event, ...args, resolve, reject)

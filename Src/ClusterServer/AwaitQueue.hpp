@@ -27,7 +27,7 @@ public:
 		this->closed = true;
 	}
 
-	void push(std::function<std::future<T>(void)>&& task)
+	void push(std::function<async_simple::coro::Lazy<T>(void)>&& task)
 	{
 		if (this->closed)
 			return;
@@ -48,7 +48,7 @@ public:
 	}
 
 protected:
-	std::future<void> start()
+	async_simple::coro::Lazy<void> start()
 	{
 		while (!this->closed)
 		{
@@ -79,10 +79,10 @@ private:
 	bool closed = false;
 
 	// Queue of pending tasks.
-	std::list<std::function<std::future<T>(void)>> _pendingTasks;
+	std::list<std::function<async_simple::coro::Lazy<T>(void)>> _pendingTasks;
 
 	//cppcoro::single_consumer_event _event;
 
-	std::future<void> _allWorks;
+	async_simple::coro::Lazy<void> _allWorks;
 };
 

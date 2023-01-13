@@ -56,24 +56,24 @@ public:
 	 *
 	 * @override
 	 */
-	std::future<json> getStats();
+	async_simple::coro::Lazy<json> getStats();
 
 	/**
 	 * NO-OP method in DirectTransport.
 	 *
 	 * @override
 	 */
-	std::future<void> connect();
+	async_simple::coro::Lazy<void> connect();
 
 	/**
 	 * @override
 	 */
-	std::future<void> setMaxIncomingBitrate(uint32_t bitrate);
+	async_simple::coro::Lazy<void> setMaxIncomingBitrate(uint32_t bitrate);
 
 	/**
 	 * @override
 	 */
-	std::future<void> setMaxOutgoingBitrate(uint32_t bitrate);
+	async_simple::coro::Lazy<void> setMaxOutgoingBitrate(uint32_t bitrate);
 
 	virtual std::string typeName();
 

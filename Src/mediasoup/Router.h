@@ -81,15 +81,15 @@ public:
 	/**
 	 * Dump Router.
 	 */
-	std::future<json> dump();
+	async_simple::coro::Lazy<json> dump();
 	/**
 	 * Create a WebRtcTransport.
 	 */
-	std::future<WebRtcTransport*> createWebRtcTransport(WebRtcTransportOptions& options);
+	async_simple::coro::Lazy<WebRtcTransport*> createWebRtcTransport(WebRtcTransportOptions& options);
 	/**
 	 * Create a PlainTransport.
 	 */
-	std::future<PlainTransport*> createPlainTransport(
+	async_simple::coro::Lazy<PlainTransport*> createPlainTransport(
 		json listenIp,
 		uint16_t port,
 		bool rtcpMux = true,
@@ -104,7 +104,7 @@ public:
 	/**
 	 * Create a PipeTransport.
 	 */
-	std::future<PipeTransport*> createPipeTransport(
+	async_simple::coro::Lazy<PipeTransport*> createPipeTransport(
 		json listenIp,
 		bool enableSctp = false,
 		json numSctpStreams = { { "OS", 1024 }, { "MIS", 1024 } },
@@ -116,7 +116,7 @@ public:
 	/**
 	 * Create a DirectTransport.
 	 */
-	std::future<DirectTransport*> createDirectTransport(const DirectTransportOptions& options);
+	async_simple::coro::Lazy<DirectTransport*> createDirectTransport(const DirectTransportOptions& options);
 	/**
 	 * Pipes the given Producer or DataProducer into another Router in same host.
 	 */
@@ -128,11 +128,11 @@ public:
 	/**
 	 * Create an ActiveSpeakerObserver
 	 */
-	std::future<ActiveSpeakerObserver*> createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options);
+	async_simple::coro::Lazy<ActiveSpeakerObserver*> createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options);
 	/**
 	 * Create an AudioLevelObserver.
 	 */
-	std::future<AudioLevelObserver*> createAudioLevelObserver(const AudioLevelObserverOptions& options);
+	async_simple::coro::Lazy<AudioLevelObserver*> createAudioLevelObserver(const AudioLevelObserverOptions& options);
 	/**
 	 * Check whether the given RTP capabilities can consume the given Producer.
 	 */

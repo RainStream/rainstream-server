@@ -109,7 +109,7 @@ void RtpObserver::routerClosed()
 	this->_observer->safeEmit("close");
 }
 
-std::future<void> RtpObserver::pause()
+async_simple::coro::Lazy<void> RtpObserver::pause()
 {
 	MSC_DEBUG("pause()");
 
@@ -127,7 +127,7 @@ std::future<void> RtpObserver::pause()
 /**
  * Resume the RtpObserver.
  */
-std::future<void> RtpObserver::resume()
+async_simple::coro::Lazy<void> RtpObserver::resume()
 {
 	MSC_DEBUG("resume()");
 
@@ -145,7 +145,7 @@ std::future<void> RtpObserver::resume()
 /**
  * Add a Producer to the RtpObserver.
  */
-std::future<void> RtpObserver::addProducer(std::string producerId)
+async_simple::coro::Lazy<void> RtpObserver::addProducer(std::string producerId)
 {
 	MSC_DEBUG("addProducer()");
 
@@ -164,7 +164,7 @@ std::future<void> RtpObserver::addProducer(std::string producerId)
 /**
  * Remove a Producer from the RtpObserver.
  */
-std::future<void> RtpObserver::removeProducer(std::string producerId)
+async_simple::coro::Lazy<void> RtpObserver::removeProducer(std::string producerId)
 {
 	MSC_DEBUG("removeProducer()");
 

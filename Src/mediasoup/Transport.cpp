@@ -256,7 +256,7 @@ void Transport::listenServerClosed()
 	this->_observer->safeEmit("close");
 }
 
-std::future<json> Transport::dump()
+async_simple::coro::Lazy<json> Transport::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -265,19 +265,19 @@ std::future<json> Transport::dump()
 	co_return ret;
 }
 
-std::future<json> Transport::getStats()
+async_simple::coro::Lazy<json> Transport::getStats()
 {
 	// Should not happen.
 	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
-std::future<void> Transport::connect(json& params)
+async_simple::coro::Lazy<void> Transport::connect(json& params)
 {
 	// Should not happen.
 	MSC_THROW_ERROR("method not implemented in the subclass");
 }
 
-std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
+async_simple::coro::Lazy<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 {
 	MSC_DEBUG("setMaxIncomingBitrate() [bitrate:%d]", bitrate);
 
@@ -289,7 +289,7 @@ std::future<void> Transport::setMaxIncomingBitrate(uint32_t bitrate)
 	co_return;
 }
 
-std::future<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
+async_simple::coro::Lazy<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
 	MSC_DEBUG("setMaxOutgoingBitrate() [bitrate:%d]", bitrate);
 
 	json reqData = { {"bitrate", bitrate} };
@@ -299,7 +299,7 @@ std::future<void> Transport::setMaxOutgoingBitrate(uint32_t bitrate) {
 	co_return;
 }
 
-std::future<Producer*> Transport::produce(
+async_simple::coro::Lazy<Producer*> Transport::produce(
 	std::string id,
 	std::string kind,
 	json rtpParameters,
@@ -411,7 +411,7 @@ std::future<Producer*> Transport::produce(
 	co_return producer;
 }
 
-std::future<Consumer*> Transport::consume(ConsumerOptions& options)
+async_simple::coro::Lazy<Consumer*> Transport::consume(ConsumerOptions& options)
 {
 	MSC_DEBUG("consume()");
 
@@ -515,7 +515,7 @@ std::future<Consumer*> Transport::consume(ConsumerOptions& options)
 	co_return consumer;
 }
 
-std::future<DataProducer*> Transport::produceData(DataProducerOptions& options)
+async_simple::coro::Lazy<DataProducer*> Transport::produceData(DataProducerOptions& options)
 {
 	MSC_DEBUG("produceData()");
 
@@ -590,7 +590,7 @@ std::future<DataProducer*> Transport::produceData(DataProducerOptions& options)
 }
 
 	
-std::future<DataConsumer*> Transport::consumeData(DataConsumerOptions& options)
+async_simple::coro::Lazy<DataConsumer*> Transport::consumeData(DataConsumerOptions& options)
 {
 	MSC_DEBUG("consumeData()");
 
@@ -699,7 +699,7 @@ std::future<DataConsumer*> Transport::consumeData(DataConsumerOptions& options)
 	co_return dataConsumer;
 }
 
-std::future<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> types)
+async_simple::coro::Lazy<void> Transport::enableTraceEvent(std::vector<TransportTraceEventType> types)
 {
 	MSC_DEBUG("pause()");
 

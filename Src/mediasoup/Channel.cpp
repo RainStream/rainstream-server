@@ -27,7 +27,7 @@ void Channel::close()
 	// Close every pending sent.
 	for (auto& [key, sent] : this->_sents)
 	{
-		sent.set_exception(std::make_exception_ptr(Error("Channel closed")));
+		sent.setException(std::make_exception_ptr(Error("Channel closed")));
 	}
 
 	this->subClose();
@@ -46,14 +46,14 @@ void Channel::_processMessage(const json& msg)
 			return;
 		}
 
-		std::promise<json> sent = std::move(this->_sents[id]);
+		async_simple::Promise<json> sent = std::move(this->_sents[id]);
 		this->_sents.erase(id);
 
 		if (msg.count("accepted") && msg["accepted"].get<bool>())
 		{
 			json data = msg.value("data", json::object());
 			MSC_DEBUG("request succeeded [id:%d]", id);
-			sent.set_value(data);
+			sent.setValue(std::move(data));
 		}
 		else if (msg.count("error"))
 		{
@@ -64,11 +64,11 @@ void Channel::_processMessage(const json& msg)
 
 			if (error == "TypeError")
 			{
-				sent.set_exception(std::make_exception_ptr(TypeError(reason)));
+				sent.setException(std::make_exception_ptr(TypeError(reason)));
 			}
 			else
 			{
-				sent.set_exception(std::make_exception_ptr(Error(reason)));
+				sent.setException(std::make_exception_ptr(Error(reason)));
 			}
 		}
 		else

@@ -57,9 +57,9 @@ ClusterServer::ClusterServer()
 
 	MSC_DEBUG("ClusterServer Started");
 
-	runMediasoupWorkers();
+	runMediasoupWorkers().start([](async_simple::Try<void> Result) {});
 
-	runHttpsServer();
+	//runHttpsServer();
 
 	// Log rooms status every X seconds.
 	setInterval([&]()
@@ -98,9 +98,9 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	/*this->_queue.push([=]()->std::future<void>
+	/*this->_queue.push([=]()->async_simple::coro::Lazy<void>
 	{	
-		MSC_WARN("after push std::future [peerId:%s]", peerId.c_str());
+		MSC_WARN("after push async_simple::coro::Lazy [peerId:%s]", peerId.c_str());
 		Room* room = co_await getOrCreateRoom(roomId);
 
 		MSC_WARN("Peer[peerId:%s] handleConnection [roomId:%s]",
@@ -118,7 +118,7 @@ void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
 
 }
 
-std::future<void> ClusterServer::runMediasoupWorkers()
+async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 {
 	int numWorkers = 1;
 
@@ -133,7 +133,7 @@ std::future<void> ClusterServer::runMediasoupWorkers()
 			{ "rtcMaxPort", 49999 }
 		};
 
-		Worker* worker = Worker::Create(settings, true);
+		Worker* worker = Worker::Create(settings, false);
 
 		worker->on("died", [=]()
 		{
@@ -165,7 +165,7 @@ std::future<void> ClusterServer::runMediasoupWorkers()
 		}
 
 		// Log worker resource usage every X seconds.
- 		setInterval([=]()->std::future<void>
+ 		setInterval([=]()->async_simple::coro::Lazy<void>
  		{
  			json usage = co_await worker->getResourceUsage();
  
@@ -176,7 +176,7 @@ std::future<void> ClusterServer::runMediasoupWorkers()
 	}
 }
 
-std::future<void> ClusterServer::runHttpsServer()
+async_simple::coro::Lazy<void> ClusterServer::runHttpsServer()
 {
 	_webSocketServer->get("/rooms/:roomId", [=](auto* res, auto* req) {
 		std::string roomId(req->getParameter(0));
@@ -304,7 +304,7 @@ Worker* ClusterServer::getMediasoupWorker()
 	return worker;
 }
 
-std::future<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
+async_simple::coro::Lazy<Room*> ClusterServer::getOrCreateRoom(std::string roomId)
 {
 	Room* room;
 

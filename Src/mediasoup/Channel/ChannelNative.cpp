@@ -86,18 +86,18 @@ void ChannelNative::SendRequestMessage(uint32_t id)
 	{
 		if (uv_async_send(_handle) != 0)
 		{
-			this->_sents[id].set_exception(
+			this->_sents[id].setException(
 				std::make_exception_ptr(Error(" SendRequestMessage uv_async_send error")));
 		}
 	}
 	catch (const std::exception& ex)
 	{
-		this->_sents[id].set_exception(
+		this->_sents[id].setException(
 			std::make_exception_ptr(ex));
 	}
 }
 
-std::future<json> ChannelNative::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)
+async_simple::coro::Lazy<json> ChannelNative::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)
 {
 	constexpr auto max_value = std::numeric_limits<uint32_t>::max(); //4294967295
 
@@ -121,12 +121,12 @@ std::future<json> ChannelNative::request(std::string method, std::optional<std::
 
 	_requestMessageQueue.push(new RequestMessage{ id, request });
 
-	std::promise<json> t_promise;
+	async_simple::Promise<json> t_promise;
 
 	this->_sents.insert(std::make_pair(id, std::move(t_promise)));
 
-	SendRequestMessage(id);
+	auto value = co_await this->_sents[id].getFuture();
 
-	return this->_sents[id].get_future();
+	co_return value;
 }
 }

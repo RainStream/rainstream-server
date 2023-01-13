@@ -55,6 +55,11 @@ typedef SSIZE_T ssize_t;
 using json = nlohmann::json;
 
 
+#include <async_simple/Promise.h>
+#include <async_simple/Future.h>
+#include <async_simple/coro/Lazy.h>
+#include <async_simple/coro/FutureAwaiter.h>
+
 #ifdef _MSC_VER
 #  define MS_DECL_EXPORT __declspec(dllexport)
 #  define MS_DECL_IMPORT __declspec(dllimport)

@@ -87,7 +87,7 @@ void PlainTransport::routerClosed()
 	Transport::routerClosed();
 }
 
-std::future<json> PlainTransport::getStats()
+async_simple::coro::Lazy<json> PlainTransport::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -96,7 +96,7 @@ std::future<json> PlainTransport::getStats()
 	co_return ret;
 }
 
-std::future<void> PlainTransport::connect(
+async_simple::coro::Lazy<void> PlainTransport::connect(
 	std::string ip,
 	uint32_t port,
 	uint32_t rtcpPort,

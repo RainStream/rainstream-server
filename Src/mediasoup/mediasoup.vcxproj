@@ -98,9 +98,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;MS_BUILD_LIB;WEBRTC_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;E:\MediaWork\async_simple;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/await:strict %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,10 +134,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;MS_BUILD_LIB;WEBRTC_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;E:\MediaWork\async_simple;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/await:strict %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

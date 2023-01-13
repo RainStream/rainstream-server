@@ -169,7 +169,7 @@ void Consumer::transportClosed()
 	this->_observer->safeEmit("close");
 }
 
-std::future<json> Consumer::dump()
+async_simple::coro::Lazy<json> Consumer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -178,7 +178,7 @@ std::future<json> Consumer::dump()
 	co_return ret;
 }
 
-std::future<json> Consumer::getStats()
+async_simple::coro::Lazy<json> Consumer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -187,7 +187,7 @@ std::future<json> Consumer::getStats()
 	co_return ret;
 }
 
-std::future<void> Consumer::pause()
+async_simple::coro::Lazy<void> Consumer::pause()
 {
 	MSC_DEBUG("pause()");
 
@@ -202,7 +202,7 @@ std::future<void> Consumer::pause()
 		this->_observer->safeEmit("pause");
 }
 
-std::future<void> Consumer::resume()
+async_simple::coro::Lazy<void> Consumer::resume()
 {
 	MSC_DEBUG("resume()");
 
@@ -217,7 +217,7 @@ std::future<void> Consumer::resume()
 		this->_observer->safeEmit("resume");
 }
 
-std::future<void> Consumer::setPreferredLayers(
+async_simple::coro::Lazy<void> Consumer::setPreferredLayers(
 	int spatialLayer,
 	int temporalLayer
 )
@@ -235,7 +235,7 @@ std::future<void> Consumer::setPreferredLayers(
 	this->_preferredLayers = data /*|| undefined*/;
 }
 
-std::future<void> Consumer::setPriority(int priority)
+async_simple::coro::Lazy<void> Consumer::setPriority(int priority)
 {
 	MSC_DEBUG("setPriority()");
 
@@ -245,9 +245,11 @@ std::future<void> Consumer::setPriority(int priority)
 		"consumer.setPriority", this->_internal["consumerId"], reqData);
 
 	this->_priority = data["priority"];
+
+	co_return;
 }
 
-std::future<void> Consumer::unsetPriority()
+async_simple::coro::Lazy<void> Consumer::unsetPriority()
 {
 	MSC_DEBUG("unsetPriority()");
 
@@ -259,14 +261,14 @@ std::future<void> Consumer::unsetPriority()
 	this->_priority = data["priority"];
 }
 
-std::future<void> Consumer::requestKeyFrame()
+async_simple::coro::Lazy<void> Consumer::requestKeyFrame()
 {
 	MSC_DEBUG("requestKeyFrame()");
 
 	co_await this->_channel->request("consumer.requestKeyFrame", this->_internal["consumerId"]);
 }
 
-std::future<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
+async_simple::coro::Lazy<void> Consumer::enableTraceEvent(std::vector<ConsumerTraceEventType> types)
 {
 	MSC_DEBUG("enableTraceEvent()");
 

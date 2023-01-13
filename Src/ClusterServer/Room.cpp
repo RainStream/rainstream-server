@@ -26,7 +26,7 @@ const uint32_t MIN_BITRATE = 50000;
 const float BITRATE_FACTOR = 0.75;
 
 
-std::future<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
+async_simple::coro::Lazy<Room*> Room::create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer)
 {
 	MSC_DEBUG("create() [roomId:%s]", roomId.c_str());
 
@@ -182,7 +182,7 @@ json Room::getRouterRtpCapabilities()
 	return this->_mediasoupRouter->rtpCapabilities();
 }
 
-std::future<json> Room::createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities)
+async_simple::coro::Lazy<json> Room::createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities)
 {
 	json data = json::object();
 
@@ -194,7 +194,7 @@ void Room::deleteBroadcaster(std::string broadcasterId)
 
 }
 
-std::future<void> Room::_handleAudioLevelObserver()
+async_simple::coro::Lazy<void> Room::_handleAudioLevelObserver()
 {
 	this->_audioLevelObserver->on("volumes", [=](const std::vector<AudioLevelObserverVolume>& volumes)
 	{
@@ -247,7 +247,7 @@ std::future<void> Room::_handleAudioLevelObserver()
 *
 * @async
 */
-std::future<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* request)
+async_simple::coro::Lazy<void> Room::_handleProtooRequest(protoo::Peer* peer, protoo::Request* request)
 {
 	std::string method = request->method;
 	json& data = request->data;
@@ -915,7 +915,7 @@ std::list<protoo::Peer*> Room::_getJoinedPeers(protoo::Peer* excludePeer/* = nul
 	return peers;
 }
 
-std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer)
+async_simple::coro::Lazy<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer)
 {
 	// Optimization:
 	// - Create the server-side Consumer in paused mode.
@@ -1112,7 +1112,7 @@ std::future<void> Room::_createConsumer(protoo::Peer* consumerPeer, protoo::Peer
 }
 
 
-std::future<void> Room::_createDataConsumer(protoo::Peer* dataConsumerPeer,
+async_simple::coro::Lazy<void> Room::_createDataConsumer(protoo::Peer* dataConsumerPeer,
 	protoo::Peer* dataProducerPeer,
 	DataProducer* dataProducer)
 {

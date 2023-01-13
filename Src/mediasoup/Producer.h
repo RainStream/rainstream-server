@@ -175,27 +175,27 @@ public:
 	/**
 	 * Dump Producer.
 	 */
-	std::future<json> dump();
+	async_simple::coro::Lazy<json> dump();
 
 	/**
 	 * Get Producer stats.
 	 */
-	std::future<json> getStats();
+	async_simple::coro::Lazy<json> getStats();
 
 	/**
 	 * Pause the Producer.
 	 */
-	std::future<void> pause();
+	async_simple::coro::Lazy<void> pause();
 
 	/**
 	 * Resume the Producer.
 	 */
-	std::future<void> resume();
+	async_simple::coro::Lazy<void> resume();
 
 	/**
 	 * Enable "trace" event.
 	 */
-	std::future<void> enableTraceEvent(std::vector<std::string> types);
+	async_simple::coro::Lazy<void> enableTraceEvent(std::vector<std::string> types);
 
 	//void send(rtpPacket);
 

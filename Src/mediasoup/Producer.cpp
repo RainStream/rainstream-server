@@ -139,7 +139,7 @@ void Producer::transportClosed()
 	this->_observer->safeEmit("close");
 }
 
-std::future<json> Producer::dump()
+async_simple::coro::Lazy<json> Producer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -148,7 +148,7 @@ std::future<json> Producer::dump()
 	co_return ret;
 }
 
-std::future<json> Producer::getStats()
+async_simple::coro::Lazy<json> Producer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -157,7 +157,7 @@ std::future<json> Producer::getStats()
 	co_return ret;
 }
 
-std::future<void> Producer::pause()
+async_simple::coro::Lazy<void> Producer::pause()
 {
 	MSC_DEBUG("pause()");
 
@@ -172,7 +172,7 @@ std::future<void> Producer::pause()
 		this->_observer->safeEmit("pause");
 }
 
-std::future<void> Producer::resume()
+async_simple::coro::Lazy<void> Producer::resume()
 {
 	MSC_DEBUG("resume()");
 
@@ -187,7 +187,7 @@ std::future<void> Producer::resume()
 		this->_observer->safeEmit("resume");
 }
 
-std::future<void> Producer::enableTraceEvent(std::vector<std::string> types)
+async_simple::coro::Lazy<void> Producer::enableTraceEvent(std::vector<std::string> types)
 {
 	MSC_DEBUG("enableTraceEvent()");
 

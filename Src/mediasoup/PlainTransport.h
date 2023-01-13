@@ -107,14 +107,14 @@ public:
 	 *
 	 * @override
 	 */
-	virtual std::future<json> getStats();
+	virtual async_simple::coro::Lazy<json> getStats();
 
 	/**
 	 * Provide the PlainTransport remote parameters.
 	 *
 	 * @override
 	 */
-	std::future<void> connect(
+	async_simple::coro::Lazy<void> connect(
 		std::string ip,
 		uint32_t port,
 		uint32_t rtcpPort,

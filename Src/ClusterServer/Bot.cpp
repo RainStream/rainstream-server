@@ -13,7 +13,7 @@
 #include <Utils.h>
 
 
-std::future<Bot*> Bot::create(Router* mediasoupRouter)
+async_simple::coro::Lazy<Bot*> Bot::create(Router* mediasoupRouter)
 {
 	// Create a DirectTransport for connecting the bot.
 	DirectTransportOptions tOptions{.maxMessageSize = 512 };
@@ -46,7 +46,7 @@ void Bot::close()
 	// No need to do anyting.
 }
 
-std::future<void> Bot::handlePeerDataProducer(std::string dataProducerId, protoo::Peer* peer)
+async_simple::coro::Lazy<void> Bot::handlePeerDataProducer(std::string dataProducerId, protoo::Peer* peer)
 {
 	// Create a DataConsumer on the DirectTransport for each Peer.
 	DataConsumerOptions options{ .dataProducerId = dataProducerId };

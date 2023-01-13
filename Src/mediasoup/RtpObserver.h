@@ -64,19 +64,19 @@ public:
 	/**
 	 * Pause the RtpObserver.
 	 */
-	std::future<void> pause();
+	async_simple::coro::Lazy<void> pause();
 	/**
 	 * Resume the RtpObserver.
 	 */
-	std::future<void> resume();
+	async_simple::coro::Lazy<void> resume();
 	/**
 	 * Add a Producer to the RtpObserver.
 	 */
-	std::future<void> addProducer(std::string producerId);
+	async_simple::coro::Lazy<void> addProducer(std::string producerId);
 	/**
 	 * Remove a Producer from the RtpObserver.
 	 */
-	std::future<void> removeProducer(std::string producerId);
+	async_simple::coro::Lazy<void> removeProducer(std::string producerId);
 
 protected:
 	// Internal data.

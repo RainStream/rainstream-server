@@ -32,13 +32,13 @@ protected:
 	void OnConnectClosed(protoo::WebSocketClient* transport) override;
 
 protected:
-	std::future<void> runMediasoupWorkers();
+	async_simple::coro::Lazy<void> runMediasoupWorkers();
 
-	std::future<void> runHttpsServer();
+	async_simple::coro::Lazy<void> runHttpsServer();
 
 	Worker* getMediasoupWorker();
 
-	std::future<Room*> getOrCreateRoom(std::string roomId);
+	async_simple::coro::Lazy<Room*> getOrCreateRoom(std::string roomId);
 
 private:
 	protoo::WebSocketServer* _webSocketServer;

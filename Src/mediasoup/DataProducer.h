@@ -158,12 +158,12 @@ public:
 	/**
 	 * Dump DataProducer.
 	 */
-	std::future<json> dump();
+	async_simple::coro::Lazy<json> dump();
 
 	/**
 	 * Get DataProducer stats.
 	 */
-	std::future<json> getStats();
+	async_simple::coro::Lazy<json> getStats();
 
 	/**
 	 * Send data (just valid for DataProducers created on a DirectTransport).

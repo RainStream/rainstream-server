@@ -139,7 +139,7 @@ void Worker::close()
 	this->_observer->safeEmit("close");
 }
 
-std::future<json> Worker::dump()
+async_simple::coro::Lazy<json> Worker::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -148,7 +148,7 @@ std::future<json> Worker::dump()
 	co_return ret;
 }
 
-std::future<json> Worker::getResourceUsage()
+async_simple::coro::Lazy<json> Worker::getResourceUsage()
 {
 	MSC_DEBUG("getResourceUsage()");
 
@@ -157,7 +157,7 @@ std::future<json> Worker::getResourceUsage()
 	co_return ret;
 }
 
-std::future<void> Worker::updateSettings(std::string logLevel, std::vector<std::string> logTags)
+async_simple::coro::Lazy<void> Worker::updateSettings(std::string logLevel, std::vector<std::string> logTags)
 {
 	MSC_DEBUG("updateSettings()");
 
@@ -171,7 +171,7 @@ std::future<void> Worker::updateSettings(std::string logLevel, std::vector<std::
 
 
 
-std::future<WebRtcServer*> Worker::createWebRtcServer(const WebRtcServerOptions& options) {
+async_simple::coro::Lazy<WebRtcServer*> Worker::createWebRtcServer(const WebRtcServerOptions& options) {
 	MSC_DEBUG("createWebRtcServer()");
 
 	if (!options.appData.is_null() && !options.appData.is_object())
@@ -197,7 +197,7 @@ std::future<WebRtcServer*> Worker::createWebRtcServer(const WebRtcServerOptions&
 	co_return webRtcServer;
 }
 
-std::future<Router*> Worker::createRouter(
+async_simple::coro::Lazy<Router*> Worker::createRouter(
 	json& mediaCodecs, const json& appData/* = json()*/)
 {
 	MSC_DEBUG("createRouter()");

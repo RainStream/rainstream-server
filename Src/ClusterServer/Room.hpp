@@ -27,7 +27,7 @@ class Bot;
 class Room : public protoo::Peer::Listener , public EnhancedEventEmitter
 {
 public:
-	static std::future<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
+	static async_simple::coro::Lazy<Room*> create(Worker* mediasoupWorker, std::string roomId, WebRtcServer* webRtcServer);
 
 	Room(std::string roomId, WebRtcServer* webRtcServer, Router* router, AudioLevelObserver* audioLevelObserver, Bot* bot);
 	~Room();
@@ -39,11 +39,11 @@ public:
 
 	void handleConnection(std::string peerId, bool consume, protoo::WebSocketClient* transport);
 	json getRouterRtpCapabilities();
-	std::future<json> createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities);
+	async_simple::coro::Lazy<json> createBroadcaster(std::string id, std::string displayName, std::string device, json& rtpCapabilities);
 	void deleteBroadcaster(std::string broadcasterId);
 protected:
-	std::future<void> _handleAudioLevelObserver();
-	std::future<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
+	async_simple::coro::Lazy<void> _handleAudioLevelObserver();
+	async_simple::coro::Lazy<void> _handleProtooRequest(protoo::Peer* peer, protoo::Request* request);
 	std::list<protoo::Peer*> _getJoinedPeers(protoo::Peer* excludePeer = nullptr);
 
 	/**
@@ -51,14 +51,14 @@ protected:
 	 *
 	 * @async
 	 */
-	std::future<void> _createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer);
+	async_simple::coro::Lazy<void> _createConsumer(protoo::Peer* consumerPeer, protoo::Peer* producerPeer, Producer* producer);
 
 	/**
 	 * Creates a mediasoup DataConsumer for the given mediasoup DataProducer.
 	 *
 	 * @async
 	 */
-	std::future<void> _createDataConsumer(protoo::Peer* dataConsumerPeer,
+	async_simple::coro::Lazy<void> _createDataConsumer(protoo::Peer* dataConsumerPeer,
 		protoo::Peer* dataProducerPeer,
 		DataProducer* dataProducer);
 

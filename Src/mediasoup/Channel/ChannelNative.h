@@ -34,7 +34,7 @@ public:
 
 	void SendRequestMessage(uint32_t id);
 
-	virtual std::future<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
+	virtual async_simple::coro::Lazy<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
 
 protected:
 	virtual void subClose() override;

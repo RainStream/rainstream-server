@@ -304,27 +304,27 @@ public:
 	/**
 	 * Dump Consumer.
 	 */
-	std::future<json> dump();
+	async_simple::coro::Lazy<json> dump();
 
 	/**
 	 * Get Consumer stats.
 	 */
-	std::future<json> getStats();
+	async_simple::coro::Lazy<json> getStats();
 
 	/**
 	 * Pause the Consumer.
 	 */
-	std::future<void> pause();
+	async_simple::coro::Lazy<void> pause();
 
 	/**
 	 * Resume the Consumer.
 	 */
-	std::future<void> resume();
+	async_simple::coro::Lazy<void> resume();
 
 	/**
 	 * Set preferred video layers.
 	 */
-	std::future<void> setPreferredLayers(
+	async_simple::coro::Lazy<void> setPreferredLayers(
 		int spatialLayer,
 		int temporalLayer
 	);
@@ -332,22 +332,22 @@ public:
 	/**
 	 * Set priority.
 	 */
-	std::future<void> setPriority(int priority);
+	async_simple::coro::Lazy<void> setPriority(int priority);
 
 	/**
 	 * Unset priority.
 	 */
-	std::future<void> unsetPriority();
+	async_simple::coro::Lazy<void> unsetPriority();
 
 	/**
 	 * Request a key frame to the Producer.
 	 */
-	std::future<void> requestKeyFrame();
+	async_simple::coro::Lazy<void> requestKeyFrame();
 
 	/**
 	 * Enable "trace" event.
 	 */
-	std::future<void> enableTraceEvent(std::vector<std::string> types);
+	async_simple::coro::Lazy<void> enableTraceEvent(std::vector<std::string> types);
 
 private:
 	void _handleWorkerNotifications();

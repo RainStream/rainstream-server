@@ -125,7 +125,7 @@ public:
 	/**
 	 * Dump WebRtcServer.
 	 */
-	std::future<json> dump();
+	async_simple::coro::Lazy<json> dump();
 
 	/**
 	 * @private

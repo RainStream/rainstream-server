@@ -179,37 +179,37 @@ public:
 	/**
 	 * Dump Transport.
 	 */
-	std::future<json> dump();
+	async_simple::coro::Lazy<json> dump();
 
 	/**
 	 * Get Transport stats.
 	 *
 	 * @abstract
 	 */
-	virtual std::future<json> getStats();
+	virtual async_simple::coro::Lazy<json> getStats();
 
 	/**
 	 * Provide the Transport remote parameters.
 	 *
 	 * @abstract
 	 */
-	virtual std::future<void> connect(json& params);
+	virtual async_simple::coro::Lazy<void> connect(json& params);
 
 	/**
 	 * Set maximum incoming bitrate for receiving media.
 	 */
 
-	std::future<void> setMaxIncomingBitrate(uint32_t bitrate);
+	async_simple::coro::Lazy<void> setMaxIncomingBitrate(uint32_t bitrate);
 
 	/**
 	 * Set maximum outgoing bitrate for sending media.
 	 */
-	std::future<void> setMaxOutgoingBitrate(uint32_t bitrate);
+	async_simple::coro::Lazy<void> setMaxOutgoingBitrate(uint32_t bitrate);
 
 	/**
 	 * Create a Producer.
 	 */
-	std::future<Producer*> produce(
+	async_simple::coro::Lazy<Producer*> produce(
 		std::string id,
 		std::string kind,
 		json rtpParameters,
@@ -223,22 +223,22 @@ public:
 	 *
 	 * @virtual
 	 */
-	virtual std::future<Consumer*> consume(ConsumerOptions& options);
+	virtual async_simple::coro::Lazy<Consumer*> consume(ConsumerOptions& options);
 
 	/**
 	 * Create a DataProducer.
 	 */
- 	std::future<DataProducer*> produceData(DataProducerOptions& options);
+ 	async_simple::coro::Lazy<DataProducer*> produceData(DataProducerOptions& options);
 
 	/**
 	 * Create a DataConsumer.
 	 */
- 	std::future<DataConsumer*> consumeData(DataConsumerOptions& options);
+ 	async_simple::coro::Lazy<DataConsumer*> consumeData(DataConsumerOptions& options);
 
 	/**
 	 * Enable "trace" event.
 	 */
-	std::future<void> enableTraceEvent(std::vector<TransportTraceEventType> types);
+	async_simple::coro::Lazy<void> enableTraceEvent(std::vector<TransportTraceEventType> types);
 
  	uint32_t getNextSctpStreamId();
 

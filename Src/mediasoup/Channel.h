@@ -12,7 +12,7 @@ public:
 
 	void close();
 
-	virtual std::future<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json()) = 0;
+	virtual async_simple::coro::Lazy<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json()) = 0;
 
 protected:
 	void _processMessage(const json& msg);
@@ -25,7 +25,7 @@ protected:
 	// Next id for messages sent to the worker process.
 	uint32_t _nextId = 0;
 	// Map of pending sent requests.
-	std::unordered_map<uint32_t, std::promise<json> > _sents;
+	std::unordered_map<uint32_t, async_simple::Promise<json> > _sents;
 };
 
 }

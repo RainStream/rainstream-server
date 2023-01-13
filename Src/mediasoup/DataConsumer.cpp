@@ -132,7 +132,7 @@ void DataConsumer::transportClosed()
 	this->_observer->safeEmit("close");
 }
 
-std::future<json> DataConsumer::dump()
+async_simple::coro::Lazy<json> DataConsumer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -141,7 +141,7 @@ std::future<json> DataConsumer::dump()
 	co_return ret;
 }
 
-std::future<json> DataConsumer::getStats()
+async_simple::coro::Lazy<json> DataConsumer::getStats()
 {
 	MSC_DEBUG("getStats()");
 
@@ -153,7 +153,7 @@ std::future<json> DataConsumer::getStats()
 /**
 * Set buffered amount low threshold.
 */
-std::future<void> DataConsumer::setBufferedAmountLowThreshold(uint32_t threshold)
+async_simple::coro::Lazy<void> DataConsumer::setBufferedAmountLowThreshold(uint32_t threshold)
 {
 	MSC_DEBUG("setBufferedAmountLowThreshold()[threshold:%d]", threshold);
 
@@ -163,7 +163,7 @@ std::future<void> DataConsumer::setBufferedAmountLowThreshold(uint32_t threshold
 		"dataConsumer.setBufferedAmountLowThreshold", this->_internal["dataConsumerId"], reqData);
 }
 
-//std::future<void> DataConsumer::send(message: string | Buffer, ppid ? : number)
+//async_simple::coro::Lazy<void> DataConsumer::send(message: string | Buffer, ppid ? : number)
 //{
 //	if (typeof message != = 'string' && !Buffer.isBuffer(message))
 //	{
@@ -205,7 +205,7 @@ std::future<void> DataConsumer::setBufferedAmountLowThreshold(uint32_t threshold
 //	'dataConsumer.send', this.#internal.dataConsumerId, requestData, message);
 //}
 
-std::future<size_t> DataConsumer::getBufferedAmount()
+async_simple::coro::Lazy<size_t> DataConsumer::getBufferedAmount()
 {
 	MSC_DEBUG("getBufferedAmount()");
 

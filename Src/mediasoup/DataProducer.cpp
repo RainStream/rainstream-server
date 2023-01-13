@@ -125,7 +125,7 @@ void DataProducer::transportClosed()
 	this->_observer->safeEmit("close");
 }
 
-std::future<json> DataProducer::dump()
+async_simple::coro::Lazy<json> DataProducer::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -134,7 +134,7 @@ std::future<json> DataProducer::dump()
 	co_return ret;
 }
 
-std::future<json> DataProducer::getStats()
+async_simple::coro::Lazy<json> DataProducer::getStats()
 {
 	MSC_DEBUG("getStats()");
 

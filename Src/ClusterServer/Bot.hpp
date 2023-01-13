@@ -22,7 +22,7 @@ namespace protoo
 class Bot
 {
 public:
-	static std::future<Bot*> create(Router* mediasoupRouter);
+	static async_simple::coro::Lazy<Bot*> create(Router* mediasoupRouter);
 
 	Bot(Transport* transport, DataProducer* dataProducer);
 
@@ -30,7 +30,7 @@ public:
 
 	void close();
 
-	std::future<void> handlePeerDataProducer(std::string dataProducerId, protoo::Peer* peer);
+	async_simple::coro::Lazy<void> handlePeerDataProducer(std::string dataProducerId, protoo::Peer* peer);
 
 private:
 	// mediasoup DirectTransport.

@@ -43,7 +43,7 @@ namespace protoo
 
 		void Send(const json& message);
 		void notify(std::string method, const json& data);
-		std::future<json> request(std::string method, const json& data);
+		async_simple::coro::Lazy<json> request(std::string method, const json& data);
 
 		struct Data
 		{
@@ -81,7 +81,7 @@ namespace protoo
 		// Closed flag.
 		bool _closed = false;
 
-		std::unordered_map<uint32_t, std::promise<json> > _sents;
+		std::unordered_map<uint32_t, async_simple::Promise<json> > _sents;
 	};
 }
 

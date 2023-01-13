@@ -135,27 +135,27 @@ public:
 	/**
 	 * Dump DataConsumer.
 	 */
-	std::future<json> dump();
+	async_simple::coro::Lazy<json> dump();
 
 	/**
 	 * Get DataConsumer stats.
 	 */
-	std::future<json> getStats();
+	async_simple::coro::Lazy<json> getStats();
 
 	/**
 	 * Set buffered amount low threshold.
 	 */
-	std::future<void> setBufferedAmountLowThreshold(uint32_t threshold);
+	async_simple::coro::Lazy<void> setBufferedAmountLowThreshold(uint32_t threshold);
 
 	/**
 	 * Send data.
 	 */
-	//std::future<void> send(message: string | Buffer, ppid ? : number)
+	//async_simple::coro::Lazy<void> send(message: string | Buffer, ppid ? : number)
 	
 		/**
 	 * Get buffered amount size.
 	 */
-	std::future<size_t> getBufferedAmount();
+	async_simple::coro::Lazy<size_t> getBufferedAmount();
 
 private:
 	void _handleWorkerNotifications();

@@ -165,7 +165,7 @@ void Router::workerClosed()
 	this->_observer->safeEmit("close");
 }
 
-std::future<json> Router::dump()
+async_simple::coro::Lazy<json> Router::dump()
 {
 	MSC_DEBUG("dump()");
 
@@ -174,7 +174,7 @@ std::future<json> Router::dump()
 	co_return ret;
 }
 
-std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
+async_simple::coro::Lazy<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptions& options)
 {
 	MSC_DEBUG("createWebRtcTransport()");
 	auto webRtcServer = options.webRtcServer;
@@ -293,7 +293,7 @@ std::future<WebRtcTransport*> Router::createWebRtcTransport(WebRtcTransportOptio
 	co_return transport;
 }
 
-std::future<PlainTransport*> Router::createPlainTransport(
+async_simple::coro::Lazy<PlainTransport*> Router::createPlainTransport(
 	json listenIp,
 	uint16_t port,
 	bool rtcpMux/* = true*/,
@@ -389,7 +389,7 @@ std::future<PlainTransport*> Router::createPlainTransport(
 	co_return transport;
 }
 
-std::future<PipeTransport*> Router::createPipeTransport(
+async_simple::coro::Lazy<PipeTransport*> Router::createPipeTransport(
 	json listenIp,
 	bool enableSctp/* = false*/,
 	json numSctpStreams/* = { { "OS", 1024 }, { "MIS", 1024 } }*/,
@@ -477,7 +477,7 @@ std::future<PipeTransport*> Router::createPipeTransport(
 	co_return transport;
 }
 
-std::future<DirectTransport*> Router::createDirectTransport(const DirectTransportOptions& options)
+async_simple::coro::Lazy<DirectTransport*> Router::createDirectTransport(const DirectTransportOptions& options)
 {
 	MSC_DEBUG("createDirectTransport()");
 
@@ -710,7 +710,7 @@ std::future<DirectTransport*> Router::createDirectTransport(const DirectTranspor
 //	});
 //}
 
-std::future<ActiveSpeakerObserver*> Router::createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options)
+async_simple::coro::Lazy<ActiveSpeakerObserver*> Router::createActiveSpeakerObserver(const ActiveSpeakerObserverOptions& options)
 {
 	MSC_DEBUG("createActiveSpeakerObserver()");
 	if (!options.appData.is_null() && !options.appData.is_object())
@@ -744,7 +744,7 @@ std::future<ActiveSpeakerObserver*> Router::createActiveSpeakerObserver(const Ac
 	co_return activeSpeakerObserver;
 }
 
-std::future<AudioLevelObserver*> Router::createAudioLevelObserver(const AudioLevelObserverOptions& options) {
+async_simple::coro::Lazy<AudioLevelObserver*> Router::createAudioLevelObserver(const AudioLevelObserverOptions& options) {
 	MSC_DEBUG("createAudioLevelObserver()");
 	if (!options.appData.is_null() && !options.appData.is_object())
 		MSC_THROW_TYPE_ERROR("if given, appData must be an object");
