@@ -6,17 +6,57 @@
 
 
 namespace mediasoup {
+
 const int PayloadMaxLen = 1024 * 1024 * 4;
 const int MessageMaxLen = PayloadMaxLen + sizeof(int);
+
+inline static void onAsync(uv_handle_t* handle)
+{
+	while (static_cast<ChannelNative*>(handle->data)->CallbackWrite())
+	{
+		// Read while there are new messages.
+	}
+}
+
+inline static void onClose(uv_handle_t* handle)
+{
+	delete handle;
+}
 
 ChannelNative::ChannelNative()
 	: Channel()
 {
+	this->_uvWriteHandle = new uv_async_t;
+	this->_uvWriteHandle->data = static_cast<void*>(this);
+
+	int err =
+		uv_async_init(uv_default_loop(), this->_uvWriteHandle, reinterpret_cast<uv_async_cb>(onAsync));
+
+	if (err != 0)
+	{
+		delete this->_uvWriteHandle;
+		this->_uvWriteHandle = nullptr;
+
+		MSC_THROW_ERROR("uv_async_init() failed: %s", uv_strerror(err));
+	}
+
+	/*err = uv_async_send(this->_uvWriteHandle);
+
+	if (err != 0)
+	{
+		delete this->_uvWriteHandle;
+		this->_uvWriteHandle = nullptr;
+
+		MSC_THROW_ERROR("uv_async_send() failed: %s", uv_strerror(err));
+	}*/
 }
 
 void ChannelNative::subClose()
 {
-
+	if (this->_uvWriteHandle)
+	{
+		uv_close(reinterpret_cast<uv_handle_t*>(this->_uvWriteHandle), static_cast<uv_close_cb>(onClose));
+	}
 }
 
 ChannelReadFreeFn ChannelNative::channelReadFn(uint8_t** message,
@@ -36,12 +76,9 @@ ChannelReadFreeFn ChannelNative::channelReadFn(uint8_t** message,
 
 void ChannelNative::channelReadFreeFn(uint8_t* message, uint32_t messageLen, size_t messageCtx)
 {
-	uint32_t id = messageCtx;
+	RequestMessage* data = reinterpret_cast<RequestMessage*>(messageCtx);
 
-	/*if (_releaseMessageQueue)
-	{
-
-	}*/
+	delete data;
 }
 
 void ChannelNative::channelWriteFn(const uint8_t* message, uint32_t messageLen, ChannelWriteCtx ctx)
@@ -50,12 +87,12 @@ void ChannelNative::channelWriteFn(const uint8_t* message, uint32_t messageLen, 
 
 	std::string strPayload((const char*)message, messageLen);
 
-	pThis->_processMessage(json::parse(strPayload));
+	pThis->ReceiveMessage(strPayload);
 }
 
 bool ChannelNative::ProduceMessage(uint8_t** message, uint32_t* messageLen, size_t* messageCtx, const void* handle)
 {
-	this->_handle = reinterpret_cast<uv_async_t*>(const_cast<void*>(handle));
+	this->_uvReadHandle = reinterpret_cast<uv_async_t*>(const_cast<void*>(handle));
 
 	if (_requestMessageQueue.empty())
 	{
@@ -66,25 +103,23 @@ bool ChannelNative::ProduceMessage(uint8_t** message, uint32_t* messageLen, size
 
 	*message = (uint8_t*)data->request.data();
 	*messageLen = data->request.size();
-	*messageCtx = data->id;
+	*messageCtx = (size_t)data;
 
 	_requestMessageQueue.pop();
-
-	_releaseMessageQueue.insert(std::pair(data->id, data));
 
 	return true;
 }
 
 void ChannelNative::SendRequestMessage(uint32_t id)
 {
-	if (!_handle)
+	if (!_uvReadHandle)
 	{
 		return;
 	}
 
 	try
 	{
-		if (uv_async_send(_handle) != 0)
+		if (uv_async_send(_uvReadHandle) != 0)
 		{
 			this->_sents[id].setException(
 				std::make_exception_ptr(Error(" SendRequestMessage uv_async_send error")));
@@ -95,6 +130,40 @@ void ChannelNative::SendRequestMessage(uint32_t id)
 		this->_sents[id].setException(
 			std::make_exception_ptr(ex));
 	}
+}
+
+void ChannelNative::ReceiveMessage(const std::string& message)
+{
+	_receiveMessageQueue.push(message);
+
+	int err = uv_async_send(this->_uvWriteHandle);
+
+	if (err != 0)
+	{
+		delete this->_uvWriteHandle;
+		this->_uvWriteHandle = nullptr;
+
+		MSC_THROW_ERROR("uv_async_send() failed: %s", uv_strerror(err));
+	}
+}
+
+bool ChannelNative::CallbackWrite()
+{
+	if (this->_closed)
+		return false;
+
+	if (!_receiveMessageQueue.size())
+	{
+		return false;
+	}
+
+	std::string strPayload = _receiveMessageQueue.front();
+
+	_processMessage(json::parse(strPayload));
+
+	_receiveMessageQueue.pop();
+
+	return true;
 }
 
 async_simple::coro::Lazy<json> ChannelNative::request(std::string method, std::optional<std::string> handlerId, const json& data/* = json()*/)

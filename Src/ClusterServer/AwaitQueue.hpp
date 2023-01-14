@@ -2,7 +2,6 @@
 
 #include <list>
 #include <Logger.h>
-//#include <asyncpp/single_consumer_event.hpp>
 
 
 template <class T>

@@ -33,6 +33,10 @@ public:
 	bool ProduceMessage(uint8_t** message, uint32_t* messageLen, size_t* messageCtx, const void* handle);
 
 	void SendRequestMessage(uint32_t id);
+	
+	void ReceiveMessage(const std::string& message);
+
+	bool CallbackWrite();
 
 	virtual async_simple::coro::Lazy<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json());
 
@@ -40,10 +44,12 @@ protected:
 	virtual void subClose() override;
 
 protected:
-	uv_async_t* _handle { nullptr };
+	uv_async_t* _uvReadHandle{ nullptr };
+	uv_async_t* _uvWriteHandle{ nullptr };
 
+	std::queue<std::string> _receiveMessageQueue;
 	std::queue<RequestMessage*> _requestMessageQueue;
-	std::map<uint32_t, RequestMessage*> _releaseMessageQueue;
+
 };
 
 }
