@@ -49,7 +49,7 @@ private:
 
 	std::map<std::string, Room*> _rooms;
 
-	//AwaitQueue<void> _queue;
+	AwaitQueue<void> _queue;
 };
 
 #endif

@@ -98,8 +98,8 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	/*this->_queue.push([=]()->async_simple::coro::Lazy<void>
-	{	
+	auto doConnectRequest = [=]() mutable-> async_simple::coro::Lazy<void>
+	{
 		MSC_WARN("after push async_simple::coro::Lazy [peerId:%s]", peerId.c_str());
 		Room* room = co_await getOrCreateRoom(roomId);
 
@@ -109,7 +109,9 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 		auto transport = accept();
 
 		room->handleConnection(peerId, true, transport);
-	});*/
+	};
+
+	this->_queue.push(std::move(doConnectRequest));
 }
 
 
@@ -133,7 +135,7 @@ async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 			{ "rtcMaxPort", 49999 }
 		};
 
-		Worker* worker = Worker::Create(settings, true);
+		Worker* worker = Worker::Create(settings, false);
 
 		worker->on("died", [=]()
 		{
@@ -165,6 +167,7 @@ async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 		}
 
 		// Log worker resource usage every X seconds.
+		auto getResourceUsage = 
  		setInterval([=]()->async_simple::coro::Lazy<void>
  		{
  			json usage = co_await worker->getResourceUsage();

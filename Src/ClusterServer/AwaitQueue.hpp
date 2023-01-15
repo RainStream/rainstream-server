@@ -2,6 +2,7 @@
 
 #include <list>
 #include <Logger.h>
+#include <common.h>
 
 
 template <class T>
@@ -10,7 +11,6 @@ class AwaitQueue
 public:
 	AwaitQueue()
 	{
-		_allWorks = start();
 	}
 
 	int size()
@@ -26,14 +26,18 @@ public:
 		this->closed = true;
 	}
 
-	void push(std::function<async_simple::coro::Lazy<T>(void)>&& task)
+	void push(std::function<async_simple::coro::Lazy<T>(void)>&& pendingTask)
 	{
 		if (this->closed)
 			return;
 
-		this->_pendingTasks.push_back(std::move(task));
+		this->_pendingTasks.push_back(std::move(pendingTask));
 
-		//this->_event.set();
+		// And execute it if this is the only task in the queue.
+		if (this->_pendingTasks.size() == 1)
+		{
+			this->execute().start([](async_simple::Try<void> Result) {});
+		}
 	}
 
 	void stop()
@@ -47,28 +51,19 @@ public:
 	}
 
 protected:
-	async_simple::coro::Lazy<void> start()
+	async_simple::coro::Lazy<void> execute()
 	{
-		while (!this->closed)
-		{
-			//co_await _event;
+		if (this->closed)
+			co_return;
 
-			//_event.reset();
+		if (!this->_pendingTasks.size())
+			co_return;
 
-			if (this->closed)
-				co_return;
+		auto task = std::move(this->_pendingTasks.front());
 
-			if (!this->_pendingTasks.size())
-				continue;
+		co_await task();
 
-			while (this->_pendingTasks.size())
-			{
-				auto task = std::move(this->_pendingTasks.front());
-				this->_pendingTasks.pop_front();
-
-				co_await task();
-			}
-		}
+		this->_pendingTasks.pop_front();
 
 		co_return;
 	}
@@ -78,10 +73,10 @@ private:
 	bool closed = false;
 
 	// Queue of pending tasks.
-	std::list<std::function<async_simple::coro::Lazy<T>(void)>> _pendingTasks;
+	std::list<std::function<async_simple::coro::Lazy<T>(void)> > _pendingTasks;
 
 	//cppcoro::single_consumer_event _event;
 
-	async_simple::coro::Lazy<void> _allWorks;
+	//async_simple::coro::Lazy<void> _allWorks;
 };
 

@@ -144,11 +144,7 @@ async_simple::coro::Lazy<json> ChannelOrigin::request(std::string method, std::o
 
 	this->_sents.insert(std::make_pair(id, std::move(t_promise)));
 
-	std::cout << "begin this thread: " << std::this_thread::get_id() << std::endl;
-
 	auto value = co_await std::move(this->_sents[id].getFuture());
-
-	std::cout << "after this thread: " << std::this_thread::get_id() << std::endl;
 
 	co_return value;
 }
