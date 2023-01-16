@@ -57,7 +57,7 @@ ClusterServer::ClusterServer()
 
 	MSC_DEBUG("ClusterServer Started");
 
-	runMediasoupWorkers().start([](async_simple::Try<void> Result) {});
+	runMediasoupWorkers().start([](auto&&) {});
 
 	//runHttpsServer();
 

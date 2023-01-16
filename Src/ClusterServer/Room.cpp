@@ -1248,7 +1248,7 @@ void Room::OnPeerRequest(protoo::Peer* peer, protoo::Request* request)
 
 	try
 	{
-		this->_handleProtooRequest(peer, request).start([](async_simple::Try<void> Result) {});
+		this->_handleProtooRequest(peer, request).start([](auto&&) {});
 	}
 	catch (std::exception& error)
 	{
