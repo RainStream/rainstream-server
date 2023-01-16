@@ -36,7 +36,12 @@ public:
 		// And execute it if this is the only task in the queue.
 		if (this->_pendingTasks.size() == 1)
 		{
-			this->execute().start([](async_simple::Try<void> Result) {});
+			this->execute().start([=](async_simple::Try<void> Result) {
+				if (this->_pendingTasks.size())
+				{
+					this->execute().start([](async_simple::Try<void> Result) {});
+				}
+			});
 		}
 	}
 
