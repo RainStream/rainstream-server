@@ -133,7 +133,7 @@ async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 			{ "rtcMaxPort", 49999 }
 		};
 
-		Worker* worker = Worker::Create(settings, false);
+		Worker* worker = Worker::Create(settings, true);
 
 		worker->on("died", [=]()
 		{

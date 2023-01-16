@@ -194,6 +194,8 @@ async_simple::coro::Lazy<json> ChannelNative::request(std::string method, std::o
 
 	this->_sents.insert(std::make_pair(id, std::move(t_promise)));
 
+	SendRequestMessage(id);
+
 	auto value = co_await this->_sents[id].getFuture();
 
 	co_return value;

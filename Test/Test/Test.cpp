@@ -3,70 +3,20 @@
 
 #include <iostream>
 
-#include <pplx/pplxtasks.h>
-
-#if defined(_RESUMABLE_FUNCTIONS_SUPPORTED) && _RESUMABLE_FUNCTIONS_SUPPORTED || defined(__cpp_coroutines) && __cpp_coroutines >= 201703L
-
-#include <experimental/coroutine>
-#include "pplxawait.h"
-
-#endif
-
-#include <cpprest/http_client.h>
-
-using web::uri;
-using web::http::methods;
-using web::http::http_exception;
-using web::http::client::http_client;
-using web::http::client::http_client_config;
-
-using namespace web::http::client;
-
-namespace web::http::client
+struct AAA
 {
-	class http_client;
-}
-
-concurrency::task<bool> push_new_public_address_async()
-{
-	try
-	{
-		web::http::client::http_client public_address_client_(L"www.baidu.com");
-		auto response = co_await public_address_client_.request(methods::GET, L"/");
-
-		co_return response.status_code() == web::http::status_codes::OK;
-	}
-	catch (http_exception&)
-	{
-		co_return false;
-	}
-}
-
-#include <future>
-
-std::future<int> compute_value1()
-{
-	bool ret  = co_await push_new_public_address_async();
-
-	co_return ret;
-}
-
-std::future<int> compute_value()
-{
-	int result = co_await std::async([]
-	{
-		return 30;
-	});
-
-	co_return result;
-}
+	int i = 0;
+};
 
 int main()
 {
+	AAA* a = new AAA;
+	a->i = 12;
 
-	bool ret = push_new_public_address_async().get();
+	AAA* b = a;
+	b->i = 15;
 
-	compute_value().get();
+	printf("A v:%d,  B v:%d\n", a->i, b->i);
 
 	return 0;
 }

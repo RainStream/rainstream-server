@@ -36,12 +36,7 @@ public:
 		// And execute it if this is the only task in the queue.
 		if (this->_pendingTasks.size() == 1)
 		{
-			this->execute().start([=](auto&&) {
-				if (this->_pendingTasks.size())
-				{
-					this->execute().start([](auto&&) {});
-				}
-			});
+			this->execute().start([=](auto&&) {});
 		}
 	}
 
@@ -69,6 +64,9 @@ protected:
 		co_await task();
 
 		this->_pendingTasks.pop_front();
+
+		if (this->_pendingTasks.size())
+			co_await execute();
 
 		co_return;
 	}

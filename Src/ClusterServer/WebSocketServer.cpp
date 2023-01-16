@@ -142,6 +142,7 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 
 				transport->onClosed(code, std::string(message));
 				delete transport;
+				peerData->transport = nullptr;
 			}
 		}
 	});
