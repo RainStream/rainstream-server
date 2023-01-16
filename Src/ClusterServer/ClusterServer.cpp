@@ -98,7 +98,7 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 	MSC_DEBUG("Peer[peerId:%s] request join room [roomId:%s]",
 		peerId.c_str(), roomId.c_str());
 
-	auto doConnectRequest = [=]() mutable-> async_simple::coro::Lazy<void>
+	this->_queue.push([=]() -> async_simple::coro::Lazy<void>
 	{
 		MSC_WARN("after push async_simple::coro::Lazy [peerId:%s]", peerId.c_str());
 		Room* room = co_await getOrCreateRoom(roomId);
@@ -109,9 +109,7 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 		auto transport = accept();
 
 		room->handleConnection(peerId, true, transport);
-	};
-
-	this->_queue.push(std::move(doConnectRequest));
+	});
 }
 
 
