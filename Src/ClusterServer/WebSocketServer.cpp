@@ -70,6 +70,10 @@ WebSocketServer::WebSocketServer(json tls, Lisenter* lisenter)
 			};
 
 			auto accept = [=]()->WebSocketClient* {
+				if (upgradeData->aborted){
+					return nullptr;
+				}
+
 				WebSocketClient* transport = new WebSocketClient(query);
 
 				uWS::Loop::get()->defer([=]() {
