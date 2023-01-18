@@ -10,7 +10,8 @@
 namespace mediasoup {
 
 
-Channel::Channel()
+Channel::Channel(int pid)
+	: _pid(pid)
 {
 	MSC_DEBUG("constructor()");
 }
@@ -31,6 +32,48 @@ void Channel::close()
 	}
 
 	this->subClose();
+}
+
+void Channel::_receivePayload(const std::string& nsPayload)
+{
+	try
+	{
+		// We can receive JSON messages (Channel messages) or log strings.
+		switch (nsPayload[0])
+		{
+			// 123 = "{" (a Channel JSON messsage).
+		case 123:
+			this->_processMessage(json::parse(nsPayload));
+			break;
+
+			// 68 = "D" (a debug log).
+		case 68:
+			MSC_DEBUG("[pid:%d] %s", _pid, nsPayload.substr(1).c_str());
+			break;
+
+			// 87 = "W" (a warning log).
+		case 87:
+			MSC_WARN("[pid:%d] %s", _pid, nsPayload.substr(1).c_str());
+			break;
+
+			// 69 = "E" (an error log).
+		case 69:
+			MSC_ERROR("[pid:%d] %s", _pid, nsPayload.substr(1).c_str());
+			break;
+			// 88 = "X" (a dump log).
+		case 88:
+			// eslint-disable-next-line no-console
+			MSC_DUMP("%s", nsPayload.substr(1).c_str());
+			break;
+
+		default:
+			MSC_WARN("worker[pid:%d] unexpected data: %s", _pid, nsPayload.c_str());
+		}
+	}
+	catch (const std::exception& error)
+	{
+		MSC_ERROR("received invalid message from the worker process: %s", error.what());
+	}
 }
 
 void Channel::_processMessage(const json& msg)

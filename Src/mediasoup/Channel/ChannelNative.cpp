@@ -24,7 +24,7 @@ inline static void onClose(uv_handle_t* handle)
 }
 
 ChannelNative::ChannelNative()
-	: Channel()
+	: Channel(0)
 {
 	this->_uvWriteHandle = new uv_async_t;
 	this->_uvWriteHandle->data = static_cast<void*>(this);
@@ -159,7 +159,7 @@ bool ChannelNative::CallbackWrite()
 
 	std::string strPayload = _receiveMessageQueue.front();
 
-	_processMessage(json::parse(strPayload));
+	this->_receivePayload(strPayload);
 
 	_receiveMessageQueue.pop();
 

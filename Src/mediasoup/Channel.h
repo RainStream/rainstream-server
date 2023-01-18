@@ -8,17 +8,19 @@ namespace mediasoup {
 class MS_EXPORT Channel : public EnhancedEventEmitter
 {
 public:
-	Channel();
+	Channel(int pid);
 
 	void close();
 
 	virtual async_simple::coro::Lazy<json> request(std::string method, std::optional<std::string> handlerId = std::nullopt, const json& data = json()) = 0;
 
 protected:
+	void _receivePayload(const std::string& nsPayload);
 	void _processMessage(const json& msg);
 	virtual void subClose() = 0;
 
 protected:
+	int _pid;
 	// Closed flag.
 	bool _closed = false;
 	
