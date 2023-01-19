@@ -73,7 +73,7 @@ namespace protoo
 			{ "response", true },
 			{ "id" , id },
 			{ "ok" , true },
-			{ "data" , data }
+			{ "data" , data.is_null() ? json::object() : data }
 		};
 
 		this->peer->Send(jsonResponse);

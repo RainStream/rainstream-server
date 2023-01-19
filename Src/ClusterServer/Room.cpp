@@ -305,7 +305,7 @@ async_simple::coro::Lazy<void> Room::_handleProtooRequest(protoo::Peer* peer, pr
 			// Create Consumers for existing Producers.
 			for (auto [key, producer] : joinedPeer->data.producers)
 			{
-				this->_createConsumer(peer, joinedPeer, producer);
+				this->_createConsumer(peer, joinedPeer, producer).start([](auto&&) {});
 			}
 			
 			// Create DataConsumers for existing DataProducers.
@@ -314,12 +314,12 @@ async_simple::coro::Lazy<void> Room::_handleProtooRequest(protoo::Peer* peer, pr
 				if (dataProducer->label() == "bot")
 					continue;
 
-				this->_createDataConsumer(peer, joinedPeer, dataProducer);
+				this->_createDataConsumer(peer, joinedPeer, dataProducer).start([](auto&&) {});
 			}			
 		}
 
 		// Create DataConsumers for bot DataProducer.
-		this->_createDataConsumer(peer, nullptr, this->_bot->dataProducer());
+		this->_createDataConsumer(peer, nullptr, this->_bot->dataProducer()).start([](auto&&) {});
 
 		// Notify the new Peer to all other Peers.
 		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
@@ -379,7 +379,7 @@ async_simple::coro::Lazy<void> Room::_handleProtooRequest(protoo::Peer* peer, pr
 
 		// NOTE: For testing.
 		// co_await transport->enableTraceEvent([ "probation", "bwe" ]);
-		//co_await transport->enableTraceEvent({ "bwe" });
+		co_await transport->enableTraceEvent({ "bwe" });
 
 		transport->on("trace", [=](json& trace)
 			{
@@ -526,7 +526,7 @@ async_simple::coro::Lazy<void> Room::_handleProtooRequest(protoo::Peer* peer, pr
 		// Optimization: Create a server-side Consumer for each peer->
 		for (protoo::Peer* otherPeer : this->_getJoinedPeers(peer))
 		{
-			this->_createConsumer(otherPeer, peer, producer);
+			this->_createConsumer(otherPeer, peer, producer).start([](auto&&) {});
 		}
 
 		// Add into the audioLevelObserver.

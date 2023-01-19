@@ -156,7 +156,7 @@ namespace protoo
 
 		if (response.count("ok") && response["ok"].get<bool>())
 		{
-			sent.setValue(response["data"]);
+			sent.setValue(std::move(response["data"]));
 		}
 		else
 		{

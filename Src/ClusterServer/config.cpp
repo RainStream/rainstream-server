@@ -90,13 +90,13 @@ R"(
 				{
 					"protocol": "udp",
 					"ip": "0.0.0.0",
-					"announcedIp": "127.0.0.1",
+					"announcedIp": "192.168.0.103",
 					"port": 44444
 				},
 				{
 					"protocol": "tcp",
 					"ip": "0.0.0.0",
-					"announcedIp": "127.0.0.1",
+					"announcedIp": "192.168.0.103",
 					"port": 44444
 				}
 			]
@@ -105,7 +105,7 @@ R"(
 			"listenIps": [
 				{
 					"ip": "0.0.0.0",
-					"announcedIp": "127.0.0.1"
+					"announcedIp": "192.168.0.103"
 				}
 			],
 			"initialAvailableOutgoingBitrate": 1000000,
@@ -116,7 +116,7 @@ R"(
 		"plainTransportOptions": {
 			"listenIp": {
 				"ip": "0.0.0.0",
-				"announcedIp": "127.0.0.1"
+				"announcedIp": "192.168.0.103"
 			},
 			"maxSctpMessageSize": 262144
 		}
