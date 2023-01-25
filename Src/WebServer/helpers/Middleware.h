@@ -15,10 +15,5 @@ uWS::HttpResponse<SSL> *serveFile(uWS::HttpResponse<SSL> *res, uWS::HttpRequest 
         res->writeHeader("Content-Type", "image/svg+xml");
     }
 
-    if (hasExt(req->getUrl(), ".ico")) {
-        res->writeHeader("Content-Type", "image/x-icon");
-    }
-
-
     return res;
 }
