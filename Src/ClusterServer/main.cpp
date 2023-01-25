@@ -15,7 +15,6 @@
 #include <map>
 #include <string>
 #include <unistd.h> // getpid(), usleep()
-#include <colorconsole.hpp>
 
 
 static void init();
