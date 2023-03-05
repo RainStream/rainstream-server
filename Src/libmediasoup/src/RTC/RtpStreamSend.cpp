@@ -4,6 +4,7 @@
 #include "RTC/RtpStreamSend.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
+#include "RTC/RtpDictionaries.hpp"
 #include "RTC/SeqManager.hpp"
 
 namespace RTC
@@ -19,10 +20,9 @@ namespace RTC
 
 	/* Class Static. */
 
-	// Minimum retransmission buffer size (ms).
-	const uint32_t RtpStreamSend::MinRetransmissionDelay{ 200u };
-	// Maximum retransmission buffer size (ms).
-	const uint32_t RtpStreamSend::MaxRetransmissionDelay{ 2000u };
+	const uint32_t RtpStreamSend::MinRetransmissionDelayMs{ 200u };
+	const uint32_t RtpStreamSend::MaxRetransmissionDelayForVideoMs{ 2000u };
+	const uint32_t RtpStreamSend::MaxRetransmissionDelayForAudioMs{ 1000u };
 
 	void RtpStreamSend::StorageItem::Reset()
 	{
@@ -49,12 +49,16 @@ namespace RTC
 	RtpStreamSend::StorageItem* RtpStreamSend::StorageItemBuffer::Get(uint16_t seq) const
 	{
 		if (RTC::SeqManager<uint16_t>::IsSeqLowerThan(seq, this->startSeq))
+		{
 			return nullptr;
+		}
 
 		auto idx{ static_cast<uint16_t>(seq - this->startSeq) };
 
 		if (this->buffer.empty() || idx > static_cast<uint16_t>(this->buffer.size() - 1))
+		{
 			return nullptr;
+		}
 
 		return this->buffer.at(idx);
 	}
@@ -141,7 +145,9 @@ namespace RTC
 		for (auto* storageItem : this->buffer)
 		{
 			if (!storageItem)
+			{
 				continue;
+			}
 
 			// Reset the storage item (decrease RTP packet shared pointer counter).
 			storageItem->Reset();
@@ -162,10 +168,33 @@ namespace RTC
 
 	RtpStreamSend::RtpStreamSend(
 	  RTC::RtpStreamSend::Listener* listener, RTC::RtpStream::Params& params, std::string& mid)
-	  : RTC::RtpStream::RtpStream(listener, params, 10), mid(mid),
-	    retransmissionBufferSize(RtpStreamSend::MaxRetransmissionDelay)
+	  : RTC::RtpStream::RtpStream(listener, params, 10), mid(mid)
 	{
 		MS_TRACE();
+
+		switch (params.mimeType.type)
+		{
+			case RTC::RtpCodecMimeType::Type::VIDEO:
+			{
+				this->maxRetransmissionDelayMs = RtpStreamSend::MaxRetransmissionDelayForVideoMs;
+				this->retransmissionBufferSize = RtpStreamSend::MaxRetransmissionDelayForVideoMs;
+
+				break;
+			}
+
+			case RTC::RtpCodecMimeType::Type::AUDIO:
+			{
+				this->maxRetransmissionDelayMs = RtpStreamSend::MaxRetransmissionDelayForAudioMs;
+				this->retransmissionBufferSize = RtpStreamSend::MaxRetransmissionDelayForAudioMs;
+
+				break;
+			}
+
+			case RTC::RtpCodecMimeType::Type::UNSET:
+			{
+				MS_ABORT("codec mimeType not set");
+			}
+		}
 	}
 
 	RtpStreamSend::~RtpStreamSend()
@@ -205,11 +234,15 @@ namespace RTC
 
 		// Call the parent method.
 		if (!RtpStream::ReceiveStreamPacket(packet))
+		{
 			return false;
+		}
 
 		// If NACK is enabled, store the packet into the buffer.
 		if (this->params.useNack)
+		{
 			StorePacket(packet, sharedPacket);
+		}
 
 		// Increase transmission counter.
 		this->transmissionCounter.Update(packet);
@@ -234,7 +267,9 @@ namespace RTC
 			for (auto* storageItem : RetransmissionContainer)
 			{
 				if (!storageItem)
+				{
 					break;
+				}
 
 				// Note that this is an already RTX encoded packet if RTX is used
 				// (FillRetransmissionContainer() did it).
@@ -249,7 +284,9 @@ namespace RTC
 
 				// Mark the packet as repaired (only if this is the first retransmission).
 				if (storageItem->sentTimes == 1)
+				{
 					RTC::RtpStream::PacketRepaired(packet.get());
+				}
 
 				if (HasRtx())
 				{
@@ -302,7 +339,9 @@ namespace RTC
 		// If no Sender Report was received by the remote endpoint yet, ignore lastSr
 		// and dlsr values in the Receiver Report.
 		if (lastSr && dlsr && (compactNtp > dlsr + lastSr))
+		{
 			rtt = compactNtp - dlsr - lastSr;
+		}
 
 		// RTT in milliseconds.
 		this->rtt = static_cast<float>(rtt >> 16) * 1000;
@@ -313,14 +352,14 @@ namespace RTC
 			this->hasRtt = true;
 		}
 
-		// Smoothly change retransmission buffer size towards RTT + 100ms, but not more than
-		// `MaxRetransmissionDelay`.
+		// Smoothly change retransmission buffer size towards RTT + 100ms, but not
+		// more than this->maxRetransmissionDelayMs.
 		auto newRetransmissionBufferSize = static_cast<uint32_t>(this->rtt + 100.0);
 		auto avgRetransmissionBufferSize =
 		  (this->retransmissionBufferSize * 7 + newRetransmissionBufferSize) / 8;
 		this->retransmissionBufferSize = std::max(
-		  std::min(avgRetransmissionBufferSize, RtpStreamSend::MaxRetransmissionDelay),
-		  RtpStreamSend::MinRetransmissionDelay);
+		  std::min(avgRetransmissionBufferSize, this->maxRetransmissionDelayMs),
+		  RtpStreamSend::MinRetransmissionDelayMs);
 
 		this->packetsLost  = report->GetTotalLost();
 		this->fractionLost = report->GetFractionLost();
@@ -343,7 +382,9 @@ namespace RTC
 		MS_TRACE();
 
 		if (this->transmissionCounter.GetPacketCount() == 0u)
+		{
 			return nullptr;
+		}
 
 		auto ntp     = Utils::Time::TimeMs2Ntp(nowMs);
 		auto* report = new RTC::RTCP::SenderReport();
@@ -371,7 +412,9 @@ namespace RTC
 		MS_TRACE();
 
 		if (this->lastRrReceivedMs == 0u)
+		{
 			return nullptr;
+		}
 
 		// Get delay in milliseconds.
 		auto delayMs = static_cast<uint32_t>(nowMs - this->lastRrReceivedMs);
@@ -469,7 +512,9 @@ namespace RTC
 
 				// RTP packet is older than the retransmission buffer size.
 				if (static_cast<uint32_t>(diffTs * 1000 / this->params.clockRate) >= this->retransmissionBufferSize)
+				{
 					return;
+				}
 			}
 		}
 
@@ -483,7 +528,9 @@ namespace RTC
 		if (storageItem)
 		{
 			if (packet->GetTimestamp() == storageItem->timestamp)
+			{
 				return;
+			}
 
 			// Reset the storage item.
 			storageItem->Reset();
@@ -519,7 +566,7 @@ namespace RTC
 		const auto bufferSize = this->storageItemBuffer.GetBufferSize();
 
 		// Go through all buffer items starting with the first and free all storage
-		// items that contain packets older than `MaxRetransmissionDelay`.
+		// items that contain packets older than this->maxRetransmissionDelayMs.
 		for (size_t i{ 0 }; i < bufferSize && this->storageItemBuffer.GetBufferSize() != 0; ++i)
 		{
 			auto* storageItem = this->storageItemBuffer.GetFirst();
@@ -527,11 +574,15 @@ namespace RTC
 
 			// Processing RTP packet is older than first one.
 			if (RTC::SeqManager<uint32_t>::IsSeqLowerThan(packet->GetTimestamp(), storageItem->timestamp))
+			{
 				break;
+			}
 
 			// First RTP packet is recent enough.
 			if (static_cast<uint32_t>(diffTs * 1000 / clockRate) < this->retransmissionBufferSize)
+			{
 				break;
+			}
 
 			// Unfill the buffer start item.
 			this->storageItemBuffer.RemoveFirst();
@@ -603,7 +654,9 @@ namespace RTC
 
 					// Update MID RTP extension value.
 					if (!this->mid.empty())
+					{
 						packet->UpdateMid(mid);
+					}
 
 					const uint32_t diffTs = this->maxPacketTs - packet->GetTimestamp();
 
@@ -615,8 +668,8 @@ namespace RTC
 				{
 					// Do nothing.
 				}
-				// Don't resend the packet if older than MaxRetransmissionDelay ms.
-				else if (diffMs > MaxRetransmissionDelay)
+				// Don't resend the packet if older than this->maxRetransmissionDelayMs ms.
+				else if (diffMs > this->maxRetransmissionDelayMs)
 				{
 					if (!tooOldPacketFound)
 					{
@@ -625,7 +678,7 @@ namespace RTC
 						  "ignoring retransmission for too old packet "
 						  "[seq:%" PRIu16 ", max age:%" PRIu32 "ms, packet age:%" PRIu32 "ms]",
 						  packet->GetSequenceNumber(),
-						  MaxRetransmissionDelay,
+						  this->maxRetransmissionDelayMs,
 						  diffMs);
 
 						tooOldPacketFound = true;
@@ -670,7 +723,9 @@ namespace RTC
 					sent = true;
 
 					if (isFirstPacket)
+					{
 						firstPacketSent = true;
+					}
 				}
 			}
 
@@ -728,9 +783,13 @@ namespace RTC
 		uint32_t lost;
 
 		if (totalLost < this->lostPriorScore)
+		{
 			lost = 0;
+		}
 		else
+		{
 			lost = totalLost - this->lostPriorScore;
+		}
 
 		this->lostPriorScore = totalLost;
 
@@ -755,10 +814,14 @@ namespace RTC
 		}
 
 		if (lost > sent)
+		{
 			lost = sent;
+		}
 
 		if (repaired > lost)
+		{
 			repaired = lost;
+		}
 
 #if MS_LOG_DEV_LEVEL == 3
 		MS_DEBUG_TAG(
@@ -783,7 +846,9 @@ namespace RTC
 		MS_ASSERT(retransmitted >= repaired, "repaired packets cannot be more than retransmitted ones");
 
 		if (retransmitted > 0)
+		{
 			repairedWeight *= static_cast<float>(repaired) / retransmitted;
+		}
 
 		lost -= repaired * repairedWeight;
 
