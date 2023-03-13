@@ -100,7 +100,6 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 
 	this->_queue.push([=]() -> async_simple::coro::Lazy<void>
 	{
-		MSC_WARN("after push async_simple::coro::Lazy [peerId:%s]", peerId.c_str());
 		Room* room = co_await getOrCreateRoom(roomId);
 
 		MSC_WARN("Peer[peerId:%s] handleConnection [roomId:%s]",

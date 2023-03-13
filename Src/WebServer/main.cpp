@@ -30,6 +30,9 @@ int main(int argc, char** argv) {
 
 	/* HTTPS */
 	uWS::SSLApp(ssl_options).get("/*", [&asyncFileStreamer](auto* res, auto* req) {
+		res->onAborted([=]() {
+			std::cout << "ABORTED!" << std::endl;
+			});
 		std::cout << "get request: " << req->getUrl() << "  " << req->getQuery() << std::endl;
 		serveFile(res, req);
 		asyncFileStreamer.streamFile(res, req->getUrl());
