@@ -1,8 +1,8 @@
 #include "common.h"
 
 #include "config.hpp"
-
-json config =
+json config;
+/*json config =
 R"(
 {
 	"domain": "localhost",
@@ -123,3 +123,5 @@ R"(
 	}
 }
 )"_json;
+*/
+

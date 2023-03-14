@@ -19,6 +19,8 @@ static int nextMediasoupWorkerIdx = 0;
 /* Instance methods. */
 ClusterServer::ClusterServer()
 {
+	loadGlobalCheck();
+
 // 	if (!Settings::configuration.configFile.empty())
 // 	{
 // 		std::ifstream in(Settings::configuration.configFile.c_str());
@@ -32,27 +34,30 @@ ClusterServer::ClusterServer()
 // 		}
 // 	}
 
-	// mediasoup server.
-	json mediasoup = 
+	json tmp_config;
+	std::ifstream in("config.json");
+	if (in.is_open())
 	{
-		{ "numWorkers"       , 1 },
-		{ "logLevel"         , config["mediasoup"]["logLevel"] },
-		{ "logTags"          , config["mediasoup"]["logTags"] },
-		{ "rtcIPv4"          , config["mediasoup"]["rtcIPv4"] },
-		{ "rtcIPv6"          , config["mediasoup"]["rtcIPv6"] },
-		{ "rtcAnnouncedIPv4" , config["mediasoup"]["rtcAnnouncedIPv4"] },
-		{ "rtcAnnouncedIPv6" , config["mediasoup"]["rtcAnnouncedIPv6"] },
-		{ "rtcMinPort"       , config["mediasoup"]["rtcMinPort"] },
-		{ "rtcMaxPort"       , config["mediasoup"]["rtcMaxPort"] }
-	};
+		in >> tmp_config;
+		in.close();
+	}
+	
+	if (tmp_config.is_null() || !tmp_config.is_object())
+	{
+		MSC_ABORT("config.json is not exist or empty!");
+	}
+
+	config = tmp_config;
 
 	// HTTPS server for the protoo WebSocket server.
 	json tls = config["https"]["tls"];
+	std::string listenIp = config["https"]["listenIp"];
+	uint16_t listenPort = config["https"]["listenPort"];
 
 	_webSocketServer = new protoo::WebSocketServer(tls, this);
-	if (_webSocketServer->Setup("127.0.0.1", 4443))
+	if (_webSocketServer->Setup(listenIp.c_str(), listenPort))
 	{
-		MSC_DEBUG("WebSocket server running on port: %d", 4443);
+		MSC_DEBUG("WebSocket server running on port: %d", listenPort);
 	}
 
 	MSC_DEBUG("ClusterServer Started");
@@ -119,17 +124,28 @@ void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
 
 async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 {
-	int numWorkers = 1;
+	int numWorkers = config["mediasoup"]["numWorkers"];
+
+	if (numWorkers <= 0)
+	{
+		uv_cpu_info_t* info;
+		int cpu_count;
+		uv_cpu_info(&info, &cpu_count);
+		uv_free_cpu_info(info, cpu_count);
+		
+		numWorkers = cpu_count;
+	}
 
 	MSC_DEBUG("running %d mediasoup Workers...", numWorkers);
 
 	for (int i = 0; i < numWorkers; ++i)
 	{
+		const json& workerSettings = config["mediasoup"]["workerSettings"];
 		json settings = {
-			{ "logLevel", "warn" },
-			{ "logTags", { "info", "ice", "dtls","rtp","srtp","rtcp", "rtx","bwe",	"score", "simulcast","svc",	"sctp" } },
-			{ "rtcMinPort", 40000 },
-			{ "rtcMaxPort", 49999 }
+			{ "logLevel", workerSettings["logLevel"]},
+			{ "logTags", workerSettings["logTags"] },
+			{ "rtcMinPort", workerSettings["rtcMinPort"] },
+			{ "rtcMaxPort", workerSettings["rtcMaxPort"] }
 		};
 
 		Worker* worker = Worker::Create(settings, true);

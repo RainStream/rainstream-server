@@ -96,7 +96,7 @@ V GetMapValue(const std::map<K, V>& maps, K key)
 	}
 }
 
-class MessageData {
+class MS_EXPORT MessageData {
 public:
 	MessageData() {}
 	virtual ~MessageData() {}
@@ -122,9 +122,10 @@ private:
 	DISALLOW_COPY_AND_ASSIGN(MessageWithFunctor);
 };
 
+void newCheckInvoke(MessageData* message_data);
 
 MS_EXPORT uint64_t Invoke(MessageData* message_data,
-	uint64_t timeout = 0, 
+	uint64_t timeout = 0,
 	uint64_t repeat = 0);
 
 MS_EXPORT void InvokeOnce(MessageData* message_data,
@@ -133,7 +134,7 @@ MS_EXPORT void InvokeOnce(MessageData* message_data,
 
 template <class FunctorT>
 void setImmediate(FunctorT&& functor) {
-	InvokeOnce(new MessageWithFunctor<FunctorT>(
+	newCheckInvoke(new MessageWithFunctor<FunctorT>(
 		std::forward<FunctorT>(functor)));
 }
 
@@ -144,9 +145,11 @@ void setTimeout(FunctorT&& functor, int timeout) {
 }
 
 template <class FunctorT>
-uint64_t setInterval(FunctorT&& functor, int interval){
+uint64_t setInterval(FunctorT&& functor, int interval) {
 	return Invoke(new MessageWithFunctor<FunctorT>(
 		std::forward<FunctorT>(functor)), interval, interval);
 }
 
-void clearInterval(uint64_t identifier);
+MS_EXPORT void clearInterval(uint64_t identifier);
+
+MS_EXPORT void loadGlobalCheck();
