@@ -186,7 +186,7 @@ void printHelp()
 
 
 	printf("%s", info);
-	printf("%s", "按任意键继续......");
+	printf("%s", "按任意键开始执行......");
 	getchar();
 }
 
