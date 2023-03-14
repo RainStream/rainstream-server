@@ -10,7 +10,9 @@
 		}
 	},
 	"mediasoup": {
-		"numWorkers": 10,
+		"numWorkers": 1,
+		"singleProcess": true,
+		"useWebrtcServer": true,		
 		"workerSettings": {
 			"logLevel": "warn",
 			"logTags": [
