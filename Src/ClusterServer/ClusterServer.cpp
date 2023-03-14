@@ -136,6 +136,8 @@ async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 		numWorkers = cpu_count;
 	}
 
+	numWorkers = 1;
+
 	MSC_DEBUG("running %d mediasoup Workers...", numWorkers);
 
 	for (int i = 0; i < numWorkers; ++i)
