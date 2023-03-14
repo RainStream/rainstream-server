@@ -124,14 +124,18 @@ void ClusterServer::OnConnectClosed(protoo::WebSocketClient* transport)
 
 async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 {
-	int numWorkers = config["mediasoup"]["numWorkers"];
+	uv_cpu_info_t* info;
+	int cpu_count;
+	uv_cpu_info(&info, &cpu_count);
+	uv_free_cpu_info(info, cpu_count);
+
+	int numWorkers = config["mediasoup"].value("numWorkers", cpu_count);
+	bool singleProcess = config["mediasoup"].value("singleProcess", false);
+	bool useWebrtcServer = config["mediasoup"].value("useWebrtcServer", MEDIASOUP_USE_WEBRTC_SERVER);
 
 	if (numWorkers <= 0)
 	{
-		uv_cpu_info_t* info;
-		int cpu_count;
-		uv_cpu_info(&info, &cpu_count);
-		uv_free_cpu_info(info, cpu_count);
+		
 		
 		numWorkers = cpu_count;
 	}
@@ -150,7 +154,7 @@ async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 			{ "rtcMaxPort", workerSettings["rtcMaxPort"] }
 		};
 
-		Worker* worker = Worker::Create(settings, true);
+		Worker* worker = Worker::Create(settings, singleProcess);
 
 		worker->on("died", [=]()
 		{
@@ -162,7 +166,7 @@ async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 		_mediasoupWorkers.push_back(worker);
 
 		// Create a WebRtcServer in this Worker.
-		if (MEDIASOUP_USE_WEBRTC_SERVER != false)
+		if (useWebrtcServer != false)
 		{
 			// Each mediasoup Worker will run its own WebRtcServer, so those cannot
 			// share the same listening ports. Hence we increase the value in config.js
