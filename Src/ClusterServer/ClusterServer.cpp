@@ -133,10 +133,8 @@ async_simple::coro::Lazy<void> ClusterServer::runMediasoupWorkers()
 	bool singleProcess = config["mediasoup"].value("singleProcess", false);
 	bool useWebrtcServer = config["mediasoup"].value("useWebrtcServer", MEDIASOUP_USE_WEBRTC_SERVER);
 
-	if (numWorkers <= 0)
+	if (numWorkers <= 0 || numWorkers >= cpu_count)
 	{
-		
-		
 		numWorkers = cpu_count;
 	}
 
