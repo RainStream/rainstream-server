@@ -93,9 +93,9 @@ void ClusterServer::OnConnectRequest(std::string requestUrl, const protoo::FnAcc
 
 	if (roomId.empty() || peerId.empty())
 	{
-		MSC_ERROR("Connection request without roomId and/or peerName");
+		MSC_ERROR("Connection request without roomId and/or peerId");
 
-		reject(Error("Connection request without roomId and/or peerName"));
+		reject(Error("Connection request without roomId and/or peerId"));
 
 		return;
 	}

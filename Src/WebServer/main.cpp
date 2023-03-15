@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 		.cert_file_name = "certs/fullchain.pem",
 	};
 
-	const char* root = "../public";
+	const char* root = "./public";
 
 	AsyncFileStreamer asyncFileStreamer(root);
 

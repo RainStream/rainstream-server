@@ -226,7 +226,7 @@ async_simple::coro::Lazy<void> Consumer::setPreferredLayers(
 
 	json reqData = {
 		{ "spatialLayer",spatialLayer },
-		{"temporalLayer", temporalLayer}
+		{ "temporalLayer", temporalLayer }
 	};
 
 	json data = co_await this->_channel->request(
