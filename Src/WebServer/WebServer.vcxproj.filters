@@ -4,9 +4,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="helpers">
       <UniqueIdentifier>{e2afeb45-af6c-4baa-a2c3-12be2a873dfb}</UniqueIdentifier>
     </Filter>

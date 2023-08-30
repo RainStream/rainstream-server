@@ -175,9 +175,6 @@
     </ClCompile>
     <ClCompile Include="TestVcpkg.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.E.Develop.vcpkg.1.0.0\build\native\vcpkg.E.Develop.vcpkg.targets')" />

@@ -363,7 +363,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="libmediasoup.def" />
-    <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

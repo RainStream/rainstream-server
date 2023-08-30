@@ -206,9 +206,6 @@
     <ClInclude Include="WebSocketServer.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\mediasoup\mediasoup.vcxproj">
       <Project>{57034427-4d2c-4bf0-832b-76f46602fd84}</Project>
     </ProjectReference>

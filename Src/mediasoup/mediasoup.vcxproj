@@ -258,9 +258,6 @@
     <ClInclude Include="Worker\WorkerOrigin.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\libmediasoup\libmediasoup.vcxproj">
       <Project>{bdf90305-5bdc-4ce0-9548-03793f94d37e}</Project>
     </ProjectReference>

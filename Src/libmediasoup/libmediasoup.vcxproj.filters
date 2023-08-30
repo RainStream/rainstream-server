@@ -1150,7 +1150,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="libmediasoup.def" />
   </ItemGroup>
 </Project>
