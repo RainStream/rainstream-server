@@ -23,32 +23,32 @@
     <ProjectGuid>{57034427-4D2C-4BF0-832B-76F46602FD84}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>mediasoup</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -97,7 +97,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;MS_BUILD_LIB;WEBRTC_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\async_simple;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\async_simple;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await:strict %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -117,7 +117,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +133,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;MS_BUILD_LIB;WEBRTC_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\async_simple;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\async_simple;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await:strict %(AdditionalOptions)</AdditionalOptions>
@@ -158,7 +158,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;$(SolutionDir)Src\Common\asyncpp\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(SolutionDir)Deps\EventEmitter;$(SolutionDir)Deps\nlohmann\include;$(SolutionDir)Src\libmediasoup\include;.\webrtc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
